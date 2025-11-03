@@ -29,9 +29,12 @@ jobs:
       - name: Build web
         run: flutter build web --release --base-href /flutter-todo/
 
+      - name: Remove README from build output
+        run: rm -f ./build/web/README.md
+
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./build/web
-          exclude_assets: '.github'
+          exclude_assets: '.github,README.md'
