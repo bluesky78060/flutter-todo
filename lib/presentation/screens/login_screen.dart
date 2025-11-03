@@ -1,10 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:todo_app/core/constants/app_constants.dart';
-import 'package:todo_app/presentation/providers/auth_providers.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -20,49 +16,22 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     setState(() => _isLoading = true);
 
     try {
-      const webClientId = 'YOUR_GOOGLE_WEB_CLIENT_ID'; // Supabase에서 설정 필요
-
-      final GoogleSignIn googleSignIn = GoogleSignIn(
-        clientId: webClientId,
-        serverClientId: webClientId,
+      // Supabase OAuth 플로우 사용 (웹에서 작동)
+      final response = await Supabase.instance.client.auth.signInWithOAuth(
+        OAuthProvider.google,
+        redirectTo: 'https://fascinating-peony-8bbb51.netlify.app',
       );
 
-      final googleUser = await googleSignIn.signIn();
-      if (googleUser == null) {
-        if (mounted) {
-          setState(() => _isLoading = false);
-        }
-        return;
+      if (!response) {
+        throw 'Google 로그인 실패';
       }
 
-      final googleAuth = await googleUser.authentication;
-      final accessToken = googleAuth.accessToken;
-      final idToken = googleAuth.idToken;
-
-      if (accessToken == null) {
-        throw 'No Access Token found.';
-      }
-      if (idToken == null) {
-        throw 'No ID Token found.';
-      }
-
-      final response = await Supabase.instance.client.auth.signInWithIdToken(
-        provider: OAuthProvider.google,
-        idToken: idToken,
-        accessToken: accessToken,
-      );
-
-      if (mounted && response.user != null) {
-        context.go(AppConstants.todosRoute);
-      }
+      // OAuth 플로우가 성공하면 자동으로 리디렉션됨
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Google 로그인 실패: ${e.toString()}')),
         );
-      }
-    } finally {
-      if (mounted) {
         setState(() => _isLoading = false);
       }
     }
