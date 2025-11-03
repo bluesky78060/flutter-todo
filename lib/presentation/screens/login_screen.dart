@@ -13,7 +13,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _isLoading = false;
-  bool _showEmailLogin = false;
+  bool _isSignUpMode = false; // 회원가입 모드 토글
 
   @override
   void dispose() {
@@ -113,6 +113,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       return;
     }
 
+    if (_passwordController.text.length < 6) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('비밀번호는 최소 6자 이상이어야 합니다')),
+      );
+      return;
+    }
+
     setState(() => _isLoading = true);
 
     try {
@@ -124,9 +131,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       if (mounted) {
         if (response.user != null) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('회원가입 성공! 로그인해주세요.')),
+            const SnackBar(
+              content: Text('회원가입 성공! 이제 로그인할 수 있습니다.'),
+              backgroundColor: Colors.green,
+            ),
           );
-          setState(() => _showEmailLogin = false);
+          setState(() => _isSignUpMode = false);
           _passwordController.clear();
         }
       }
@@ -180,84 +190,107 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   color: Colors.grey,
                 ),
               ),
-              const SizedBox(height: 48),
+              const SizedBox(height: 32),
 
-              // 이메일 로그인 폼 (토글)
-              if (_showEmailLogin) ...[
-                TextField(
-                  controller: _emailController,
-                  decoration: const InputDecoration(
-                    labelText: '이메일',
-                    border: OutlineInputBorder(),
-                    prefixIcon: Icon(Icons.email),
-                  ),
-                  keyboardType: TextInputType.emailAddress,
-                  enabled: !_isLoading,
+              // 이메일 로그인 폼 (항상 표시)
+              TextField(
+                controller: _emailController,
+                decoration: const InputDecoration(
+                  labelText: '이메일',
+                  hintText: 'example@email.com',
+                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.email_outlined),
                 ),
-                const SizedBox(height: 16),
-                TextField(
-                  controller: _passwordController,
-                  decoration: const InputDecoration(
-                    labelText: '비밀번호',
-                    border: OutlineInputBorder(),
-                    prefixIcon: Icon(Icons.lock),
-                  ),
-                  obscureText: true,
-                  enabled: !_isLoading,
-                  onSubmitted: (_) => _signInWithEmail(),
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: _isLoading ? null : _signInWithEmail,
-                        style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                        ),
-                        child: const Text('로그인'),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: _isLoading ? null : _signUpWithEmail,
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                        ),
-                        child: const Text('회원가입'),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 24),
-                const Divider(),
-                const SizedBox(height: 24),
-              ],
-
-              // 이메일 로그인 토글 버튼
-              if (!_showEmailLogin)
-                TextButton.icon(
-                  onPressed: () => setState(() => _showEmailLogin = true),
-                  icon: const Icon(Icons.email),
-                  label: const Text('이메일로 로그인'),
-                  style: TextButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                  ),
-                ),
-              if (_showEmailLogin)
-                TextButton.icon(
-                  onPressed: () => setState(() => _showEmailLogin = false),
-                  icon: const Icon(Icons.arrow_back),
-                  label: const Text('SNS 로그인으로 돌아가기'),
-                  style: TextButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                  ),
-                ),
+                keyboardType: TextInputType.emailAddress,
+                enabled: !_isLoading,
+              ),
               const SizedBox(height: 16),
+              TextField(
+                controller: _passwordController,
+                decoration: const InputDecoration(
+                  labelText: '비밀번호',
+                  hintText: '최소 6자 이상',
+                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.lock_outline),
+                ),
+                obscureText: true,
+                enabled: !_isLoading,
+                onSubmitted: (_) =>
+                    _isSignUpMode ? _signUpWithEmail() : _signInWithEmail(),
+              ),
+              const SizedBox(height: 24),
 
-              // SNS 로그인 버튼 (이메일 모드가 아닐 때만 표시)
-              if (!_showEmailLogin) ...[
+              // 로그인/회원가입 버튼
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: _isLoading
+                      ? null
+                      : (_isSignUpMode ? _signUpWithEmail : _signInWithEmail),
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    backgroundColor: Colors.blue,
+                    foregroundColor: Colors.white,
+                  ),
+                  child: _isLoading
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : Text(
+                          _isSignUpMode ? '회원가입' : '로그인',
+                          style: const TextStyle(fontSize: 16),
+                        ),
+                ),
+              ),
+              const SizedBox(height: 12),
+
+              // 로그인/회원가입 전환
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    _isSignUpMode
+                        ? '이미 계정이 있으신가요?'
+                        : '계정이 없으신가요?',
+                    style: const TextStyle(color: Colors.grey),
+                  ),
+                  TextButton(
+                    onPressed: _isLoading
+                        ? null
+                        : () {
+                            setState(() => _isSignUpMode = !_isSignUpMode);
+                            _passwordController.clear();
+                          },
+                    child: Text(
+                      _isSignUpMode ? '로그인' : '회원가입',
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 24),
+              const Row(
+                children: [
+                  Expanded(child: Divider()),
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 16),
+                    child: Text(
+                      '또는',
+                      style: TextStyle(color: Colors.grey),
+                    ),
+                  ),
+                  Expanded(child: Divider()),
+                ],
+              ),
+              const SizedBox(height: 24),
+
+              // SNS 로그인 버튼
                 // Google 로그인 버튼
                 ElevatedButton.icon(
                 onPressed: _isLoading ? null : _signInWithGoogle,
@@ -307,14 +340,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   ),
                 ),
               ),
-              ],
-
-              if (_isLoading) ...[
-                const SizedBox(height: 24),
-                const Center(
-                  child: CircularProgressIndicator(),
-                ),
-              ],
             ],
           ),
         ),
