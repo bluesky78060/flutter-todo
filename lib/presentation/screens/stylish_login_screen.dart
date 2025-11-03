@@ -263,38 +263,6 @@ class _StylishLoginScreenState extends ConsumerState<StylishLoginScreen>
             },
           ),
 
-          // Dark Mode Toggle Button (Inside Card - Top Right)
-          Positioned(
-            top: 56,
-            right: 56,
-            child: Container(
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.15),
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(
-                  color: Colors.white.withOpacity(0.3),
-                  width: 1,
-                ),
-              ),
-              child: IconButton(
-                iconSize: 20,
-                padding: const EdgeInsets.all(8),
-                constraints: const BoxConstraints(
-                  minWidth: 36,
-                  minHeight: 36,
-                ),
-                onPressed: () {
-                  setState(() => _isDarkMode = !_isDarkMode);
-                },
-                icon: Icon(
-                  _isDarkMode ? Icons.light_mode : Icons.dark_mode,
-                  color: Colors.white,
-                ),
-                tooltip: _isDarkMode ? '라이트 모드' : '다크 모드',
-              ),
-            ),
-          ),
-
           // Login Card
           Center(
             child: SingleChildScrollView(
@@ -316,11 +284,14 @@ class _StylishLoginScreenState extends ConsumerState<StylishLoginScreen>
                     borderRadius: BorderRadius.circular(24),
                     child: BackdropFilter(
                       filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                      child: Padding(
-                        padding: const EdgeInsets.all(40),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
+                      child: Stack(
+                        children: [
+                          // Main content
+                          Padding(
+                            padding: const EdgeInsets.all(40),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
                             // App Icon
                             Container(
                               width: 64,
@@ -572,8 +543,42 @@ class _StylishLoginScreenState extends ConsumerState<StylishLoginScreen>
                               textColor: Colors.black87,
                               onPressed: _signInWithKakao,
                             ),
-                          ],
-                        ),
+                              ],
+                            ),
+                          ),
+
+                          // Dark Mode Toggle Button (Inside Card - Top Right)
+                          Positioned(
+                            top: 16,
+                            right: 16,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.15),
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(
+                                  color: Colors.white.withOpacity(0.3),
+                                  width: 1,
+                                ),
+                              ),
+                              child: IconButton(
+                                iconSize: 20,
+                                padding: const EdgeInsets.all(8),
+                                constraints: const BoxConstraints(
+                                  minWidth: 36,
+                                  minHeight: 36,
+                                ),
+                                onPressed: () {
+                                  setState(() => _isDarkMode = !_isDarkMode);
+                                },
+                                icon: Icon(
+                                  _isDarkMode ? Icons.light_mode : Icons.dark_mode,
+                                  color: Colors.white,
+                                ),
+                                tooltip: _isDarkMode ? '라이트 모드' : '다크 모드',
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
