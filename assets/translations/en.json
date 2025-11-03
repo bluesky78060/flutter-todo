@@ -1,0 +1,22 @@
+{
+  "app_name": "Todo App",
+  "todos": "Todos",
+  "add_todo": "Add Todo",
+  "edit_todo": "Edit Todo",
+  "delete_todo": "Delete Todo",
+  "title": "Title",
+  "description": "Description",
+  "completed": "Completed",
+  "pending": "Pending",
+  "all": "All",
+  "save": "Save",
+  "cancel": "Cancel",
+  "delete": "Delete",
+  "confirm_delete": "Are you sure you want to delete this todo?",
+  "no_todos": "No todos yet",
+  "add_first_todo": "Add your first todo!",
+  "created_at": "Created",
+  "completed_at": "Completed",
+  "mark_complete": "Mark as complete",
+  "mark_incomplete": "Mark as incomplete"
+}

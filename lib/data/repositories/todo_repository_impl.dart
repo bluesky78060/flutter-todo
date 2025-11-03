@@ -1,0 +1,118 @@
+import 'package:drift/drift.dart' as drift;
+import 'package:fpdart/fpdart.dart';
+import 'package:todo_app/core/errors/failures.dart';
+import 'package:todo_app/data/datasources/local/app_database.dart';
+import 'package:todo_app/domain/entities/todo.dart' as entity;
+import 'package:todo_app/domain/repositories/todo_repository.dart';
+
+class TodoRepositoryImpl implements TodoRepository {
+  final AppDatabase database;
+
+  TodoRepositoryImpl(this.database);
+
+  @override
+  Future<Either<Failure, List<entity.Todo>>> getTodos() async {
+    try {
+      final todos = await database.getAllTodos();
+      return Right(_mapTodosToEntities(todos));
+    } catch (e) {
+      return Left(DatabaseFailure(e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, List<entity.Todo>>> getFilteredTodos(
+      String filter) async {
+    try {
+      final todos = await database.getFilteredTodos(filter);
+      return Right(_mapTodosToEntities(todos));
+    } catch (e) {
+      return Left(DatabaseFailure(e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, entity.Todo>> getTodoById(int id) async {
+    try {
+      final todo = await database.getTodoById(id);
+      if (todo == null) {
+        return Left(DatabaseFailure('Todo not found'));
+      }
+      return Right(_mapTodoToEntity(todo));
+    } catch (e) {
+      return Left(DatabaseFailure(e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, int>> createTodo(
+      String title, String description) async {
+    try {
+      final id = await database.insertTodo(
+        TodosCompanion(
+          title: drift.Value(title),
+          description: drift.Value(description),
+          isCompleted: const drift.Value(false),
+          createdAt: drift.Value(DateTime.now()),
+        ),
+      );
+      return Right(id);
+    } catch (e) {
+      return Left(DatabaseFailure(e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, Unit>> updateTodo(entity.Todo todo) async {
+    try {
+      final dbTodo = Todo(
+        id: todo.id,
+        title: todo.title,
+        description: todo.description,
+        isCompleted: todo.isCompleted,
+        createdAt: todo.createdAt,
+        completedAt: todo.completedAt,
+      );
+      await database.updateTodo(dbTodo);
+      return const Right(unit);
+    } catch (e) {
+      return Left(DatabaseFailure(e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, Unit>> deleteTodo(int id) async {
+    try {
+      await database.deleteTodo(id);
+      return const Right(unit);
+    } catch (e) {
+      return Left(DatabaseFailure(e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, Unit>> toggleCompletion(int id) async {
+    try {
+      await database.toggleTodoCompletion(id);
+      return const Right(unit);
+    } catch (e) {
+      return Left(DatabaseFailure(e.toString()));
+    }
+  }
+
+  // Mappers
+  List<entity.Todo> _mapTodosToEntities(List<Todo> todos) {
+    return todos.map(_mapTodoToEntity).toList();
+  }
+
+  entity.Todo _mapTodoToEntity(Todo todo) {
+    return entity.Todo(
+      id: todo.id,
+      title: todo.title,
+      description: todo.description,
+      isCompleted: todo.isCompleted,
+      createdAt: todo.createdAt,
+      completedAt: todo.completedAt,
+    );
+  }
+}

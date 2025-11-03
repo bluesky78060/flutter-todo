@@ -1,0 +1,18 @@
+# Build 파일 제외
+.dart_tool/
+.packages
+pubspec.lock
+
+# 환경 설정 파일
+.env
+.env.local
+.env.production
+
+# IDE 설정
+.idea/
+.vscode/
+*.iml
+
+# 기타
+.DS_Store
+*.log
