@@ -5,6 +5,7 @@ class Todo {
   final bool isCompleted;
   final DateTime createdAt;
   final DateTime? completedAt;
+  final DateTime? dueDate;
 
   const Todo({
     required this.id,
@@ -13,6 +14,7 @@ class Todo {
     required this.isCompleted,
     required this.createdAt,
     this.completedAt,
+    this.dueDate,
   });
 
   Todo copyWith({
@@ -22,6 +24,7 @@ class Todo {
     bool? isCompleted,
     DateTime? createdAt,
     DateTime? completedAt,
+    DateTime? dueDate,
   }) {
     return Todo(
       id: id ?? this.id,
@@ -30,6 +33,7 @@ class Todo {
       isCompleted: isCompleted ?? this.isCompleted,
       createdAt: createdAt ?? this.createdAt,
       completedAt: completedAt ?? this.completedAt,
+      dueDate: dueDate ?? this.dueDate,
     );
   }
 }

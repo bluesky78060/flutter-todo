@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:todo_app/core/theme/app_colors.dart';
 import 'package:todo_app/domain/entities/todo.dart';
 
@@ -43,6 +44,10 @@ class _CustomTodoItemState extends State<CustomTodoItem>
   void dispose() {
     _controller.dispose();
     super.dispose();
+  }
+
+  String _formatDueDate(DateTime date) {
+    return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')} ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
   }
 
   @override
@@ -133,6 +138,27 @@ class _CustomTodoItemState extends State<CustomTodoItem>
                               ),
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                          if (widget.todo.dueDate != null) ...[
+                            const SizedBox(height: 6),
+                            Row(
+                              children: [
+                                const Icon(
+                                  FluentIcons.calendar_clock_24_regular,
+                                  color: AppColors.primaryBlue,
+                                  size: 14,
+                                ),
+                                const SizedBox(width: 6),
+                                Text(
+                                  _formatDueDate(widget.todo.dueDate!),
+                                  style: const TextStyle(
+                                    color: AppColors.primaryBlue,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
                             ),
                           ],
                         ],

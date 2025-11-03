@@ -14,6 +14,7 @@ class TodoFormDialog extends ConsumerStatefulWidget {
 class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
+  DateTime? _selectedDueDate;
 
   @override
   void dispose() {
@@ -22,11 +23,68 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
     super.dispose();
   }
 
+  Future<void> _selectDate() async {
+    if (!mounted) return;
+
+    final DateTime? pickedDate = await showDatePicker(
+      context: context,
+      initialDate: _selectedDueDate ?? DateTime.now(),
+      firstDate: DateTime.now(),
+      lastDate: DateTime.now().add(const Duration(days: 365)),
+      builder: (context, child) {
+        return Theme(
+          data: ThemeData.dark().copyWith(
+            colorScheme: const ColorScheme.dark(
+              primary: AppColors.primaryBlue,
+              surface: AppColors.darkCard,
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+
+    if (pickedDate != null && mounted) {
+      final TimeOfDay? pickedTime = await showTimePicker(
+        context: context,
+        initialTime: TimeOfDay.fromDateTime(_selectedDueDate ?? DateTime.now()),
+        builder: (context, child) {
+          return Theme(
+            data: ThemeData.dark().copyWith(
+              colorScheme: const ColorScheme.dark(
+                primary: AppColors.primaryBlue,
+                surface: AppColors.darkCard,
+              ),
+            ),
+            child: child!,
+          );
+        },
+      );
+
+      if (pickedTime != null && mounted) {
+        setState(() {
+          _selectedDueDate = DateTime(
+            pickedDate.year,
+            pickedDate.month,
+            pickedDate.day,
+            pickedTime.hour,
+            pickedTime.minute,
+          );
+        });
+      }
+    }
+  }
+
+  String _formatDueDate(DateTime date) {
+    return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')} ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
+  }
+
   Future<void> _save() async {
     if (_titleController.text.isEmpty) return;
     await ref.read(todoActionsProvider).createTodo(
           _titleController.text,
           _descriptionController.text,
+          _selectedDueDate,
         );
     if (mounted) Navigator.of(context).pop();
   }
@@ -147,6 +205,74 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
                         horizontal: 16,
                         vertical: 14,
                       ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+
+            // Due Date Picker
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  '마감일 (선택)',
+                  style: TextStyle(
+                    color: AppColors.textGray,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                InkWell(
+                  onTap: _selectDate,
+                  borderRadius: BorderRadius.circular(12),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 14,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.darkInput,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(
+                          FluentIcons.calendar_24_regular,
+                          color: AppColors.textGray,
+                          size: 20,
+                        ),
+                        const SizedBox(width: 12),
+                        Text(
+                          _selectedDueDate != null
+                              ? _formatDueDate(_selectedDueDate!)
+                              : '마감일을 선택하세요',
+                          style: TextStyle(
+                            color: _selectedDueDate != null
+                                ? AppColors.textWhite
+                                : AppColors.textGray,
+                            fontSize: 16,
+                          ),
+                        ),
+                        const Spacer(),
+                        if (_selectedDueDate != null)
+                          IconButton(
+                            onPressed: () {
+                              setState(() {
+                                _selectedDueDate = null;
+                              });
+                            },
+                            icon: const Icon(
+                              FluentIcons.dismiss_24_regular,
+                              color: AppColors.textGray,
+                              size: 18,
+                            ),
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(),
+                          ),
+                      ],
                     ),
                   ),
                 ),

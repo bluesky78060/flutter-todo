@@ -38,11 +38,12 @@ class SupabaseTodoDataSource {
   }
 
   // Create new todo
-  Future<void> createTodo(String title, String description) async {
+  Future<void> createTodo(String title, String description, DateTime? dueDate) async {
     await client.from('todos').insert({
       'title': title,
       'description': description,
       'user_id': client.auth.currentUser!.id,
+      'due_date': dueDate?.toIso8601String(),
     });
   }
 
@@ -53,6 +54,7 @@ class SupabaseTodoDataSource {
       'description': todo.description,
       'is_completed': todo.isCompleted,
       'completed_at': todo.completedAt?.toIso8601String(),
+      'due_date': todo.dueDate?.toIso8601String(),
     }).eq('id', todo.id);
   }
 
@@ -82,6 +84,9 @@ class SupabaseTodoDataSource {
       createdAt: DateTime.parse(json['created_at'] as String),
       completedAt: json['completed_at'] != null
           ? DateTime.parse(json['completed_at'] as String)
+          : null,
+      dueDate: json['due_date'] != null
+          ? DateTime.parse(json['due_date'] as String)
           : null,
     );
   }

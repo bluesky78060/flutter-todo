@@ -51,9 +51,9 @@ class TodoActions {
   final Ref ref;
   TodoActions(this.ref);
 
-  Future<void> createTodo(String title, String description) async {
+  Future<void> createTodo(String title, String description, DateTime? dueDate) async {
     final repository = ref.read(todoRepositoryProvider);
-    final result = await repository.createTodo(title, description);
+    final result = await repository.createTodo(title, description, dueDate);
     result.fold(
       (failure) => throw Exception(failure),
       (_) => ref.invalidate(todosProvider),

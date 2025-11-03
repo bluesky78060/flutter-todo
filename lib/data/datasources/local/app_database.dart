@@ -11,6 +11,7 @@ class Todos extends Table {
   BoolColumn get isCompleted => boolean().withDefault(const Constant(false))();
   DateTimeColumn get createdAt => dateTime()();
   DateTimeColumn get completedAt => dateTime().nullable()();
+  DateTimeColumn get dueDate => dateTime().nullable()();
 }
 
 // Users Table (for Auth)

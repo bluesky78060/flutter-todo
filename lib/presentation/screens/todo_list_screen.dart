@@ -30,7 +30,7 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> {
     final text = _inputController.text.trim();
     if (text.isEmpty) return;
 
-    ref.read(todoActionsProvider).createTodo(text, '');
+    ref.read(todoActionsProvider).createTodo(text, '', null);
     _inputController.clear();
   }
 
