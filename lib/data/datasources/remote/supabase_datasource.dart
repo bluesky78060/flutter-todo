@@ -106,7 +106,7 @@ class SupabaseAuthDataSource {
       id: 0, // Supabase uses UUID, but keeping int for compatibility
       email: user.email ?? '',
       name: user.userMetadata?['name'] as String? ?? user.email ?? '',
-      createdAt: user.createdAt != null ? DateTime.parse(user.createdAt!) : null,
+      createdAt: user.createdAt.isNotEmpty ? DateTime.parse(user.createdAt) : null,
     );
   }
 
@@ -147,7 +147,7 @@ class SupabaseAuthDataSource {
         id: 0,
         email: user.email ?? '',
         name: user.userMetadata?['name'] as String? ?? user.email ?? '',
-        createdAt: user.createdAt != null ? DateTime.parse(user.createdAt!) : null,
+        createdAt: user.createdAt.isNotEmpty ? DateTime.parse(user.createdAt) : null,
       );
     });
   }
