@@ -18,6 +18,7 @@ class _StylishLoginScreenState extends ConsumerState<StylishLoginScreen>
   bool _isLoading = false;
   bool _isSignUpMode = false;
   bool _rememberMe = false;
+  bool _isDarkMode = false;
   late AnimationController _animationController;
 
   @override
@@ -184,21 +185,32 @@ class _StylishLoginScreenState extends ConsumerState<StylishLoginScreen>
 
   @override
   Widget build(BuildContext context) {
+    // Color schemes
+    final lightGradient = [
+      const Color(0xFF6366F1), // Indigo
+      const Color(0xFF9333EA), // Purple
+      const Color(0xFFEC4899), // Pink
+    ];
+
+    final darkGradient = [
+      const Color(0xFF1E293B), // Slate 800
+      const Color(0xFF0F172A), // Slate 900
+      const Color(0xFF020617), // Slate 950
+    ];
+
+    final currentGradient = _isDarkMode ? darkGradient : lightGradient;
+
     return Scaffold(
       body: Stack(
         children: [
           // Animated Gradient Background
           AnimatedContainer(
             duration: const Duration(milliseconds: 500),
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
-                colors: [
-                  Color(0xFF6366F1), // Indigo
-                  Color(0xFF9333EA), // Purple
-                  Color(0xFFEC4899), // Pink
-                ],
+                colors: currentGradient,
               ),
             ),
           ),
@@ -207,10 +219,14 @@ class _StylishLoginScreenState extends ConsumerState<StylishLoginScreen>
           AnimatedBuilder(
             animation: _animationController,
             builder: (context, child) {
+              final orbOpacity = _isDarkMode ? 0.2 : 0.3;
               return Stack(
                 children: [
                   _buildFloatingOrb(
-                    color: Colors.purple.withOpacity(0.3),
+                    color: (_isDarkMode
+                        ? const Color(0xFF475569) // Slate 600
+                        : Colors.purple
+                    ).withOpacity(orbOpacity),
                     offset: Offset(
                       100 * math.sin(_animationController.value * 2 * math.pi),
                       -100 * math.cos(_animationController.value * 2 * math.pi),
@@ -219,7 +235,10 @@ class _StylishLoginScreenState extends ConsumerState<StylishLoginScreen>
                     left: 80,
                   ),
                   _buildFloatingOrb(
-                    color: Colors.pink.withOpacity(0.3),
+                    color: (_isDarkMode
+                        ? const Color(0xFF334155) // Slate 700
+                        : Colors.pink
+                    ).withOpacity(orbOpacity),
                     offset: Offset(
                       -100 * math.sin(_animationController.value * 2 * math.pi * 0.75),
                       100 * math.cos(_animationController.value * 2 * math.pi * 0.75),
@@ -228,7 +247,10 @@ class _StylishLoginScreenState extends ConsumerState<StylishLoginScreen>
                     right: 80,
                   ),
                   _buildFloatingOrb(
-                    color: Colors.blue.withOpacity(0.3),
+                    color: (_isDarkMode
+                        ? const Color(0xFF1E293B) // Slate 800
+                        : Colors.blue
+                    ).withOpacity(orbOpacity),
                     offset: Offset(
                       200 * math.sin(_animationController.value * 2 * math.pi * 0.9),
                       200 * math.cos(_animationController.value * 2 * math.pi * 0.9),
@@ -239,6 +261,38 @@ class _StylishLoginScreenState extends ConsumerState<StylishLoginScreen>
                 ],
               );
             },
+          ),
+
+          // Dark Mode Toggle Button (Top Right)
+          Positioned(
+            top: 40,
+            right: 40,
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: Colors.white.withOpacity(0.2),
+                  width: 1,
+                ),
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                  child: IconButton(
+                    onPressed: () {
+                      setState(() => _isDarkMode = !_isDarkMode);
+                    },
+                    icon: Icon(
+                      _isDarkMode ? Icons.light_mode : Icons.dark_mode,
+                      color: Colors.white,
+                    ),
+                    tooltip: _isDarkMode ? '라이트 모드' : '다크 모드',
+                  ),
+                ),
+              ),
+            ),
           ),
 
           // Login Card
