@@ -154,7 +154,7 @@ class _StylishLoginScreenState extends ConsumerState<StylishLoginScreen>
     try {
       await Supabase.instance.client.auth.resetPasswordForEmail(
         _emailController.text.trim(),
-        redirectTo: 'https://fascinating-peony-8bbb51.netlify.app/reset-password',
+        redirectTo: 'https://bluesky78060.github.io/flutter-todo/',
       );
 
       if (mounted) {
