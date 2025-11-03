@@ -17,6 +17,7 @@ class _StylishLoginScreenState extends ConsumerState<StylishLoginScreen>
   final _passwordController = TextEditingController();
   bool _isLoading = false;
   bool _isSignUpMode = false;
+  bool _rememberMe = false;
   late AnimationController _animationController;
 
   @override
@@ -136,6 +137,37 @@ class _StylishLoginScreenState extends ConsumerState<StylishLoginScreen>
     } catch (e) {
       if (mounted) {
         _showSnackBar('Kakao 로그인 실패: ${e.toString()}');
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
+  Future<void> _resetPassword() async {
+    if (_emailController.text.isEmpty) {
+      _showSnackBar('비밀번호 재설정을 위해 이메일을 입력해주세요');
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    try {
+      await Supabase.instance.client.auth.resetPasswordForEmail(
+        _emailController.text.trim(),
+        redirectTo: 'https://fascinating-peony-8bbb51.netlify.app/reset-password',
+      );
+
+      if (mounted) {
+        _showSnackBar(
+          '비밀번호 재설정 링크를 이메일로 보냈습니다',
+          isSuccess: true,
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        _showSnackBar('비밀번호 재설정 실패: ${e.toString()}');
+      }
+    } finally {
+      if (mounted) {
         setState(() => _isLoading = false);
       }
     }
@@ -298,7 +330,76 @@ class _StylishLoginScreenState extends ConsumerState<StylishLoginScreen>
                                   ? _signUpWithEmail()
                                   : _signInWithEmail(),
                             ),
-                            const SizedBox(height: 24),
+                            const SizedBox(height: 16),
+
+                            // Remember Me & Forgot Password (only show in login mode)
+                            if (!_isSignUpMode)
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  // Remember Me Checkbox
+                                  Row(
+                                    children: [
+                                      SizedBox(
+                                        width: 24,
+                                        height: 24,
+                                        child: Checkbox(
+                                          value: _rememberMe,
+                                          onChanged: _isLoading
+                                              ? null
+                                              : (value) {
+                                                  setState(() => _rememberMe = value ?? false);
+                                                },
+                                          fillColor: WidgetStateProperty.resolveWith<Color>(
+                                            (states) {
+                                              if (states.contains(WidgetState.disabled)) {
+                                                return Colors.white.withOpacity(0.3);
+                                              }
+                                              return states.contains(WidgetState.selected)
+                                                  ? const Color(0xFF3B82F6)
+                                                  : Colors.white.withOpacity(0.3);
+                                            },
+                                          ),
+                                          checkColor: Colors.white,
+                                          side: BorderSide(
+                                            color: Colors.white.withOpacity(0.5),
+                                            width: 1.5,
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        '로그인 유지',
+                                        style: TextStyle(
+                                          color: Colors.white.withOpacity(0.8),
+                                          fontSize: 14,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+
+                                  // Forgot Password Link
+                                  TextButton(
+                                    onPressed: _isLoading ? null : _resetPassword,
+                                    style: TextButton.styleFrom(
+                                      padding: EdgeInsets.zero,
+                                      minimumSize: const Size(0, 0),
+                                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                    ),
+                                    child: Text(
+                                      '비밀번호 찾기',
+                                      style: TextStyle(
+                                        color: Colors.white.withOpacity(0.8),
+                                        fontSize: 14,
+                                        decoration: TextDecoration.underline,
+                                        decorationColor: Colors.white.withOpacity(0.8),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+
+                            SizedBox(height: _isSignUpMode ? 24 : 16),
 
                             // Login/SignUp Button
                             SizedBox(
