@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:todo_app/core/constants/app_constants.dart';
 import 'package:todo_app/presentation/providers/auth_providers.dart';
-import 'package:todo_app/presentation/screens/login_screen.dart';
+import 'package:todo_app/presentation/screens/stylish_login_screen.dart';
 import 'package:todo_app/presentation/screens/register_screen.dart';
 import 'package:todo_app/presentation/screens/todo_detail_screen.dart';
 import 'package:todo_app/presentation/screens/todo_list_screen.dart';
@@ -32,7 +32,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppConstants.loginRoute,
         name: 'login',
-        builder: (context, state) => const LoginScreen(),
+        builder: (context, state) => const StylishLoginScreen(),
       ),
       GoRoute(
         path: AppConstants.registerRoute,
