@@ -6,6 +6,7 @@ import 'package:todo_app/core/theme/app_colors.dart';
 import 'package:todo_app/presentation/providers/auth_providers.dart';
 import 'package:todo_app/presentation/providers/todo_providers.dart';
 import 'package:todo_app/presentation/screens/settings_screen.dart';
+import 'package:todo_app/presentation/screens/statistics_screen.dart';
 import 'package:todo_app/presentation/widgets/custom_todo_item.dart';
 import 'package:todo_app/presentation/widgets/progress_card.dart';
 import 'package:todo_app/presentation/widgets/todo_form_dialog.dart';
@@ -325,7 +326,14 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> {
                             icon: FluentIcons.data_histogram_24_regular,
                             label: '통계',
                             isActive: false,
-                            onTap: () {},
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const StatisticsScreen(),
+                                ),
+                              );
+                            },
                           ),
                         ),
                         Expanded(
