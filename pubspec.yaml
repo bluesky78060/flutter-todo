@@ -47,6 +47,9 @@ dependencies:
   # Supabase
   supabase_flutter: ^2.3.0
 
+  # Social Login
+  google_sign_in: ^6.2.1
+
   # Internationalization
   easy_localization: ^3.0.5
 
