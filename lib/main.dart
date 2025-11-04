@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:todo_app/core/config/supabase_config.dart';
 import 'package:todo_app/core/router/app_router.dart';
+import 'package:todo_app/core/services/notification_service.dart';
 import 'package:todo_app/core/theme/app_colors.dart';
 import 'package:todo_app/presentation/providers/database_provider.dart';
 import 'package:todo_app/presentation/providers/theme_provider.dart';
@@ -18,6 +19,11 @@ void main() async {
     url: SupabaseConfig.url,
     anonKey: SupabaseConfig.anonKey,
   );
+
+  // Initialize Notification Service
+  final notificationService = NotificationService();
+  await notificationService.initialize();
+  await notificationService.requestPermissions();
 
   final prefs = await SharedPreferences.getInstance();
 
