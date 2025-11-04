@@ -1,15 +1,22 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:todo_app/data/datasources/local/app_database.dart';
 import 'package:todo_app/data/datasources/remote/supabase_datasource.dart';
 import 'package:todo_app/data/repositories/supabase_auth_repository.dart';
 import 'package:todo_app/data/repositories/supabase_todo_repository.dart';
+import 'package:todo_app/data/repositories/todo_repository_impl.dart';
 import 'package:todo_app/domain/repositories/auth_repository.dart';
 import 'package:todo_app/domain/repositories/todo_repository.dart';
 
 // Supabase Client Provider
 final supabaseClientProvider = Provider<SupabaseClient>((ref) {
   return Supabase.instance.client;
+});
+
+// Local Database Provider
+final localDatabaseProvider = Provider<AppDatabase>((ref) {
+  return AppDatabase();
 });
 
 // SharedPreferences Provider
@@ -29,9 +36,10 @@ final supabaseAuthDataSourceProvider = Provider<SupabaseAuthDataSource>((ref) {
 });
 
 // Repository Providers
+// Use local database for mobile (notifications work better with real IDs)
 final todoRepositoryProvider = Provider<TodoRepository>((ref) {
-  final dataSource = ref.watch(supabaseTodoDataSourceProvider);
-  return SupabaseTodoRepository(dataSource);
+  final database = ref.watch(localDatabaseProvider);
+  return TodoRepositoryImpl(database);
 });
 
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
