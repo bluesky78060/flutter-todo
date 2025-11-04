@@ -46,7 +46,7 @@ class TodoRepositoryImpl implements TodoRepository {
 
   @override
   Future<Either<Failure, int>> createTodo(
-      String title, String description, DateTime? dueDate) async {
+      String title, String description, DateTime? dueDate, {DateTime? notificationTime}) async {
     try {
       final id = await database.insertTodo(
         TodosCompanion(
@@ -55,6 +55,7 @@ class TodoRepositoryImpl implements TodoRepository {
           isCompleted: const drift.Value(false),
           createdAt: drift.Value(DateTime.now()),
           dueDate: drift.Value(dueDate),
+          notificationTime: drift.Value(notificationTime),
         ),
       );
       return Right(id);
@@ -74,6 +75,7 @@ class TodoRepositoryImpl implements TodoRepository {
         createdAt: todo.createdAt,
         completedAt: todo.completedAt,
         dueDate: todo.dueDate,
+        notificationTime: todo.notificationTime,
       );
       await database.updateTodo(dbTodo);
       return const Right(unit);
@@ -116,6 +118,7 @@ class TodoRepositoryImpl implements TodoRepository {
       createdAt: todo.createdAt,
       completedAt: todo.completedAt,
       dueDate: todo.dueDate,
+      notificationTime: todo.notificationTime,
     );
   }
 }

@@ -6,6 +6,7 @@ class Todo {
   final DateTime createdAt;
   final DateTime? completedAt;
   final DateTime? dueDate;
+  final DateTime? notificationTime;
 
   const Todo({
     required this.id,
@@ -15,6 +16,7 @@ class Todo {
     required this.createdAt,
     this.completedAt,
     this.dueDate,
+    this.notificationTime,
   });
 
   Todo copyWith({
@@ -25,6 +27,7 @@ class Todo {
     DateTime? createdAt,
     DateTime? completedAt,
     DateTime? dueDate,
+    DateTime? notificationTime,
   }) {
     return Todo(
       id: id ?? this.id,
@@ -34,6 +37,7 @@ class Todo {
       createdAt: createdAt ?? this.createdAt,
       completedAt: completedAt ?? this.completedAt,
       dueDate: dueDate ?? this.dueDate,
+      notificationTime: notificationTime ?? this.notificationTime,
     );
   }
 }

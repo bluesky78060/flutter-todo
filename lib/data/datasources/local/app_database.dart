@@ -12,6 +12,7 @@ class Todos extends Table {
   DateTimeColumn get createdAt => dateTime()();
   DateTimeColumn get completedAt => dateTime().nullable()();
   DateTimeColumn get dueDate => dateTime().nullable()();
+  DateTimeColumn get notificationTime => dateTime().nullable()();
 }
 
 // Users Table (for Auth)
@@ -28,7 +29,19 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
+
+  @override
+  MigrationStrategy get migration {
+    return MigrationStrategy(
+      onUpgrade: (migrator, from, to) async {
+        if (from < 2) {
+          // Add notificationTime column to existing todos table
+          await migrator.addColumn(todos, todos.notificationTime);
+        }
+      },
+    );
+  }
 
   // Get all todos
   Future<List<Todo>> getAllTodos() => select(todos).get();
