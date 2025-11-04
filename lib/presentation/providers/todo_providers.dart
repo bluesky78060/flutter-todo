@@ -74,13 +74,25 @@ class TodoActions {
       (todoId) async {
         // Schedule notification if notificationTime is set
         if (notificationTime != null) {
-          final notificationService = ref.read(notificationServiceProvider);
-          await notificationService.scheduleNotification(
-            id: todoId,
-            title: '할일 알림',
-            body: title,
-            scheduledDate: notificationTime,
-          );
+          try {
+            final notificationService = ref.read(notificationServiceProvider);
+            print('📅 TodoActions: Scheduling notification for todo $todoId');
+            print('   Title: $title');
+            print('   Time: $notificationTime');
+
+            await notificationService.scheduleNotification(
+              id: todoId,
+              title: '할일 알림',
+              body: title,
+              scheduledDate: notificationTime,
+            );
+
+            print('✅ TodoActions: Notification scheduled successfully');
+          } catch (e, stackTrace) {
+            print('❌ TodoActions: Failed to schedule notification: $e');
+            print('   Stack trace: $stackTrace');
+            // Don't throw - allow todo creation to succeed even if notification fails
+          }
         }
         ref.invalidate(todosProvider);
       },

@@ -22,8 +22,20 @@ void main() async {
 
   // Initialize Notification Service
   final notificationService = NotificationService();
-  await notificationService.initialize();
-  await notificationService.requestPermissions();
+  try {
+    await notificationService.initialize();
+    print('✅ Main: Notification service initialized successfully');
+
+    final permissionGranted = await notificationService.requestPermissions();
+    print('📱 Main: Notification permissions granted: $permissionGranted');
+
+    if (!permissionGranted) {
+      print('⚠️ Main: Notification permissions were not granted');
+    }
+  } catch (e, stackTrace) {
+    print('❌ Main: Failed to initialize notification service: $e');
+    print('   Stack trace: $stackTrace');
+  }
 
   final prefs = await SharedPreferences.getInstance();
 
