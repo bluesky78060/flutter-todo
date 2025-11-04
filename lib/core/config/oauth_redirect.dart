@@ -10,7 +10,12 @@ String oauthRedirectUrl() {
     final base = Uri.base.removeFragment();
     final origin = '${base.scheme}://${base.authority}';
     final path = base.path.endsWith('/') ? base.path : '${base.path}/';
-    return '$origin$path';
+    final redirectUrl = '$origin$path';
+
+    // Debug: Print redirect URL to console
+    print('🔗 OAuth Redirect URL: $redirectUrl');
+
+    return redirectUrl;
   }
   // For non-web (iOS/Android/desktop), you generally need a deep link or custom scheme.
   // Keep this as a placeholder; configure platform-specific redirect if you add native OAuth.
