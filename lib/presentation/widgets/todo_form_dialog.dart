@@ -135,13 +135,26 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
 
   Future<void> _save() async {
     if (_titleController.text.isEmpty) return;
-    await ref.read(todoActionsProvider).createTodo(
-          _titleController.text,
-          _descriptionController.text,
-          _selectedDueDate,
-          notificationTime: _selectedNotificationTime,
+
+    try {
+      await ref.read(todoActionsProvider).createTodo(
+            _titleController.text,
+            _descriptionController.text,
+            _selectedDueDate,
+            notificationTime: _selectedNotificationTime,
+          );
+      if (mounted) Navigator.of(context).pop();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('오류: $e'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 5),
+          ),
         );
-    if (mounted) Navigator.of(context).pop();
+      }
+    }
   }
 
   @override
