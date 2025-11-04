@@ -153,11 +153,12 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
       ),
       child: Container(
         padding: const EdgeInsets.all(24),
-        constraints: const BoxConstraints(maxWidth: 400),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+        constraints: const BoxConstraints(maxWidth: 400, maxHeight: MediaQuery.of(context).size.height * 0.9),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
             // Header
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -467,6 +468,7 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
               ],
             ),
           ],
+          ),
         ),
       ),
     );
