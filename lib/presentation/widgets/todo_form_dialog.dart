@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
@@ -332,10 +333,12 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
                 ),
               ],
             ),
-            const SizedBox(height: 20),
+            // Only show notification picker on mobile (not web)
+            if (!kIsWeb) ...[
+              const SizedBox(height: 20),
 
-            // Notification Time Picker
-            Column(
+              // Notification Time Picker
+              Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
@@ -400,6 +403,7 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
                 ),
               ],
             ),
+            ],
             const SizedBox(height: 32),
 
             // Action Buttons

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -36,10 +37,18 @@ final supabaseAuthDataSourceProvider = Provider<SupabaseAuthDataSource>((ref) {
 });
 
 // Repository Providers
-// Use local database for mobile (notifications work better with real IDs)
+// Web: Use Supabase for cross-browser sync
+// Mobile: Use local database (notifications work better with real IDs)
 final todoRepositoryProvider = Provider<TodoRepository>((ref) {
-  final database = ref.watch(localDatabaseProvider);
-  return TodoRepositoryImpl(database);
+  if (kIsWeb) {
+    // Web uses Supabase for data sync across browsers
+    final dataSource = ref.watch(supabaseTodoDataSourceProvider);
+    return SupabaseTodoRepository(dataSource);
+  } else {
+    // Mobile uses local database for offline support and proper notification IDs
+    final database = ref.watch(localDatabaseProvider);
+    return TodoRepositoryImpl(database);
+  }
 });
 
 final authRepositoryProvider = Provider<AuthRepository>((ref) {

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:todo_app/core/services/notification_service.dart';
 import 'package:todo_app/domain/entities/todo.dart';
@@ -72,8 +73,8 @@ class TodoActions {
     await result.fold(
       (failure) => throw Exception(failure),
       (todoId) async {
-        // Schedule notification if notificationTime is set
-        if (notificationTime != null) {
+        // Schedule notification if notificationTime is set (mobile only)
+        if (!kIsWeb && notificationTime != null) {
           try {
             final notificationService = ref.read(notificationServiceProvider);
             print('📅 TodoActions: Scheduling notification for todo $todoId');
