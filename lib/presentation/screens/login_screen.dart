@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:todo_app/core/config/oauth_redirect.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -29,7 +30,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       // Supabase OAuth 플로우 사용 (웹에서 작동)
       final response = await Supabase.instance.client.auth.signInWithOAuth(
         OAuthProvider.google,
-        redirectTo: 'https://fascinating-peony-8bbb51.netlify.app',
+        redirectTo: oauthRedirectUrl(),
       );
 
       if (!response) {
@@ -54,7 +55,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       // Kakao OAuth는 Supabase에서 제공하는 OAuth 플로우 사용
       final response = await Supabase.instance.client.auth.signInWithOAuth(
         OAuthProvider.kakao,
-        redirectTo: 'https://fascinating-peony-8bbb51.netlify.app',
+        redirectTo: oauthRedirectUrl(),
       );
 
       if (!response) {

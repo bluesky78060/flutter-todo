@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:todo_app/core/config/oauth_redirect.dart';
 
 class StylishLoginScreen extends ConsumerStatefulWidget {
   const StylishLoginScreen({super.key});
@@ -109,7 +110,7 @@ class _StylishLoginScreenState extends ConsumerState<StylishLoginScreen>
     try {
       final response = await Supabase.instance.client.auth.signInWithOAuth(
         OAuthProvider.google,
-        redirectTo: 'https://fascinating-peony-8bbb51.netlify.app',
+        redirectTo: oauthRedirectUrl(),
       );
 
       if (!response) {
@@ -129,7 +130,7 @@ class _StylishLoginScreenState extends ConsumerState<StylishLoginScreen>
     try {
       final response = await Supabase.instance.client.auth.signInWithOAuth(
         OAuthProvider.kakao,
-        redirectTo: 'https://fascinating-peony-8bbb51.netlify.app',
+        redirectTo: oauthRedirectUrl(),
       );
 
       if (!response) {
@@ -154,7 +155,7 @@ class _StylishLoginScreenState extends ConsumerState<StylishLoginScreen>
     try {
       await Supabase.instance.client.auth.resetPasswordForEmail(
         _emailController.text.trim(),
-        redirectTo: 'https://bluesky78060.github.io/flutter-todo/',
+        redirectTo: oauthRedirectUrl(),
       );
 
       if (mounted) {
