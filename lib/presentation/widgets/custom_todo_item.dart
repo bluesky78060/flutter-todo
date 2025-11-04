@@ -161,6 +161,27 @@ class _CustomTodoItemState extends State<CustomTodoItem>
                               ],
                             ),
                           ],
+                          if (widget.todo.notificationTime != null) ...[
+                            const SizedBox(height: 6),
+                            Row(
+                              children: [
+                                const Icon(
+                                  FluentIcons.alert_24_regular,
+                                  color: AppColors.accentOrange,
+                                  size: 14,
+                                ),
+                                const SizedBox(width: 6),
+                                Text(
+                                  '알림: ${_formatDueDate(widget.todo.notificationTime!)}',
+                                  style: const TextStyle(
+                                    color: AppColors.accentOrange,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
                         ],
                       ),
                     ),

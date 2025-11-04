@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:todo_app/core/services/notification_service.dart';
 import 'package:todo_app/domain/entities/todo.dart';
 import 'package:todo_app/presentation/providers/database_provider.dart';
 
@@ -46,17 +47,43 @@ final todoDetailProvider =
   );
 });
 
+// Notification Service Provider
+final notificationServiceProvider = Provider((ref) => NotificationService());
+
 // Todo actions
 class TodoActions {
   final Ref ref;
   TodoActions(this.ref);
 
-  Future<void> createTodo(String title, String description, DateTime? dueDate) async {
+  Future<void> createTodo(
+    String title,
+    String description,
+    DateTime? dueDate, {
+    DateTime? notificationTime,
+  }) async {
     final repository = ref.read(todoRepositoryProvider);
-    final result = await repository.createTodo(title, description, dueDate);
-    result.fold(
+    final result = await repository.createTodo(
+      title,
+      description,
+      dueDate,
+      notificationTime: notificationTime,
+    );
+
+    await result.fold(
       (failure) => throw Exception(failure),
-      (_) => ref.invalidate(todosProvider),
+      (todoId) async {
+        // Schedule notification if notificationTime is set
+        if (notificationTime != null) {
+          final notificationService = ref.read(notificationServiceProvider);
+          await notificationService.scheduleNotification(
+            id: todoId,
+            title: '할일 알림',
+            body: title,
+            scheduledDate: notificationTime,
+          );
+        }
+        ref.invalidate(todosProvider);
+      },
     );
   }
 
@@ -74,6 +101,11 @@ class TodoActions {
 
   Future<void> deleteTodo(int id) async {
     final repository = ref.read(todoRepositoryProvider);
+    final notificationService = ref.read(notificationServiceProvider);
+
+    // Cancel notification before deleting todo
+    await notificationService.cancelNotification(id);
+
     final result = await repository.deleteTodo(id);
     result.fold(
       (failure) => throw Exception(failure),

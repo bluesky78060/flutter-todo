@@ -40,7 +40,12 @@ class SupabaseTodoRepository implements TodoRepository {
   }
 
   @override
-  Future<Either<Failure, int>> createTodo(String title, String description, DateTime? dueDate) async {
+  Future<Either<Failure, int>> createTodo(
+    String title,
+    String description,
+    DateTime? dueDate, {
+    DateTime? notificationTime,
+  }) async {
     try {
       await dataSource.createTodo(title, description, dueDate);
       return const Right(0); // Return dummy ID since Supabase handles ID generation

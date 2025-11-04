@@ -15,6 +15,7 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
   DateTime? _selectedDueDate;
+  DateTime? _selectedNotificationTime;
 
   @override
   void dispose() {
@@ -79,12 +80,65 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
     return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')} ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
   }
 
+  Future<void> _selectNotificationTime() async {
+    if (!mounted) return;
+
+    final DateTime? pickedDate = await showDatePicker(
+      context: context,
+      initialDate: _selectedNotificationTime ?? DateTime.now(),
+      firstDate: DateTime.now(),
+      lastDate: DateTime.now().add(const Duration(days: 365)),
+      builder: (context, child) {
+        return Theme(
+          data: ThemeData.dark().copyWith(
+            colorScheme: const ColorScheme.dark(
+              primary: AppColors.primaryBlue,
+              surface: AppColors.darkCard,
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+
+    if (pickedDate != null && mounted) {
+      final TimeOfDay? pickedTime = await showTimePicker(
+        context: context,
+        initialTime: TimeOfDay.fromDateTime(_selectedNotificationTime ?? DateTime.now()),
+        builder: (context, child) {
+          return Theme(
+            data: ThemeData.dark().copyWith(
+              colorScheme: const ColorScheme.dark(
+                primary: AppColors.primaryBlue,
+                surface: AppColors.darkCard,
+              ),
+            ),
+            child: child!,
+          );
+        },
+      );
+
+      if (pickedTime != null && mounted) {
+        setState(() {
+          _selectedNotificationTime = DateTime(
+            pickedDate.year,
+            pickedDate.month,
+            pickedDate.day,
+            pickedTime.hour,
+            pickedTime.minute,
+          );
+        });
+      }
+    }
+  }
+
   Future<void> _save() async {
     if (_titleController.text.isEmpty) return;
     await ref.read(todoActionsProvider).createTodo(
           _titleController.text,
           _descriptionController.text,
           _selectedDueDate,
+          notificationTime: _selectedNotificationTime,
         );
     if (mounted) Navigator.of(context).pop();
   }
@@ -262,6 +316,74 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
                             onPressed: () {
                               setState(() {
                                 _selectedDueDate = null;
+                              });
+                            },
+                            icon: const Icon(
+                              FluentIcons.dismiss_24_regular,
+                              color: AppColors.textGray,
+                              size: 18,
+                            ),
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(),
+                          ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+
+            // Notification Time Picker
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  '알림 시간 (선택)',
+                  style: TextStyle(
+                    color: AppColors.textGray,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                InkWell(
+                  onTap: _selectNotificationTime,
+                  borderRadius: BorderRadius.circular(12),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 14,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.darkInput,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(
+                          FluentIcons.alert_24_regular,
+                          color: AppColors.textGray,
+                          size: 20,
+                        ),
+                        const SizedBox(width: 12),
+                        Text(
+                          _selectedNotificationTime != null
+                              ? _formatDueDate(_selectedNotificationTime!)
+                              : '알림 시간을 선택하세요',
+                          style: TextStyle(
+                            color: _selectedNotificationTime != null
+                                ? AppColors.textWhite
+                                : AppColors.textGray,
+                            fontSize: 16,
+                          ),
+                        ),
+                        const Spacer(),
+                        if (_selectedNotificationTime != null)
+                          IconButton(
+                            onPressed: () {
+                              setState(() {
+                                _selectedNotificationTime = null;
                               });
                             },
                             icon: const Icon(
