@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:todo_app/core/theme/app_colors.dart';
@@ -185,13 +186,13 @@ class _CustomTodoItemState extends State<CustomTodoItem>
                         ],
                       ),
                     ),
-                    // Delete Button (visible on hover)
+                    // Delete Button (always visible on mobile, hover on web)
                     AnimatedOpacity(
                       duration: const Duration(milliseconds: 200),
-                      opacity: _isHovered ? 1.0 : 0.0,
+                      opacity: kIsWeb ? (_isHovered ? 1.0 : 0.0) : 1.0,
                       child: AnimatedSlide(
                         duration: const Duration(milliseconds: 200),
-                        offset: _isHovered ? Offset.zero : const Offset(0.5, 0),
+                        offset: kIsWeb ? (_isHovered ? Offset.zero : const Offset(0.5, 0)) : Offset.zero,
                         child: IconButton(
                           icon: const Icon(
                             Icons.delete_outline,
