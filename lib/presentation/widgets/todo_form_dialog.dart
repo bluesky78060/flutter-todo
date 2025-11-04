@@ -333,12 +333,10 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
                 ),
               ],
             ),
-            // Only show notification picker on mobile (not web)
-            if (!kIsWeb) ...[
-              const SizedBox(height: 20),
+            const SizedBox(height: 20),
 
-              // Notification Time Picker
-              Column(
+            // Notification Time Picker
+            Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
@@ -403,7 +401,6 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
                 ),
               ],
             ),
-            ],
             const SizedBox(height: 32),
 
             // Action Buttons

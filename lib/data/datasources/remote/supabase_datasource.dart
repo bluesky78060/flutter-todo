@@ -37,14 +37,16 @@ class SupabaseTodoDataSource {
     return _todoFromJson(response);
   }
 
-  // Create new todo
-  Future<void> createTodo(String title, String description, DateTime? dueDate) async {
-    await client.from('todos').insert({
+  // Create new todo and return the created ID
+  Future<int> createTodo(String title, String description, DateTime? dueDate) async {
+    final response = await client.from('todos').insert({
       'title': title,
       'description': description,
       'user_id': client.auth.currentUser!.id,
       'due_date': dueDate?.toIso8601String(),
-    });
+    }).select('id').single();
+
+    return response['id'] as int;
   }
 
   // Update todo

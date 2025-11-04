@@ -73,8 +73,8 @@ class TodoActions {
     await result.fold(
       (failure) => throw Exception(failure),
       (todoId) async {
-        // Schedule notification if notificationTime is set (mobile only)
-        if (!kIsWeb && notificationTime != null) {
+        // Schedule notification if notificationTime is set
+        if (notificationTime != null) {
           try {
             final notificationService = ref.read(notificationServiceProvider);
             print('📅 TodoActions: Scheduling notification for todo $todoId');
