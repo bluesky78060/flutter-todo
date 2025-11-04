@@ -309,7 +309,7 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> {
               child: Column(
                 children: [
                   Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
                     child: Row(
                       children: [
                         Expanded(
@@ -353,7 +353,7 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> {
                       ],
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 8),
                 ],
               ),
             ),
