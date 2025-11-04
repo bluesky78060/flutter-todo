@@ -37,18 +37,10 @@ final supabaseAuthDataSourceProvider = Provider<SupabaseAuthDataSource>((ref) {
 });
 
 // Repository Providers
-// Web: Use Supabase for cross-browser sync
-// Mobile: Use local database (notifications work better with real IDs)
+// All platforms use Supabase for user-based data sync
 final todoRepositoryProvider = Provider<TodoRepository>((ref) {
-  if (kIsWeb) {
-    // Web uses Supabase for data sync across browsers
-    final dataSource = ref.watch(supabaseTodoDataSourceProvider);
-    return SupabaseTodoRepository(dataSource);
-  } else {
-    // Mobile uses local database for offline support and proper notification IDs
-    final database = ref.watch(localDatabaseProvider);
-    return TodoRepositoryImpl(database);
-  }
+  final dataSource = ref.watch(supabaseTodoDataSourceProvider);
+  return SupabaseTodoRepository(dataSource);
 });
 
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
