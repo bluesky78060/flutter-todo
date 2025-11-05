@@ -1,5 +1,4 @@
 import 'package:drift/drift.dart';
-import 'package:drift/native.dart';
 
 // Import conditional connection helpers
 import 'connection/connection.dart'
