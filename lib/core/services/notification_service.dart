@@ -4,6 +4,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
+import 'package:todo_app/core/services/web_notification_service.dart';
 
 class NotificationService {
   static final NotificationService _instance = NotificationService._internal();
@@ -12,6 +13,7 @@ class NotificationService {
 
   final FlutterLocalNotificationsPlugin _notifications =
       FlutterLocalNotificationsPlugin();
+  final WebNotificationService _webNotifications = WebNotificationService();
 
   bool _initialized = false;
 
@@ -20,7 +22,17 @@ class NotificationService {
     if (_initialized) return;
 
     try {
-      // Initialize timezone
+      // For web platform, use WebNotificationService
+      if (kIsWeb) {
+        await _webNotifications.initialize();
+        _initialized = true;
+        if (kDebugMode) {
+          print('✅ Web notification service initialized');
+        }
+        return;
+      }
+
+      // Initialize timezone for mobile platforms
       tz.initializeTimeZones();
 
       // Set local timezone
@@ -61,7 +73,7 @@ class NotificationService {
       );
 
       if (kDebugMode) {
-        print('✅ Notification service initialized: $initialized');
+        print('✅ Mobile notification service initialized: $initialized');
       }
 
       // Create notification channel for Android
@@ -110,10 +122,7 @@ class NotificationService {
   /// Request notification permissions
   Future<bool> requestPermissions() async {
     if (kIsWeb) {
-      if (kDebugMode) {
-        print('⚠️ Web platform - notification permissions handled by browser');
-      }
-      return true;
+      return await _webNotifications.requestPermission();
     }
 
     // For Android 13+ (API 33+)
@@ -157,6 +166,17 @@ class NotificationService {
     try {
       if (!_initialized) {
         await initialize();
+      }
+
+      // For web platform, use WebNotificationService
+      if (kIsWeb) {
+        await _webNotifications.scheduleNotification(
+          id: id,
+          title: title,
+          body: body,
+          scheduledDate: scheduledDate,
+        );
+        return;
       }
 
       // Check if scheduled date is in the future
@@ -250,6 +270,11 @@ class NotificationService {
 
   /// Cancel a specific notification
   Future<void> cancelNotification(int id) async {
+    if (kIsWeb) {
+      _webNotifications.cancelNotification(id);
+      return;
+    }
+
     await _notifications.cancel(id);
     if (kDebugMode) {
       print('🗑️ Notification cancelled with ID: $id');
@@ -258,6 +283,11 @@ class NotificationService {
 
   /// Cancel all notifications
   Future<void> cancelAllNotifications() async {
+    if (kIsWeb) {
+      _webNotifications.cancelAllNotifications();
+      return;
+    }
+
     await _notifications.cancelAll();
     if (kDebugMode) {
       print('🗑️ All notifications cancelled');
@@ -266,12 +296,26 @@ class NotificationService {
 
   /// Check if notifications are enabled
   Future<bool> areNotificationsEnabled() async {
+    if (kIsWeb) {
+      return _webNotifications.areNotificationsEnabled();
+    }
+
     final status = await Permission.notification.status;
     return status.isGranted;
   }
 
   /// Get pending notifications
   Future<List<PendingNotificationRequest>> getPendingNotifications() async {
+    if (kIsWeb) {
+      // For web, return empty list as we can't get structured pending notifications
+      // but the count is available via WebNotificationService.getPendingNotificationCount()
+      if (kDebugMode) {
+        final count = _webNotifications.getPendingNotificationCount();
+        print('🌐 Web pending notifications count: $count');
+      }
+      return [];
+    }
+
     return await _notifications.pendingNotificationRequests();
   }
 }

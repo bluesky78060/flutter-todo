@@ -1,0 +1,246 @@
+import 'dart:async';
+import 'dart:html' as html;
+import 'package:flutter/foundation.dart';
+
+class WebNotificationService {
+  static final WebNotificationService _instance = WebNotificationService._internal();
+  factory WebNotificationService() => _instance;
+  WebNotificationService._internal();
+
+  final Map<int, Timer> _scheduledNotifications = {};
+  bool _permissionGranted = false;
+
+  /// Initialize web notification service
+  Future<void> initialize() async {
+    if (!kIsWeb) return;
+
+    try {
+      if (kDebugMode) {
+        print('🌐 WebNotificationService: Initializing');
+      }
+
+      // Check if Notification API is supported
+      if (!_isNotificationSupported()) {
+        if (kDebugMode) {
+          print('⚠️ WebNotificationService: Notification API not supported');
+        }
+        return;
+      }
+
+      // Check current permission status
+      final permission = html.Notification.permission;
+      _permissionGranted = permission == 'granted';
+
+      if (kDebugMode) {
+        print('✅ WebNotificationService: Initialized');
+        print('   Permission: $permission');
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ WebNotificationService: Initialization failed: $e');
+      }
+    }
+  }
+
+  /// Check if Notification API is supported
+  bool _isNotificationSupported() {
+    return html.window.navigator.userAgent.isNotEmpty &&
+           html.Notification.supported != null &&
+           html.Notification.supported!;
+  }
+
+  /// Request notification permission
+  Future<bool> requestPermission() async {
+    if (!kIsWeb || !_isNotificationSupported()) {
+      return false;
+    }
+
+    try {
+      final permission = await html.Notification.requestPermission();
+      _permissionGranted = permission == 'granted';
+
+      if (kDebugMode) {
+        print('🌐 WebNotificationService: Permission requested');
+        print('   Result: $permission');
+      }
+
+      return _permissionGranted;
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ WebNotificationService: Permission request failed: $e');
+      }
+      return false;
+    }
+  }
+
+  /// Check if notifications are enabled
+  bool areNotificationsEnabled() {
+    if (!kIsWeb || !_isNotificationSupported()) {
+      return false;
+    }
+    return _permissionGranted && html.Notification.permission == 'granted';
+  }
+
+  /// Schedule a notification
+  Future<void> scheduleNotification({
+    required int id,
+    required String title,
+    required String body,
+    required DateTime scheduledDate,
+  }) async {
+    if (!kIsWeb) return;
+
+    try {
+      // Cancel existing notification with same ID
+      cancelNotification(id);
+
+      final now = DateTime.now();
+      final difference = scheduledDate.difference(now);
+
+      if (difference.isNegative) {
+        if (kDebugMode) {
+          print('⚠️ WebNotificationService: Cannot schedule notification in the past');
+          print('   Scheduled: $scheduledDate');
+          print('   Now: $now');
+        }
+        return;
+      }
+
+      if (!areNotificationsEnabled()) {
+        if (kDebugMode) {
+          print('⚠️ WebNotificationService: Notifications not enabled');
+        }
+        // Request permission if not granted
+        await requestPermission();
+
+        if (!areNotificationsEnabled()) {
+          if (kDebugMode) {
+            print('❌ WebNotificationService: Permission denied');
+          }
+          return;
+        }
+      }
+
+      if (kDebugMode) {
+        print('🌐 WebNotificationService: Scheduling notification');
+        print('   ID: $id');
+        print('   Title: $title');
+        print('   Body: $body');
+        print('   Scheduled: $scheduledDate');
+        print('   Delay: ${difference.inMinutes} minutes');
+      }
+
+      // Schedule the notification
+      final timer = Timer(difference, () {
+        _showNotification(id, title, body);
+      });
+
+      _scheduledNotifications[id] = timer;
+
+      if (kDebugMode) {
+        print('✅ WebNotificationService: Notification scheduled');
+        print('   Total pending: ${_scheduledNotifications.length}');
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ WebNotificationService: Failed to schedule: $e');
+      }
+    }
+  }
+
+  /// Show a notification immediately
+  void _showNotification(int id, String title, String body) {
+    try {
+      if (!areNotificationsEnabled()) {
+        if (kDebugMode) {
+          print('⚠️ WebNotificationService: Cannot show notification, permission not granted');
+        }
+        return;
+      }
+
+      final notification = html.Notification(
+        title,
+        body: body,
+        icon: '/icons/Icon-192.png',
+        badge: '/icons/Icon-192.png',
+        tag: 'todo-$id',
+        requireInteraction: false,
+        silent: false,
+      );
+
+      // Auto close after 10 seconds
+      Timer(const Duration(seconds: 10), () {
+        notification.close();
+      });
+
+      // Handle notification click
+      notification.onClick.listen((_) {
+        html.window.focus();
+        notification.close();
+      });
+
+      // Remove from scheduled list
+      _scheduledNotifications.remove(id);
+
+      if (kDebugMode) {
+        print('🔔 WebNotificationService: Notification shown');
+        print('   ID: $id');
+        print('   Title: $title');
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ WebNotificationService: Failed to show notification: $e');
+      }
+    }
+  }
+
+  /// Cancel a scheduled notification
+  void cancelNotification(int id) {
+    final timer = _scheduledNotifications[id];
+    if (timer != null) {
+      timer.cancel();
+      _scheduledNotifications.remove(id);
+
+      if (kDebugMode) {
+        print('🗑️ WebNotificationService: Notification cancelled');
+        print('   ID: $id');
+      }
+    }
+  }
+
+  /// Cancel all scheduled notifications
+  void cancelAllNotifications() {
+    for (var timer in _scheduledNotifications.values) {
+      timer.cancel();
+    }
+    _scheduledNotifications.clear();
+
+    if (kDebugMode) {
+      print('🗑️ WebNotificationService: All notifications cancelled');
+    }
+  }
+
+  /// Get pending notification count
+  int getPendingNotificationCount() {
+    return _scheduledNotifications.length;
+  }
+
+  /// Show immediate notification for testing
+  Future<void> showTestNotification() async {
+    if (!areNotificationsEnabled()) {
+      final granted = await requestPermission();
+      if (!granted) {
+        if (kDebugMode) {
+          print('❌ WebNotificationService: Test notification cancelled - permission denied');
+        }
+        return;
+      }
+    }
+
+    _showNotification(
+      999999,
+      '테스트 알림',
+      '웹 알림이 정상적으로 작동합니다!',
+    );
+  }
+}
