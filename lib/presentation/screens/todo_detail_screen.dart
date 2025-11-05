@@ -23,7 +23,7 @@ class TodoDetailScreen extends ConsumerWidget {
       appBar: AppBar(
         backgroundColor: AppColors.darkCard,
         title: const Text(
-          'Todo Detail',
+          '할일 상세',
           style: TextStyle(color: AppColors.textWhite),
         ),
         leading: IconButton(
@@ -66,7 +66,7 @@ class TodoDetailScreen extends ConsumerWidget {
               // Created date
               _InfoRow(
                 icon: FluentIcons.calendar_add_24_regular,
-                label: 'Created',
+                label: '생성일',
                 value: _formatDateTime(todo.createdAt),
               ),
               const SizedBox(height: 12),
@@ -75,7 +75,7 @@ class TodoDetailScreen extends ConsumerWidget {
               if (todo.dueDate != null) ...[
                 _InfoRow(
                   icon: FluentIcons.calendar_clock_24_regular,
-                  label: 'Due Date',
+                  label: '마감일',
                   value: _formatDateTime(todo.dueDate!),
                   color: AppColors.primaryBlue,
                 ),
@@ -86,7 +86,7 @@ class TodoDetailScreen extends ConsumerWidget {
               if (todo.notificationTime != null) ...[
                 _InfoRow(
                   icon: FluentIcons.alert_24_regular,
-                  label: 'Notification',
+                  label: '알림',
                   value: _formatDateTime(todo.notificationTime!),
                   color: AppColors.accentOrange,
                 ),
@@ -98,8 +98,8 @@ class TodoDetailScreen extends ConsumerWidget {
                 icon: todo.isCompleted
                     ? FluentIcons.checkmark_circle_24_filled
                     : FluentIcons.circle_24_regular,
-                label: 'Status',
-                value: todo.isCompleted ? 'Completed' : 'Pending',
+                label: '상태',
+                value: todo.isCompleted ? '완료일' : '진행중',
                 color: todo.isCompleted ? Colors.green : AppColors.textGray,
               ),
 
@@ -108,7 +108,7 @@ class TodoDetailScreen extends ConsumerWidget {
                 const SizedBox(height: 12),
                 _InfoRow(
                   icon: FluentIcons.checkmark_circle_24_filled,
-                  label: 'Completed',
+                  label: '완료일',
                   value: _formatDateTime(todo.completedAt!),
                   color: Colors.green,
                 ),
@@ -123,7 +123,7 @@ class TodoDetailScreen extends ConsumerWidget {
         ),
         error: (error, _) => Center(
           child: Text(
-            'Error: $error',
+            '오류: $error',
             style: const TextStyle(color: Colors.red),
           ),
         ),
