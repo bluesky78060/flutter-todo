@@ -53,7 +53,7 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Title and Add Button
+                  // Title and Action Buttons
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -78,37 +78,72 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> {
                           ),
                         ],
                       ),
-                      Container(
-                        decoration: BoxDecoration(
-                          gradient: AppColors.primaryGradient,
-                          borderRadius: BorderRadius.circular(12),
-                          boxShadow: [
-                            BoxShadow(
-                              color: AppColors.primaryBlue.withOpacity(0.3),
-                              blurRadius: 12,
-                              offset: const Offset(0, 4),
+                      Row(
+                        children: [
+                          // Refresh Button
+                          Container(
+                            decoration: BoxDecoration(
+                              color: AppColors.darkCard,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: AppColors.darkBorder.withOpacity(0.5),
+                                width: 1,
+                              ),
                             ),
-                          ],
-                        ),
-                        child: Material(
-                          color: Colors.transparent,
-                          child: InkWell(
-                            onTap: () => showDialog(
-                              context: context,
-                              builder: (context) => const TodoFormDialog(),
-                            ),
-                            borderRadius: BorderRadius.circular(12),
-                            child: const SizedBox(
-                              width: 48,
-                              height: 48,
-                              child: Icon(
-                                FluentIcons.add_24_filled,
-                                color: Colors.white,
-                                size: 24,
+                            child: Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                onTap: () {
+                                  ref.invalidate(todosProvider);
+                                },
+                                borderRadius: BorderRadius.circular(12),
+                                child: const SizedBox(
+                                  width: 48,
+                                  height: 48,
+                                  child: Icon(
+                                    FluentIcons.arrow_clockwise_24_regular,
+                                    color: AppColors.textGray,
+                                    size: 22,
+                                  ),
+                                ),
                               ),
                             ),
                           ),
-                        ),
+                          const SizedBox(width: 8),
+                          // Add Button
+                          Container(
+                            decoration: BoxDecoration(
+                              gradient: AppColors.primaryGradient,
+                              borderRadius: BorderRadius.circular(12),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: AppColors.primaryBlue.withOpacity(0.3),
+                                  blurRadius: 12,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                onTap: () => showDialog(
+                                  context: context,
+                                  builder: (context) => const TodoFormDialog(),
+                                ),
+                                borderRadius: BorderRadius.circular(12),
+                                child: const SizedBox(
+                                  width: 48,
+                                  height: 48,
+                                  child: Icon(
+                                    FluentIcons.add_24_filled,
+                                    color: Colors.white,
+                                    size: 24,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
