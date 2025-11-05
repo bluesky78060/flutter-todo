@@ -1,7 +1,8 @@
+import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
+import 'package:intl/intl.dart' as intl;
 import 'package:todo_app/core/theme/app_colors.dart';
 import 'package:todo_app/domain/entities/todo.dart';
 import 'package:todo_app/presentation/providers/database_provider.dart';
@@ -31,28 +32,28 @@ class StatisticsScreen extends ConsumerWidget {
           children: [
             // Header with gradient
             Container(
-              decoration: const BoxDecoration(
-                gradient: AppColors.headerGradient,
+              decoration: BoxDecoration(
+                gradient: AppColors.getHeaderGradient(true),
               ),
               padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Column(
+                  Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        '통계',
-                        style: TextStyle(
+                        'statistics'.tr(),
+                        style: const TextStyle(
                           color: AppColors.textWhite,
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      SizedBox(height: 4),
+                      const SizedBox(height: 4),
                       Text(
-                        '나의 업무 현황 📊',
-                        style: TextStyle(
+                        'my_work_status'.tr(),
+                        style: const TextStyle(
                           color: AppColors.textGray,
                           fontSize: 14,
                         ),
@@ -115,7 +116,7 @@ class StatisticsScreen extends ConsumerWidget {
                       ),
                       const SizedBox(height: 16),
                       Text(
-                        '오류: $error',
+                        '${'error'.tr()}: $error',
                         style: const TextStyle(
                           color: AppColors.textGray,
                         ),
@@ -146,7 +147,7 @@ class StatisticsScreen extends ConsumerWidget {
                         Expanded(
                           child: _NavItem(
                             icon: FluentIcons.task_list_square_ltr_24_regular,
-                            label: '업무',
+                            label: 'work'.tr(),
                             isActive: false,
                             onTap: () => Navigator.pop(context),
                           ),
@@ -154,7 +155,7 @@ class StatisticsScreen extends ConsumerWidget {
                         Expanded(
                           child: _NavItem(
                             icon: FluentIcons.data_histogram_24_filled,
-                            label: '통계',
+                            label: 'statistics'.tr(),
                             isActive: true,
                             onTap: () {},
                           ),
@@ -162,7 +163,7 @@ class StatisticsScreen extends ConsumerWidget {
                         Expanded(
                           child: _NavItem(
                             icon: FluentIcons.settings_24_regular,
-                            label: '설정',
+                            label: 'settings'.tr(),
                             isActive: false,
                             onTap: () {
                               Navigator.push(
@@ -248,9 +249,11 @@ class StatisticsScreen extends ConsumerWidget {
 
     // Daily completion data for the week
     final dailyCompletions = <String, int>{};
+    final dayKeys = ['monday'.tr(), 'tuesday'.tr(), 'wednesday'.tr(), 'thursday'.tr(), 'friday'.tr(), 'saturday'.tr(), 'sunday'.tr()];
+
     for (int i = 0; i < 7; i++) {
       final day = weekStart.add(Duration(days: i));
-      final dayKey = DateFormat('E', 'ko').format(day);
+      final dayKey = dayKeys[i];
       final dayStart = DateTime(day.year, day.month, day.day);
       final dayEnd = dayStart.add(const Duration(days: 1));
 
@@ -274,7 +277,7 @@ class StatisticsScreen extends ConsumerWidget {
     }
 
     // Most productive day
-    String mostProductiveDay = '월';
+    String mostProductiveDay = 'monday'.tr();
     int maxCompletions = 0;
     dailyCompletions.forEach((day, count) {
       if (count > maxCompletions) {
@@ -364,9 +367,9 @@ class _OverallProgressCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 12),
-              const Text(
-                '전체 진행률',
-                style: TextStyle(
+              Text(
+                'overall_progress'.tr(),
+                style: const TextStyle(
                   color: Colors.white,
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -379,17 +382,17 @@ class _OverallProgressCard extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               _StatItem(
-                label: '전체',
+                label: 'total'.tr(),
                 value: '${stats.totalTodos}',
                 icon: FluentIcons.apps_list_24_regular,
               ),
               _StatItem(
-                label: '완료',
+                label: 'completed'.tr(),
                 value: '${stats.completedTodos}',
                 icon: FluentIcons.checkmark_circle_24_regular,
               ),
               _StatItem(
-                label: '완료율',
+                label: 'completion_rate'.tr(),
                 value: '${stats.completionRate.toStringAsFixed(0)}%',
                 icon: FluentIcons.trophy_24_regular,
               ),
@@ -481,9 +484,9 @@ class _TodayStatisticsCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 12),
-              const Text(
-                '오늘의 통계',
-                style: TextStyle(
+              Text(
+                'today_statistics'.tr(),
+                style: const TextStyle(
                   color: AppColors.textWhite,
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -497,7 +500,7 @@ class _TodayStatisticsCard extends StatelessWidget {
               Expanded(
                 child: _InfoCard(
                   icon: FluentIcons.add_circle_24_regular,
-                  label: '생성',
+                  label: 'created'.tr(),
                   value: '${stats.todayCreated}',
                   color: const Color(0xFF4CAF50),
                 ),
@@ -506,7 +509,7 @@ class _TodayStatisticsCard extends StatelessWidget {
               Expanded(
                 child: _InfoCard(
                   icon: FluentIcons.checkmark_circle_24_regular,
-                  label: '완료',
+                  label: 'completed'.tr(),
                   value: '${stats.todayCompleted}',
                   color: const Color(0xFF2196F3),
                 ),
@@ -515,7 +518,7 @@ class _TodayStatisticsCard extends StatelessWidget {
               Expanded(
                 child: _InfoCard(
                   icon: FluentIcons.clock_24_regular,
-                  label: '대기',
+                  label: 'waiting'.tr(),
                   value: '${stats.todayPending}',
                   color: const Color(0xFFFF9800),
                 ),
@@ -610,9 +613,9 @@ class _WeeklyStatisticsCard extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 12),
-                  const Text(
-                    '이번 주 통계',
-                    style: TextStyle(
+                  Text(
+                    'this_week_statistics'.tr(),
+                    style: const TextStyle(
                       color: AppColors.textWhite,
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -627,7 +630,7 @@ class _WeeklyStatisticsCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
-                  '${stats.weekCompleted}개 완료',
+                  'completed_count'.tr(namedArgs: {'count': '${stats.weekCompleted}'}),
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 12,
@@ -653,7 +656,7 @@ class _DailyCompletionChart extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final maxValue = completions.values.isEmpty ? 1 : completions.values.reduce((a, b) => a > b ? a : b).toDouble();
-    final days = ['월', '화', '수', '목', '금', '토', '일'];
+    final days = ['monday'.tr(), 'tuesday'.tr(), 'wednesday'.tr(), 'thursday'.tr(), 'friday'.tr(), 'saturday'.tr(), 'sunday'.tr()];
 
     return SizedBox(
       height: 150,
@@ -739,9 +742,9 @@ class _CategoryBreakdownCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 12),
-              const Text(
-                '카테고리 분석',
-                style: TextStyle(
+              Text(
+                'category_analysis'.tr(),
+                style: const TextStyle(
                   color: AppColors.textWhite,
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -751,7 +754,7 @@ class _CategoryBreakdownCard extends StatelessWidget {
           ),
           const SizedBox(height: 20),
           _ProgressItem(
-            label: '완료',
+            label: 'completed'.tr(),
             value: stats.completedTodos,
             total: stats.totalTodos,
             color: const Color(0xFF4CAF50),
@@ -759,7 +762,7 @@ class _CategoryBreakdownCard extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           _ProgressItem(
-            label: '미완료',
+            label: 'incomplete'.tr(),
             value: incomplete,
             total: stats.totalTodos,
             color: const Color(0xFFFF9800),
@@ -866,9 +869,9 @@ class _TimeBasedStatisticsCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 12),
-              const Text(
-                '시간 분석',
-                style: TextStyle(
+              Text(
+                'time_analysis'.tr(),
+                style: const TextStyle(
                   color: AppColors.textWhite,
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -882,17 +885,17 @@ class _TimeBasedStatisticsCard extends StatelessWidget {
               Expanded(
                 child: _TimeInfoCard(
                   icon: FluentIcons.timer_24_regular,
-                  label: '평균 완료 시간',
+                  label: 'avg_completion_time'.tr(),
                   value: stats.avgCompletionHours < 1
-                      ? '< 1시간'
-                      : '${stats.avgCompletionHours.toStringAsFixed(0)}시간',
+                      ? 'less_than_one_hour'.tr()
+                      : 'hours'.tr(namedArgs: {'count': '${stats.avgCompletionHours.toStringAsFixed(0)}'}),
                 ),
               ),
               const SizedBox(width: 12),
               Expanded(
                 child: _TimeInfoCard(
                   icon: FluentIcons.star_24_regular,
-                  label: '최다 완료 요일',
+                  label: 'most_productive_day'.tr(),
                   value: stats.mostProductiveDay,
                 ),
               ),

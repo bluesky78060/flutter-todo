@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -77,7 +78,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Future<void> _signInWithEmail() async {
     if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('이메일과 비밀번호를 입력해주세요')),
+        SnackBar(content: Text('email_password_required'.tr())),
       );
       return;
     }
@@ -96,7 +97,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('로그인 실패: ${e.toString()}')),
+          SnackBar(content: Text('${'login_failed'.tr()}: ${e.toString()}')),
         );
       }
     } finally {
@@ -109,14 +110,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Future<void> _signUpWithEmail() async {
     if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('이메일과 비밀번호를 입력해주세요')),
+        SnackBar(content: Text('email_password_required'.tr())),
       );
       return;
     }
 
     if (_passwordController.text.length < 6) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('비밀번호는 최소 6자 이상이어야 합니다')),
+        SnackBar(content: Text('password_min_length'.tr())),
       );
       return;
     }
@@ -132,8 +133,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       if (mounted) {
         if (response.user != null) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('회원가입 성공! 이제 로그인할 수 있습니다.'),
+            SnackBar(
+              content: Text('signup_success'.tr()),
               backgroundColor: Colors.green,
             ),
           );
@@ -144,7 +145,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('회원가입 실패: ${e.toString()}')),
+          SnackBar(content: Text('${'sign_up_failed'.tr()}: ${e.toString()}')),
         );
       }
     } finally {
@@ -158,7 +159,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('로그인'),
+        title: Text('login'.tr()),
       ),
       body: Center(
         child: Padding(
@@ -183,10 +184,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 ),
               ),
               const SizedBox(height: 8),
-              const Text(
-                '소셜 계정으로 간편하게 로그인하세요',
+              Text(
+                'login_subtitle'.tr(),
                 textAlign: TextAlign.center,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 14,
                   color: Colors.grey,
                 ),
@@ -196,11 +197,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               // 이메일 로그인 폼 (항상 표시)
               TextField(
                 controller: _emailController,
-                decoration: const InputDecoration(
-                  labelText: '이메일',
+                decoration: InputDecoration(
+                  labelText: 'email'.tr(),
                   hintText: 'example@email.com',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.email_outlined),
+                  border: const OutlineInputBorder(),
+                  prefixIcon: const Icon(Icons.email_outlined),
                 ),
                 keyboardType: TextInputType.emailAddress,
                 enabled: !_isLoading,
@@ -208,11 +209,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               const SizedBox(height: 16),
               TextField(
                 controller: _passwordController,
-                decoration: const InputDecoration(
-                  labelText: '비밀번호',
+                decoration: InputDecoration(
+                  labelText: 'password'.tr(),
                   hintText: '최소 6자 이상',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.lock_outline),
+                  border: const OutlineInputBorder(),
+                  prefixIcon: const Icon(Icons.lock_outline),
                 ),
                 obscureText: true,
                 enabled: !_isLoading,
@@ -243,7 +244,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           ),
                         )
                       : Text(
-                          _isSignUpMode ? '회원가입' : '로그인',
+                          _isSignUpMode ? 'sign_up'.tr() : 'login'.tr(),
                           style: const TextStyle(fontSize: 16),
                         ),
                 ),
@@ -256,8 +257,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 children: [
                   Text(
                     _isSignUpMode
-                        ? '이미 계정이 있으신가요?'
-                        : '계정이 없으신가요?',
+                        ? 'already_have_account'.tr()
+                        : 'dont_have_account'.tr(),
                     style: const TextStyle(color: Colors.grey),
                   ),
                   TextButton(
@@ -268,7 +269,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             _passwordController.clear();
                           },
                     child: Text(
-                      _isSignUpMode ? '로그인' : '회원가입',
+                      _isSignUpMode ? 'login'.tr() : 'sign_up'.tr(),
                       style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
                   ),
@@ -276,17 +277,17 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               ),
 
               const SizedBox(height: 24),
-              const Row(
+              Row(
                 children: [
-                  Expanded(child: Divider()),
+                  const Expanded(child: Divider()),
                   Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 16),
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: Text(
-                      '또는',
-                      style: TextStyle(color: Colors.grey),
+                      'or'.tr(),
+                      style: const TextStyle(color: Colors.grey),
                     ),
                   ),
-                  Expanded(child: Divider()),
+                  const Expanded(child: Divider()),
                 ],
               ),
               const SizedBox(height: 24),
@@ -302,9 +303,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   errorBuilder: (context, error, stackTrace) =>
                       const Icon(Icons.g_mobiledata, size: 24),
                 ),
-                label: const Text(
-                  'Google로 로그인',
-                  style: TextStyle(
+                label: Text(
+                  'google_login'.tr(),
+                  style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w500,
                   ),
@@ -325,9 +326,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               ElevatedButton.icon(
                 onPressed: _isLoading ? null : _signInWithKakao,
                 icon: const Icon(Icons.chat_bubble, size: 24),
-                label: const Text(
-                  'Kakao로 로그인',
-                  style: TextStyle(
+                label: Text(
+                  'kakao_login'.tr(),
+                  style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w500,
                   ),

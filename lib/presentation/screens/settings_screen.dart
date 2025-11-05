@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
@@ -37,35 +38,35 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final authState = ref.watch(currentUserProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.darkBackground,
+      backgroundColor: AppColors.getBackground(isDarkMode),
       body: SafeArea(
         child: Column(
           children: [
             // Header
             Container(
               padding: const EdgeInsets.all(20),
-              decoration: const BoxDecoration(
-                gradient: AppColors.headerGradient,
+              decoration: BoxDecoration(
+                gradient: AppColors.getHeaderGradient(isDarkMode),
               ),
               child: Row(
                 children: [
                   Container(
                     decoration: BoxDecoration(
-                      color: AppColors.darkInput,
+                      color: AppColors.getInput(isDarkMode),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: IconButton(
-                      icon: const Icon(
+                      icon: Icon(
                         FluentIcons.arrow_left_24_regular,
-                        color: AppColors.textWhite,
+                        color: AppColors.getText(isDarkMode),
                       ),
                       onPressed: () => Navigator.pop(context),
                     ),
                   ),
                   const SizedBox(width: 16),
-                  const Text(
-                    '설정',
-                    style: TextStyle(
+                  Text(
+                    'settings'.tr(),
+                    style: const TextStyle(
                       color: AppColors.textWhite,
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
@@ -81,25 +82,19 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 padding: const EdgeInsets.all(20),
                 children: [
                   // Profile Section
-                  _buildSectionHeader('계정'),
+                  _buildSectionHeader('account'.tr()),
                   const SizedBox(height: 12),
                   _buildProfileCard(authState),
                   const SizedBox(height: 32),
 
-                  // Theme & Display
-                  _buildSectionHeader('테마 & 표시'),
-                  const SizedBox(height: 12),
-                  _buildThemeCard(isDarkMode),
-                  const SizedBox(height: 32),
-
                   // Data Management
-                  _buildSectionHeader('데이터'),
+                  _buildSectionHeader('data'.tr()),
                   const SizedBox(height: 12),
                   _buildDataCard(),
                   const SizedBox(height: 32),
 
                   // App Info
-                  _buildSectionHeader('정보'),
+                  _buildSectionHeader('info'.tr()),
                   const SizedBox(height: 12),
                   _buildInfoCard(),
                 ],
@@ -112,10 +107,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   Widget _buildSectionHeader(String title) {
+    final isDarkMode = ref.watch(isDarkModeProvider);
     return Text(
       title,
-      style: const TextStyle(
-        color: AppColors.textGray,
+      style: TextStyle(
+        color: AppColors.getTextSecondary(isDarkMode),
         fontSize: 14,
         fontWeight: FontWeight.w600,
         letterSpacing: 0.5,
@@ -124,10 +120,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   Widget _buildProfileCard(AsyncValue authState) {
+    final isDarkMode = ref.watch(isDarkModeProvider);
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.darkCard,
+        color: AppColors.getCard(isDarkMode),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -140,9 +137,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       child: authState.when(
         data: (user) {
           if (user == null) {
-            return const Text(
-              '로그인이 필요합니다',
-              style: TextStyle(color: AppColors.textGray),
+            return Text(
+              'login_required'.tr(),
+              style: const TextStyle(color: AppColors.textGray),
             );
           }
           return Column(
@@ -171,8 +168,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               // User Info
               Text(
                 user.name,
-                style: const TextStyle(
-                  color: AppColors.textWhite,
+                style: TextStyle(
+                  color: AppColors.getText(isDarkMode),
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
                 ),
@@ -180,8 +177,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               const SizedBox(height: 4),
               Text(
                 user.email,
-                style: const TextStyle(
-                  color: AppColors.textGray,
+                style: TextStyle(
+                  color: AppColors.getTextSecondary(isDarkMode),
                   fontSize: 14,
                 ),
               ),
@@ -202,14 +199,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  child: const Row(
+                  child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(FluentIcons.sign_out_24_regular, size: 20),
-                      SizedBox(width: 8),
+                      const Icon(FluentIcons.sign_out_24_regular, size: 20),
+                      const SizedBox(width: 8),
                       Text(
-                        '로그아웃',
-                        style: TextStyle(
+                        'logout'.tr(),
+                        style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
                         ),
@@ -233,7 +230,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   Widget _buildThemeCard(bool isDarkMode) {
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.darkCard,
+        color: AppColors.getCard(isDarkMode),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -250,25 +247,25 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             onChanged: (value) {
               ref.read(themeProvider.notifier).toggleTheme();
             },
-            title: const Text(
+            title: Text(
               '다크 모드',
               style: TextStyle(
-                color: AppColors.textWhite,
+                color: AppColors.getText(isDarkMode),
                 fontSize: 16,
                 fontWeight: FontWeight.w500,
               ),
             ),
-            subtitle: const Text(
+            subtitle: Text(
               '어두운 화면으로 전환',
               style: TextStyle(
-                color: AppColors.textGray,
+                color: AppColors.getTextSecondary(isDarkMode),
                 fontSize: 14,
               ),
             ),
             secondary: Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: AppColors.darkInput,
+                color: AppColors.getInput(isDarkMode),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Icon(
@@ -288,9 +285,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   Widget _buildDataCard() {
+    final isDarkMode = ref.watch(isDarkModeProvider);
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.darkCard,
+        color: AppColors.getCard(isDarkMode),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -306,7 +304,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             leading: Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: AppColors.darkInput,
+                color: AppColors.getInput(isDarkMode),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: const Icon(
@@ -314,33 +312,33 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 color: AppColors.primaryBlue,
               ),
             ),
-            title: const Text(
-              '백업하기',
-              style: TextStyle(
+            title: Text(
+              'backup'.tr(),
+              style: const TextStyle(
                 color: AppColors.textWhite,
                 fontSize: 16,
                 fontWeight: FontWeight.w500,
               ),
             ),
-            subtitle: const Text(
-              '데이터를 안전하게 보관',
-              style: TextStyle(
+            subtitle: Text(
+              'backup_desc'.tr(),
+              style: const TextStyle(
                 color: AppColors.textGray,
                 fontSize: 14,
               ),
             ),
-            trailing: const Icon(
+            trailing: Icon(
               FluentIcons.chevron_right_24_regular,
-              color: AppColors.textGray,
+              color: AppColors.getTextSecondary(isDarkMode),
             ),
             onTap: () {
-              _showComingSoonSnackBar('백업');
+              _showComingSoonSnackBar('backup'.tr());
             },
             contentPadding:
                 const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
           ),
-          const Divider(
-            color: AppColors.darkBorder,
+          Divider(
+            color: AppColors.getBorder(isDarkMode),
             height: 1,
             indent: 68,
           ),
@@ -348,7 +346,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             leading: Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: AppColors.darkInput,
+                color: AppColors.getInput(isDarkMode),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: const Icon(
@@ -356,27 +354,27 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 color: AppColors.primaryBlue,
               ),
             ),
-            title: const Text(
-              '복원하기',
-              style: TextStyle(
+            title: Text(
+              'restore'.tr(),
+              style: const TextStyle(
                 color: AppColors.textWhite,
                 fontSize: 16,
                 fontWeight: FontWeight.w500,
               ),
             ),
-            subtitle: const Text(
-              '백업된 데이터 불러오기',
-              style: TextStyle(
+            subtitle: Text(
+              'restore_desc'.tr(),
+              style: const TextStyle(
                 color: AppColors.textGray,
                 fontSize: 14,
               ),
             ),
-            trailing: const Icon(
+            trailing: Icon(
               FluentIcons.chevron_right_24_regular,
-              color: AppColors.textGray,
+              color: AppColors.getTextSecondary(isDarkMode),
             ),
             onTap: () {
-              _showComingSoonSnackBar('복원');
+              _showComingSoonSnackBar('restore'.tr());
             },
             contentPadding:
                 const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
@@ -387,9 +385,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   Widget _buildInfoCard() {
+    final isDarkMode = ref.watch(isDarkModeProvider);
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.darkCard,
+        color: AppColors.getCard(isDarkMode),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -405,7 +404,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             leading: Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: AppColors.darkInput,
+                color: AppColors.getInput(isDarkMode),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: const Icon(
@@ -413,16 +412,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 color: AppColors.primaryBlue,
               ),
             ),
-            title: const Text(
-              '버전 정보',
-              style: TextStyle(
+            title: Text(
+              'version_info'.tr(),
+              style: const TextStyle(
                 color: AppColors.textWhite,
                 fontSize: 16,
                 fontWeight: FontWeight.w500,
               ),
             ),
             subtitle: Text(
-              _version.isNotEmpty ? 'v$_version ($_buildNumber)' : '로딩 중...',
+              _version.isNotEmpty ? 'v$_version ($_buildNumber)' : 'loading'.tr(),
               style: const TextStyle(
                 color: AppColors.textGray,
                 fontSize: 14,
@@ -431,8 +430,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             contentPadding:
                 const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
           ),
-          const Divider(
-            color: AppColors.darkBorder,
+          Divider(
+            color: AppColors.getBorder(isDarkMode),
             height: 1,
             indent: 68,
           ),
@@ -440,7 +439,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             leading: Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: AppColors.darkInput,
+                color: AppColors.getInput(isDarkMode),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: const Icon(
@@ -448,17 +447,17 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 color: AppColors.primaryBlue,
               ),
             ),
-            title: const Text(
-              '오픈소스 라이선스',
-              style: TextStyle(
+            title: Text(
+              'open_source_licenses'.tr(),
+              style: const TextStyle(
                 color: AppColors.textWhite,
                 fontSize: 16,
                 fontWeight: FontWeight.w500,
               ),
             ),
-            trailing: const Icon(
+            trailing: Icon(
               FluentIcons.chevron_right_24_regular,
-              color: AppColors.textGray,
+              color: AppColors.getTextSecondary(isDarkMode),
             ),
             onTap: () {
               _showLicensePage();
@@ -466,8 +465,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             contentPadding:
                 const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
           ),
-          const Divider(
-            color: AppColors.darkBorder,
+          Divider(
+            color: AppColors.getBorder(isDarkMode),
             height: 1,
             indent: 68,
           ),
@@ -475,7 +474,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             leading: Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: AppColors.darkInput,
+                color: AppColors.getInput(isDarkMode),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: const Icon(
@@ -483,20 +482,20 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 color: AppColors.primaryBlue,
               ),
             ),
-            title: const Text(
-              '피드백 보내기',
-              style: TextStyle(
+            title: Text(
+              'send_feedback'.tr(),
+              style: const TextStyle(
                 color: AppColors.textWhite,
                 fontSize: 16,
                 fontWeight: FontWeight.w500,
               ),
             ),
-            trailing: const Icon(
+            trailing: Icon(
               FluentIcons.chevron_right_24_regular,
-              color: AppColors.textGray,
+              color: AppColors.getTextSecondary(isDarkMode),
             ),
             onTap: () {
-              _showComingSoonSnackBar('피드백');
+              _showComingSoonSnackBar('send_feedback'.tr());
             },
             contentPadding:
                 const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
@@ -507,10 +506,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   void _showLogoutDialog() {
+    final isDarkMode = ref.watch(isDarkModeProvider);
     showDialog(
       context: context,
       builder: (context) => Dialog(
-        backgroundColor: AppColors.darkCard,
+        backgroundColor: AppColors.getCard(isDarkMode),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
         ),
@@ -525,18 +525,18 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 size: 48,
               ),
               const SizedBox(height: 16),
-              const Text(
-                '로그아웃',
-                style: TextStyle(
+              Text(
+                'logout'.tr(),
+                style: const TextStyle(
                   color: AppColors.textWhite,
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
                 ),
               ),
               const SizedBox(height: 8),
-              const Text(
-                '정말 로그아웃 하시겠습니까?',
-                style: TextStyle(
+              Text(
+                'logout_confirm'.tr(),
+                style: const TextStyle(
                   color: AppColors.textGray,
                   fontSize: 16,
                 ),
@@ -549,9 +549,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     child: OutlinedButton(
                       onPressed: () => Navigator.pop(context),
                       style: OutlinedButton.styleFrom(
-                        foregroundColor: AppColors.textGray,
-                        side: const BorderSide(
-                          color: AppColors.darkBorder,
+                        foregroundColor: AppColors.getTextSecondary(isDarkMode),
+                        side: BorderSide(
+                          color: AppColors.getBorder(isDarkMode),
                           width: 1.5,
                         ),
                         padding: const EdgeInsets.symmetric(vertical: 12),
@@ -559,7 +559,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      child: const Text('취소'),
+                      child: Text('cancel'.tr()),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -577,7 +577,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      child: const Text('로그아웃'),
+                      child: Text('logout'.tr()),
                     ),
                   ),
                 ],
@@ -607,7 +607,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   void _showComingSoonSnackBar(String feature) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('$feature 기능은 곧 제공될 예정입니다'),
+        content: Text('coming_soon'.tr(namedArgs: {'feature': feature})),
         backgroundColor: AppColors.darkCard,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(

@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -7,7 +8,6 @@ import 'package:todo_app/presentation/providers/todo_providers.dart';
 import 'package:todo_app/presentation/screens/settings_screen.dart';
 import 'package:todo_app/presentation/screens/statistics_screen.dart';
 import 'package:todo_app/presentation/widgets/custom_todo_item.dart';
-import 'package:todo_app/presentation/widgets/progress_card.dart';
 import 'package:todo_app/presentation/widgets/todo_form_dialog.dart';
 
 class TodoListScreen extends ConsumerStatefulWidget {
@@ -46,8 +46,8 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> {
           children: [
             // Header with gradient
             Container(
-              decoration: const BoxDecoration(
-                gradient: AppColors.headerGradient,
+              decoration: BoxDecoration(
+                gradient: AppColors.darkHeaderGradient,
               ),
               padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
               child: Column(
@@ -60,18 +60,18 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            '업무',
-                            style: TextStyle(
+                          Text(
+                            'todo_list'.tr(),
+                            style: const TextStyle(
                               color: AppColors.textWhite,
                               fontSize: 24,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
                           const SizedBox(height: 4),
-                          const Text(
-                            '오늘도 화이팅! 💪',
-                            style: TextStyle(
+                          Text(
+                            'keep_it_up'.tr(),
+                            style: const TextStyle(
                               color: AppColors.textGray,
                               fontSize: 14,
                             ),
@@ -97,10 +97,10 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> {
                                   ref.invalidate(todosProvider);
                                 },
                                 borderRadius: BorderRadius.circular(12),
-                                child: const SizedBox(
+                                child: SizedBox(
                                   width: 48,
                                   height: 48,
-                                  child: Icon(
+                                  child: const Icon(
                                     FluentIcons.arrow_clockwise_24_regular,
                                     color: AppColors.textGray,
                                     size: 22,
@@ -149,22 +149,6 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> {
                   ),
                   const SizedBox(height: 16),
 
-                  // Progress Card
-                  todosAsync.when(
-                    data: (allTodos) {
-                      final completed =
-                          allTodos.where((t) => t.isCompleted).length;
-                      final total = allTodos.length;
-                      return ProgressCard(
-                        completed: completed,
-                        total: total,
-                      );
-                    },
-                    loading: () => const ProgressCard(completed: 0, total: 0),
-                    error: (_, __) => const ProgressCard(completed: 0, total: 0),
-                  ),
-                  const SizedBox(height: 16),
-
                   // Filter Chips
                   todosAsync.when(
                     data: (allTodos) {
@@ -178,7 +162,7 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> {
                         children: [
                           Expanded(
                             child: _FilterChip(
-                              label: '전체',
+                              label: 'filter_all'.tr(),
                               count: totalCount,
                               isSelected: currentFilter == TodoFilter.all,
                               onTap: () => ref
@@ -189,7 +173,7 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> {
                           const SizedBox(width: 8),
                           Expanded(
                             child: _FilterChip(
-                              label: '진행중',
+                              label: 'filter_pending'.tr(),
                               count: activeCount,
                               isSelected: currentFilter == TodoFilter.pending,
                               onTap: () => ref
@@ -200,7 +184,7 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> {
                           const SizedBox(width: 8),
                           Expanded(
                             child: _FilterChip(
-                              label: '완료',
+                              label: 'filter_completed'.tr(),
                               count: completedCount,
                               isSelected: currentFilter == TodoFilter.completed,
                               onTap: () => ref
@@ -233,18 +217,18 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> {
                     color: AppColors.textWhite,
                     fontSize: 16,
                   ),
-                  decoration: const InputDecoration(
-                    hintText: '새로운 업무를 입력하세요...',
-                    hintStyle: TextStyle(
+                  decoration: InputDecoration(
+                    hintText: 'title_hint'.tr(),
+                    hintStyle: const TextStyle(
                       color: AppColors.textGray,
                     ),
-                    prefixIcon: Icon(
+                    prefixIcon: const Icon(
                       FluentIcons.add_24_regular,
                       color: AppColors.textGray,
                       size: 20,
                     ),
                     border: InputBorder.none,
-                    contentPadding: EdgeInsets.symmetric(
+                    contentPadding: const EdgeInsets.symmetric(
                       horizontal: 16,
                       vertical: 16,
                     ),
@@ -270,10 +254,10 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> {
                           const SizedBox(height: 16),
                           Text(
                             currentFilter == TodoFilter.all
-                                ? '할 일이 없습니다'
+                                ? 'no_todos'.tr()
                                 : currentFilter == TodoFilter.pending
-                                    ? '진행중인 업무가 없습니다'
-                                    : '완료된 업무가 없습니다',
+                                    ? 'no_pending_todos'.tr()
+                                    : 'no_completed_todos'.tr(),
                             style: const TextStyle(
                               color: AppColors.textGray,
                               fontSize: 16,
@@ -319,7 +303,7 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> {
                       ),
                       const SizedBox(height: 16),
                       Text(
-                        '오류: $error',
+                        '${'error'}: $error',
                         style: const TextStyle(
                           color: AppColors.textGray,
                         ),
@@ -350,7 +334,7 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> {
                         Expanded(
                           child: _NavItem(
                             icon: FluentIcons.task_list_square_ltr_24_filled,
-                            label: '업무',
+                            label: 'todos'.tr(),
                             isActive: true,
                             onTap: () {},
                           ),
@@ -358,7 +342,7 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> {
                         Expanded(
                           child: _NavItem(
                             icon: FluentIcons.data_histogram_24_regular,
-                            label: '통계',
+                            label: 'statistics'.tr(),
                             isActive: false,
                             onTap: () {
                               Navigator.push(
@@ -373,7 +357,7 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> {
                         Expanded(
                           child: _NavItem(
                             icon: FluentIcons.settings_24_regular,
-                            label: '설정',
+                            label: 'settings'.tr(),
                             isActive: false,
                             onTap: () {
                               Navigator.push(
@@ -414,38 +398,38 @@ class _FilterChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(8),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          decoration: BoxDecoration(
-            color: AppColors.darkInput,
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: AppColors.darkInput,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Flexible(
+              child: Text(
                 label,
                 style: TextStyle(
                   color: isSelected ? AppColors.textWhite : AppColors.textGray,
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
                 ),
+                overflow: TextOverflow.ellipsis,
               ),
-              const SizedBox(width: 4),
-              Text(
-                '$count',
-                style: const TextStyle(
-                  color: AppColors.textGray,
-                  fontSize: 14,
-                ),
+            ),
+            const SizedBox(width: 4),
+            Text(
+              '$count',
+              style: TextStyle(
+                color: AppColors.textGray,
+                fontSize: 14,
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

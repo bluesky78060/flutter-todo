@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -148,7 +149,7 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('오류: $e'),
+            content: Text('${'error'.tr()}: $e'),
             backgroundColor: Colors.red,
             duration: const Duration(seconds: 5),
           ),
@@ -179,9 +180,9 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
-                  '새로운 할 일',
-                  style: TextStyle(
+                Text(
+                  'new_todo'.tr(),
+                  style: const TextStyle(
                     color: AppColors.textWhite,
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
@@ -204,9 +205,9 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  '제목',
-                  style: TextStyle(
+                Text(
+                  'title'.tr(),
+                  style: const TextStyle(
                     color: AppColors.textGray,
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
@@ -225,13 +226,13 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
                       color: AppColors.textWhite,
                       fontSize: 16,
                     ),
-                    decoration: const InputDecoration(
-                      hintText: '할 일 제목을 입력하세요',
-                      hintStyle: TextStyle(
+                    decoration: InputDecoration(
+                      hintText: 'title_hint'.tr(),
+                      hintStyle: const TextStyle(
                         color: AppColors.textGray,
                       ),
                       border: InputBorder.none,
-                      contentPadding: EdgeInsets.symmetric(
+                      contentPadding: const EdgeInsets.symmetric(
                         horizontal: 16,
                         vertical: 14,
                       ),
@@ -246,9 +247,9 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  '설명 (선택)',
-                  style: TextStyle(
+                Text(
+                  'description_optional'.tr(),
+                  style: const TextStyle(
                     color: AppColors.textGray,
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
@@ -267,13 +268,13 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
                       color: AppColors.textWhite,
                       fontSize: 16,
                     ),
-                    decoration: const InputDecoration(
-                      hintText: '상세 설명을 입력하세요',
-                      hintStyle: TextStyle(
+                    decoration: InputDecoration(
+                      hintText: 'description_hint'.tr(),
+                      hintStyle: const TextStyle(
                         color: AppColors.textGray,
                       ),
                       border: InputBorder.none,
-                      contentPadding: EdgeInsets.symmetric(
+                      contentPadding: const EdgeInsets.symmetric(
                         horizontal: 16,
                         vertical: 14,
                       ),
@@ -288,9 +289,9 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  '마감일 (선택)',
-                  style: TextStyle(
+                Text(
+                  'due_date_optional'.tr(),
+                  style: const TextStyle(
                     color: AppColors.textGray,
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
@@ -320,7 +321,7 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
                         Text(
                           _selectedDueDate != null
                               ? _formatDueDate(_selectedDueDate!)
-                              : '마감일을 선택하세요',
+                              : 'select_due_date'.tr(),
                           style: TextStyle(
                             color: _selectedDueDate != null
                                 ? AppColors.textWhite
@@ -356,9 +357,9 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  '알림 시간 (선택)',
-                  style: TextStyle(
+                Text(
+                  'notification_time_optional'.tr(),
+                  style: const TextStyle(
                     color: AppColors.textGray,
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
@@ -388,7 +389,7 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
                         Text(
                           _selectedNotificationTime != null
                               ? _formatDueDate(_selectedNotificationTime!)
-                              : '알림 시간을 선택하세요',
+                              : 'select_notification_time'.tr(),
                           style: TextStyle(
                             color: _selectedNotificationTime != null
                                 ? AppColors.textWhite
@@ -437,9 +438,9 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-                    child: const Text(
-                      '취소',
-                      style: TextStyle(
+                    child: Text(
+                      'cancel'.tr(),
+                      style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
                       ),
@@ -471,9 +472,9 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      child: const Text(
-                        '추가',
-                        style: TextStyle(
+                      child: Text(
+                        'add'.tr(),
+                        style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
                         ),
