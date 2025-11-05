@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'dart:io' if (dart.library.html) 'dart:html';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -6,16 +6,29 @@ import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 import 'package:todo_app/core/services/web_notification_service.dart';
 
+// Helper to check if running on Android (web-safe)
+bool get _isAndroid => !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
+
+// Helper to check if running on iOS (web-safe)
+bool get _isIOS => !kIsWeb && defaultTargetPlatform == TargetPlatform.iOS;
+
 class NotificationService {
   static final NotificationService _instance = NotificationService._internal();
   factory NotificationService() => _instance;
   NotificationService._internal();
 
-  final FlutterLocalNotificationsPlugin _notifications =
-      FlutterLocalNotificationsPlugin();
+  FlutterLocalNotificationsPlugin? _notifications;
   final WebNotificationService _webNotifications = WebNotificationService();
 
   bool _initialized = false;
+
+  FlutterLocalNotificationsPlugin get _notificationsPlugin {
+    if (kIsWeb) {
+      throw UnsupportedError('FlutterLocalNotifications not supported on web');
+    }
+    _notifications ??= FlutterLocalNotificationsPlugin();
+    return _notifications!;
+  }
 
   /// Initialize the notification service
   Future<void> initialize() async {
@@ -67,7 +80,7 @@ class NotificationService {
         iOS: iosSettings,
       );
 
-      final initialized = await _notifications.initialize(
+      final initialized = await _notificationsPlugin.initialize(
         initSettings,
         onDidReceiveNotificationResponse: _onNotificationTapped,
       );
@@ -77,7 +90,7 @@ class NotificationService {
       }
 
       // Create notification channel for Android
-      if (!kIsWeb && Platform.isAndroid) {
+      if (_isAndroid) {
         await _createNotificationChannel();
       }
 
@@ -101,7 +114,7 @@ class NotificationService {
       enableVibration: true,
     );
 
-    await _notifications
+    await _notificationsPlugin
         .resolvePlatformSpecificImplementation<
             AndroidFlutterLocalNotificationsPlugin>()
         ?.createNotificationChannel(androidChannel);
@@ -126,7 +139,7 @@ class NotificationService {
     }
 
     // For Android 13+ (API 33+)
-    if (!kIsWeb && Platform.isAndroid) {
+    if (_isAndroid) {
       final status = await Permission.notification.request();
 
       if (kDebugMode) {
@@ -145,7 +158,7 @@ class NotificationService {
     }
 
     // For iOS
-    if (!kIsWeb && Platform.isIOS) {
+    if (_isIOS) {
       final status = await Permission.notification.request();
       if (kDebugMode) {
         print('🍎 iOS notification permission: ${status.name}');
@@ -235,7 +248,7 @@ class NotificationService {
         print('   Timezone: ${tz.local.name}');
       }
 
-      await _notifications.zonedSchedule(
+      await _notificationsPlugin.zonedSchedule(
         id,
         title,
         body,
@@ -248,7 +261,7 @@ class NotificationService {
       );
 
       // Verify scheduling
-      final pending = await _notifications.pendingNotificationRequests();
+      final pending = await _notificationsPlugin.pendingNotificationRequests();
       final thisNotification = pending.where((n) => n.id == id).firstOrNull;
 
       if (kDebugMode) {
@@ -275,7 +288,7 @@ class NotificationService {
       return;
     }
 
-    await _notifications.cancel(id);
+    await _notificationsPlugin.cancel(id);
     if (kDebugMode) {
       print('🗑️ Notification cancelled with ID: $id');
     }
@@ -288,7 +301,7 @@ class NotificationService {
       return;
     }
 
-    await _notifications.cancelAll();
+    await _notificationsPlugin.cancelAll();
     if (kDebugMode) {
       print('🗑️ All notifications cancelled');
     }
@@ -316,6 +329,6 @@ class NotificationService {
       return [];
     }
 
-    return await _notifications.pendingNotificationRequests();
+    return await _notificationsPlugin.pendingNotificationRequests();
   }
 }
