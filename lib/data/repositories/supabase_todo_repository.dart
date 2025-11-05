@@ -47,7 +47,12 @@ class SupabaseTodoRepository implements TodoRepository {
     DateTime? notificationTime,
   }) async {
     try {
-      final id = await dataSource.createTodo(title, description, dueDate);
+      final id = await dataSource.createTodo(
+        title,
+        description,
+        dueDate,
+        notificationTime: notificationTime,
+      );
       return Right(id); // Return actual ID from Supabase
     } catch (e) {
       return Left(DatabaseFailure(e.toString()));

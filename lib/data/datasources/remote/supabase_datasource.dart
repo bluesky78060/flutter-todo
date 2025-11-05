@@ -38,7 +38,12 @@ class SupabaseTodoDataSource {
   }
 
   // Create new todo and return the created ID
-  Future<int> createTodo(String title, String description, DateTime? dueDate) async {
+  Future<int> createTodo(
+    String title,
+    String description,
+    DateTime? dueDate, {
+    DateTime? notificationTime,
+  }) async {
     final userId = client.auth.currentUser?.id;
     if (userId == null) {
       throw Exception('User not authenticated. Please login first.');
@@ -49,6 +54,7 @@ class SupabaseTodoDataSource {
       'description': description,
       'user_id': userId,
       'due_date': dueDate?.toIso8601String(),
+      'notification_time': notificationTime?.toIso8601String(),
     }).select('id').single();
 
     return response['id'] as int;

@@ -73,13 +73,23 @@ class TodoActions {
     await result.fold(
       (failure) => throw Exception(failure),
       (todoId) async {
+        print('✅ TodoActions: Todo created with ID: $todoId');
+        print('   Title: $title');
+        print('   Due Date: $dueDate');
+        print('   Notification Time: $notificationTime');
+
         // Schedule notification if notificationTime is set
         if (notificationTime != null) {
           try {
             final notificationService = ref.read(notificationServiceProvider);
+            final now = DateTime.now();
+            final difference = notificationTime.difference(now);
+
             print('📅 TodoActions: Scheduling notification for todo $todoId');
             print('   Title: $title');
-            print('   Time: $notificationTime');
+            print('   Notification Time: $notificationTime');
+            print('   Current Time: $now');
+            print('   Time until notification: ${difference.inMinutes} minutes');
 
             await notificationService.scheduleNotification(
               id: todoId,
@@ -88,12 +98,23 @@ class TodoActions {
               scheduledDate: notificationTime,
             );
 
-            print('✅ TodoActions: Notification scheduled successfully');
+            // Verify scheduling
+            final pending = await notificationService.getPendingNotifications();
+            final thisNotification = pending.where((n) => n.id == todoId).firstOrNull;
+
+            if (thisNotification != null) {
+              print('✅ TodoActions: Notification verified in pending list');
+              print('   Pending notifications count: ${pending.length}');
+            } else {
+              print('⚠️ TodoActions: Notification not found in pending list!');
+            }
           } catch (e, stackTrace) {
             print('❌ TodoActions: Failed to schedule notification: $e');
             print('   Stack trace: $stackTrace');
             // Don't throw - allow todo creation to succeed even if notification fails
           }
+        } else {
+          print('ℹ️ TodoActions: No notification time set');
         }
         ref.invalidate(todosProvider);
       },
