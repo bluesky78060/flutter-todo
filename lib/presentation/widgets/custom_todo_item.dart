@@ -186,13 +186,11 @@ class _CustomTodoItemState extends State<CustomTodoItem>
                         ],
                       ),
                     ),
-                    // Delete Button (always visible on mobile, hover on web)
+                    // Delete Button (always visible)
                     IconButton(
-                      icon: Icon(
+                      icon: const Icon(
                         Icons.delete_outline,
-                        color: kIsWeb && !_isHovered
-                            ? Colors.transparent
-                            : AppColors.textGray,
+                        color: AppColors.textGray,
                         size: 20,
                       ),
                       onPressed: widget.onDelete,
