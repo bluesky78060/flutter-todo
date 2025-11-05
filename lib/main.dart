@@ -14,11 +14,18 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await EasyLocalization.ensureInitialized();
 
-  // Initialize Supabase
+  // Initialize Supabase with deep link handling
   await Supabase.initialize(
     url: SupabaseConfig.url,
     anonKey: SupabaseConfig.anonKey,
+    authOptions: const FlutterAuthClientOptions(
+      authFlowType: AuthFlowType.pkce,
+    ),
   );
+
+  print('✅ Supabase initialized with PKCE auth flow');
+
+  // No need for manual auth listener - StreamProvider handles this automatically
 
   // Initialize Notification Service
   final notificationService = NotificationService();

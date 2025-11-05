@@ -9,6 +9,7 @@ class AppConstants {
   // Routes
   static const String loginRoute = '/login';
   static const String registerRoute = '/register';
-  static const String todosRoute = '/';  // Changed to root for proper routing
+  // Use a distinct path for the todos list to avoid self-redirect loops
+  static const String todosRoute = '/todos';
   static const String todoDetailRoute = 'detail';
 }

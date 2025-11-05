@@ -298,7 +298,7 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> {
                         onDelete: () => ref
                             .read(todoActionsProvider)
                             .deleteTodo(todo.id),
-                        onTap: () => context.go('/${todo.id}'),
+                        onTap: () => context.go('/todos/${todo.id}'),
                       );
                     },
                   );

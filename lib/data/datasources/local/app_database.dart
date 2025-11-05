@@ -1,5 +1,10 @@
 import 'package:drift/drift.dart';
-import 'package:drift/web.dart';
+import 'package:drift/native.dart';
+
+// Import conditional connection helpers
+import 'connection/connection.dart'
+    if (dart.library.html) 'connection/web.dart'
+    if (dart.library.io) 'connection/native.dart';
 
 part 'app_database.g.dart';
 
@@ -95,9 +100,6 @@ class AppDatabase extends _$AppDatabase {
 
 LazyDatabase _openConnection() {
   return LazyDatabase(() async {
-    return WebDatabase(
-      'app_database',
-      logStatements: false,
-    );
+    return openConnection();
   });
 }

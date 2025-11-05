@@ -1,16 +1,39 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:todo_app/core/errors/failures.dart';
-import 'package:todo_app/domain/entities/auth_user.dart';
+import 'package:todo_app/domain/entities/auth_user.dart' as domain;
 import 'package:todo_app/presentation/providers/database_provider.dart';
 
-// Current User Provider
-final currentUserProvider = FutureProvider<AuthUser?>((ref) async {
+// Stream-based Current User Provider that listens to Supabase auth state changes
+final currentUserProvider = StreamProvider<domain.AuthUser?>((ref) async* {
   final repository = ref.watch(authRepositoryProvider);
-  final result = await repository.getCurrentUser();
-  return result.fold(
-    (failure) => null,
-    (user) => user,
-  );
+
+  print('🎯 currentUserProvider: Starting auth stream');
+
+  // Listen to Supabase auth state changes
+  await for (final authState in Supabase.instance.client.auth.onAuthStateChange) {
+    print('🔐 Auth stream update: ${authState.event}, session=${authState.session != null}');
+
+    if (authState.session?.user != null) {
+      // User is authenticated, fetch current user
+      final result = await repository.getCurrentUser();
+      final user = result.fold(
+        (failure) {
+          print('❌ Failed to get user: $failure');
+          return null;
+        },
+        (user) {
+          print('✅ User loaded from repository: ${user?.id}');
+          return user;
+        },
+      );
+      yield user;
+    } else {
+      // No session, user is null
+      print('👋 No authenticated user in session');
+      yield null;
+    }
+  }
 });
 
 // Auth state provider
@@ -39,7 +62,8 @@ class AuthActions {
         return 'Login failed';
       },
       (_) {
-        ref.invalidate(currentUserProvider);
+        // No need to invalidate - StreamProvider will auto-update
+        print('✅ Login successful - StreamProvider will auto-update');
         return null;
       },
     );
@@ -57,7 +81,8 @@ class AuthActions {
         return 'Registration failed';
       },
       (_) {
-        ref.invalidate(currentUserProvider);
+        // No need to invalidate - StreamProvider will auto-update
+        print('✅ Registration successful - StreamProvider will auto-update');
         return null;
       },
     );
@@ -66,7 +91,8 @@ class AuthActions {
   Future<void> logout() async {
     final repository = ref.read(authRepositoryProvider);
     await repository.logout();
-    ref.invalidate(currentUserProvider);
+    // No need to invalidate - StreamProvider will auto-update
+    print('✅ Logout successful - StreamProvider will auto-update');
   }
 }
 

@@ -3,22 +3,27 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 
 /// Returns a redirect URL appropriate for the current runtime.
 /// - On web, returns the current origin + path (handles subpaths).
-/// - On mobile/desktop, falls back to an app-hosted URL if needed.
+/// - On mobile/desktop, returns the deep link URL registered in Supabase dashboard.
 /// For Supabase OAuth on web, using the current URL avoids hardcoded domains.
-String oauthRedirectUrl() {
+String? oauthRedirectUrl() {
   if (kIsWeb) {
+    // Build a callback URL that respects hosting subpaths (e.g. GitHub Pages)
     final base = Uri.base.removeFragment();
     final origin = '${base.scheme}://${base.authority}';
-    final path = base.path.endsWith('/') ? base.path : '${base.path}/';
-    final redirectUrl = '$origin$path';
+    final basePath = base.path; // might be '/' or '/subpath/'
+    final normalizedBasePath = basePath.endsWith('/')
+        ? basePath.substring(0, basePath.length - 1)
+        : basePath;
+    final redirectUrl = '$origin$normalizedBasePath/oauth-callback';
 
-    // Debug: Print redirect URL to console
-    print('🔗 OAuth Redirect URL: $redirectUrl');
-
+    print('🔗 OAuth Redirect URL (Web): $redirectUrl');
     return redirectUrl;
   }
-  // For non-web (iOS/Android/desktop), you generally need a deep link or custom scheme.
-  // Keep this as a placeholder; configure platform-specific redirect if you add native OAuth.
-  return 'https://example.com/';
-}
 
+  // For non-web (iOS/Android/desktop), use deep link URL scheme
+  // This must match the CFBundleURLSchemes in Info.plist and
+  // must be registered in Supabase dashboard redirect URLs
+  final redirectUrl = 'com.example.todoapp://login-callback';
+  print('🔗 OAuth Redirect URL (Mobile): $redirectUrl');
+  return redirectUrl;
+}

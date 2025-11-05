@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:todo_app/core/config/oauth_redirect.dart';
+import 'package:todo_app/presentation/providers/auth_providers.dart';
 
 class StylishLoginScreen extends ConsumerStatefulWidget {
   const StylishLoginScreen({super.key});
@@ -48,15 +49,21 @@ class _StylishLoginScreenState extends ConsumerState<StylishLoginScreen>
     setState(() => _isLoading = true);
 
     try {
+      print('🔐 로그인 시도: ${_emailController.text.trim()}');
       final response = await Supabase.instance.client.auth.signInWithPassword(
         email: _emailController.text.trim(),
         password: _passwordController.text,
       );
 
+      print('✅ 로그인 응답: user=${response.user?.id}, session=${response.session?.accessToken != null}');
+
       if (mounted && response.user != null) {
-        // 로그인 성공 - 자동 리디렉션
+        print('✅ 로그인 성공 - StreamProvider가 자동으로 업데이트합니다');
+        _showSnackBar('로그인 성공!', isSuccess: true);
+        // No need to invalidate - StreamProvider will auto-update
       }
     } catch (e) {
+      print('❌ 로그인 에러: $e');
       if (mounted) {
         _showSnackBar('로그인 실패: ${e.toString()}');
       }
@@ -108,9 +115,11 @@ class _StylishLoginScreenState extends ConsumerState<StylishLoginScreen>
     setState(() => _isLoading = true);
 
     try {
+      // Use external Safari with registered deep link URL
       final response = await Supabase.instance.client.auth.signInWithOAuth(
         OAuthProvider.google,
-        redirectTo: oauthRedirectUrl(),
+        redirectTo: 'com.example.todoapp://login-callback',
+        authScreenLaunchMode: LaunchMode.externalApplication,
       );
 
       if (!response) {
@@ -128,9 +137,11 @@ class _StylishLoginScreenState extends ConsumerState<StylishLoginScreen>
     setState(() => _isLoading = true);
 
     try {
+      // Use external Safari with registered deep link URL
       final response = await Supabase.instance.client.auth.signInWithOAuth(
         OAuthProvider.kakao,
-        redirectTo: oauthRedirectUrl(),
+        redirectTo: 'com.example.todoapp://login-callback',
+        authScreenLaunchMode: LaunchMode.externalApplication,
       );
 
       if (!response) {
