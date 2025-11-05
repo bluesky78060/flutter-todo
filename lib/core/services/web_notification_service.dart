@@ -158,15 +158,15 @@ class WebNotificationService {
         return;
       }
 
-      final notification = html.Notification(
-        title,
-        body: body,
-        icon: '/icons/Icon-192.png',
-        badge: '/icons/Icon-192.png',
-        tag: 'todo-$id',
-        requireInteraction: false,
-        silent: false,
-      );
+      final options = {
+        'body': body,
+        'icon': '/icons/Icon-192.png',
+        'tag': 'todo-$id',
+        'requireInteraction': false,
+        'silent': false,
+      };
+
+      final notification = html.Notification(title, options);
 
       // Auto close after 10 seconds
       Timer(const Duration(seconds: 10), () {
@@ -175,7 +175,14 @@ class WebNotificationService {
 
       // Handle notification click
       notification.onClick.listen((_) {
-        html.window.focus();
+        // Focus window - use JS interop for cross-browser support
+        try {
+          html.window.parent?.focus();
+        } catch (e) {
+          if (kDebugMode) {
+            print('⚠️ Could not focus window: $e');
+          }
+        }
         notification.close();
       });
 
