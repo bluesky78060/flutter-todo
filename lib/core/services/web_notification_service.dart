@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:html' as html;
+import 'dart:js' as js;
 import 'package:flutter/foundation.dart';
 
 class WebNotificationService {
@@ -158,32 +159,34 @@ class WebNotificationService {
         return;
       }
 
-      final options = {
+      // Use JS interop to create notification with options
+      final notificationConstructor = js.context['Notification'];
+      final options = js.JsObject.jsify({
         'body': body,
         'icon': '/icons/Icon-192.png',
         'tag': 'todo-$id',
         'requireInteraction': false,
         'silent': false,
-      };
+      });
 
-      final notification = html.Notification(title, options);
+      final jsNotification = js.JsObject(notificationConstructor, [title, options]);
 
       // Auto close after 10 seconds
       Timer(const Duration(seconds: 10), () {
-        notification.close();
+        jsNotification.callMethod('close', []);
       });
 
       // Handle notification click
-      notification.onClick.listen((_) {
-        // Focus window - use JS interop for cross-browser support
+      jsNotification['onclick'] = js.allowInterop((_) {
+        // Focus window
         try {
-          html.window.parent?.focus();
+          js.context.callMethod('focus', []);
         } catch (e) {
           if (kDebugMode) {
             print('⚠️ Could not focus window: $e');
           }
         }
-        notification.close();
+        jsNotification.callMethod('close', []);
       });
 
       // Remove from scheduled list
