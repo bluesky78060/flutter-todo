@@ -4,8 +4,8 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
-import 'package:todo_app/core/services/web_notification_service.dart'
-    if (dart.library.io) 'package:todo_app/core/services/web_notification_service_stub.dart';
+import 'package:todo_app/core/services/web_notification_service_stub.dart'
+    if (dart.library.html) 'package:todo_app/core/services/web_notification_service.dart';
 
 // Helper to check if running on Android (web-safe)
 bool get _isAndroid => !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
