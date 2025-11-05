@@ -99,7 +99,7 @@ class TodoDetailScreen extends ConsumerWidget {
                     ? FluentIcons.checkmark_circle_24_filled
                     : FluentIcons.circle_24_regular,
                 label: '상태',
-                value: todo.isCompleted ? '완료일' : '진행중',
+                value: todo.isCompleted ? '완료' : '진행중',
                 color: todo.isCompleted ? Colors.green : AppColors.textGray,
               ),
 
