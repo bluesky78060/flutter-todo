@@ -7,9 +7,15 @@ import 'package:universal_html/html.dart' as html;
 /// - On mobile/desktop, returns null to use Supabase default deep link.
 String? oauthRedirectUrl() {
   if (kIsWeb) {
-    // On web, explicitly construct the callback URL from current origin
+    // On web, explicitly construct the callback URL from current origin + pathname
     final origin = html.window.location.origin;
-    final redirectUrl = '$origin/oauth-callback';
+    final pathname = html.window.location.pathname ?? '/';
+
+    // Extract base path (e.g., /flutter-todo from /flutter-todo/ or /flutter-todo/login)
+    final pathParts = pathname.split('/').where((p) => p.isNotEmpty).toList();
+    final basePath = pathParts.isNotEmpty ? '/${pathParts.first}' : '';
+    final redirectUrl = '$origin$basePath/oauth-callback';
+
     print('🔗 OAuth Redirect URL (Web): $redirectUrl');
     return redirectUrl;
   }
