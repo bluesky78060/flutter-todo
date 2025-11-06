@@ -29,10 +29,17 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
     try {
       // Supabase OAuth 플로우 사용 (웹에서 작동)
-      final response = await Supabase.instance.client.auth.signInWithOAuth(
-        OAuthProvider.google,
-        redirectTo: oauthRedirectUrl(),
-      );
+      final redirectUrl = oauthRedirectUrl();
+      print('🔗 Google OAuth redirectTo: $redirectUrl');
+
+      final response = redirectUrl == null
+          ? await Supabase.instance.client.auth.signInWithOAuth(
+              OAuthProvider.google,
+            )
+          : await Supabase.instance.client.auth.signInWithOAuth(
+              OAuthProvider.google,
+              redirectTo: redirectUrl,
+            );
 
       if (!response) {
         throw 'Google 로그인 실패';
@@ -54,10 +61,17 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
     try {
       // Kakao OAuth는 Supabase에서 제공하는 OAuth 플로우 사용
-      final response = await Supabase.instance.client.auth.signInWithOAuth(
-        OAuthProvider.kakao,
-        redirectTo: oauthRedirectUrl(),
-      );
+      final redirectUrl = oauthRedirectUrl();
+      print('🔗 Kakao OAuth redirectTo: $redirectUrl');
+
+      final response = redirectUrl == null
+          ? await Supabase.instance.client.auth.signInWithOAuth(
+              OAuthProvider.kakao,
+            )
+          : await Supabase.instance.client.auth.signInWithOAuth(
+              OAuthProvider.kakao,
+              redirectTo: redirectUrl,
+            );
 
       if (!response) {
         throw 'Kakao 로그인 실패';

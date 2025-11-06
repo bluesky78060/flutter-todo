@@ -115,12 +115,18 @@ class _StylishLoginScreenState extends ConsumerState<StylishLoginScreen>
     setState(() => _isLoading = true);
 
     try {
-      // Use external Safari with registered deep link URL
-      final response = await Supabase.instance.client.auth.signInWithOAuth(
-        OAuthProvider.google,
-        redirectTo: 'com.example.todoapp://login-callback',
-        authScreenLaunchMode: LaunchMode.externalApplication,
-      );
+      // Use oauthRedirectUrl() for platform-appropriate redirect
+      final redirectUrl = oauthRedirectUrl();
+      print('🔗 Google OAuth redirectTo: $redirectUrl');
+
+      final response = redirectUrl == null
+          ? await Supabase.instance.client.auth.signInWithOAuth(
+              OAuthProvider.google,
+            )
+          : await Supabase.instance.client.auth.signInWithOAuth(
+              OAuthProvider.google,
+              redirectTo: redirectUrl,
+            );
 
       if (!response) {
         throw 'Google 로그인 실패';
@@ -137,12 +143,18 @@ class _StylishLoginScreenState extends ConsumerState<StylishLoginScreen>
     setState(() => _isLoading = true);
 
     try {
-      // Use external Safari with registered deep link URL
-      final response = await Supabase.instance.client.auth.signInWithOAuth(
-        OAuthProvider.kakao,
-        redirectTo: 'com.example.todoapp://login-callback',
-        authScreenLaunchMode: LaunchMode.externalApplication,
-      );
+      // Use oauthRedirectUrl() for platform-appropriate redirect
+      final redirectUrl = oauthRedirectUrl();
+      print('🔗 Kakao OAuth redirectTo: $redirectUrl');
+
+      final response = redirectUrl == null
+          ? await Supabase.instance.client.auth.signInWithOAuth(
+              OAuthProvider.kakao,
+            )
+          : await Supabase.instance.client.auth.signInWithOAuth(
+              OAuthProvider.kakao,
+              redirectTo: redirectUrl,
+            );
 
       if (!response) {
         throw 'Kakao 로그인 실패';

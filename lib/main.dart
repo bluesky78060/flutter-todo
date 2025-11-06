@@ -1,4 +1,5 @@
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -14,16 +15,29 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await EasyLocalization.ensureInitialized();
 
-  // Initialize Supabase with deep link handling
-  await Supabase.initialize(
-    url: SupabaseConfig.url,
-    anonKey: SupabaseConfig.anonKey,
-    authOptions: const FlutterAuthClientOptions(
-      authFlowType: AuthFlowType.pkce,
-    ),
-  );
-
-  print('✅ Supabase initialized with PKCE auth flow');
+  // Initialize Supabase with platform-specific auth options
+  if (kIsWeb) {
+    await Supabase.initialize(
+      url: SupabaseConfig.url,
+      anonKey: SupabaseConfig.anonKey,
+      authOptions: FlutterAuthClientOptions(
+        authFlowType: AuthFlowType.pkce,
+        // Force web to use current URL for OAuth redirects
+        // This prevents deep link URLs from being stored
+        autoRefreshToken: true,
+      ),
+    );
+    print('✅ Supabase initialized for web with PKCE auth flow');
+  } else {
+    await Supabase.initialize(
+      url: SupabaseConfig.url,
+      anonKey: SupabaseConfig.anonKey,
+      authOptions: const FlutterAuthClientOptions(
+        authFlowType: AuthFlowType.pkce,
+      ),
+    );
+    print('✅ Supabase initialized for mobile with PKCE auth flow');
+  }
 
   // No need for manual auth listener - StreamProvider handles this automatically
 
