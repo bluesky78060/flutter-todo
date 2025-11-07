@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:todo_app/core/config/oauth_redirect.dart';
 import 'package:todo_app/core/utils/app_logger.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class StylishLoginScreen extends ConsumerStatefulWidget {
   const StylishLoginScreen({super.key});
@@ -20,7 +21,6 @@ class _StylishLoginScreenState extends ConsumerState<StylishLoginScreen>
   bool _isLoading = false;
   bool _isSignUpMode = false;
   bool _rememberMe = false;
-  bool _isDarkMode = false;
   late AnimationController _animationController;
 
   @override
@@ -30,6 +30,15 @@ class _StylishLoginScreenState extends ConsumerState<StylishLoginScreen>
       vsync: this,
       duration: const Duration(seconds: 20),
     )..repeat();
+
+    // Listen to auth state changes to close browser after OAuth
+    Supabase.instance.client.auth.onAuthStateChange.listen((data) {
+      if (data.event == AuthChangeEvent.signedIn) {
+        // Close the OAuth browser window
+        closeInAppWebView();
+        logger.d('🔐 OAuth login successful, closed browser');
+      }
+    });
   }
 
   @override
@@ -122,10 +131,14 @@ class _StylishLoginScreenState extends ConsumerState<StylishLoginScreen>
       final response = redirectUrl == null
           ? await Supabase.instance.client.auth.signInWithOAuth(
               OAuthProvider.google,
+              // Use externalApplication mode to close browser after auth
+              authScreenLaunchMode: LaunchMode.externalApplication,
             )
           : await Supabase.instance.client.auth.signInWithOAuth(
               OAuthProvider.google,
               redirectTo: redirectUrl,
+              // Use externalApplication mode to close browser after auth
+              authScreenLaunchMode: LaunchMode.externalApplication,
             );
 
       if (!response) {
@@ -150,10 +163,14 @@ class _StylishLoginScreenState extends ConsumerState<StylishLoginScreen>
       final response = redirectUrl == null
           ? await Supabase.instance.client.auth.signInWithOAuth(
               OAuthProvider.kakao,
+              // Use externalApplication mode to close browser after auth
+              authScreenLaunchMode: LaunchMode.externalApplication,
             )
           : await Supabase.instance.client.auth.signInWithOAuth(
               OAuthProvider.kakao,
               redirectTo: redirectUrl,
+              // Use externalApplication mode to close browser after auth
+              authScreenLaunchMode: LaunchMode.externalApplication,
             );
 
       if (!response) {
@@ -209,32 +226,23 @@ class _StylishLoginScreenState extends ConsumerState<StylishLoginScreen>
 
   @override
   Widget build(BuildContext context) {
-    // Color schemes
-    final lightGradient = [
-      const Color(0xFF6366F1), // Indigo
-      const Color(0xFF9333EA), // Purple
-      const Color(0xFFEC4899), // Pink
-    ];
-
+    // Dark mode only
     final darkGradient = [
       const Color(0xFF1E293B), // Slate 800
       const Color(0xFF0F172A), // Slate 900
       const Color(0xFF020617), // Slate 950
     ];
 
-    final currentGradient = _isDarkMode ? darkGradient : lightGradient;
-
     return Scaffold(
       body: Stack(
         children: [
           // Animated Gradient Background
-          AnimatedContainer(
-            duration: const Duration(milliseconds: 500),
+          Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
-                colors: currentGradient,
+                colors: darkGradient,
               ),
             ),
           ),
@@ -243,14 +251,11 @@ class _StylishLoginScreenState extends ConsumerState<StylishLoginScreen>
           AnimatedBuilder(
             animation: _animationController,
             builder: (context, child) {
-              final orbOpacity = _isDarkMode ? 0.2 : 0.3;
+              const orbOpacity = 0.2;
               return Stack(
                 children: [
                   _buildFloatingOrb(
-                    color: (_isDarkMode
-                        ? const Color(0xFF475569) // Slate 600
-                        : Colors.purple
-                    ).withValues(alpha: orbOpacity),
+                    color: const Color(0xFF475569).withValues(alpha: orbOpacity),
                     offset: Offset(
                       100 * math.sin(_animationController.value * 2 * math.pi),
                       -100 * math.cos(_animationController.value * 2 * math.pi),
@@ -259,10 +264,7 @@ class _StylishLoginScreenState extends ConsumerState<StylishLoginScreen>
                     left: 80,
                   ),
                   _buildFloatingOrb(
-                    color: (_isDarkMode
-                        ? const Color(0xFF334155) // Slate 700
-                        : Colors.pink
-                    ).withValues(alpha: orbOpacity),
+                    color: const Color(0xFF334155).withValues(alpha: orbOpacity),
                     offset: Offset(
                       -100 * math.sin(_animationController.value * 2 * math.pi * 0.75),
                       100 * math.cos(_animationController.value * 2 * math.pi * 0.75),
@@ -271,10 +273,7 @@ class _StylishLoginScreenState extends ConsumerState<StylishLoginScreen>
                     right: 80,
                   ),
                   _buildFloatingOrb(
-                    color: (_isDarkMode
-                        ? const Color(0xFF1E293B) // Slate 800
-                        : Colors.blue
-                    ).withValues(alpha: orbOpacity),
+                    color: const Color(0xFF1E293B).withValues(alpha: orbOpacity),
                     offset: Offset(
                       200 * math.sin(_animationController.value * 2 * math.pi * 0.9),
                       200 * math.cos(_animationController.value * 2 * math.pi * 0.9),
@@ -339,7 +338,7 @@ class _StylishLoginScreenState extends ConsumerState<StylishLoginScreen>
                                 size: 36,
                               ),
                             ),
-                            const SizedBox(height: 16),
+                            const SizedBox(height: 12),
 
                             // Title
                             const Text(
@@ -350,7 +349,7 @@ class _StylishLoginScreenState extends ConsumerState<StylishLoginScreen>
                                 color: Colors.white,
                               ),
                             ),
-                            const SizedBox(height: 8),
+                            const SizedBox(height: 6),
                             Text(
                               '소셜 계정으로 간편하게 로그인하세요',
                               style: TextStyle(
@@ -358,7 +357,7 @@ class _StylishLoginScreenState extends ConsumerState<StylishLoginScreen>
                                 color: Colors.white.withValues(alpha: 0.8),
                               ),
                             ),
-                            const SizedBox(height: 32),
+                            const SizedBox(height: 24),
 
                             // Email Input
                             _buildInputField(
@@ -367,7 +366,7 @@ class _StylishLoginScreenState extends ConsumerState<StylishLoginScreen>
                               icon: Icons.email_outlined,
                               keyboardType: TextInputType.emailAddress,
                             ),
-                            const SizedBox(height: 16),
+                            const SizedBox(height: 12),
 
                             // Password Input
                             _buildInputField(
@@ -379,7 +378,7 @@ class _StylishLoginScreenState extends ConsumerState<StylishLoginScreen>
                                   ? _signUpWithEmail()
                                   : _signInWithEmail(),
                             ),
-                            const SizedBox(height: 16),
+                            const SizedBox(height: 12),
 
                             // Remember Me & Forgot Password (only show in login mode)
                             if (!_isSignUpMode)
@@ -448,7 +447,7 @@ class _StylishLoginScreenState extends ConsumerState<StylishLoginScreen>
                                 ],
                               ),
 
-                            SizedBox(height: _isSignUpMode ? 24 : 16),
+                            SizedBox(height: _isSignUpMode ? 20 : 12),
 
                             // Login/SignUp Button
                             SizedBox(
@@ -487,7 +486,7 @@ class _StylishLoginScreenState extends ConsumerState<StylishLoginScreen>
                                       ),
                               ),
                             ),
-                            const SizedBox(height: 16),
+                            const SizedBox(height: 12),
 
                             // Toggle Sign Up/Login
                             Row(
@@ -524,7 +523,7 @@ class _StylishLoginScreenState extends ConsumerState<StylishLoginScreen>
 
                             // Divider
                             Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 24),
+                              padding: const EdgeInsets.symmetric(vertical: 12),
                               child: Row(
                                 children: [
                                   Expanded(
@@ -533,12 +532,12 @@ class _StylishLoginScreenState extends ConsumerState<StylishLoginScreen>
                                     ),
                                   ),
                                   Padding(
-                                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                                    padding: const EdgeInsets.symmetric(horizontal: 12),
                                     child: Text(
                                       '또는',
                                       style: TextStyle(
                                         color: Colors.white.withValues(alpha: 0.6),
-                                        fontSize: 14,
+                                        fontSize: 13,
                                       ),
                                     ),
                                   ),
@@ -568,38 +567,6 @@ class _StylishLoginScreenState extends ConsumerState<StylishLoginScreen>
                               onPressed: _signInWithKakao,
                             ),
                               ],
-                            ),
-                          ),
-
-                          // Dark Mode Toggle Button (Inside Card - Top Right)
-                          Positioned(
-                            top: 16,
-                            right: 16,
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: Colors.white.withValues(alpha: 0.15),
-                                borderRadius: BorderRadius.circular(10),
-                                border: Border.all(
-                                  color: Colors.white.withValues(alpha: 0.3),
-                                  width: 1,
-                                ),
-                              ),
-                              child: IconButton(
-                                iconSize: 20,
-                                padding: const EdgeInsets.all(8),
-                                constraints: const BoxConstraints(
-                                  minWidth: 36,
-                                  minHeight: 36,
-                                ),
-                                onPressed: () {
-                                  setState(() => _isDarkMode = !_isDarkMode);
-                                },
-                                icon: Icon(
-                                  _isDarkMode ? Icons.light_mode : Icons.dark_mode,
-                                  color: Colors.white,
-                                ),
-                                tooltip: _isDarkMode ? '라이트 모드' : '다크 모드',
-                              ),
                             ),
                           ),
                         ],

@@ -54,3 +54,9 @@ android/key.properties
 *.keystore
 *.jks
 upload-keystore.jks
+
+# Release binaries (too large for GitHub)
+*.apk
+*.aab
+app-release*.apk
+app-release*.aab
