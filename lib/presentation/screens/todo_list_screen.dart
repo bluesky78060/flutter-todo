@@ -3,9 +3,12 @@ import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:todo_app/core/theme/app_colors.dart';
+import 'package:todo_app/core/services/notification_service.dart';
 import 'package:todo_app/presentation/providers/todo_providers.dart';
 import 'package:todo_app/presentation/providers/category_providers.dart';
+import 'package:todo_app/presentation/providers/database_provider.dart';
 import 'package:todo_app/presentation/screens/settings_screen.dart';
 import 'package:todo_app/presentation/screens/statistics_screen.dart';
 import 'package:todo_app/presentation/widgets/custom_todo_item.dart';
@@ -20,6 +23,61 @@ class TodoListScreen extends ConsumerStatefulWidget {
 
 class _TodoListScreenState extends ConsumerState<TodoListScreen> {
   final TextEditingController _inputController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    // 알림 권한 요청 (첫 실행 시에만)
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkAndRequestNotificationPermission();
+    });
+  }
+
+  Future<void> _checkAndRequestNotificationPermission() async {
+    final prefs = ref.read(sharedPreferencesProvider);
+    final hasAsked = prefs.getBool('notification_permission_asked') ?? false;
+
+    if (!hasAsked) {
+      final notificationService = NotificationService();
+      final isEnabled = await notificationService.areNotificationsEnabled();
+
+      if (!isEnabled && mounted) {
+        final shouldRequest = await showDialog<bool>(
+          context: context,
+          builder: (context) => AlertDialog(
+            backgroundColor: AppColors.darkCard,
+            title: const Text(
+              '알림 권한 요청',
+              style: TextStyle(color: AppColors.textWhite),
+            ),
+            content: const Text(
+              '할일 알림을 받으시겠습니까?\n알림을 허용하면 설정한 시간에 할일을 알려드립니다.',
+              style: TextStyle(color: AppColors.textGray),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: const Text('나중에', style: TextStyle(color: AppColors.textGray)),
+              ),
+              ElevatedButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primaryBlue,
+                ),
+                child: const Text('허용', style: TextStyle(color: Colors.white)),
+              ),
+            ],
+          ),
+        );
+
+        if (shouldRequest == true) {
+          await notificationService.requestPermissions();
+        }
+
+        await prefs.setBool('notification_permission_asked', true);
+      }
+    }
+  }
 
   @override
   void dispose() {
