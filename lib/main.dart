@@ -10,6 +10,7 @@ import 'package:todo_app/core/services/notification_service.dart';
 import 'package:todo_app/core/theme/app_colors.dart';
 import 'package:todo_app/presentation/providers/database_provider.dart';
 import 'package:todo_app/presentation/providers/theme_provider.dart';
+import 'package:todo_app/core/utils/app_logger.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -27,7 +28,7 @@ void main() async {
         autoRefreshToken: true,
       ),
     );
-    print('✅ Supabase initialized for web with PKCE auth flow');
+    logger.d('✅ Supabase initialized for web with PKCE auth flow');
   } else {
     await Supabase.initialize(
       url: SupabaseConfig.url,
@@ -36,7 +37,7 @@ void main() async {
         authFlowType: AuthFlowType.pkce,
       ),
     );
-    print('✅ Supabase initialized for mobile with PKCE auth flow');
+    logger.d('✅ Supabase initialized for mobile with PKCE auth flow');
   }
 
   // No need for manual auth listener - StreamProvider handles this automatically
@@ -45,17 +46,17 @@ void main() async {
   final notificationService = NotificationService();
   try {
     await notificationService.initialize();
-    print('✅ Main: Notification service initialized successfully');
+    logger.d('✅ Main: Notification service initialized successfully');
 
     final permissionGranted = await notificationService.requestPermissions();
-    print('📱 Main: Notification permissions granted: $permissionGranted');
+    logger.d('📱 Main: Notification permissions granted: $permissionGranted');
 
     if (!permissionGranted) {
-      print('⚠️ Main: Notification permissions were not granted');
+      logger.d('⚠️ Main: Notification permissions were not granted');
     }
   } catch (e, stackTrace) {
-    print('❌ Main: Failed to initialize notification service: $e');
-    print('   Stack trace: $stackTrace');
+    logger.d('❌ Main: Failed to initialize notification service: $e');
+    logger.d('   Stack trace: $stackTrace');
   }
 
   final prefs = await SharedPreferences.getInstance();
@@ -97,7 +98,6 @@ class MyApp extends ConsumerWidget {
         colorScheme: ColorScheme.fromSeed(
           seedColor: AppColors.primaryBlue,
           brightness: Brightness.dark,
-          background: AppColors.darkBackground,
           surface: AppColors.darkCard,
         ),
         scaffoldBackgroundColor: AppColors.darkBackground,

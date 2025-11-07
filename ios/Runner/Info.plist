@@ -57,7 +57,7 @@
 			<string>Editor</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>com.example.todoapp</string>
+				<string>kr.bluesky.dodo</string>
 			</array>
 		</dict>
 	</array>

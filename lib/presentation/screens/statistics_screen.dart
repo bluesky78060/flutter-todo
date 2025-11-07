@@ -2,7 +2,6 @@ import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart' as intl;
 import 'package:todo_app/core/theme/app_colors.dart';
 import 'package:todo_app/domain/entities/todo.dart';
 import 'package:todo_app/presentation/providers/database_provider.dart';
@@ -888,7 +887,7 @@ class _TimeBasedStatisticsCard extends StatelessWidget {
                   label: 'avg_completion_time'.tr(),
                   value: stats.avgCompletionHours < 1
                       ? 'less_than_one_hour'.tr()
-                      : 'hours'.tr(namedArgs: {'count': '${stats.avgCompletionHours.toStringAsFixed(0)}'}),
+                      : 'hours'.tr(namedArgs: {'count': stats.avgCompletionHours.toStringAsFixed(0)}),
                 ),
               ),
               const SizedBox(width: 12),

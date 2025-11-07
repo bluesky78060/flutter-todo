@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
+import 'package:go_router/go_router.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:todo_app/core/theme/app_colors.dart';
 import 'package:todo_app/presentation/providers/auth_providers.dart';
@@ -93,6 +94,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   _buildDataCard(),
                   const SizedBox(height: 32),
 
+                  // Categories Management
+                  _buildSectionHeader('카테고리'),
+                  const SizedBox(height: 12),
+                  _buildCategoryCard(),
+                  const SizedBox(height: 32),
+
                   // App Info
                   _buildSectionHeader('info'.tr()),
                   const SizedBox(height: 12),
@@ -128,7 +135,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.2),
+            color: Colors.black.withValues(alpha: 0.2),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -227,63 +234,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     );
   }
 
-  Widget _buildThemeCard(bool isDarkMode) {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.getCard(isDarkMode),
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.2),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          SwitchListTile(
-            value: isDarkMode,
-            onChanged: (value) {
-              ref.read(themeProvider.notifier).toggleTheme();
-            },
-            title: Text(
-              '다크 모드',
-              style: TextStyle(
-                color: AppColors.getText(isDarkMode),
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            subtitle: Text(
-              '어두운 화면으로 전환',
-              style: TextStyle(
-                color: AppColors.getTextSecondary(isDarkMode),
-                fontSize: 14,
-              ),
-            ),
-            secondary: Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: AppColors.getInput(isDarkMode),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Icon(
-                isDarkMode
-                    ? FluentIcons.weather_moon_24_filled
-                    : FluentIcons.weather_sunny_24_filled,
-                color: isDarkMode ? AppColors.primaryBlue : Colors.orange,
-              ),
-            ),
-            activeColor: AppColors.primaryBlue,
-            contentPadding:
-                const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildDataCard() {
     final isDarkMode = ref.watch(isDarkModeProvider);
     return Container(
@@ -292,7 +242,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.2),
+            color: Colors.black.withValues(alpha: 0.2),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -384,6 +334,60 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     );
   }
 
+  Widget _buildCategoryCard() {
+    final isDarkMode = ref.watch(isDarkModeProvider);
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.getCard(isDarkMode),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.2),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: ListTile(
+        leading: Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: AppColors.getInput(isDarkMode),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: const Icon(
+            FluentIcons.folder_24_regular,
+            color: AppColors.primaryBlue,
+          ),
+        ),
+        title: const Text(
+          '카테고리 관리',
+          style: TextStyle(
+            color: AppColors.textWhite,
+            fontSize: 16,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        subtitle: const Text(
+          '할 일 카테고리 추가 및 관리',
+          style: TextStyle(
+            color: AppColors.textGray,
+            fontSize: 14,
+          ),
+        ),
+        trailing: Icon(
+          FluentIcons.chevron_right_24_regular,
+          color: AppColors.getTextSecondary(isDarkMode),
+        ),
+        onTap: () {
+          context.push('/categories');
+        },
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+      ),
+    );
+  }
+
   Widget _buildInfoCard() {
     final isDarkMode = ref.watch(isDarkModeProvider);
     return Container(
@@ -392,7 +396,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.2),
+            color: Colors.black.withValues(alpha: 0.2),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),

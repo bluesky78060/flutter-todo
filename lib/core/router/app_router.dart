@@ -9,6 +9,8 @@ import 'package:todo_app/presentation/screens/register_screen.dart';
 import 'package:todo_app/presentation/screens/todo_detail_screen.dart';
 import 'package:todo_app/presentation/screens/todo_list_screen.dart';
 import 'package:todo_app/presentation/screens/oauth_callback_screen.dart';
+import 'package:todo_app/presentation/screens/category_management_screen.dart';
+import 'package:todo_app/core/utils/app_logger.dart';
 
 final goRouterProvider = Provider<GoRouter>((ref) {
   final authNotifier = ref.watch(authNotifierProvider);
@@ -29,16 +31,16 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       final isLoading = userAsync.isLoading;
       final isAuthenticated = userAsync.value != null;
 
-      print('🚦 Router redirect: location=${state.matchedLocation}, isLoading=$isLoading, isAuth=$isAuthenticated');
+      logger.d('🚦 Router redirect: location=${state.matchedLocation}, isLoading=$isLoading, isAuth=$isAuthenticated');
 
       // Allow OAuth callback route without redirect
       if (isOAuthCallbackRoute) {
-        print('   🔗 OAuth callback route - allowing');
+        logger.d('   🔗 OAuth callback route - allowing');
         return null;
       }
 
       if (isLoading) {
-        print('   ⏳ Loading state - staying on auth routes');
+        logger.d('   ⏳ Loading state - staying on auth routes');
         if (!isLoginRoute && !isRegisterRoute) {
           return AppConstants.loginRoute;
         }
@@ -47,7 +49,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
 
       // If authenticated and at root, redirect to todos (when todos isn't root)
       if (isAuthenticated && state.matchedLocation == '/') {
-        print('   🏠 Authenticated at root - redirecting to todos');
+        logger.d('   🏠 Authenticated at root - redirecting to todos');
         // Avoid returning the same path to prevent loops
         if (AppConstants.todosRoute != state.matchedLocation) {
           return AppConstants.todosRoute;
@@ -55,18 +57,18 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       }
 
       if (!isAuthenticated && !isLoginRoute && !isRegisterRoute) {
-        print('   🔒 Not authenticated - redirecting to login');
+        logger.d('   🔒 Not authenticated - redirecting to login');
         return AppConstants.loginRoute;
       }
 
       if (isAuthenticated && (isLoginRoute || isRegisterRoute)) {
-        print('   ✅ Authenticated - redirecting to todos');
+        logger.d('   ✅ Authenticated - redirecting to todos');
         if (state.matchedLocation != AppConstants.todosRoute) {
           return AppConstants.todosRoute;
         }
       }
 
-      print('   ➡️ No redirect needed');
+      logger.d('   ➡️ No redirect needed');
       return null;
     },
     routes: [
@@ -99,6 +101,11 @@ final goRouterProvider = Provider<GoRouter>((ref) {
             },
           ),
         ],
+      ),
+      GoRoute(
+        path: '/categories',
+        name: 'categories',
+        builder: (context, state) => const CategoryManagementScreen(),
       ),
     ],
     errorBuilder: (context, state) => Scaffold(

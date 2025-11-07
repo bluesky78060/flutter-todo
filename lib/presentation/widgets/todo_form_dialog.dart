@@ -1,10 +1,11 @@
 import 'package:easy_localization/easy_localization.dart' hide TextDirection;
-import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:todo_app/core/theme/app_colors.dart';
 import 'package:todo_app/presentation/providers/todo_providers.dart';
+import 'package:todo_app/presentation/providers/category_providers.dart';
+import 'package:todo_app/domain/entities/category.dart';
 
 class TodoFormDialog extends ConsumerStatefulWidget {
   const TodoFormDialog({super.key});
@@ -18,6 +19,7 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
   final _descriptionController = TextEditingController();
   DateTime? _selectedDueDate;
   DateTime? _selectedNotificationTime;
+  int? _selectedCategoryId;
 
   @override
   void dispose() {
@@ -142,6 +144,7 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
             _titleController.text,
             _descriptionController.text,
             _selectedDueDate,
+            categoryId: _selectedCategoryId,
             notificationTime: _selectedNotificationTime,
           );
       if (mounted) Navigator.of(context).pop();
@@ -279,6 +282,110 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
                         vertical: 14,
                       ),
                     ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+
+            // Category Dropdown
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  '카테고리 (선택)',
+                  style: TextStyle(
+                    color: AppColors.textGray,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                ref.watch(categoriesProvider).when(
+                  data: (categories) {
+                    return Container(
+                      decoration: BoxDecoration(
+                        color: AppColors.darkInput,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: DropdownButtonHideUnderline(
+                        child: DropdownButton<int?>(
+                          value: _selectedCategoryId,
+                          isExpanded: true,
+                          dropdownColor: AppColors.darkCard,
+                          icon: const Icon(
+                            FluentIcons.chevron_down_24_regular,
+                            color: AppColors.textGray,
+                            size: 20,
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 14,
+                          ),
+                          hint: const Text(
+                            '카테고리 선택',
+                            style: TextStyle(
+                              color: AppColors.textGray,
+                              fontSize: 16,
+                            ),
+                          ),
+                          items: [
+                            const DropdownMenuItem<int?>(
+                              value: null,
+                              child: Text(
+                                '카테고리 없음',
+                                style: TextStyle(
+                                  color: AppColors.textGray,
+                                  fontSize: 16,
+                                ),
+                              ),
+                            ),
+                            ...categories.map((category) {
+                              return DropdownMenuItem<int?>(
+                                value: category.id,
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      width: 20,
+                                      height: 20,
+                                      decoration: BoxDecoration(
+                                        color: Color(int.parse('0xFF${category.color}')),
+                                        shape: BoxShape.circle,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    if (category.icon != null) ...[
+                                      Text(
+                                        category.icon!,
+                                        style: const TextStyle(fontSize: 16),
+                                      ),
+                                      const SizedBox(width: 8),
+                                    ],
+                                    Text(
+                                      category.name,
+                                      style: const TextStyle(
+                                        color: AppColors.textWhite,
+                                        fontSize: 16,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            }),
+                          ],
+                          onChanged: (value) {
+                            setState(() {
+                              _selectedCategoryId = value;
+                            });
+                          },
+                        ),
+                      ),
+                    );
+                  },
+                  loading: () => const CircularProgressIndicator(),
+                  error: (error, stack) => Text(
+                    '카테고리 로드 실패: $error',
+                    style: const TextStyle(color: Colors.red),
                   ),
                 ),
               ],
@@ -455,7 +562,7 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
                       borderRadius: BorderRadius.circular(12),
                       boxShadow: [
                         BoxShadow(
-                          color: AppColors.primaryBlue.withOpacity(0.3),
+                          color: AppColors.primaryBlue.withValues(alpha: 0.3),
                           blurRadius: 12,
                           offset: const Offset(0, 4),
                         ),

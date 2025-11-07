@@ -3,34 +3,35 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:todo_app/core/errors/failures.dart';
 import 'package:todo_app/domain/entities/auth_user.dart' as domain;
 import 'package:todo_app/presentation/providers/database_provider.dart';
+import 'package:todo_app/core/utils/app_logger.dart';
 
 // Stream-based Current User Provider that listens to Supabase auth state changes
 final currentUserProvider = StreamProvider<domain.AuthUser?>((ref) async* {
   final repository = ref.watch(authRepositoryProvider);
 
-  print('🎯 currentUserProvider: Starting auth stream');
+  logger.d('🎯 currentUserProvider: Starting auth stream');
 
   // Listen to Supabase auth state changes
   await for (final authState in Supabase.instance.client.auth.onAuthStateChange) {
-    print('🔐 Auth stream update: ${authState.event}, session=${authState.session != null}');
+    logger.d('🔐 Auth stream update: ${authState.event}, session=${authState.session != null}');
 
     if (authState.session?.user != null) {
       // User is authenticated, fetch current user
       final result = await repository.getCurrentUser();
       final user = result.fold(
         (failure) {
-          print('❌ Failed to get user: $failure');
+          logger.d('❌ Failed to get user: $failure');
           return null;
         },
         (user) {
-          print('✅ User loaded from repository: ${user?.id}');
+          logger.d('✅ User loaded from repository: ${user?.id}');
           return user;
         },
       );
       yield user;
     } else {
       // No session, user is null
-      print('👋 No authenticated user in session');
+      logger.d('👋 No authenticated user in session');
       yield null;
     }
   }
@@ -63,7 +64,7 @@ class AuthActions {
       },
       (_) {
         // No need to invalidate - StreamProvider will auto-update
-        print('✅ Login successful - StreamProvider will auto-update');
+        logger.d('✅ Login successful - StreamProvider will auto-update');
         return null;
       },
     );
@@ -82,7 +83,7 @@ class AuthActions {
       },
       (_) {
         // No need to invalidate - StreamProvider will auto-update
-        print('✅ Registration successful - StreamProvider will auto-update');
+        logger.d('✅ Registration successful - StreamProvider will auto-update');
         return null;
       },
     );
@@ -92,7 +93,7 @@ class AuthActions {
     final repository = ref.read(authRepositoryProvider);
     await repository.logout();
     // No need to invalidate - StreamProvider will auto-update
-    print('✅ Logout successful - StreamProvider will auto-update');
+    logger.d('✅ Logout successful - StreamProvider will auto-update');
   }
 }
 

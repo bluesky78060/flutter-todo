@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:todo_app/core/config/oauth_redirect.dart';
-import 'package:todo_app/presentation/providers/auth_providers.dart';
+import 'package:todo_app/core/utils/app_logger.dart';
 
 class StylishLoginScreen extends ConsumerStatefulWidget {
   const StylishLoginScreen({super.key});
@@ -49,21 +49,21 @@ class _StylishLoginScreenState extends ConsumerState<StylishLoginScreen>
     setState(() => _isLoading = true);
 
     try {
-      print('🔐 로그인 시도: ${_emailController.text.trim()}');
+      logger.d('🔐 로그인 시도: ${_emailController.text.trim()}');
       final response = await Supabase.instance.client.auth.signInWithPassword(
         email: _emailController.text.trim(),
         password: _passwordController.text,
       );
 
-      print('✅ 로그인 응답: user=${response.user?.id}, session=${response.session?.accessToken != null}');
+      logger.d('✅ 로그인 응답: user=${response.user?.id}, session=${response.session?.accessToken != null}');
 
       if (mounted && response.user != null) {
-        print('✅ 로그인 성공 - StreamProvider가 자동으로 업데이트합니다');
+        logger.d('✅ 로그인 성공 - StreamProvider가 자동으로 업데이트합니다');
         _showSnackBar('로그인 성공!', isSuccess: true);
         // No need to invalidate - StreamProvider will auto-update
       }
     } catch (e) {
-      print('❌ 로그인 에러: $e');
+      logger.d('❌ 로그인 에러: $e');
       if (mounted) {
         _showSnackBar('로그인 실패: ${e.toString()}');
       }
@@ -117,7 +117,7 @@ class _StylishLoginScreenState extends ConsumerState<StylishLoginScreen>
     try {
       // Use oauthRedirectUrl() for platform-appropriate redirect
       final redirectUrl = oauthRedirectUrl();
-      print('🔗 Google OAuth redirectTo: $redirectUrl');
+      logger.d('🔗 Google OAuth redirectTo: $redirectUrl');
 
       final response = redirectUrl == null
           ? await Supabase.instance.client.auth.signInWithOAuth(
@@ -145,7 +145,7 @@ class _StylishLoginScreenState extends ConsumerState<StylishLoginScreen>
     try {
       // Use oauthRedirectUrl() for platform-appropriate redirect
       final redirectUrl = oauthRedirectUrl();
-      print('🔗 Kakao OAuth redirectTo: $redirectUrl');
+      logger.d('🔗 Kakao OAuth redirectTo: $redirectUrl');
 
       final response = redirectUrl == null
           ? await Supabase.instance.client.auth.signInWithOAuth(
@@ -250,7 +250,7 @@ class _StylishLoginScreenState extends ConsumerState<StylishLoginScreen>
                     color: (_isDarkMode
                         ? const Color(0xFF475569) // Slate 600
                         : Colors.purple
-                    ).withOpacity(orbOpacity),
+                    ).withValues(alpha: orbOpacity),
                     offset: Offset(
                       100 * math.sin(_animationController.value * 2 * math.pi),
                       -100 * math.cos(_animationController.value * 2 * math.pi),
@@ -262,7 +262,7 @@ class _StylishLoginScreenState extends ConsumerState<StylishLoginScreen>
                     color: (_isDarkMode
                         ? const Color(0xFF334155) // Slate 700
                         : Colors.pink
-                    ).withOpacity(orbOpacity),
+                    ).withValues(alpha: orbOpacity),
                     offset: Offset(
                       -100 * math.sin(_animationController.value * 2 * math.pi * 0.75),
                       100 * math.cos(_animationController.value * 2 * math.pi * 0.75),
@@ -274,7 +274,7 @@ class _StylishLoginScreenState extends ConsumerState<StylishLoginScreen>
                     color: (_isDarkMode
                         ? const Color(0xFF1E293B) // Slate 800
                         : Colors.blue
-                    ).withOpacity(orbOpacity),
+                    ).withValues(alpha: orbOpacity),
                     offset: Offset(
                       200 * math.sin(_animationController.value * 2 * math.pi * 0.9),
                       200 * math.cos(_animationController.value * 2 * math.pi * 0.9),
@@ -295,12 +295,12 @@ class _StylishLoginScreenState extends ConsumerState<StylishLoginScreen>
                 constraints: const BoxConstraints(maxWidth: 450),
                 child: Card(
                   elevation: 24,
-                  shadowColor: Colors.black.withOpacity(0.3),
-                  color: Colors.white.withOpacity(0.1),
+                  shadowColor: Colors.black.withValues(alpha: 0.3),
+                  color: Colors.white.withValues(alpha: 0.1),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(24),
                     side: BorderSide(
-                      color: Colors.white.withOpacity(0.2),
+                      color: Colors.white.withValues(alpha: 0.2),
                       width: 1,
                     ),
                   ),
@@ -327,7 +327,7 @@ class _StylishLoginScreenState extends ConsumerState<StylishLoginScreen>
                                 borderRadius: BorderRadius.circular(16),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: Colors.blue.withOpacity(0.3),
+                                    color: Colors.blue.withValues(alpha: 0.3),
                                     blurRadius: 12,
                                     offset: const Offset(0, 4),
                                   ),
@@ -355,7 +355,7 @@ class _StylishLoginScreenState extends ConsumerState<StylishLoginScreen>
                               '소셜 계정으로 간편하게 로그인하세요',
                               style: TextStyle(
                                 fontSize: 14,
-                                color: Colors.white.withOpacity(0.8),
+                                color: Colors.white.withValues(alpha: 0.8),
                               ),
                             ),
                             const SizedBox(height: 32),
@@ -402,16 +402,16 @@ class _StylishLoginScreenState extends ConsumerState<StylishLoginScreen>
                                           fillColor: WidgetStateProperty.resolveWith<Color>(
                                             (states) {
                                               if (states.contains(WidgetState.disabled)) {
-                                                return Colors.white.withOpacity(0.3);
+                                                return Colors.white.withValues(alpha: 0.3);
                                               }
                                               return states.contains(WidgetState.selected)
                                                   ? const Color(0xFF3B82F6)
-                                                  : Colors.white.withOpacity(0.3);
+                                                  : Colors.white.withValues(alpha: 0.3);
                                             },
                                           ),
                                           checkColor: Colors.white,
                                           side: BorderSide(
-                                            color: Colors.white.withOpacity(0.5),
+                                            color: Colors.white.withValues(alpha: 0.5),
                                             width: 1.5,
                                           ),
                                         ),
@@ -420,7 +420,7 @@ class _StylishLoginScreenState extends ConsumerState<StylishLoginScreen>
                                       Text(
                                         '로그인 유지',
                                         style: TextStyle(
-                                          color: Colors.white.withOpacity(0.8),
+                                          color: Colors.white.withValues(alpha: 0.8),
                                           fontSize: 14,
                                         ),
                                       ),
@@ -438,10 +438,10 @@ class _StylishLoginScreenState extends ConsumerState<StylishLoginScreen>
                                     child: Text(
                                       '비밀번호 찾기',
                                       style: TextStyle(
-                                        color: Colors.white.withOpacity(0.8),
+                                        color: Colors.white.withValues(alpha: 0.8),
                                         fontSize: 14,
                                         decoration: TextDecoration.underline,
-                                        decorationColor: Colors.white.withOpacity(0.8),
+                                        decorationColor: Colors.white.withValues(alpha: 0.8),
                                       ),
                                     ),
                                   ),
@@ -464,7 +464,7 @@ class _StylishLoginScreenState extends ConsumerState<StylishLoginScreen>
                                   backgroundColor: const Color(0xFF3B82F6),
                                   foregroundColor: Colors.white,
                                   elevation: 8,
-                                  shadowColor: Colors.blue.withOpacity(0.5),
+                                  shadowColor: Colors.blue.withValues(alpha: 0.5),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(12),
                                   ),
@@ -498,7 +498,7 @@ class _StylishLoginScreenState extends ConsumerState<StylishLoginScreen>
                                       ? '이미 계정이 있으신가요?'
                                       : '계정이 없으신가요?',
                                   style: TextStyle(
-                                    color: Colors.white.withOpacity(0.7),
+                                    color: Colors.white.withValues(alpha: 0.7),
                                     fontSize: 14,
                                   ),
                                 ),
@@ -529,7 +529,7 @@ class _StylishLoginScreenState extends ConsumerState<StylishLoginScreen>
                                 children: [
                                   Expanded(
                                     child: Divider(
-                                      color: Colors.white.withOpacity(0.2),
+                                      color: Colors.white.withValues(alpha: 0.2),
                                     ),
                                   ),
                                   Padding(
@@ -537,14 +537,14 @@ class _StylishLoginScreenState extends ConsumerState<StylishLoginScreen>
                                     child: Text(
                                       '또는',
                                       style: TextStyle(
-                                        color: Colors.white.withOpacity(0.6),
+                                        color: Colors.white.withValues(alpha: 0.6),
                                         fontSize: 14,
                                       ),
                                     ),
                                   ),
                                   Expanded(
                                     child: Divider(
-                                      color: Colors.white.withOpacity(0.2),
+                                      color: Colors.white.withValues(alpha: 0.2),
                                     ),
                                   ),
                                 ],
@@ -577,10 +577,10 @@ class _StylishLoginScreenState extends ConsumerState<StylishLoginScreen>
                             right: 16,
                             child: Container(
                               decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.15),
+                                color: Colors.white.withValues(alpha: 0.15),
                                 borderRadius: BorderRadius.circular(10),
                                 border: Border.all(
-                                  color: Colors.white.withOpacity(0.3),
+                                  color: Colors.white.withValues(alpha: 0.3),
                                   width: 1,
                                 ),
                               ),
@@ -658,10 +658,10 @@ class _StylishLoginScreenState extends ConsumerState<StylishLoginScreen>
   }) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.1),
+        color: Colors.white.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: Colors.white.withOpacity(0.2),
+          color: Colors.white.withValues(alpha: 0.2),
           width: 1,
         ),
       ),
@@ -674,8 +674,8 @@ class _StylishLoginScreenState extends ConsumerState<StylishLoginScreen>
         style: const TextStyle(color: Colors.white),
         decoration: InputDecoration(
           hintText: hintText,
-          hintStyle: TextStyle(color: Colors.white.withOpacity(0.5)),
-          prefixIcon: Icon(icon, color: Colors.white.withOpacity(0.6)),
+          hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.5)),
+          prefixIcon: Icon(icon, color: Colors.white.withValues(alpha: 0.6)),
           border: InputBorder.none,
           contentPadding: const EdgeInsets.symmetric(
             horizontal: 16,
@@ -710,7 +710,7 @@ class _StylishLoginScreenState extends ConsumerState<StylishLoginScreen>
           backgroundColor: color,
           foregroundColor: textColor,
           elevation: 4,
-          shadowColor: Colors.black.withOpacity(0.2),
+          shadowColor: Colors.black.withValues(alpha: 0.2),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),

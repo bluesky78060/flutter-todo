@@ -42,6 +42,7 @@ class SupabaseTodoDataSource {
     String title,
     String description,
     DateTime? dueDate, {
+    int? categoryId,
     DateTime? notificationTime,
   }) async {
     final userId = client.auth.currentUser?.id;
@@ -53,6 +54,7 @@ class SupabaseTodoDataSource {
       'title': title,
       'description': description,
       'user_id': userId,
+      'category_id': categoryId,
       'due_date': dueDate?.toIso8601String(),
       'notification_time': notificationTime?.toIso8601String(),
     }).select('id').single();
@@ -66,6 +68,7 @@ class SupabaseTodoDataSource {
       'title': todo.title,
       'description': todo.description,
       'is_completed': todo.isCompleted,
+      'category_id': todo.categoryId,
       'completed_at': todo.completedAt?.toIso8601String(),
       'due_date': todo.dueDate?.toIso8601String(),
     }).eq('id', todo.id);
@@ -94,12 +97,16 @@ class SupabaseTodoDataSource {
       title: json['title'] as String,
       description: json['description'] as String? ?? '',
       isCompleted: json['is_completed'] as bool? ?? false,
+      categoryId: json['category_id'] as int?,
       createdAt: DateTime.parse(json['created_at'] as String),
       completedAt: json['completed_at'] != null
           ? DateTime.parse(json['completed_at'] as String)
           : null,
       dueDate: json['due_date'] != null
           ? DateTime.parse(json['due_date'] as String)
+          : null,
+      notificationTime: json['notification_time'] != null
+          ? DateTime.parse(json['notification_time'] as String)
           : null,
     );
   }

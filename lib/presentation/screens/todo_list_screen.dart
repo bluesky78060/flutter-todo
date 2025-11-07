@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:todo_app/core/theme/app_colors.dart';
 import 'package:todo_app/presentation/providers/todo_providers.dart';
+import 'package:todo_app/presentation/providers/category_providers.dart';
 import 'package:todo_app/presentation/screens/settings_screen.dart';
 import 'package:todo_app/presentation/screens/statistics_screen.dart';
 import 'package:todo_app/presentation/widgets/custom_todo_item.dart';
@@ -86,7 +87,7 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> {
                               color: AppColors.darkCard,
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(
-                                color: AppColors.darkBorder.withOpacity(0.5),
+                                color: AppColors.darkBorder.withValues(alpha: 0.5),
                                 width: 1,
                               ),
                             ),
@@ -117,7 +118,7 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> {
                               borderRadius: BorderRadius.circular(12),
                               boxShadow: [
                                 BoxShadow(
-                                  color: AppColors.primaryBlue.withOpacity(0.3),
+                                  color: AppColors.primaryBlue.withValues(alpha: 0.3),
                                   blurRadius: 12,
                                   offset: const Offset(0, 4),
                                 ),
@@ -202,6 +203,56 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> {
               ),
             ),
 
+            // Category Filter
+            ref.watch(categoriesProvider).when(
+              data: (categories) {
+                if (categories.isEmpty) return const SizedBox.shrink();
+
+                final selectedCategoryId = ref.watch(categoryFilterProvider);
+
+                return Container(
+                  height: 50,
+                  margin: const EdgeInsets.only(top: 12),
+                  child: ListView(
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    children: [
+                      // All categories chip
+                      Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: _CategoryChip(
+                          label: '전체',
+                          icon: null,
+                          color: null,
+                          isSelected: selectedCategoryId == null,
+                          onTap: () => ref
+                              .read(categoryFilterProvider.notifier)
+                              .clearCategory(),
+                        ),
+                      ),
+                      // Individual category chips
+                      ...categories.map((category) {
+                        return Padding(
+                          padding: const EdgeInsets.only(right: 8),
+                          child: _CategoryChip(
+                            label: category.name,
+                            icon: category.icon,
+                            color: Color(int.parse('0xFF${category.color}')),
+                            isSelected: selectedCategoryId == category.id,
+                            onTap: () => ref
+                                .read(categoryFilterProvider.notifier)
+                                .setCategory(category.id),
+                          ),
+                        );
+                      }),
+                    ],
+                  ),
+                );
+              },
+              loading: () => const SizedBox.shrink(),
+              error: (_, __) => const SizedBox.shrink(),
+            ),
+
             // Quick Add Input
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
@@ -249,7 +300,7 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> {
                           Icon(
                             FluentIcons.task_list_square_ltr_24_regular,
                             size: 64,
-                            color: AppColors.textGray.withOpacity(0.5),
+                            color: AppColors.textGray.withValues(alpha: 0.5),
                           ),
                           const SizedBox(height: 16),
                           Text(
@@ -320,7 +371,7 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> {
                 color: AppColors.darkCard,
                 border: Border(
                   top: BorderSide(
-                    color: AppColors.darkBorder.withOpacity(0.3),
+                    color: AppColors.darkBorder.withValues(alpha: 0.3),
                     width: 1,
                   ),
                 ),
@@ -489,6 +540,80 @@ class _NavItem extends StatelessWidget {
                 style: TextStyle(
                   color: isActive ? AppColors.textWhite : AppColors.textGray,
                   fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// Category Chip Widget
+class _CategoryChip extends StatelessWidget {
+  final String label;
+  final String? icon;
+  final Color? color;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const _CategoryChip({
+    required this.label,
+    required this.icon,
+    required this.color,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(20),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          decoration: BoxDecoration(
+            color: isSelected
+                ? (color ?? AppColors.primaryBlue).withOpacity(0.2)
+                : AppColors.darkCard,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: isSelected
+                  ? (color ?? AppColors.primaryBlue)
+                  : AppColors.darkBorder,
+              width: 1.5,
+            ),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (color != null) ...[
+                Container(
+                  width: 12,
+                  height: 12,
+                  decoration: BoxDecoration(
+                    color: color,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                const SizedBox(width: 6),
+              ],
+              if (icon != null) ...[
+                Text(
+                  icon!,
+                  style: const TextStyle(fontSize: 14),
+                ),
+                const SizedBox(width: 4),
+              ],
+              Text(
+                label,
+                style: TextStyle(
+                  color: isSelected ? AppColors.textWhite : AppColors.textGray,
+                  fontSize: 14,
                   fontWeight: FontWeight.w500,
                 ),
               ),

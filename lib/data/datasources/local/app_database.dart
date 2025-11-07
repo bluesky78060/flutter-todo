@@ -7,12 +7,23 @@ import 'connection/connection.dart'
 
 part 'app_database.g.dart';
 
+// Categories Table
+class Categories extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get userId => text()(); // Supabase user UUID
+  TextColumn get name => text().withLength(min: 1, max: 50)();
+  TextColumn get color => text()(); // Hex color code
+  TextColumn get icon => text().nullable()(); // Icon name or emoji
+  DateTimeColumn get createdAt => dateTime()();
+}
+
 // Todos Table
 class Todos extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get title => text().withLength(min: 1, max: 200)();
   TextColumn get description => text()();
   BoolColumn get isCompleted => boolean().withDefault(const Constant(false))();
+  IntColumn get categoryId => integer().nullable().references(Categories, #id, onDelete: KeyAction.setNull)();
   DateTimeColumn get createdAt => dateTime()();
   DateTimeColumn get completedAt => dateTime().nullable()();
   DateTimeColumn get dueDate => dateTime().nullable()();
@@ -28,12 +39,12 @@ class Users extends Table {
   DateTimeColumn get createdAt => dateTime()();
 }
 
-@DriftDatabase(tables: [Todos, Users])
+@DriftDatabase(tables: [Categories, Todos, Users])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration {
@@ -42,6 +53,12 @@ class AppDatabase extends _$AppDatabase {
         if (from < 2) {
           // Add notificationTime column to existing todos table
           await migrator.addColumn(todos, todos.notificationTime);
+        }
+        if (from < 3) {
+          // Add categories table
+          await migrator.createTable(categories);
+          // Add categoryId column to todos table
+          await migrator.addColumn(todos, todos.categoryId);
         }
       },
     );
@@ -95,6 +112,25 @@ class AppDatabase extends _$AppDatabase {
       (select(users)..where((u) => u.id.equals(id))).getSingleOrNull();
 
   Future<int> insertUser(UsersCompanion user) => into(users).insert(user);
+
+  // Category methods
+  Future<List<Category>> getAllCategories() => select(categories).get();
+
+  Future<Category?> getCategoryById(int id) =>
+      (select(categories)..where((c) => c.id.equals(id))).getSingleOrNull();
+
+  Future<int> insertCategory(CategoriesCompanion category) =>
+      into(categories).insert(category);
+
+  Future<bool> updateCategory(Category category) =>
+      update(categories).replace(category);
+
+  Future<int> deleteCategory(int id) =>
+      (delete(categories)..where((c) => c.id.equals(id))).go();
+
+  // Get todos by category
+  Future<List<Todo>> getTodosByCategory(int categoryId) =>
+      (select(todos)..where((t) => t.categoryId.equals(categoryId))).get();
 }
 
 LazyDatabase _openConnection() {

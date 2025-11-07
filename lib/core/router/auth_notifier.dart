@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:todo_app/presentation/providers/auth_providers.dart';
+import 'package:todo_app/core/utils/app_logger.dart';
 
 /// ChangeNotifier that listens to auth state and notifies GoRouter to refresh
 class AuthNotifier extends ChangeNotifier {
@@ -15,10 +16,10 @@ class AuthNotifier extends ChangeNotifier {
         final wasAuthenticated = _isAuthenticated;
         _isAuthenticated = next.value != null;
 
-        print('🔔 AuthNotifier: Auth state changed from $wasAuthenticated to $_isAuthenticated');
+        logger.d('🔔 AuthNotifier: Auth state changed from $wasAuthenticated to $_isAuthenticated');
 
         if (wasAuthenticated != _isAuthenticated) {
-          print('🔄 AuthNotifier: Notifying GoRouter to refresh');
+          logger.d('🔄 AuthNotifier: Notifying GoRouter to refresh');
           notifyListeners();
         }
       },

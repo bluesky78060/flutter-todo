@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart' show kIsWeb;
 // Use universal_html package for cross-platform compatibility
 import 'package:universal_html/html.dart' as html;
+import 'package:todo_app/core/utils/app_logger.dart';
 
 /// Returns a redirect URL appropriate for the current runtime.
 /// - On web, returns the current origin + /oauth-callback path.
@@ -16,12 +17,13 @@ String? oauthRedirectUrl() {
     final basePath = pathParts.isNotEmpty ? '/${pathParts.first}' : '';
     final redirectUrl = '$origin$basePath/oauth-callback';
 
-    print('🔗 OAuth Redirect URL (Web): $redirectUrl');
+    logger.d('🔗 OAuth Redirect URL (Web): $redirectUrl');
     return redirectUrl;
   }
 
-  // For non-web (iOS/Android/desktop), return null to use Supabase default
-  // The deep link scheme is configured in Supabase dashboard
-  print('🔗 OAuth Redirect URL (Mobile): null (using Supabase default)');
-  return null;
+  // For non-web (iOS/Android/desktop), use deep link scheme
+  // Must match the scheme in AndroidManifest.xml / Info.plist
+  const redirectUrl = 'com.example.todoapp://oauth-callback';
+  logger.d('🔗 OAuth Redirect URL (Mobile): $redirectUrl');
+  return redirectUrl;
 }

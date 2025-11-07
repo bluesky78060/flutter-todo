@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:todo_app/core/config/oauth_redirect.dart';
+import 'package:todo_app/core/utils/app_logger.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -30,7 +31,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     try {
       // Supabase OAuth 플로우 사용 (웹에서 작동)
       final redirectUrl = oauthRedirectUrl();
-      print('🔗 Google OAuth redirectTo: $redirectUrl');
+      logger.d('🔗 Google OAuth redirectTo: $redirectUrl');
 
       final response = redirectUrl == null
           ? await Supabase.instance.client.auth.signInWithOAuth(
@@ -62,7 +63,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     try {
       // Kakao OAuth는 Supabase에서 제공하는 OAuth 플로우 사용
       final redirectUrl = oauthRedirectUrl();
-      print('🔗 Kakao OAuth redirectTo: $redirectUrl');
+      logger.d('🔗 Kakao OAuth redirectTo: $redirectUrl');
 
       final response = redirectUrl == null
           ? await Supabase.instance.client.auth.signInWithOAuth(
@@ -290,7 +291,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 ],
               ),
 
-              const SizedBox(height: 24),
+              const SizedBox(height: 12),
               Row(
                 children: [
                   const Expanded(child: Divider()),
@@ -304,7 +305,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   const Expanded(child: Divider()),
                 ],
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 12),
 
               // SNS 로그인 버튼
                 // Google 로그인 버튼

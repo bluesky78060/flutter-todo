@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -6,7 +5,6 @@ import 'package:todo_app/data/datasources/local/app_database.dart';
 import 'package:todo_app/data/datasources/remote/supabase_datasource.dart';
 import 'package:todo_app/data/repositories/supabase_auth_repository.dart';
 import 'package:todo_app/data/repositories/supabase_todo_repository.dart';
-import 'package:todo_app/data/repositories/todo_repository_impl.dart';
 import 'package:todo_app/domain/repositories/auth_repository.dart';
 import 'package:todo_app/domain/repositories/todo_repository.dart';
 

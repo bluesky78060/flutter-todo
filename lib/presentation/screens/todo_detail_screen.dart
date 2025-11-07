@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
 import 'package:todo_app/presentation/providers/todo_providers.dart';
 import 'package:todo_app/core/theme/app_colors.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';

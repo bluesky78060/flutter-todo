@@ -44,6 +44,7 @@ class SupabaseTodoRepository implements TodoRepository {
     String title,
     String description,
     DateTime? dueDate, {
+    int? categoryId,
     DateTime? notificationTime,
   }) async {
     try {
@@ -51,6 +52,7 @@ class SupabaseTodoRepository implements TodoRepository {
         title,
         description,
         dueDate,
+        categoryId: categoryId,
         notificationTime: notificationTime,
       );
       return Right(id); // Return actual ID from Supabase

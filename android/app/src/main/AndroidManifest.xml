@@ -6,7 +6,7 @@
     <uses-permission android:name="android.permission.VIBRATE"/>
 
     <application
-        android:label="todo_app"
+        android:label="DoDo"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
@@ -35,7 +35,7 @@
                 <action android:name="android.intent.action.VIEW"/>
                 <category android:name="android.intent.category.DEFAULT"/>
                 <category android:name="android.intent.category.BROWSABLE"/>
-                <data android:scheme="com.example.todoapp"/>
+                <data android:scheme="kr.bluesky.dodo"/>
             </intent-filter>
         </activity>
         <!-- Don't delete the meta-data below.

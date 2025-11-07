@@ -1,8 +1,8 @@
-import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:todo_app/core/services/notification_service.dart';
 import 'package:todo_app/domain/entities/todo.dart';
 import 'package:todo_app/presentation/providers/database_provider.dart';
+import 'package:todo_app/core/utils/app_logger.dart';
 
 // Todo filter state
 enum TodoFilter { all, pending, completed }
@@ -19,10 +19,28 @@ class TodoFilterNotifier extends Notifier<TodoFilter> {
 final todoFilterProvider =
     NotifierProvider<TodoFilterNotifier, TodoFilter>(TodoFilterNotifier.new);
 
+// Category filter state
+class CategoryFilterNotifier extends Notifier<int?> {
+  @override
+  int? build() => null; // null means no category filter
+
+  void setCategory(int? categoryId) {
+    state = categoryId;
+  }
+
+  void clearCategory() {
+    state = null;
+  }
+}
+
+final categoryFilterProvider =
+    NotifierProvider<CategoryFilterNotifier, int?>(CategoryFilterNotifier.new);
+
 // Todos List Provider
 final todosProvider = FutureProvider<List<Todo>>((ref) async {
   final repository = ref.watch(todoRepositoryProvider);
   final filter = ref.watch(todoFilterProvider);
+  final categoryFilter = ref.watch(categoryFilterProvider);
 
   final filterString = switch (filter) {
     TodoFilter.all => 'all',
@@ -33,7 +51,13 @@ final todosProvider = FutureProvider<List<Todo>>((ref) async {
   final result = await repository.getFilteredTodos(filterString);
   return result.fold(
     (failure) => throw Exception(failure),
-    (todos) => todos,
+    (todos) {
+      // Apply category filter if selected
+      if (categoryFilter != null) {
+        return todos.where((todo) => todo.categoryId == categoryFilter).toList();
+      }
+      return todos;
+    },
   );
 });
 
@@ -60,6 +84,7 @@ class TodoActions {
     String title,
     String description,
     DateTime? dueDate, {
+    int? categoryId,
     DateTime? notificationTime,
   }) async {
     final repository = ref.read(todoRepositoryProvider);
@@ -67,16 +92,17 @@ class TodoActions {
       title,
       description,
       dueDate,
+      categoryId: categoryId,
       notificationTime: notificationTime,
     );
 
     await result.fold(
       (failure) => throw Exception(failure),
       (todoId) async {
-        print('✅ TodoActions: Todo created with ID: $todoId');
-        print('   Title: $title');
-        print('   Due Date: $dueDate');
-        print('   Notification Time: $notificationTime');
+        logger.d('✅ TodoActions: Todo created with ID: $todoId');
+        logger.d('   Title: $title');
+        logger.d('   Due Date: $dueDate');
+        logger.d('   Notification Time: $notificationTime');
 
         // Schedule notification if notificationTime is set
         if (notificationTime != null) {
@@ -85,11 +111,11 @@ class TodoActions {
             final now = DateTime.now();
             final difference = notificationTime.difference(now);
 
-            print('📅 TodoActions: Scheduling notification for todo $todoId');
-            print('   Title: $title');
-            print('   Notification Time: $notificationTime');
-            print('   Current Time: $now');
-            print('   Time until notification: ${difference.inMinutes} minutes');
+            logger.d('📅 TodoActions: Scheduling notification for todo $todoId');
+            logger.d('   Title: $title');
+            logger.d('   Notification Time: $notificationTime');
+            logger.d('   Current Time: $now');
+            logger.d('   Time until notification: ${difference.inMinutes} minutes');
 
             await notificationService.scheduleNotification(
               id: todoId,
@@ -103,18 +129,18 @@ class TodoActions {
             final thisNotification = pending.where((n) => n.id == todoId).firstOrNull;
 
             if (thisNotification != null) {
-              print('✅ TodoActions: Notification verified in pending list');
-              print('   Pending notifications count: ${pending.length}');
+              logger.d('✅ TodoActions: Notification verified in pending list');
+              logger.d('   Pending notifications count: ${pending.length}');
             } else {
-              print('⚠️ TodoActions: Notification not found in pending list!');
+              logger.d('⚠️ TodoActions: Notification not found in pending list!');
             }
           } catch (e, stackTrace) {
-            print('❌ TodoActions: Failed to schedule notification: $e');
-            print('   Stack trace: $stackTrace');
+            logger.d('❌ TodoActions: Failed to schedule notification: $e');
+            logger.d('   Stack trace: $stackTrace');
             // Don't throw - allow todo creation to succeed even if notification fails
           }
         } else {
-          print('ℹ️ TodoActions: No notification time set');
+          logger.d('ℹ️ TodoActions: No notification time set');
         }
         ref.invalidate(todosProvider);
       },

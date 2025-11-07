@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:html' as html;
 import 'dart:js' as js;
 import 'package:flutter/foundation.dart';
+import 'package:todo_app/core/utils/app_logger.dart';
 
 class WebNotificationService {
   static final WebNotificationService _instance = WebNotificationService._internal();
@@ -17,13 +18,13 @@ class WebNotificationService {
 
     try {
       if (kDebugMode) {
-        print('🌐 WebNotificationService: Initializing');
+        logger.d('🌐 WebNotificationService: Initializing');
       }
 
       // Check if Notification API is supported
       if (!_isNotificationSupported()) {
         if (kDebugMode) {
-          print('⚠️ WebNotificationService: Notification API not supported');
+          logger.d('⚠️ WebNotificationService: Notification API not supported');
         }
         return;
       }
@@ -33,12 +34,12 @@ class WebNotificationService {
       _permissionGranted = permission == 'granted';
 
       if (kDebugMode) {
-        print('✅ WebNotificationService: Initialized');
-        print('   Permission: $permission');
+        logger.d('✅ WebNotificationService: Initialized');
+        logger.d('   Permission: $permission');
       }
     } catch (e) {
       if (kDebugMode) {
-        print('❌ WebNotificationService: Initialization failed: $e');
+        logger.d('❌ WebNotificationService: Initialization failed: $e');
       }
     }
   }
@@ -46,8 +47,7 @@ class WebNotificationService {
   /// Check if Notification API is supported
   bool _isNotificationSupported() {
     return html.window.navigator.userAgent.isNotEmpty &&
-           html.Notification.supported != null &&
-           html.Notification.supported!;
+           html.Notification.supported;
   }
 
   /// Request notification permission
@@ -61,14 +61,14 @@ class WebNotificationService {
       _permissionGranted = permission == 'granted';
 
       if (kDebugMode) {
-        print('🌐 WebNotificationService: Permission requested');
-        print('   Result: $permission');
+        logger.d('🌐 WebNotificationService: Permission requested');
+        logger.d('   Result: $permission');
       }
 
       return _permissionGranted;
     } catch (e) {
       if (kDebugMode) {
-        print('❌ WebNotificationService: Permission request failed: $e');
+        logger.d('❌ WebNotificationService: Permission request failed: $e');
       }
       return false;
     }
@@ -100,35 +100,35 @@ class WebNotificationService {
 
       if (difference.isNegative) {
         if (kDebugMode) {
-          print('⚠️ WebNotificationService: Cannot schedule notification in the past');
-          print('   Scheduled: $scheduledDate');
-          print('   Now: $now');
+          logger.d('⚠️ WebNotificationService: Cannot schedule notification in the past');
+          logger.d('   Scheduled: $scheduledDate');
+          logger.d('   Now: $now');
         }
         return;
       }
 
       if (!areNotificationsEnabled()) {
         if (kDebugMode) {
-          print('⚠️ WebNotificationService: Notifications not enabled');
+          logger.d('⚠️ WebNotificationService: Notifications not enabled');
         }
         // Request permission if not granted
         await requestPermission();
 
         if (!areNotificationsEnabled()) {
           if (kDebugMode) {
-            print('❌ WebNotificationService: Permission denied');
+            logger.d('❌ WebNotificationService: Permission denied');
           }
           return;
         }
       }
 
       if (kDebugMode) {
-        print('🌐 WebNotificationService: Scheduling notification');
-        print('   ID: $id');
-        print('   Title: $title');
-        print('   Body: $body');
-        print('   Scheduled: $scheduledDate');
-        print('   Delay: ${difference.inMinutes} minutes');
+        logger.d('🌐 WebNotificationService: Scheduling notification');
+        logger.d('   ID: $id');
+        logger.d('   Title: $title');
+        logger.d('   Body: $body');
+        logger.d('   Scheduled: $scheduledDate');
+        logger.d('   Delay: ${difference.inMinutes} minutes');
       }
 
       // Schedule the notification
@@ -139,12 +139,12 @@ class WebNotificationService {
       _scheduledNotifications[id] = timer;
 
       if (kDebugMode) {
-        print('✅ WebNotificationService: Notification scheduled');
-        print('   Total pending: ${_scheduledNotifications.length}');
+        logger.d('✅ WebNotificationService: Notification scheduled');
+        logger.d('   Total pending: ${_scheduledNotifications.length}');
       }
     } catch (e) {
       if (kDebugMode) {
-        print('❌ WebNotificationService: Failed to schedule: $e');
+        logger.d('❌ WebNotificationService: Failed to schedule: $e');
       }
     }
   }
@@ -154,7 +154,7 @@ class WebNotificationService {
     try {
       if (!areNotificationsEnabled()) {
         if (kDebugMode) {
-          print('⚠️ WebNotificationService: Cannot show notification, permission not granted');
+          logger.d('⚠️ WebNotificationService: Cannot show notification, permission not granted');
         }
         return;
       }
@@ -183,7 +183,7 @@ class WebNotificationService {
           js.context.callMethod('focus', []);
         } catch (e) {
           if (kDebugMode) {
-            print('⚠️ Could not focus window: $e');
+            logger.d('⚠️ Could not focus window: $e');
           }
         }
         jsNotification.callMethod('close', []);
@@ -193,13 +193,13 @@ class WebNotificationService {
       _scheduledNotifications.remove(id);
 
       if (kDebugMode) {
-        print('🔔 WebNotificationService: Notification shown');
-        print('   ID: $id');
-        print('   Title: $title');
+        logger.d('🔔 WebNotificationService: Notification shown');
+        logger.d('   ID: $id');
+        logger.d('   Title: $title');
       }
     } catch (e) {
       if (kDebugMode) {
-        print('❌ WebNotificationService: Failed to show notification: $e');
+        logger.d('❌ WebNotificationService: Failed to show notification: $e');
       }
     }
   }
@@ -212,8 +212,8 @@ class WebNotificationService {
       _scheduledNotifications.remove(id);
 
       if (kDebugMode) {
-        print('🗑️ WebNotificationService: Notification cancelled');
-        print('   ID: $id');
+        logger.d('🗑️ WebNotificationService: Notification cancelled');
+        logger.d('   ID: $id');
       }
     }
   }
@@ -226,7 +226,7 @@ class WebNotificationService {
     _scheduledNotifications.clear();
 
     if (kDebugMode) {
-      print('🗑️ WebNotificationService: All notifications cancelled');
+      logger.d('🗑️ WebNotificationService: All notifications cancelled');
     }
   }
 
@@ -241,7 +241,7 @@ class WebNotificationService {
       final granted = await requestPermission();
       if (!granted) {
         if (kDebugMode) {
-          print('❌ WebNotificationService: Test notification cancelled - permission denied');
+          logger.d('❌ WebNotificationService: Test notification cancelled - permission denied');
         }
         return;
       }

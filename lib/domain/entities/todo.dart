@@ -3,6 +3,7 @@ class Todo {
   final String title;
   final String description;
   final bool isCompleted;
+  final int? categoryId;
   final DateTime createdAt;
   final DateTime? completedAt;
   final DateTime? dueDate;
@@ -13,6 +14,7 @@ class Todo {
     required this.title,
     required this.description,
     required this.isCompleted,
+    this.categoryId,
     required this.createdAt,
     this.completedAt,
     this.dueDate,
@@ -24,6 +26,7 @@ class Todo {
     String? title,
     String? description,
     bool? isCompleted,
+    int? categoryId,
     DateTime? createdAt,
     DateTime? completedAt,
     DateTime? dueDate,
@@ -34,6 +37,7 @@ class Todo {
       title: title ?? this.title,
       description: description ?? this.description,
       isCompleted: isCompleted ?? this.isCompleted,
+      categoryId: categoryId ?? this.categoryId,
       createdAt: createdAt ?? this.createdAt,
       completedAt: completedAt ?? this.completedAt,
       dueDate: dueDate ?? this.dueDate,

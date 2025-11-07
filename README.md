@@ -92,27 +92,11 @@ flutter run -d chrome
 flutter run
 ```
 
-## Vercel 배포
-
-### 방법 1: Vercel CLI 사용
-```bash
-# Vercel CLI 설치
-npm i -g vercel
-
-# 배포
-vercel
-```
 
 ### 방법 2: GitHub 연동
 1. GitHub 저장소에 코드 푸시
-2. [Vercel](https://vercel.com) 대시보드에서 "New Project"
 3. GitHub 저장소 선택
 4. 자동 배포 시작
-
-### 환경 변수 설정
-Vercel Dashboard → Settings → Environment Variables에서 추가:
-- `SUPABASE_URL`: Supabase 프로젝트 URL
-- `SUPABASE_ANON_KEY`: Supabase anon key
 
 ## 프로젝트 구조
 
