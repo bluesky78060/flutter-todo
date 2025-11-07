@@ -313,7 +313,7 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
                           value: _selectedCategoryId,
                           isExpanded: true,
                           dropdownColor: AppColors.darkCard,
-                          menuMaxHeight: 300, // 드롭다운 최대 높이 제한
+                          menuMaxHeight: 300,
                           icon: const Icon(
                             FluentIcons.chevron_down_24_regular,
                             color: AppColors.textGray,
@@ -321,13 +321,13 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
                           ),
                           padding: const EdgeInsets.symmetric(
                             horizontal: 16,
-                            vertical: 12, // 패딩 축소
+                            vertical: 8,
                           ),
                           hint: const Text(
                             '카테고리 선택',
                             style: TextStyle(
                               color: AppColors.textGray,
-                              fontSize: 14, // 폰트 크기 축소
+                              fontSize: 16,
                             ),
                           ),
                           items: [
@@ -337,7 +337,7 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
                                 '카테고리 없음',
                                 style: TextStyle(
                                   color: AppColors.textGray,
-                                  fontSize: 14, // 폰트 크기 축소
+                                  fontSize: 16,
                                 ),
                               ),
                             ),
@@ -345,30 +345,30 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
                               return DropdownMenuItem<int?>(
                                 value: category.id,
                                 child: Row(
-                                  mainAxisSize: MainAxisSize.min, // Row 크기 최소화
+                                  mainAxisSize: MainAxisSize.min,
                                   children: [
                                     Container(
-                                      width: 16, // 크기 축소
-                                      height: 16, // 크기 축소
+                                      width: 16,
+                                      height: 16,
                                       decoration: BoxDecoration(
                                         color: Color(int.parse('0xFF${category.color}')),
                                         shape: BoxShape.circle,
                                       ),
                                     ),
-                                    const SizedBox(width: 10), // 간격 축소
+                                    const SizedBox(width: 10),
                                     if (category.icon != null) ...[
                                       Text(
                                         category.icon!,
-                                        style: const TextStyle(fontSize: 14), // 폰트 크기 축소
+                                        style: const TextStyle(fontSize: 16),
                                       ),
-                                      const SizedBox(width: 6), // 간격 축소
+                                      const SizedBox(width: 6),
                                     ],
-                                    Flexible( // Flexible로 텍스트 오버플로우 방지
+                                    Flexible(
                                       child: Text(
                                         category.name,
                                         style: const TextStyle(
                                           color: AppColors.textWhite,
-                                          fontSize: 14, // 폰트 크기 축소
+                                          fontSize: 16,
                                         ),
                                         overflow: TextOverflow.ellipsis,
                                       ),
