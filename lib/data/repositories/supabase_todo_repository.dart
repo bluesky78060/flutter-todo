@@ -46,6 +46,8 @@ class SupabaseTodoRepository implements TodoRepository {
     DateTime? dueDate, {
     int? categoryId,
     DateTime? notificationTime,
+    String? recurrenceRule,
+    int? parentRecurringTodoId,
   }) async {
     try {
       final id = await dataSource.createTodo(
@@ -54,6 +56,8 @@ class SupabaseTodoRepository implements TodoRepository {
         dueDate,
         categoryId: categoryId,
         notificationTime: notificationTime,
+        recurrenceRule: recurrenceRule,
+        parentRecurringTodoId: parentRecurringTodoId,
       );
       return Right(id); // Return actual ID from Supabase
     } catch (e) {

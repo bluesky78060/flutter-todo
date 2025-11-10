@@ -1,4 +1,6 @@
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:todo_app/core/utils/app_logger.dart';
 import 'package:todo_app/domain/entities/todo.dart';
 import 'package:todo_app/domain/entities/auth_user.dart' as domain;
 
@@ -44,22 +46,49 @@ class SupabaseTodoDataSource {
     DateTime? dueDate, {
     int? categoryId,
     DateTime? notificationTime,
+    String? recurrenceRule,
+    int? parentRecurringTodoId,
   }) async {
-    final userId = client.auth.currentUser?.id;
-    if (userId == null) {
-      throw Exception('User not authenticated. Please login first.');
+    try {
+      final userId = client.auth.currentUser?.id;
+      if (userId == null) {
+        throw Exception('로그인이 필요합니다. 다시 로그인해주세요.');
+      }
+
+      if (kDebugMode) {
+        logger.d('Creating todo: userId=$userId, title=$title, '
+            'categoryId=$categoryId, dueDate=${dueDate?.toIso8601String()}, '
+            'notificationTime=${notificationTime?.toIso8601String()}, '
+            'recurrenceRule=$recurrenceRule, parentRecurringTodoId=$parentRecurringTodoId');
+      }
+
+      final response = await client.from('todos').insert({
+        'title': title,
+        'description': description,
+        'user_id': userId,
+        'category_id': categoryId,
+        'due_date': dueDate?.toIso8601String(),
+        'notification_time': notificationTime?.toIso8601String(),
+        'recurrence_rule': recurrenceRule,
+        'parent_recurring_todo_id': parentRecurringTodoId,
+      }).select('id').single();
+
+      if (kDebugMode) {
+        logger.d('Todo created successfully with id: ${response['id']}');
+      }
+      return response['id'] as int;
+    } catch (e, stackTrace) {
+      logger.e('Error creating todo', error: e, stackTrace: stackTrace);
+
+      // Supabase 에러를 좀 더 명확하게 표시
+      if (e.toString().contains('permission')) {
+        throw Exception('권한 오류: Supabase RLS 정책을 확인하세요');
+      } else if (e.toString().contains('network')) {
+        throw Exception('네트워크 오류: 인터넷 연결을 확인하세요');
+      } else {
+        throw Exception('DB 저장 실패: ${e.toString()}');
+      }
     }
-
-    final response = await client.from('todos').insert({
-      'title': title,
-      'description': description,
-      'user_id': userId,
-      'category_id': categoryId,
-      'due_date': dueDate?.toIso8601String(),
-      'notification_time': notificationTime?.toIso8601String(),
-    }).select('id').single();
-
-    return response['id'] as int;
   }
 
   // Update todo
@@ -71,12 +100,43 @@ class SupabaseTodoDataSource {
       'category_id': todo.categoryId,
       'completed_at': todo.completedAt?.toIso8601String(),
       'due_date': todo.dueDate?.toIso8601String(),
+      'notification_time': todo.notificationTime?.toIso8601String(),
+      'recurrence_rule': todo.recurrenceRule,
+      'parent_recurring_todo_id': todo.parentRecurringTodoId,
     }).eq('id', todo.id);
   }
 
   // Delete todo
   Future<void> deleteTodo(int id) async {
-    await client.from('todos').delete().eq('id', id);
+    try {
+      final userId = client.auth.currentUser?.id;
+      if (userId == null) {
+        throw Exception('로그인이 필요합니다. 다시 로그인해주세요.');
+      }
+
+      if (kDebugMode) {
+        logger.d('Deleting todo: todoId=$id, userId=$userId');
+      }
+
+      await client.from('todos').delete().eq('id', id);
+
+      if (kDebugMode) {
+        logger.d('Todo deleted successfully: $id');
+      }
+    } catch (e, stackTrace) {
+      logger.e('Error deleting todo', error: e, stackTrace: stackTrace);
+
+      // Supabase 에러를 좀 더 명확하게 표시
+      if (e.toString().contains('permission')) {
+        throw Exception('권한 오류: Supabase RLS 정책을 확인하세요');
+      } else if (e.toString().contains('network')) {
+        throw Exception('네트워크 오류: 인터넷 연결을 확인하세요');
+      } else if (e.toString().contains('not found')) {
+        throw Exception('항목을 찾을 수 없습니다');
+      } else {
+        throw Exception('DB 삭제 실패: ${e.toString()}');
+      }
+    }
   }
 
   // Toggle completion
@@ -108,6 +168,8 @@ class SupabaseTodoDataSource {
       notificationTime: json['notification_time'] != null
           ? DateTime.parse(json['notification_time'] as String)
           : null,
+      recurrenceRule: json['recurrence_rule'] as String?,
+      parentRecurringTodoId: json['parent_recurring_todo_id'] as int?,
     );
   }
 }

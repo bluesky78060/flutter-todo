@@ -46,7 +46,14 @@ class TodoRepositoryImpl implements TodoRepository {
 
   @override
   Future<Either<Failure, int>> createTodo(
-      String title, String description, DateTime? dueDate, {int? categoryId, DateTime? notificationTime}) async {
+    String title,
+    String description,
+    DateTime? dueDate, {
+    int? categoryId,
+    DateTime? notificationTime,
+    String? recurrenceRule,
+    int? parentRecurringTodoId,
+  }) async {
     try {
       final id = await database.insertTodo(
         TodosCompanion(
@@ -57,6 +64,8 @@ class TodoRepositoryImpl implements TodoRepository {
           createdAt: drift.Value(DateTime.now()),
           dueDate: drift.Value(dueDate),
           notificationTime: drift.Value(notificationTime),
+          recurrenceRule: drift.Value(recurrenceRule),
+          parentRecurringTodoId: drift.Value(parentRecurringTodoId),
         ),
       );
       return Right(id);
