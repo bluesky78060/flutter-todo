@@ -86,11 +86,35 @@ void main() async {
   );
 }
 
-class MyApp extends ConsumerWidget {
+class MyApp extends ConsumerStatefulWidget {
   const MyApp({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends ConsumerState<MyApp> {
+  @override
+  void initState() {
+    super.initState();
+
+    // Generate recurring todo instances on app startup
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      try {
+        final recurringService = ref.read(recurringTodoServiceProvider);
+        logger.d('🔄 Main: Generating recurring todo instances on app startup');
+        await recurringService.generateUpcomingInstances(lookAheadDays: 30);
+        logger.d('✅ Main: Recurring instances generation completed');
+      } catch (e, stackTrace) {
+        logger.e('❌ Main: Failed to generate recurring instances on startup',
+          error: e, stackTrace: stackTrace);
+        // Don't throw - app should continue even if this fails
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final router = ref.watch(goRouterProvider);
     final themeMode = ref.watch(themeProvider);
 

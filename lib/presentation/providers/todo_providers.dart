@@ -109,6 +109,7 @@ class TodoActions {
         logger.d('   Title: $title');
         logger.d('   Due Date: $dueDate');
         logger.d('   Notification Time: $notificationTime');
+        logger.d('   Recurrence Rule: $recurrenceRule');
 
         // Schedule notification if notificationTime is set
         if (notificationTime != null) {
@@ -148,6 +149,31 @@ class TodoActions {
         } else {
           logger.d('ℹ️ TodoActions: No notification time set');
         }
+
+        // Generate recurring instances if this is a recurring todo
+        if (recurrenceRule != null) {
+          try {
+            logger.d('🔄 TodoActions: Generating recurring instances for todo $todoId');
+            final recurringService = ref.read(recurringTodoServiceProvider);
+
+            // Fetch the created todo to pass to the service
+            final todoResult = await repository.getTodoById(todoId);
+            await todoResult.fold(
+              (failure) {
+                logger.e('❌ TodoActions: Failed to fetch created todo for recurring instance generation');
+              },
+              (todo) async {
+                await recurringService.generateInstancesForNewMaster(todo);
+                logger.d('✅ TodoActions: Recurring instances generated successfully');
+              },
+            );
+          } catch (e, stackTrace) {
+            logger.e('❌ TodoActions: Failed to generate recurring instances',
+              error: e, stackTrace: stackTrace);
+            // Don't throw - allow todo creation to succeed even if instance generation fails
+          }
+        }
+
         ref.invalidate(todosProvider);
       },
     );

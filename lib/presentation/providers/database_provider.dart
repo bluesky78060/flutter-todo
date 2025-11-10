@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:todo_app/core/services/recurring_todo_service.dart';
 import 'package:todo_app/data/datasources/local/app_database.dart';
 import 'package:todo_app/data/datasources/remote/supabase_datasource.dart';
 import 'package:todo_app/data/repositories/supabase_auth_repository.dart';
@@ -44,4 +45,10 @@ final todoRepositoryProvider = Provider<TodoRepository>((ref) {
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
   final dataSource = ref.watch(supabaseAuthDataSourceProvider);
   return SupabaseAuthRepository(dataSource);
+});
+
+// Recurring Todo Service Provider
+final recurringTodoServiceProvider = Provider<RecurringTodoService>((ref) {
+  final repository = ref.watch(todoRepositoryProvider);
+  return RecurringTodoService(repository);
 });
