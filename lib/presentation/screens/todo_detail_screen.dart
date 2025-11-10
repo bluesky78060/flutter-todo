@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:todo_app/presentation/providers/todo_providers.dart';
 import 'package:todo_app/core/theme/app_colors.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
+import 'package:todo_app/presentation/widgets/todo_form_dialog.dart';
 
 class TodoDetailScreen extends ConsumerWidget {
   final int todoId;
@@ -32,6 +33,22 @@ class TodoDetailScreen extends ConsumerWidget {
           ),
           onPressed: () => Navigator.of(context).pop(),
         ),
+        actions: [
+          todoAsync.whenOrNull(
+            data: (todo) => IconButton(
+              icon: const Icon(
+                FluentIcons.edit_24_regular,
+                color: AppColors.textWhite,
+              ),
+              onPressed: () {
+                showDialog(
+                  context: context,
+                  builder: (context) => TodoFormDialog(existingTodo: todo),
+                );
+              },
+            ),
+          ) ?? const SizedBox.shrink(),
+        ],
       ),
       body: todoAsync.when(
         data: (todo) => SingleChildScrollView(

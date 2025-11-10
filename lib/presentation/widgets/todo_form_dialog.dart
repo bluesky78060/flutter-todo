@@ -1,25 +1,47 @@
 import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:todo_app/core/theme/app_colors.dart';
+import 'package:todo_app/domain/entities/todo.dart';
 import 'package:todo_app/presentation/providers/todo_providers.dart';
 import 'package:todo_app/presentation/providers/category_providers.dart';
-import 'package:todo_app/domain/entities/category.dart';
 
 class TodoFormDialog extends ConsumerStatefulWidget {
-  const TodoFormDialog({super.key});
+  final Todo? existingTodo; // null = create mode, not null = edit mode
+
+  const TodoFormDialog({super.key, this.existingTodo});
 
   @override
   ConsumerState<TodoFormDialog> createState() => _TodoFormDialogState();
 }
 
 class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
-  final _titleController = TextEditingController();
-  final _descriptionController = TextEditingController();
+  late final TextEditingController _titleController;
+  late final TextEditingController _descriptionController;
   DateTime? _selectedDueDate;
   DateTime? _selectedNotificationTime;
   int? _selectedCategoryId;
+
+  bool get _isEditMode => widget.existingTodo != null;
+
+  @override
+  void initState() {
+    super.initState();
+    _titleController = TextEditingController();
+    _descriptionController = TextEditingController();
+
+    // Initialize with existing data if in edit mode
+    if (_isEditMode) {
+      final todo = widget.existingTodo!;
+      _titleController.text = todo.title;
+      _descriptionController.text = todo.description;
+      _selectedDueDate = todo.dueDate;
+      _selectedNotificationTime = todo.notificationTime;
+      _selectedCategoryId = todo.categoryId;
+    }
+  }
 
   @override
   void dispose() {
@@ -31,17 +53,20 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
   Future<void> _selectDate() async {
     if (!mounted) return;
 
-    final DateTime? pickedDate = await showDatePicker(
+    // Step 1: Select date using Material Design calendar
+    final pickedDate = await showDatePicker(
       context: context,
       initialDate: _selectedDueDate ?? DateTime.now(),
       firstDate: DateTime.now(),
       lastDate: DateTime.now().add(const Duration(days: 365)),
       builder: (context, child) {
         return Theme(
-          data: ThemeData.dark().copyWith(
+          data: Theme.of(context).copyWith(
             colorScheme: const ColorScheme.dark(
               primary: AppColors.primaryBlue,
+              onPrimary: AppColors.textWhite,
               surface: AppColors.darkCard,
+              onSurface: AppColors.textWhite,
             ),
           ),
           child: child!,
@@ -49,35 +74,82 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
       },
     );
 
-    if (pickedDate != null && mounted) {
-      final TimeOfDay? pickedTime = await showTimePicker(
-        context: context,
-        initialTime: TimeOfDay.fromDateTime(_selectedDueDate ?? DateTime.now()),
-        builder: (context, child) {
-          return Theme(
-            data: ThemeData.dark().copyWith(
-              colorScheme: const ColorScheme.dark(
-                primary: AppColors.primaryBlue,
-                surface: AppColors.darkCard,
-              ),
-            ),
-            child: child!,
-          );
-        },
-      );
+    if (pickedDate == null || !mounted) return;
 
-      if (pickedTime != null && mounted) {
-        setState(() {
-          _selectedDueDate = DateTime(
-            pickedDate.year,
-            pickedDate.month,
-            pickedDate.day,
-            pickedTime.hour,
-            pickedTime.minute,
-          );
-        });
-      }
-    }
+    // Step 2: Select time using Cupertino wheel picker
+    final now = DateTime.now();
+    TimeOfDay initialTime = TimeOfDay.fromDateTime(_selectedDueDate ?? now.add(const Duration(minutes: 1)));
+
+    await showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.darkCard,
+      builder: (BuildContext context) {
+        DateTime tempTime = DateTime(
+          pickedDate.year,
+          pickedDate.month,
+          pickedDate.day,
+          initialTime.hour,
+          initialTime.minute,
+        );
+
+        return Container(
+          height: 300,
+          padding: const EdgeInsets.only(top: 16),
+          child: Column(
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: Text(
+                      'cancel'.tr(),
+                      style: const TextStyle(color: AppColors.textGray),
+                    ),
+                  ),
+                  Text(
+                    'select_notification_time'.tr(),
+                    style: const TextStyle(
+                      color: AppColors.textWhite,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      setState(() {
+                        _selectedDueDate = tempTime;
+                      });
+                      Navigator.pop(context);
+                    },
+                    child: Text(
+                      'confirm'.tr(),
+                      style: const TextStyle(color: AppColors.primaryBlue),
+                    ),
+                  ),
+                ],
+              ),
+              Expanded(
+                child: CupertinoDatePicker(
+                  mode: CupertinoDatePickerMode.time,
+                  initialDateTime: tempTime,
+                  use24hFormat: false,
+                  onDateTimeChanged: (DateTime newTime) {
+                    tempTime = DateTime(
+                      pickedDate.year,
+                      pickedDate.month,
+                      pickedDate.day,
+                      newTime.hour,
+                      newTime.minute,
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   String _formatDueDate(DateTime date) {
@@ -87,17 +159,20 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
   Future<void> _selectNotificationTime() async {
     if (!mounted) return;
 
-    final DateTime? pickedDate = await showDatePicker(
+    // Step 1: Select date using Material Design calendar
+    final pickedDate = await showDatePicker(
       context: context,
       initialDate: _selectedNotificationTime ?? DateTime.now(),
       firstDate: DateTime.now(),
       lastDate: DateTime.now().add(const Duration(days: 365)),
       builder: (context, child) {
         return Theme(
-          data: ThemeData.dark().copyWith(
+          data: Theme.of(context).copyWith(
             colorScheme: const ColorScheme.dark(
               primary: AppColors.primaryBlue,
+              onPrimary: AppColors.textWhite,
               surface: AppColors.darkCard,
+              onSurface: AppColors.textWhite,
             ),
           ),
           child: child!,
@@ -105,48 +180,108 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
       },
     );
 
-    if (pickedDate != null && mounted) {
-      final TimeOfDay? pickedTime = await showTimePicker(
-        context: context,
-        initialTime: TimeOfDay.fromDateTime(_selectedNotificationTime ?? DateTime.now()),
-        builder: (context, child) {
-          return Theme(
-            data: ThemeData.dark().copyWith(
-              colorScheme: const ColorScheme.dark(
-                primary: AppColors.primaryBlue,
-                surface: AppColors.darkCard,
-              ),
-            ),
-            child: child!,
-          );
-        },
-      );
+    if (pickedDate == null || !mounted) return;
 
-      if (pickedTime != null && mounted) {
-        setState(() {
-          _selectedNotificationTime = DateTime(
-            pickedDate.year,
-            pickedDate.month,
-            pickedDate.day,
-            pickedTime.hour,
-            pickedTime.minute,
-          );
-        });
-      }
-    }
+    // Step 2: Select time using Cupertino wheel picker
+    final now = DateTime.now();
+    TimeOfDay initialTime = TimeOfDay.fromDateTime(_selectedNotificationTime ?? now.add(const Duration(minutes: 1)));
+
+    await showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.darkCard,
+      builder: (BuildContext context) {
+        DateTime tempTime = DateTime(
+          pickedDate.year,
+          pickedDate.month,
+          pickedDate.day,
+          initialTime.hour,
+          initialTime.minute,
+        );
+
+        return Container(
+          height: 300,
+          padding: const EdgeInsets.only(top: 16),
+          child: Column(
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: Text(
+                      'cancel'.tr(),
+                      style: const TextStyle(color: AppColors.textGray),
+                    ),
+                  ),
+                  Text(
+                    'select_notification_time'.tr(),
+                    style: const TextStyle(
+                      color: AppColors.textWhite,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      setState(() {
+                        _selectedNotificationTime = tempTime;
+                      });
+                      Navigator.pop(context);
+                    },
+                    child: Text(
+                      'confirm'.tr(),
+                      style: const TextStyle(color: AppColors.primaryBlue),
+                    ),
+                  ),
+                ],
+              ),
+              Expanded(
+                child: CupertinoDatePicker(
+                  mode: CupertinoDatePickerMode.time,
+                  initialDateTime: tempTime,
+                  use24hFormat: false,
+                  onDateTimeChanged: (DateTime newTime) {
+                    tempTime = DateTime(
+                      pickedDate.year,
+                      pickedDate.month,
+                      pickedDate.day,
+                      newTime.hour,
+                      newTime.minute,
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   Future<void> _save() async {
     if (_titleController.text.isEmpty) return;
 
     try {
-      await ref.read(todoActionsProvider).createTodo(
-            _titleController.text,
-            _descriptionController.text,
-            _selectedDueDate,
-            categoryId: _selectedCategoryId,
-            notificationTime: _selectedNotificationTime,
-          );
+      if (_isEditMode) {
+        // Edit mode: update existing todo
+        final updatedTodo = widget.existingTodo!.copyWith(
+          title: _titleController.text,
+          description: _descriptionController.text,
+          dueDate: _selectedDueDate,
+          categoryId: _selectedCategoryId,
+          notificationTime: _selectedNotificationTime,
+        );
+        await ref.read(todoActionsProvider).updateTodo(updatedTodo);
+      } else {
+        // Create mode: create new todo
+        await ref.read(todoActionsProvider).createTodo(
+              _titleController.text,
+              _descriptionController.text,
+              _selectedDueDate,
+              categoryId: _selectedCategoryId,
+              notificationTime: _selectedNotificationTime,
+            );
+      }
       if (mounted) Navigator.of(context).pop();
     } catch (e) {
       if (mounted) {
@@ -184,7 +319,7 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'new_todo'.tr(),
+                  _isEditMode ? 'edit_todo'.tr() : 'new_todo'.tr(),
                   style: const TextStyle(
                     color: AppColors.textWhite,
                     fontSize: 24,
@@ -224,7 +359,7 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
                   ),
                   child: TextField(
                     controller: _titleController,
-                    autofocus: true,
+                    autofocus: !_isEditMode,
                     style: const TextStyle(
                       color: AppColors.textWhite,
                       fontSize: 16,
@@ -292,9 +427,9 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  '카테고리 (선택)',
-                  style: TextStyle(
+                Text(
+                  'category_optional'.tr(),
+                  style: const TextStyle(
                     color: AppColors.textGray,
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
@@ -323,19 +458,19 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
                             horizontal: 16,
                             vertical: 8,
                           ),
-                          hint: const Text(
-                            '카테고리 선택',
-                            style: TextStyle(
+                          hint: Text(
+                            'select_category'.tr(),
+                            style: const TextStyle(
                               color: AppColors.textGray,
                               fontSize: 16,
                             ),
                           ),
                           items: [
-                            const DropdownMenuItem<int?>(
+                            DropdownMenuItem<int?>(
                               value: null,
                               child: Text(
-                                '카테고리 없음',
-                                style: TextStyle(
+                                'no_category'.tr(),
+                                style: const TextStyle(
                                   color: AppColors.textGray,
                                   fontSize: 16,
                                 ),
@@ -389,7 +524,7 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
                   },
                   loading: () => const CircularProgressIndicator(),
                   error: (error, stack) => Text(
-                    '카테고리 로드 실패: $error',
+                    '${'category_load_failed'.tr()}: $error',
                     style: const TextStyle(color: Colors.red),
                   ),
                 ),
@@ -585,7 +720,7 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
                         ),
                       ),
                       child: Text(
-                        'add'.tr(),
+                        _isEditMode ? 'save'.tr() : 'add'.tr(),
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,

@@ -1,0 +1,406 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## Project Overview
+
+Flutter Todo app with Supabase backend, featuring OAuth authentication (Google/Kakao), local/cloud sync, notifications, and multi-platform support (Web, Android, iOS).
+
+**Package**: `kr.bluesky.dodo`
+**Current Version**: 1.0.3+15 (see pubspec.yaml)
+
+## Development Commands
+
+### Running the App
+
+```bash
+# Web
+flutter run -d chrome
+
+# Android emulator
+flutter run -d emulator-5554
+
+# iOS simulator
+flutter run -d <ios-simulator-id>
+
+# Physical device (Samsung Galaxy example)
+flutter run -d RF9NB0146AB
+
+# List devices
+flutter devices
+
+# Hot reload (send to running Flutter process)
+kill -SIGUSR1 <pid>
+
+# Hot restart
+kill -SIGUSR2 <pid>
+```
+
+### Build Commands
+
+```bash
+# Development APK
+flutter build apk --debug
+
+# Release APK
+flutter build apk --release
+
+# Release AAB (for Google Play)
+flutter build appbundle --release
+
+# Build outputs:
+# - AAB: build/app/outputs/bundle/release/app-release.aab
+# - APK: build/app/outputs/apk/release/app-release.apk
+```
+
+### Code Generation
+
+```bash
+# Generate code (Freezed, Drift, JSON Serializable)
+dart run build_runner build --delete-conflicting-outputs
+
+# Watch mode for continuous generation
+dart run build_runner watch --delete-conflicting-outputs
+```
+
+### Testing & Analysis
+
+```bash
+# Run all tests
+flutter test
+
+# Run specific test
+flutter test test/widget_test.dart
+
+# Analyze code
+flutter analyze
+
+# Check dependencies
+flutter pub outdated
+```
+
+### Android Debugging
+
+```bash
+# Install APK to device
+~/Library/Android/sdk/platform-tools/adb install -r build/app/outputs/apk/release/app-release.apk
+
+# View logs
+~/Library/Android/sdk/platform-tools/adb logcat
+
+# View filtered logs (Flutter/Supabase/Auth)
+~/Library/Android/sdk/platform-tools/adb logcat | grep -E "(flutter|kr.bluesky.dodo|OAuth|Supabase|Auth)"
+
+# Clear logs
+~/Library/Android/sdk/platform-tools/adb logcat -c
+
+# Launch app
+~/Library/Android/sdk/platform-tools/adb shell am start -n kr.bluesky.dodo/.MainActivity
+
+# Uninstall app
+~/Library/Android/sdk/platform-tools/adb uninstall kr.bluesky.dodo
+
+# Take screenshot
+~/Library/Android/sdk/platform-tools/adb exec-out screencap -p > screenshot.png
+```
+
+## Architecture
+
+### Clean Architecture Layers
+
+```
+lib/
+├── core/                    # Cross-cutting concerns
+│   ├── config/             # Supabase, OAuth configuration
+│   ├── router/             # GoRouter setup, auth guards
+│   ├── services/           # Notifications, battery optimization
+│   ├── theme/              # Colors, theming
+│   └── utils/              # Logger, helpers
+│
+├── domain/                 # Business logic (platform-agnostic)
+│   ├── entities/           # Freezed immutable models
+│   └── repositories/       # Repository interfaces
+│
+├── data/                   # Data layer
+│   ├── datasources/
+│   │   ├── local/         # Drift (SQLite) for offline storage
+│   │   └── remote/        # Supabase client
+│   └── repositories/       # Repository implementations
+│
+└── presentation/           # UI layer
+    ├── providers/          # Riverpod 3.x state management
+    ├── screens/            # Page-level widgets
+    └── widgets/            # Reusable components
+```
+
+### Key Architectural Patterns
+
+**1. Dual Repository Pattern**
+- Each entity has TWO repositories: local (Drift) and remote (Supabase)
+- Provider layer orchestrates sync: read from local, write to both
+- Example: `TodoRepositoryImpl` (local) + `SupabaseTodoRepository` (remote)
+
+**2. Auth Flow with GoRouter**
+- `AuthNotifier` listens to Supabase auth state changes
+- `goRouterProvider` uses `refreshListenable` for automatic routing
+- Protected routes redirect to login when unauthenticated
+- OAuth callback handled via `/oauth-callback` route
+
+**3. Notification Architecture**
+- Platform-specific: `FlutterLocalNotifications` (mobile), custom web service
+- Permission handling: delayed until Activity context ready (Android)
+- Crash prevention: duplicate request guards, sequential delays (300-500ms)
+
+**4. State Management (Riverpod 3.x)**
+- `AsyncNotifierProvider` for async state (todos, categories)
+- `StreamProvider` for real-time Supabase auth
+- `StateProvider` for simple state (theme, selected filter)
+
+## Critical Implementation Details
+
+### Android Permissions (Crash-Prone Area)
+
+**Permission Request Timing**: NEVER request permissions in `main()`. Always wait for Activity context:
+
+```dart
+// ❌ WRONG - causes crash
+void main() async {
+  await NotificationService().requestPermissions(); // Crash!
+}
+
+// ✅ CORRECT - in screen after context ready
+@override
+void initState() {
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    Future.delayed(const Duration(milliseconds: 500), () {
+      _checkAndRequestPermissions();
+    });
+  });
+}
+```
+
+**Key Crash Prevention Patterns**:
+1. **Duplicate Request Guard**: `bool _isRequestingPermissions` flag
+2. **Sequential Delays**: 300ms between permission requests
+3. **Activity Ready Delay**: 500ms after `postFrameCallback`
+4. **Non-Critical Errors**: Exact alarm permission failures shouldn't crash app
+
+See: [lib/presentation/screens/todo_list_screen.dart](lib/presentation/screens/todo_list_screen.dart) and [lib/core/services/notification_service.dart](lib/core/services/notification_service.dart)
+
+### OAuth Configuration
+
+**Web vs Mobile Redirects**:
+- Web: `window.location.origin + '/oauth-callback'` (dynamic)
+- Mobile: Platform-specific deep links (handled by Supabase SDK)
+
+**IMPORTANT**: Web OAuth requires static redirect in Supabase Dashboard matching deployed URL.
+
+Configuration: [lib/core/config/oauth_redirect.dart](lib/core/config/oauth_redirect.dart)
+
+### Supabase Setup
+
+Required tables and RLS policies in Supabase:
+
+```sql
+-- todos table
+CREATE TABLE todos (
+  id BIGSERIAL PRIMARY KEY,
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+  title TEXT NOT NULL,
+  description TEXT,
+  is_completed BOOLEAN DEFAULT false,
+  category_id BIGINT REFERENCES categories(id),
+  due_date TIMESTAMPTZ,
+  reminder_time TIMESTAMPTZ,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  completed_at TIMESTAMPTZ
+);
+
+-- categories table
+CREATE TABLE categories (
+  id BIGSERIAL PRIMARY KEY,
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  color TEXT NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Enable RLS and create policies for user isolation
+ALTER TABLE todos ENABLE ROW LEVEL SECURITY;
+ALTER TABLE categories ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can CRUD their own todos" ON todos
+  USING (auth.uid() = user_id)
+  WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can CRUD their own categories" ON categories
+  USING (auth.uid() = user_id)
+  WITH CHECK (auth.uid() = user_id);
+```
+
+**OAuth Providers** (configure in Supabase Dashboard):
+- Google: Requires OAuth 2.0 Client ID
+- Kakao: Requires REST API Key and Redirect URI
+
+### Release Build Configuration
+
+**Android Signing** (android/key.properties):
+```properties
+storePassword=<password>
+keyPassword=<password>
+keyAlias=upload
+storeFile=/path/to/upload-keystore.jks
+```
+
+**Build Optimizations** (enabled in [android/app/build.gradle.kts](android/app/build.gradle.kts)):
+- R8 code shrinking: `isMinifyEnabled = true`
+- Resource shrinking: `isShrinkResources = true`
+- Native debug symbols: `debugSymbolLevel = "FULL"`
+- ProGuard rules: `proguard-rules.pro`
+
+**Version Management**: Update in [pubspec.yaml](pubspec.yaml) (format: `major.minor.patch+buildNumber`)
+
+## Localization
+
+**Supported Languages**: English (en), Korean (ko)
+
+**Adding Translations**:
+1. Edit `assets/translations/en.json` and `assets/translations/ko.json`
+2. Use in code: `tr('key.path')` or `context.tr('key.path')`
+3. Change language: `context.setLocale(Locale('ko'))`
+
+**Common Keys**:
+- Authentication: `login`, `sign_up`, `logout`, `email`, `password`, `google_login`, `kakao_login`
+- Todo: `add_todo`, `edit_todo`, `delete_todo`, `completed`, `pending`, `all`
+- Settings: `settings`, `categories`, `category_management`, `dark_mode`, `logout`
+- Form: `title`, `description`, `save`, `cancel`, `confirm`
+- Notifications: `notification_time_optional`, `select_notification_time`
+
+**Translation Structure**: Flat JSON (no nesting) - use underscore-separated keys like `category_optional`
+
+## Common Issues & Troubleshooting
+
+### "Reply already submitted" Crash
+**Cause**: Multiple permission handlers processing same result
+**Fix**: Add `_isRequestingPermissions` guard flag with delays
+**Prevention**: Always use duplicate request guards when requesting Android permissions
+
+### OAuth Redirect Loop
+**Cause**: GoRouter redirect logic returning same path
+**Fix**: Check `state.matchedLocation != targetRoute` before redirecting
+**Context**: OAuth callback uses `LaunchMode.inAppWebView` for auto-close behavior
+
+### Notifications Not Appearing
+**Causes**:
+1. Permissions not granted (Android 13+) - Check `POST_NOTIFICATIONS`, `SCHEDULE_EXACT_ALARM`
+2. Battery optimization enabled (Samsung devices) - Guide user to disable in settings
+3. Exact alarm permission missing (Android 12+)
+4. Permission requested too early (before Activity context ready)
+
+**Debug**: Check logcat with `grep -E "(flutter|Notification|Permission)"`
+
+**Key Files**:
+- [lib/core/services/notification_service.dart](lib/core/services/notification_service.dart) - Service implementation
+- [lib/presentation/screens/todo_list_screen.dart](lib/presentation/screens/todo_list_screen.dart) - Permission request flow
+
+### Build Failures
+- **Drift errors**: Run `dart run build_runner build --delete-conflicting-outputs`
+- **Dependency conflicts**: Run `flutter pub upgrade` or `flutter pub get`
+- **Android build errors**: Clean with `flutter clean && cd android && ./gradlew clean`
+- **Keystore missing**: Ensure `android/key.properties` exists for release builds
+- **JAVA_HOME not set**: Set with `export JAVA_HOME="/Applications/Android Studio.app/Contents/jbr/Contents/Home"`
+
+### Hot Reload Not Working
+**Cause**: Flutter process not responding to signals
+**Solution**: Find PID with `ps aux | grep flutter` and send `kill -SIGUSR1 <pid>`
+**Alternative**: Stop app and restart with `flutter run`
+
+## Testing Workflows
+
+### Manual Testing Checklist
+
+**Auth Flow**:
+1. Register new account
+2. Login with email/password
+3. OAuth login (Google/Kakao)
+4. Logout and verify redirect
+
+**Todo CRUD**:
+1. Create todo with category and reminder
+2. Toggle completion status
+3. Edit todo details
+4. Delete todo
+5. Verify local/cloud sync
+
+**Notifications**:
+1. Set reminder for 1-2 minutes from now
+2. Grant all permissions
+3. Background app
+4. Verify notification appears at scheduled time
+
+**Release Testing**:
+1. Build release APK: `flutter build apk --release`
+2. Install on physical device: `adb install -r <apk-path>`
+3. Test without debugger attached
+4. Verify ProGuard didn't break functionality
+
+## Deployment
+
+### Google Play Release
+
+1. **Update version** in pubspec.yaml (e.g., `1.0.3+11`)
+2. **Build AAB**: `flutter build appbundle --release`
+3. **Verify signing**: Check `android/key.properties` exists
+4. **Upload to Play Console**: Internal/Alpha/Beta/Production track
+5. **Release notes**: Document changes in Korean and English
+
+See [GOOGLE_PLAY_RELEASE.md](GOOGLE_PLAY_RELEASE.md) for detailed guide.
+
+### Web Deployment (Vercel/GitHub Pages)
+
+1. **Build**: `flutter build web --release`
+2. **Deploy**: Push to GitHub or `vercel deploy`
+3. **Update Supabase**: Add deployed URL to OAuth redirect whitelist
+
+## Performance Considerations
+
+- **Large lists**: Use `ListView.builder` with pagination
+- **Image loading**: Cached network images with placeholders
+- **Database queries**: Index frequently queried columns
+- **State management**: Minimize provider rebuilds with `select`
+- **Build methods**: Keep lightweight, extract heavy logic to providers
+
+## Security Notes
+
+- Never commit `android/key.properties` or `.env` files
+- Supabase RLS policies enforce user data isolation
+- OAuth secrets managed in Supabase Dashboard
+- ProGuard obfuscation enabled in release builds
+
+## Feature Development Workflow
+
+**IMPORTANT**: When adding new features, always update [FUTURE_TASKS.md](FUTURE_TASKS.md) to track progress.
+
+### Process:
+1. **Before starting**: Review FUTURE_TASKS.md to check if the feature is already planned
+2. **During development**: Mark tasks with checkboxes as you complete them
+3. **After completion**: Update the task status and document any changes
+
+### Checkbox Format:
+```markdown
+- [ ] Feature not started
+- [x] Feature completed
+```
+
+### Example Workflow:
+```markdown
+## 1. Core Features 🔴 High Priority
+
+### 1.1 Todo Editing
+- [x] Edit todo title
+- [x] Edit todo description
+- [ ] Edit todo due date (in progress)
+- [ ] Edit todo category
+```
+
+**Purpose**: Maintain a clear history of implemented features and prevent duplicate work. This file serves as the single source of truth for feature planning and progress tracking.
