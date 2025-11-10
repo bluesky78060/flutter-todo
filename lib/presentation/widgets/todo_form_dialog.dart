@@ -9,6 +9,7 @@ import 'package:todo_app/domain/entities/todo.dart';
 import 'package:todo_app/presentation/providers/todo_providers.dart';
 import 'package:todo_app/presentation/providers/category_providers.dart';
 import 'package:todo_app/presentation/widgets/recurrence_settings_dialog.dart';
+import 'package:todo_app/presentation/widgets/recurring_edit_dialog.dart';
 
 class TodoFormDialog extends ConsumerStatefulWidget {
   final Todo? existingTodo; // null = create mode, not null = edit mode
@@ -284,15 +285,42 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
     try {
       if (_isEditMode) {
         // Edit mode: update existing todo
-        final updatedTodo = widget.existingTodo!.copyWith(
-          title: _titleController.text,
-          description: _descriptionController.text,
-          dueDate: _selectedDueDate,
-          categoryId: _selectedCategoryId,
-          notificationTime: _selectedNotificationTime,
-          recurrenceRule: _recurrenceRule,
-        );
-        await ref.read(todoActionsProvider).updateTodo(updatedTodo);
+        final existingTodo = widget.existingTodo!;
+
+        // Check if this is a recurring todo instance
+        if (existingTodo.parentRecurringTodoId != null) {
+          // Show recurring edit dialog
+          final mode = await showDialog<RecurringEditMode>(
+            context: context,
+            builder: (context) => const RecurringEditDialog(),
+          );
+
+          if (mode == null) return; // User cancelled
+
+          final updatedTodo = existingTodo.copyWith(
+            title: _titleController.text,
+            description: _descriptionController.text,
+            dueDate: _selectedDueDate,
+            categoryId: _selectedCategoryId,
+            notificationTime: _selectedNotificationTime,
+          );
+
+          await ref.read(todoActionsProvider).updateTodo(
+            updatedTodo,
+            recurringEditMode: mode,
+          );
+        } else {
+          // Regular todo or master recurring todo
+          final updatedTodo = existingTodo.copyWith(
+            title: _titleController.text,
+            description: _descriptionController.text,
+            dueDate: _selectedDueDate,
+            categoryId: _selectedCategoryId,
+            notificationTime: _selectedNotificationTime,
+            recurrenceRule: _recurrenceRule,
+          );
+          await ref.read(todoActionsProvider).updateTodo(updatedTodo);
+        }
       } else {
         // Create mode: create new todo
         await ref.read(todoActionsProvider).createTodo(

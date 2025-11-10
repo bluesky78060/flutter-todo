@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:todo_app/core/theme/app_colors.dart';
 import 'package:todo_app/core/services/notification_service.dart';
 import 'package:todo_app/core/services/battery_optimization_service.dart';
+import 'package:todo_app/domain/entities/todo.dart';
 import 'package:todo_app/presentation/providers/todo_providers.dart';
 import 'package:todo_app/presentation/providers/category_providers.dart';
 import 'package:todo_app/presentation/providers/database_provider.dart';
@@ -14,6 +15,7 @@ import 'package:todo_app/presentation/screens/settings_screen.dart';
 import 'package:todo_app/presentation/screens/statistics_screen.dart';
 import 'package:todo_app/presentation/widgets/custom_todo_item.dart';
 import 'package:todo_app/presentation/widgets/todo_form_dialog.dart';
+import 'package:todo_app/presentation/widgets/recurring_delete_dialog.dart';
 
 class TodoListScreen extends ConsumerStatefulWidget {
   const TodoListScreen({super.key});
@@ -165,6 +167,28 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> {
 
     ref.read(todoActionsProvider).createTodo(text, '', null);
     _inputController.clear();
+  }
+
+  /// Handle todo deletion with recurring dialog if needed
+  Future<void> _handleDelete(Todo todo) async {
+    // Check if this is a recurring todo instance
+    if (todo.parentRecurringTodoId != null) {
+      // Show recurring delete dialog
+      final mode = await showDialog<RecurringDeleteMode>(
+        context: context,
+        builder: (context) => const RecurringDeleteDialog(),
+      );
+
+      if (mode == null) return; // User cancelled
+
+      await ref.read(todoActionsProvider).deleteTodo(
+        todo.id,
+        recurringDeleteMode: mode,
+      );
+    } else {
+      // Regular todo deletion
+      await ref.read(todoActionsProvider).deleteTodo(todo.id);
+    }
   }
 
   @override
@@ -462,9 +486,7 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> {
                         onToggle: () => ref
                             .read(todoActionsProvider)
                             .toggleCompletion(todo.id),
-                        onDelete: () => ref
-                            .read(todoActionsProvider)
-                            .deleteTodo(todo.id),
+                        onDelete: () => _handleDelete(todo),
                         onTap: () => context.go('/todos/${todo.id}'),
                       );
                     },
