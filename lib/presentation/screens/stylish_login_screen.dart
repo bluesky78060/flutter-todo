@@ -1,11 +1,11 @@
 import 'dart:math' as math;
 import 'dart:ui';
+import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:todo_app/core/config/oauth_redirect.dart';
 import 'package:todo_app/core/utils/app_logger.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 class StylishLoginScreen extends ConsumerStatefulWidget {
   const StylishLoginScreen({super.key});
@@ -30,15 +30,6 @@ class _StylishLoginScreenState extends ConsumerState<StylishLoginScreen>
       vsync: this,
       duration: const Duration(seconds: 20),
     )..repeat();
-
-    // Listen to auth state changes to close browser after OAuth
-    Supabase.instance.client.auth.onAuthStateChange.listen((data) {
-      if (data.event == AuthChangeEvent.signedIn) {
-        // Close the OAuth browser window
-        closeInAppWebView();
-        logger.d('🔐 OAuth login successful, closed browser');
-      }
-    });
   }
 
   @override
@@ -51,7 +42,7 @@ class _StylishLoginScreenState extends ConsumerState<StylishLoginScreen>
 
   Future<void> _signInWithEmail() async {
     if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
-      _showSnackBar('이메일과 비밀번호를 입력해주세요');
+      _showSnackBar('email_password_required'.tr());
       return;
     }
 
@@ -68,13 +59,13 @@ class _StylishLoginScreenState extends ConsumerState<StylishLoginScreen>
 
       if (mounted && response.user != null) {
         logger.d('✅ 로그인 성공 - StreamProvider가 자동으로 업데이트합니다');
-        _showSnackBar('로그인 성공!', isSuccess: true);
+        _showSnackBar('login_success'.tr(), isSuccess: true);
         // No need to invalidate - StreamProvider will auto-update
       }
     } catch (e) {
       logger.d('❌ 로그인 에러: $e');
       if (mounted) {
-        _showSnackBar('로그인 실패: ${e.toString()}');
+        _showSnackBar('${'login_failed'.tr()}: ${e.toString()}');
       }
     } finally {
       if (mounted) {
@@ -85,12 +76,12 @@ class _StylishLoginScreenState extends ConsumerState<StylishLoginScreen>
 
   Future<void> _signUpWithEmail() async {
     if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
-      _showSnackBar('이메일과 비밀번호를 입력해주세요');
+      _showSnackBar('email_password_required'.tr());
       return;
     }
 
     if (_passwordController.text.length < 6) {
-      _showSnackBar('비밀번호는 최소 6자 이상이어야 합니다');
+      _showSnackBar('password_min_length'.tr());
       return;
     }
 
@@ -104,14 +95,14 @@ class _StylishLoginScreenState extends ConsumerState<StylishLoginScreen>
 
       if (mounted) {
         if (response.user != null) {
-          _showSnackBar('회원가입 성공! 이제 로그인할 수 있습니다.', isSuccess: true);
+          _showSnackBar('signup_success'.tr(), isSuccess: true);
           setState(() => _isSignUpMode = false);
           _passwordController.clear();
         }
       }
     } catch (e) {
       if (mounted) {
-        _showSnackBar('회원가입 실패: ${e.toString()}');
+        _showSnackBar('${'sign_up_failed'.tr()}: ${e.toString()}');
       }
     } finally {
       if (mounted) {
@@ -131,22 +122,22 @@ class _StylishLoginScreenState extends ConsumerState<StylishLoginScreen>
       final response = redirectUrl == null
           ? await Supabase.instance.client.auth.signInWithOAuth(
               OAuthProvider.google,
-              // Use externalApplication mode to close browser after auth
-              authScreenLaunchMode: LaunchMode.externalApplication,
+              // Use inAppWebView for popup-like experience with auto-close
+              authScreenLaunchMode: LaunchMode.inAppWebView,
             )
           : await Supabase.instance.client.auth.signInWithOAuth(
               OAuthProvider.google,
               redirectTo: redirectUrl,
-              // Use externalApplication mode to close browser after auth
-              authScreenLaunchMode: LaunchMode.externalApplication,
+              // Use inAppWebView for popup-like experience with auto-close
+              authScreenLaunchMode: LaunchMode.inAppWebView,
             );
 
       if (!response) {
-        throw 'Google 로그인 실패';
+        throw 'google_login_failed'.tr();
       }
     } catch (e) {
       if (mounted) {
-        _showSnackBar('Google 로그인 실패: ${e.toString()}');
+        _showSnackBar('${'google_login_failed'.tr()}: ${e.toString()}');
         setState(() => _isLoading = false);
       }
     }
@@ -163,22 +154,22 @@ class _StylishLoginScreenState extends ConsumerState<StylishLoginScreen>
       final response = redirectUrl == null
           ? await Supabase.instance.client.auth.signInWithOAuth(
               OAuthProvider.kakao,
-              // Use externalApplication mode to close browser after auth
-              authScreenLaunchMode: LaunchMode.externalApplication,
+              // Use inAppWebView for popup-like experience with auto-close
+              authScreenLaunchMode: LaunchMode.inAppWebView,
             )
           : await Supabase.instance.client.auth.signInWithOAuth(
               OAuthProvider.kakao,
               redirectTo: redirectUrl,
-              // Use externalApplication mode to close browser after auth
-              authScreenLaunchMode: LaunchMode.externalApplication,
+              // Use inAppWebView for popup-like experience with auto-close
+              authScreenLaunchMode: LaunchMode.inAppWebView,
             );
 
       if (!response) {
-        throw 'Kakao 로그인 실패';
+        throw 'kakao_login_failed'.tr();
       }
     } catch (e) {
       if (mounted) {
-        _showSnackBar('Kakao 로그인 실패: ${e.toString()}');
+        _showSnackBar('${'kakao_login_failed'.tr()}: ${e.toString()}');
         setState(() => _isLoading = false);
       }
     }
@@ -186,7 +177,7 @@ class _StylishLoginScreenState extends ConsumerState<StylishLoginScreen>
 
   Future<void> _resetPassword() async {
     if (_emailController.text.isEmpty) {
-      _showSnackBar('비밀번호 재설정을 위해 이메일을 입력해주세요');
+      _showSnackBar('enter_email_for_reset'.tr());
       return;
     }
 
@@ -200,13 +191,13 @@ class _StylishLoginScreenState extends ConsumerState<StylishLoginScreen>
 
       if (mounted) {
         _showSnackBar(
-          '비밀번호 재설정 링크를 이메일로 보냈습니다',
+          'reset_password_email_sent'.tr(),
           isSuccess: true,
         );
       }
     } catch (e) {
       if (mounted) {
-        _showSnackBar('비밀번호 재설정 실패: ${e.toString()}');
+        _showSnackBar('${'reset_password_failed'.tr()}: ${e.toString()}');
       }
     } finally {
       if (mounted) {
@@ -351,7 +342,7 @@ class _StylishLoginScreenState extends ConsumerState<StylishLoginScreen>
                             ),
                             const SizedBox(height: 6),
                             Text(
-                              '소셜 계정으로 간편하게 로그인하세요',
+                              'login_subtitle'.tr(),
                               style: TextStyle(
                                 fontSize: 14,
                                 color: Colors.white.withValues(alpha: 0.8),
@@ -362,7 +353,7 @@ class _StylishLoginScreenState extends ConsumerState<StylishLoginScreen>
                             // Email Input
                             _buildInputField(
                               controller: _emailController,
-                              hintText: '이메일',
+                              hintText: 'email'.tr(),
                               icon: Icons.email_outlined,
                               keyboardType: TextInputType.emailAddress,
                             ),
@@ -371,7 +362,7 @@ class _StylishLoginScreenState extends ConsumerState<StylishLoginScreen>
                             // Password Input
                             _buildInputField(
                               controller: _passwordController,
-                              hintText: '비밀번호',
+                              hintText: 'password'.tr(),
                               icon: Icons.lock_outline,
                               obscureText: true,
                               onSubmitted: (_) => _isSignUpMode
@@ -417,7 +408,7 @@ class _StylishLoginScreenState extends ConsumerState<StylishLoginScreen>
                                       ),
                                       const SizedBox(width: 8),
                                       Text(
-                                        '로그인 유지',
+                                        'remember_me'.tr(),
                                         style: TextStyle(
                                           color: Colors.white.withValues(alpha: 0.8),
                                           fontSize: 14,
@@ -435,7 +426,7 @@ class _StylishLoginScreenState extends ConsumerState<StylishLoginScreen>
                                       tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                                     ),
                                     child: Text(
-                                      '비밀번호 찾기',
+                                      'forgot_password'.tr(),
                                       style: TextStyle(
                                         color: Colors.white.withValues(alpha: 0.8),
                                         fontSize: 14,
@@ -478,7 +469,7 @@ class _StylishLoginScreenState extends ConsumerState<StylishLoginScreen>
                                         ),
                                       )
                                     : Text(
-                                        _isSignUpMode ? '회원가입' : '로그인',
+                                        _isSignUpMode ? 'sign_up'.tr() : 'login'.tr(),
                                         style: const TextStyle(
                                           fontSize: 16,
                                           fontWeight: FontWeight.w600,
@@ -494,8 +485,8 @@ class _StylishLoginScreenState extends ConsumerState<StylishLoginScreen>
                               children: [
                                 Text(
                                   _isSignUpMode
-                                      ? '이미 계정이 있으신가요?'
-                                      : '계정이 없으신가요?',
+                                      ? 'already_have_account'.tr()
+                                      : 'dont_have_account'.tr(),
                                   style: TextStyle(
                                     color: Colors.white.withValues(alpha: 0.7),
                                     fontSize: 14,
@@ -510,7 +501,7 @@ class _StylishLoginScreenState extends ConsumerState<StylishLoginScreen>
                                           _passwordController.clear();
                                         },
                                   child: Text(
-                                    _isSignUpMode ? '로그인' : '회원가입',
+                                    _isSignUpMode ? 'login'.tr() : 'sign_up'.tr(),
                                     style: const TextStyle(
                                       color: Colors.white,
                                       fontWeight: FontWeight.bold,
@@ -534,7 +525,7 @@ class _StylishLoginScreenState extends ConsumerState<StylishLoginScreen>
                                   Padding(
                                     padding: const EdgeInsets.symmetric(horizontal: 12),
                                     child: Text(
-                                      '또는',
+                                      'or'.tr(),
                                       style: TextStyle(
                                         color: Colors.white.withValues(alpha: 0.6),
                                         fontSize: 13,
@@ -552,7 +543,7 @@ class _StylishLoginScreenState extends ConsumerState<StylishLoginScreen>
 
                             // Social Login Buttons
                             _buildSocialButton(
-                              label: 'Google로 로그인',
+                              label: 'google_login'.tr(),
                               icon: Icons.g_mobiledata,
                               color: Colors.white,
                               textColor: Colors.black87,
@@ -560,7 +551,7 @@ class _StylishLoginScreenState extends ConsumerState<StylishLoginScreen>
                             ),
                             const SizedBox(height: 12),
                             _buildSocialButton(
-                              label: 'Kakao로 로그인',
+                              label: 'kakao_login'.tr(),
                               icon: Icons.chat_bubble,
                               color: const Color(0xFFFEE500),
                               textColor: Colors.black87,

@@ -52,6 +52,28 @@ android {
     buildTypes {
         release {
             signingConfig = signingConfigs.getByName("release")
+
+            // 코드 최적화 활성화
+            isMinifyEnabled = true
+            // 리소스 최적화 활성화
+            isShrinkResources = true
+
+            // ProGuard 규칙 파일
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
+
+            // 네이티브 디버그 심볼 생성 (Google Play 크래시 분석용)
+            ndk {
+                debugSymbolLevel = "FULL"
+            }
+        }
+    }
+
+    packaging {
+        jniLibs {
+            useLegacyPackaging = true
         }
     }
 }

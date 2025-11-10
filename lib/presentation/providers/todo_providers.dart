@@ -86,6 +86,7 @@ class TodoActions {
     DateTime? dueDate, {
     int? categoryId,
     DateTime? notificationTime,
+    String? recurrenceRule,
   }) async {
     final repository = ref.read(todoRepositoryProvider);
     final result = await repository.createTodo(
@@ -94,10 +95,15 @@ class TodoActions {
       dueDate,
       categoryId: categoryId,
       notificationTime: notificationTime,
+      recurrenceRule: recurrenceRule,
     );
 
     await result.fold(
-      (failure) => throw Exception(failure),
+      (failure) {
+        logger.e('❌ TodoActions: Failed to create todo');
+        logger.e('   Error: $failure');
+        throw Exception('DB 저장 실패: $failure');
+      },
       (todoId) async {
         logger.d('✅ TodoActions: Todo created with ID: $todoId');
         logger.d('   Title: $title');
@@ -163,13 +169,28 @@ class TodoActions {
     final repository = ref.read(todoRepositoryProvider);
     final notificationService = ref.read(notificationServiceProvider);
 
+    logger.d('🗑️ TodoActions: Attempting to delete todo $id');
+
     // Cancel notification before deleting todo
-    await notificationService.cancelNotification(id);
+    try {
+      await notificationService.cancelNotification(id);
+      logger.d('✅ TodoActions: Notification cancelled for todo $id');
+    } catch (e) {
+      logger.d('⚠️ TodoActions: Failed to cancel notification: $e');
+      // Continue with deletion even if notification cancel fails
+    }
 
     final result = await repository.deleteTodo(id);
     result.fold(
-      (failure) => throw Exception(failure),
-      (_) => ref.invalidate(todosProvider),
+      (failure) {
+        logger.e('❌ TodoActions: Failed to delete todo $id');
+        logger.e('   Error: $failure');
+        throw Exception('DB 삭제 실패: $failure');
+      },
+      (_) {
+        logger.d('✅ TodoActions: Todo deleted successfully: $id');
+        ref.invalidate(todosProvider);
+      },
     );
   }
 

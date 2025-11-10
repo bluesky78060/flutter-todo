@@ -1,4 +1,33 @@
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
+/// Supabase configuration loaded from environment variables
+///
+/// SECURITY: Credentials are loaded from .env file (not committed to git)
+/// See .env.example for required environment variables
 class SupabaseConfig {
-  static const String url = 'https://bulwfcsyqgsvmbadhlye.supabase.co';
-  static const String anonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ1bHdmY3N5cWdzdm1iYWRobHllIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIxMzM1MjMsImV4cCI6MjA3NzcwOTUyM30._5Ft7sTK6m946oDSRHgjFgDBRc7YH-nD9KC8gLkHeo0';
+  /// Supabase project URL
+  /// Loaded from SUPABASE_URL environment variable
+  static String get url {
+    final url = dotenv.env['SUPABASE_URL'];
+    if (url == null || url.isEmpty) {
+      throw Exception(
+        'SUPABASE_URL not found in .env file. '
+        'Please copy .env.example to .env and fill in your credentials.',
+      );
+    }
+    return url;
+  }
+
+  /// Supabase anonymous key
+  /// Loaded from SUPABASE_ANON_KEY environment variable
+  static String get anonKey {
+    final key = dotenv.env['SUPABASE_ANON_KEY'];
+    if (key == null || key.isEmpty) {
+      throw Exception(
+        'SUPABASE_ANON_KEY not found in .env file. '
+        'Please copy .env.example to .env and fill in your credentials.',
+      );
+    }
+    return key;
+  }
 }

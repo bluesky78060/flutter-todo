@@ -1,6 +1,8 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -12,9 +14,23 @@ import 'package:todo_app/presentation/providers/database_provider.dart';
 import 'package:todo_app/presentation/providers/theme_provider.dart';
 import 'package:todo_app/core/utils/app_logger.dart';
 
+// ✅ CRITICAL: Background notification handler (must be top-level function)
+// This function handles notifications when the app is terminated or in background
+// IMPORTANT: Keep this function as simple as possible to avoid crashes
+@pragma('vm:entry-point')
+void notificationTapBackground(NotificationResponse notificationResponse) {
+  // Do nothing - just prevent crash
+  // The app will open when user taps the notification
+  // Complex logic should be handled when app comes to foreground
+}
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await EasyLocalization.ensureInitialized();
+
+  // Load environment variables from .env file
+  await dotenv.load(fileName: '.env');
+  logger.d('✅ Environment variables loaded from .env');
 
   // Initialize Supabase with platform-specific auth options
   if (kIsWeb) {
@@ -42,18 +58,12 @@ void main() async {
 
   // No need for manual auth listener - StreamProvider handles this automatically
 
-  // Initialize Notification Service
+  // Initialize Notification Service (without requesting permissions yet)
+  // Permissions will be requested in TodoListScreen after Activity context is ready
   final notificationService = NotificationService();
   try {
     await notificationService.initialize();
     logger.d('✅ Main: Notification service initialized successfully');
-
-    final permissionGranted = await notificationService.requestPermissions();
-    logger.d('📱 Main: Notification permissions granted: $permissionGranted');
-
-    if (!permissionGranted) {
-      logger.d('⚠️ Main: Notification permissions were not granted');
-    }
   } catch (e, stackTrace) {
     logger.d('❌ Main: Failed to initialize notification service: $e');
     logger.d('   Stack trace: $stackTrace');

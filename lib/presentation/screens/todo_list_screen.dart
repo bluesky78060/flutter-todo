@@ -1,11 +1,12 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:todo_app/core/theme/app_colors.dart';
 import 'package:todo_app/core/services/notification_service.dart';
+import 'package:todo_app/core/services/battery_optimization_service.dart';
 import 'package:todo_app/presentation/providers/todo_providers.dart';
 import 'package:todo_app/presentation/providers/category_providers.dart';
 import 'package:todo_app/presentation/providers/database_provider.dart';
@@ -23,35 +24,107 @@ class TodoListScreen extends ConsumerStatefulWidget {
 
 class _TodoListScreenState extends ConsumerState<TodoListScreen> {
   final TextEditingController _inputController = TextEditingController();
+  bool _isRequestingPermissions = false; // 중복 요청 방지 플래그
 
   @override
   void initState() {
     super.initState();
-    // 알림 권한 요청 (첫 실행 시에만)
+    // Activity context가 준비된 후 권한 요청 (첫 실행 시에만)
+    // 추가 지연을 둬서 Activity가 완전히 준비되도록 함
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _checkAndRequestNotificationPermission();
+      Future.delayed(const Duration(milliseconds: 500), () {
+        if (mounted) {
+          _checkAndRequestPermissions();
+        }
+      });
     });
   }
 
-  Future<void> _checkAndRequestNotificationPermission() async {
-    final prefs = ref.read(sharedPreferencesProvider);
-    final hasAsked = prefs.getBool('notification_permission_asked') ?? false;
+  Future<void> _checkAndRequestPermissions() async {
+    if (kIsWeb) return; // Web에서는 권한 요청 불필요
+    if (_isRequestingPermissions) return; // 이미 요청 중이면 중단
 
-    if (!hasAsked) {
-      final notificationService = NotificationService();
-      final isEnabled = await notificationService.areNotificationsEnabled();
+    _isRequestingPermissions = true;
 
-      if (!isEnabled && mounted) {
+    try {
+      final prefs = ref.read(sharedPreferencesProvider);
+      final hasAsked = prefs.getBool('notification_permission_asked') ?? false;
+
+      if (!hasAsked && mounted) {
+        // 1단계: 알림 권한 요청
+        await _requestNotificationPermission();
+
+        // 짧은 지연 후 다음 권한 요청
+        await Future.delayed(const Duration(milliseconds: 300));
+
+        // 2단계: 배터리 최적화 제외 요청 (알림 권한 허용 후)
+        if (mounted) {
+          await _requestBatteryOptimization();
+        }
+
+        await prefs.setBool('notification_permission_asked', true);
+      }
+    } catch (e) {
+      debugPrint('Permission request error: $e');
+    } finally {
+      _isRequestingPermissions = false;
+    }
+  }
+
+  Future<void> _requestNotificationPermission() async {
+    final notificationService = NotificationService();
+    final isEnabled = await notificationService.areNotificationsEnabled();
+
+    if (!isEnabled && mounted) {
+      final shouldRequest = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          backgroundColor: AppColors.darkCard,
+          title: const Text(
+            '알림 권한 요청',
+            style: TextStyle(color: AppColors.textWhite),
+          ),
+          content: const Text(
+            '할일 알림을 받으시겠습니까?\n알림을 허용하면 설정한 시간에 할일을 알려드립니다.',
+            style: TextStyle(color: AppColors.textGray),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('나중에', style: TextStyle(color: AppColors.textGray)),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primaryBlue,
+              ),
+              child: const Text('허용', style: TextStyle(color: Colors.white)),
+            ),
+          ],
+        ),
+      );
+
+      if (shouldRequest == true) {
+        await notificationService.requestPermissions();
+      }
+    }
+  }
+
+  Future<void> _requestBatteryOptimization() async {
+    try {
+      final isIgnoring = await BatteryOptimizationService.isIgnoringBatteryOptimizations();
+
+      if (!isIgnoring && mounted) {
         final shouldRequest = await showDialog<bool>(
           context: context,
           builder: (context) => AlertDialog(
             backgroundColor: AppColors.darkCard,
             title: const Text(
-              '알림 권한 요청',
+              '배터리 최적화 제외',
               style: TextStyle(color: AppColors.textWhite),
             ),
             content: const Text(
-              '할일 알림을 받으시겠습니까?\n알림을 허용하면 설정한 시간에 할일을 알려드립니다.',
+              '정확한 시간에 알림을 받으려면 배터리 최적화를 제외해야 합니다.\n\n앱이 백그라운드에서 종료되지 않도록 설정하시겠습니까?',
               style: TextStyle(color: AppColors.textGray),
             ),
             actions: [
@@ -64,18 +137,19 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primaryBlue,
                 ),
-                child: const Text('허용', style: TextStyle(color: Colors.white)),
+                child: const Text('설정하기', style: TextStyle(color: Colors.white)),
               ),
             ],
           ),
         );
 
         if (shouldRequest == true) {
-          await notificationService.requestPermissions();
+          await BatteryOptimizationService.requestIgnoreBatteryOptimizations();
         }
-
-        await prefs.setBool('notification_permission_asked', true);
       }
+    } catch (e) {
+      // 배터리 최적화 요청 실패는 무시 (치명적이지 않음)
+      debugPrint('Battery optimization request failed: $e');
     }
   }
 

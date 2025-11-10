@@ -1,10 +1,12 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 import 'package:todo_app/core/services/web_notification_service_stub.dart'
     if (dart.library.html) 'package:todo_app/core/services/web_notification_service.dart';
+import 'package:todo_app/main.dart' show notificationTapBackground;
 
 // Helper to check if running on Android (web-safe)
 bool get _isAndroid => !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
@@ -83,6 +85,9 @@ class NotificationService {
       final initialized = await _notificationsPlugin.initialize(
         initSettings,
         onDidReceiveNotificationResponse: _onNotificationTapped,
+        // ✅ CRITICAL: Background notification handler for when app is terminated
+        // Using the top-level function from main.dart
+        onDidReceiveBackgroundNotificationResponse: notificationTapBackground,
       );
 
       if (kDebugMode) {
@@ -106,12 +111,14 @@ class NotificationService {
   /// Create notification channel for Android
   Future<void> _createNotificationChannel() async {
     const androidChannel = AndroidNotificationChannel(
-      'todo_notifications',
+      'todo_notifications_v2',  // 새 채널 ID - 업데이트 시 새 설정 적용
       'Todo Reminders',
       description: 'Notifications for todo items',
-      importance: Importance.high,
+      importance: Importance.max,  // high -> max로 변경 (헤드업 알림 필수)
       playSound: true,
       enableVibration: true,
+      enableLights: true,
+      ledColor: const Color.fromARGB(255, 255, 0, 0),
     );
 
     await _notificationsPlugin
@@ -138,43 +145,63 @@ class NotificationService {
       return await _webNotifications.requestPermission();
     }
 
-    // For Android 13+ (API 33+)
-    if (_isAndroid) {
-      final status = await Permission.notification.request();
+    try {
+      // For Android 13+ (API 33+)
+      if (_isAndroid) {
+        final status = await Permission.notification.request();
 
-      if (kDebugMode) {
-        print('📱 Android notification permission: ${status.name}');
-      }
-
-      // Check and request exact alarm permission for Android 12+
-      final alarmStatus = await Permission.scheduleExactAlarm.status;
-      if (kDebugMode) {
-        print('⏰ Exact alarm permission status: ${alarmStatus.name}');
-      }
-
-      if (alarmStatus.isDenied || !alarmStatus.isGranted) {
         if (kDebugMode) {
-          print('⚠️ Exact alarm permission not granted, requesting...');
+          print('📱 Android notification permission: ${status.name}');
         }
-        final newAlarmStatus = await Permission.scheduleExactAlarm.request();
+
+        // Check and request exact alarm permission for Android 12+
+        // Wrap in try-catch to handle potential SecurityException
+        try {
+          final alarmStatus = await Permission.scheduleExactAlarm.status;
+          if (kDebugMode) {
+            print('⏰ Exact alarm permission status: ${alarmStatus.name}');
+          }
+
+          // Only request if not granted
+          if (!alarmStatus.isGranted && alarmStatus.isDenied) {
+            if (kDebugMode) {
+              print('⚠️ Exact alarm permission not granted, requesting...');
+            }
+
+            // Add delay before requesting to avoid conflicts
+            await Future.delayed(const Duration(milliseconds: 200));
+
+            final newAlarmStatus = await Permission.scheduleExactAlarm.request();
+            if (kDebugMode) {
+              print('⏰ Exact alarm permission after request: ${newAlarmStatus.name}');
+            }
+          }
+        } catch (alarmError) {
+          if (kDebugMode) {
+            print('⚠️ Exact alarm permission check failed (non-critical): $alarmError');
+          }
+          // Continue even if exact alarm fails - notification can still work with inexact timing
+        }
+
+        return status.isGranted;
+      }
+
+      // For iOS
+      if (_isIOS) {
+        final status = await Permission.notification.request();
         if (kDebugMode) {
-          print('⏰ Exact alarm permission after request: ${newAlarmStatus.name}');
+          print('🍎 iOS notification permission: ${status.name}');
         }
+        return status.isGranted;
       }
 
-      return status.isGranted;
-    }
-
-    // For iOS
-    if (_isIOS) {
-      final status = await Permission.notification.request();
+      return true;
+    } catch (e) {
       if (kDebugMode) {
-        print('🍎 iOS notification permission: ${status.name}');
+        print('❌ Permission request error: $e');
       }
-      return status.isGranted;
+      return false;
     }
-
-    return true;
   }
 
   /// Schedule a notification for a specific date and time
@@ -220,16 +247,47 @@ class NotificationService {
         await requestPermissions();
       }
 
-      const androidDetails = AndroidNotificationDetails(
-        'todo_notifications',
+      final androidDetails = AndroidNotificationDetails(
+        'todo_notifications_v2',  // 새 채널 ID와 일치
         'Todo Reminders',
         channelDescription: 'Notifications for todo items',
         importance: Importance.max,
-        priority: Priority.high,
+        priority: Priority.max,  // high -> max로 변경
         showWhen: true,
         enableVibration: true,
         playSound: true,
-        icon: '@mipmap/ic_launcher',
+        // 포그라운드에서도 알림 표시
+        channelShowBadge: true,
+        autoCancel: false,  // 사용자가 직접 닫을 때까지 유지
+        // 헤드업 알림으로 표시 (앱이 열려있어도 위에 팝업으로 표시)
+        // 일부 기기에서 풀스크린 인텐트는 별도 구성 없이는 크래시를 유발할 수 있어 비활성화
+        fullScreenIntent: false,
+        category: AndroidNotificationCategory.reminder,
+        // 알림 스타일 설정 - body 내용을 표시
+        styleInformation: BigTextStyleInformation(
+          body,
+          contentTitle: title,
+          summaryText: '할일 알림',
+        ),
+        // 알림바에 계속 표시
+        ongoing: false,
+        // 매번 알림
+        onlyAlertOnce: false,
+        // 화면 켜기
+        visibility: NotificationVisibility.public,
+        // 중요도 높이기 위한 추가 설정
+        ticker: title,
+        // LED 설정
+        enableLights: true,
+        ledColor: const Color.fromARGB(255, 255, 0, 0),
+        ledOnMs: 1000,
+        ledOffMs: 500,
+        // Android 14+ 호환성
+        usesChronometer: false,
+        timeoutAfter: null,
+        // 추가 설정
+        when: scheduledDate.millisecondsSinceEpoch,
+        showProgress: false,
       );
 
       const iosDetails = DarwinNotificationDetails(
@@ -239,7 +297,7 @@ class NotificationService {
         interruptionLevel: InterruptionLevel.timeSensitive,
       );
 
-      const notificationDetails = NotificationDetails(
+      final notificationDetails = NotificationDetails(
         android: androidDetails,
         iOS: iosDetails,
       );

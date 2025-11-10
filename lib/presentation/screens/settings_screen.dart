@@ -95,7 +95,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   const SizedBox(height: 32),
 
                   // Categories Management
-                  _buildSectionHeader('카테고리'),
+                  _buildSectionHeader('categories'.tr()),
                   const SizedBox(height: 12),
                   _buildCategoryCard(),
                   const SizedBox(height: 32),
@@ -360,17 +360,17 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             color: AppColors.primaryBlue,
           ),
         ),
-        title: const Text(
-          '카테고리 관리',
-          style: TextStyle(
+        title: Text(
+          'category_management'.tr(),
+          style: const TextStyle(
             color: AppColors.textWhite,
             fontSize: 16,
             fontWeight: FontWeight.w500,
           ),
         ),
-        subtitle: const Text(
-          '할 일 카테고리 추가 및 관리',
-          style: TextStyle(
+        subtitle: Text(
+          'category_management_desc'.tr(),
+          style: const TextStyle(
             color: AppColors.textGray,
             fontSize: 14,
           ),

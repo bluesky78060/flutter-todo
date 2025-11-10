@@ -23,7 +23,7 @@ String? oauthRedirectUrl() {
 
   // For non-web (iOS/Android/desktop), use deep link scheme
   // Must match the scheme in AndroidManifest.xml / Info.plist
-  const redirectUrl = 'com.example.todoapp://oauth-callback';
+  const redirectUrl = 'kr.bluesky.dodo://oauth-callback';
   logger.d('🔗 OAuth Redirect URL (Mobile): $redirectUrl');
   return redirectUrl;
 }

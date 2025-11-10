@@ -4,9 +4,11 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:todo_app/core/theme/app_colors.dart';
+import 'package:todo_app/core/utils/recurrence_utils.dart';
 import 'package:todo_app/domain/entities/todo.dart';
 import 'package:todo_app/presentation/providers/todo_providers.dart';
 import 'package:todo_app/presentation/providers/category_providers.dart';
+import 'package:todo_app/presentation/widgets/recurrence_settings_dialog.dart';
 
 class TodoFormDialog extends ConsumerStatefulWidget {
   final Todo? existingTodo; // null = create mode, not null = edit mode
@@ -23,6 +25,7 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
   DateTime? _selectedDueDate;
   DateTime? _selectedNotificationTime;
   int? _selectedCategoryId;
+  String? _recurrenceRule;
 
   bool get _isEditMode => widget.existingTodo != null;
 
@@ -40,6 +43,7 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
       _selectedDueDate = todo.dueDate;
       _selectedNotificationTime = todo.notificationTime;
       _selectedCategoryId = todo.categoryId;
+      _recurrenceRule = todo.recurrenceRule;
     }
   }
 
@@ -156,6 +160,22 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
     return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')} ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
   }
 
+  Future<void> _selectRecurrence() async {
+    if (!mounted) return;
+
+    await showDialog(
+      context: context,
+      builder: (context) => RecurrenceSettingsDialog(
+        initialRRule: _recurrenceRule,
+        onSave: (rrule) {
+          setState(() {
+            _recurrenceRule = rrule;
+          });
+        },
+      ),
+    );
+  }
+
   Future<void> _selectNotificationTime() async {
     if (!mounted) return;
 
@@ -270,6 +290,7 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
           dueDate: _selectedDueDate,
           categoryId: _selectedCategoryId,
           notificationTime: _selectedNotificationTime,
+          recurrenceRule: _recurrenceRule,
         );
         await ref.read(todoActionsProvider).updateTodo(updatedTodo);
       } else {
@@ -280,6 +301,7 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
               _selectedDueDate,
               categoryId: _selectedCategoryId,
               notificationTime: _selectedNotificationTime,
+              recurrenceRule: _recurrenceRule,
             );
       }
       if (mounted) Navigator.of(context).pop();
@@ -650,6 +672,75 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
                             onPressed: () {
                               setState(() {
                                 _selectedNotificationTime = null;
+                              });
+                            },
+                            icon: const Icon(
+                              FluentIcons.dismiss_24_regular,
+                              color: AppColors.textGray,
+                              size: 18,
+                            ),
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(),
+                          ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+
+            // Recurrence Settings
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  context.locale.languageCode == 'ko' ? '반복 설정 (선택사항)' : 'Recurrence (Optional)',
+                  style: const TextStyle(
+                    color: AppColors.textGray,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                InkWell(
+                  onTap: _selectRecurrence,
+                  borderRadius: BorderRadius.circular(12),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 14,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.darkInput,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(
+                          FluentIcons.arrow_repeat_all_24_regular,
+                          color: AppColors.textGray,
+                          size: 20,
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            _recurrenceRule != null
+                                ? RecurrenceUtils.getDescription(_recurrenceRule, context.locale.languageCode)
+                                : (context.locale.languageCode == 'ko' ? '반복 안함' : 'No recurrence'),
+                            style: TextStyle(
+                              color: _recurrenceRule != null
+                                  ? AppColors.textWhite
+                                  : AppColors.textGray,
+                              fontSize: 16,
+                            ),
+                          ),
+                        ),
+                        if (_recurrenceRule != null)
+                          IconButton(
+                            onPressed: () {
+                              setState(() {
+                                _recurrenceRule = null;
                               });
                             },
                             icon: const Icon(

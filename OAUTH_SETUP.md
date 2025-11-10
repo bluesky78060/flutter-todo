@@ -1,168 +1,61 @@
-# OAuth 로그인 설정 가이드
+# OAuth 설정 가이드
 
-## 1. Google OAuth 설정
+## ⚠️ 중요: Supabase 대시보드 설정 필수
 
-### 1.1 Google Cloud Console 설정
+### 1. Redirect URLs 설정
+Supabase Dashboard → Authentication → URL Configuration
 
-1. **Google Cloud Console 접속**
-   - https://console.cloud.google.com 접속
-   - 프로젝트 선택 또는 새 프로젝트 생성
+다음 URL을 **Redirect URLs**에 추가하세요:
 
-2. **OAuth 동의 화면 구성**
-   - 좌측 메뉴: `API 및 서비스` → `OAuth 동의 화면`
-   - User Type: `외부` 선택
-   - 앱 정보 입력:
-     - 앱 이름: `Todo App`
-     - 사용자 지원 이메일: 본인 이메일
-     - 개발자 연락처 정보: 본인 이메일
+```
+kr.bluesky.dodo://oauth-callback
+```
 
-3. **OAuth 클라이언트 ID 생성**
-   - 좌측 메뉴: `API 및 서비스` → `사용자 인증 정보`
-   - `+ 사용자 인증 정보 만들기` → `OAuth 클라이언트 ID`
-   - 애플리케이션 유형: `웹 애플리케이션`
-   - 이름: `Todo App Web Client`
-   - 승인된 리디렉션 URI:
-     ```
-     https://bulwfcsyqgsvmbadhlye.supabase.co/auth/v1/callback
-     ```
-   - `만들기` 클릭
-   - 생성된 **클라이언트 ID**와 **클라이언트 보안 비밀번호** 복사
+### 2. Google OAuth 설정
+Dashboard → Authentication → Providers → Google
 
-### 1.2 Supabase 설정
+- **Enable Google provider** 체크
+- **Client ID** 입력 (Google Cloud Console에서 발급)
+- **Client Secret** 입력
 
-1. **Supabase 대시보드 접속**
-   - https://supabase.com/dashboard
-   - 프로젝트 선택
+### 3. Kakao OAuth 설정
+Dashboard → Authentication → Providers → Kakao
 
-2. **Google Provider 활성화**
-   - `Authentication` → `Providers` → `Google`
-   - `Enabled` 토글 ON
-   - `Client ID` 입력 (Google Cloud Console에서 복사한 값)
-   - `Client Secret` 입력 (Google Cloud Console에서 복사한 값)
-   - `Save` 클릭
+- **Enable Kakao provider** 체크
+- **Client ID** 입력 (Kakao Developers에서 발급)
+- **Client Secret** 입력
 
-### 1.3 코드에 Client ID 추가
+## Android 설정 (완료됨)
 
-`lib/presentation/screens/login_screen.dart` 파일에서:
+### AndroidManifest.xml
+```xml
+<data android:scheme="kr.bluesky.dodo"/>
+```
 
+### oauth_redirect.dart
 ```dart
-const webClientId = 'YOUR_GOOGLE_WEB_CLIENT_ID'; // 여기에 실제 Client ID 입력
+const redirectUrl = 'kr.bluesky.dodo://oauth-callback';
 ```
 
-위 부분을 Google Cloud Console에서 복사한 Client ID로 교체하세요.
+## 테스트 방법
 
----
+### 실제 기기에서 테스트 (권장)
+1. APK 다운로드: http://172.20.10.3:9000
+2. 앱 설치
+3. Google 또는 Kakao 로그인 시도
+4. 브라우저가 열리고 로그인 진행
+5. 로그인 완료 후 자동으로 앱으로 돌아와야 함
 
-## 2. Kakao OAuth 설정
+### 에뮬레이터 제한사항
+- Google Play Services가 없는 에뮬레이터에서는 소셜 로그인이 작동하지 않을 수 있음
+- **권장**: 실제 기기에서 테스트
 
-### 2.1 Kakao Developers 설정
+## 현재 상태
 
-1. **Kakao Developers 접속**
-   - https://developers.kakao.com 접속
-   - 로그인 후 `내 애플리케이션` → `애플리케이션 추가하기`
+✅ MainActivity.kt 생성됨
+✅ AndroidManifest.xml에 deep link 설정됨
+✅ oauth_redirect.dart에 올바른 scheme 설정됨
+✅ Release APK 빌드 완료 (63.3MB)
 
-2. **앱 설정**
-   - 앱 이름: `Todo App`
-   - 사업자명: 본인 이름
-   - 앱 생성
-
-3. **플랫폼 설정**
-   - 좌측 메뉴: `플랫폼` → `Web 플랫폼 등록`
-   - 사이트 도메인: `https://fascinating-peony-8bbb51.netlify.app`
-
-4. **Redirect URI 설정**
-   - 좌측 메뉴: `카카오 로그인` → `활성화 설정` ON
-   - `Redirect URI 등록` 클릭
-   - Redirect URI:
-     ```
-     https://bulwfcsyqgsvmbadhlye.supabase.co/auth/v1/callback
-     ```
-
-5. **REST API 키 복사**
-   - 좌측 메뉴: `앱 키`
-   - `REST API 키` 복사
-
-6. **Client Secret 생성 (선택)**
-   - 좌측 메뉴: `카카오 로그인` → `보안` → `Client Secret` 생성
-
-### 2.2 Supabase 설정
-
-1. **Supabase 대시보드 접속**
-   - https://supabase.com/dashboard
-   - 프로젝트 선택
-
-2. **Kakao Provider 활성화**
-   - `Authentication` → `Providers` → `Kakao`
-   - `Enabled` 토글 ON
-   - `Client ID` 입력 (Kakao REST API 키)
-   - `Client Secret` 입력 (Kakao에서 생성한 Client Secret, 선택사항)
-   - `Save` 클릭
-
----
-
-## 3. 테스트
-
-### 3.1 로컬 테스트
-
-```bash
-cd /Users/leechanhee/Dropbox/Mac/Downloads/todo_app
-flutter run -d chrome
-```
-
-### 3.2 프로덕션 테스트
-
-1. 빌드 및 배포:
-   ```bash
-   flutter build web --release
-   ```
-
-2. Netlify Drop에 `build/web` 폴더 업로드
-
-3. 배포된 URL에서 테스트:
-   - https://fascinating-peony-8bbb51.netlify.app
-
----
-
-## 4. 문제 해결
-
-### Google 로그인 오류
-
-**오류**: `No Access Token found`
-- Google Cloud Console에서 Client ID가 올바르게 설정되었는지 확인
-- 리디렉션 URI가 정확한지 확인
-
-**오류**: `popup_closed_by_user`
-- 정상적인 동작 (사용자가 팝업을 닫음)
-
-### Kakao 로그인 오류
-
-**오류**: `redirect_uri_mismatch`
-- Kakao Developers에서 Redirect URI가 정확히 설정되었는지 확인
-- Supabase URL이 올바른지 확인
-
-**오류**: `invalid_client`
-- REST API 키가 올바르게 입력되었는지 확인
-
----
-
-## 5. 보안 참고사항
-
-1. **Client Secret 보호**
-   - Client Secret은 절대 공개 저장소에 커밋하지 마세요
-   - 환경 변수로 관리하세요
-
-2. **리디렉션 URI**
-   - 승인된 리디렉션 URI만 사용하세요
-   - 와일드카드(`*`)는 사용하지 마세요
-
-3. **테스트 계정**
-   - 프로덕션 배포 전 테스트 계정으로 충분히 테스트하세요
-
----
-
-## 6. 참고 문서
-
-- [Supabase Auth - Google](https://supabase.com/docs/guides/auth/social-login/auth-google)
-- [Supabase Auth - Kakao](https://supabase.com/docs/guides/auth/social-login/auth-kakao)
-- [Google Sign-In Flutter Plugin](https://pub.dev/packages/google_sign_in)
-- [Flutter Web 배포](https://docs.flutter.dev/deployment/web)
+⚠️ Supabase Dashboard에 redirect URL 추가 필요
+⚠️ 에뮬레이터는 제한적, 실제 기기 테스트 권장
