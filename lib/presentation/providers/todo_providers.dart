@@ -3,6 +3,8 @@ import 'package:todo_app/core/services/notification_service.dart';
 import 'package:todo_app/domain/entities/todo.dart';
 import 'package:todo_app/presentation/providers/database_provider.dart';
 import 'package:todo_app/core/utils/app_logger.dart';
+import 'package:todo_app/presentation/widgets/recurring_edit_dialog.dart';
+import 'package:todo_app/presentation/widgets/recurring_delete_dialog.dart';
 
 // Todo filter state
 enum TodoFilter { all, pending, completed }
@@ -179,24 +181,233 @@ class TodoActions {
     );
   }
 
-  Future<void> updateTodo(Todo todo) async {
+  /// Update a todo
+  /// For recurring todo instances, this should be called after showing RecurringEditDialog
+  Future<void> updateTodo(
+    Todo todo, {
+    RecurringEditMode? recurringEditMode,
+  }) async {
     final repository = ref.read(todoRepositoryProvider);
-    final result = await repository.updateTodo(todo);
-    result.fold(
-      (failure) => throw Exception(failure),
-      (_) {
-        ref.invalidate(todosProvider);
-        ref.invalidate(todoDetailProvider(todo.id));
-      },
-    );
+
+    // Check if this is a recurring todo instance (has parentRecurringTodoId)
+    if (todo.parentRecurringTodoId != null && recurringEditMode != null) {
+      logger.d('🔄 TodoActions: Updating recurring todo instance');
+      logger.d('   Mode: $recurringEditMode');
+
+      switch (recurringEditMode) {
+        case RecurringEditMode.thisOnly:
+          // Edit this instance only - detach from series by removing parent link
+          logger.d('   Detaching from series');
+          final detachedTodo = Todo(
+            id: todo.id,
+            title: todo.title,
+            description: todo.description,
+            isCompleted: todo.isCompleted,
+            categoryId: todo.categoryId,
+            createdAt: todo.createdAt,
+            completedAt: todo.completedAt,
+            dueDate: todo.dueDate,
+            notificationTime: todo.notificationTime,
+            recurrenceRule: null, // Remove recurrence rule
+            parentRecurringTodoId: null, // Detach from series
+          );
+          final result = await repository.updateTodo(detachedTodo);
+          result.fold(
+            (failure) => throw Exception(failure),
+            (_) {
+              logger.d('✅ TodoActions: Instance detached and updated');
+              ref.invalidate(todosProvider);
+              ref.invalidate(todoDetailProvider(todo.id));
+            },
+          );
+          break;
+
+        case RecurringEditMode.thisAndFuture:
+          // Edit this and future instances - update the master todo
+          logger.d('   Updating master and future instances');
+
+          // First, get the master todo
+          final masterResult = await repository.getTodoById(todo.parentRecurringTodoId!);
+          await masterResult.fold(
+            (failure) {
+              logger.e('❌ TodoActions: Failed to fetch master todo');
+              throw Exception('마스터 todo 조회 실패: $failure');
+            },
+            (masterTodo) async {
+              // Update the master with the changes from this instance
+              final updatedMaster = masterTodo.copyWith(
+                title: todo.title,
+                description: todo.description,
+                categoryId: todo.categoryId,
+                dueDate: todo.dueDate,
+                notificationTime: todo.notificationTime,
+                // Keep the recurrence rule from master
+              );
+
+              final result = await repository.updateTodo(updatedMaster);
+              await result.fold(
+                (failure) {
+                  logger.e('❌ TodoActions: Failed to update master todo');
+                  throw Exception('마스터 todo 업데이트 실패: $failure');
+                },
+                (_) async {
+                  logger.d('✅ TodoActions: Master todo updated');
+
+                  // Delete all future instances (they will be regenerated)
+                  final allTodosResult = await repository.getTodos();
+                  await allTodosResult.fold(
+                    (failure) {
+                      logger.e('❌ TodoActions: Failed to fetch todos for cleanup');
+                    },
+                    (allTodos) async {
+                      final futureInstances = allTodos.where((t) =>
+                        t.parentRecurringTodoId == masterTodo.id &&
+                        t.dueDate != null &&
+                        todo.dueDate != null &&
+                        (t.dueDate!.isAfter(todo.dueDate!) ||
+                         t.dueDate!.isAtSameMomentAs(todo.dueDate!))
+                      ).toList();
+
+                      logger.d('   Deleting ${futureInstances.length} future instances');
+                      for (final instance in futureInstances) {
+                        await repository.deleteTodo(instance.id);
+                      }
+
+                      // Regenerate instances
+                      final recurringService = ref.read(recurringTodoServiceProvider);
+                      await recurringService.generateInstancesForNewMaster(updatedMaster);
+                      logger.d('✅ TodoActions: Future instances regenerated');
+                    },
+                  );
+
+                  ref.invalidate(todosProvider);
+                  ref.invalidate(todoDetailProvider(todo.id));
+                },
+              );
+            },
+          );
+          break;
+      }
+    } else {
+      // Regular todo update (non-recurring or master todo)
+      logger.d('📝 TodoActions: Updating regular todo');
+      final result = await repository.updateTodo(todo);
+      result.fold(
+        (failure) => throw Exception(failure),
+        (_) {
+          logger.d('✅ TodoActions: Todo updated successfully');
+          ref.invalidate(todosProvider);
+          ref.invalidate(todoDetailProvider(todo.id));
+        },
+      );
+    }
   }
 
-  Future<void> deleteTodo(int id) async {
+  /// Delete a todo
+  /// For recurring todo instances, this should be called after showing RecurringDeleteDialog
+  Future<void> deleteTodo(
+    int id, {
+    RecurringDeleteMode? recurringDeleteMode,
+  }) async {
     final repository = ref.read(todoRepositoryProvider);
     final notificationService = ref.read(notificationServiceProvider);
 
     logger.d('🗑️ TodoActions: Attempting to delete todo $id');
 
+    // First, fetch the todo to check if it's a recurring instance
+    final todoResult = await repository.getTodoById(id);
+    await todoResult.fold(
+      (failure) {
+        logger.e('❌ TodoActions: Failed to fetch todo for deletion');
+        throw Exception('Todo 조회 실패: $failure');
+      },
+      (todo) async {
+        // Check if this is a recurring todo instance
+        if (todo.parentRecurringTodoId != null && recurringDeleteMode != null) {
+          logger.d('🔄 TodoActions: Deleting recurring todo instance');
+          logger.d('   Mode: $recurringDeleteMode');
+
+          switch (recurringDeleteMode) {
+            case RecurringDeleteMode.thisOnly:
+              // Delete only this instance
+              logger.d('   Deleting this instance only');
+              await _deleteSingleTodo(id, notificationService, repository);
+              break;
+
+            case RecurringDeleteMode.thisAndFuture:
+              // Delete this and all future instances
+              logger.d('   Deleting this and future instances');
+
+              final allTodosResult = await repository.getTodos();
+              await allTodosResult.fold(
+                (failure) {
+                  logger.e('❌ TodoActions: Failed to fetch todos');
+                  throw Exception('Todos 조회 실패: $failure');
+                },
+                (allTodos) async {
+                  // Find all future instances including this one
+                  final instancesToDelete = allTodos.where((t) =>
+                    t.parentRecurringTodoId == todo.parentRecurringTodoId &&
+                    t.dueDate != null &&
+                    todo.dueDate != null &&
+                    (t.dueDate!.isAfter(todo.dueDate!) ||
+                     t.dueDate!.isAtSameMomentAs(todo.dueDate!))
+                  ).toList();
+
+                  logger.d('   Deleting ${instancesToDelete.length} instances');
+                  for (final instance in instancesToDelete) {
+                    await _deleteSingleTodo(instance.id, notificationService, repository);
+                  }
+                },
+              );
+              break;
+
+            case RecurringDeleteMode.entireSeries:
+              // Delete master and all instances
+              logger.d('   Deleting entire series');
+
+              final allTodosResult = await repository.getTodos();
+              await allTodosResult.fold(
+                (failure) {
+                  logger.e('❌ TodoActions: Failed to fetch todos');
+                  throw Exception('Todos 조회 실패: $failure');
+                },
+                (allTodos) async {
+                  // Find all instances
+                  final allInstances = allTodos.where((t) =>
+                    t.parentRecurringTodoId == todo.parentRecurringTodoId
+                  ).toList();
+
+                  // Delete all instances
+                  logger.d('   Deleting ${allInstances.length} instances');
+                  for (final instance in allInstances) {
+                    await _deleteSingleTodo(instance.id, notificationService, repository);
+                  }
+
+                  // Delete the master todo
+                  logger.d('   Deleting master todo ${todo.parentRecurringTodoId}');
+                  await _deleteSingleTodo(todo.parentRecurringTodoId!, notificationService, repository);
+                },
+              );
+              break;
+          }
+        } else {
+          // Regular todo deletion (non-recurring or master todo)
+          logger.d('📝 TodoActions: Deleting regular todo');
+          await _deleteSingleTodo(id, notificationService, repository);
+        }
+
+        ref.invalidate(todosProvider);
+      },
+    );
+  }
+
+  /// Helper method to delete a single todo with notification cleanup
+  Future<void> _deleteSingleTodo(
+    int id,
+    NotificationService notificationService,
+    dynamic repository,
+  ) async {
     // Cancel notification before deleting todo
     try {
       await notificationService.cancelNotification(id);
@@ -215,7 +426,6 @@ class TodoActions {
       },
       (_) {
         logger.d('✅ TodoActions: Todo deleted successfully: $id');
-        ref.invalidate(todosProvider);
       },
     );
   }
