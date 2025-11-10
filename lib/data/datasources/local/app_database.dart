@@ -28,6 +28,8 @@ class Todos extends Table {
   DateTimeColumn get completedAt => dateTime().nullable()();
   DateTimeColumn get dueDate => dateTime().nullable()();
   DateTimeColumn get notificationTime => dateTime().nullable()();
+  TextColumn get recurrenceRule => text().nullable()(); // RRULE format
+  IntColumn get parentRecurringTodoId => integer().nullable()(); // Reference to parent recurring todo
 }
 
 // Users Table (for Auth)
@@ -44,7 +46,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration {
@@ -59,6 +61,11 @@ class AppDatabase extends _$AppDatabase {
           await migrator.createTable(categories);
           // Add categoryId column to todos table
           await migrator.addColumn(todos, todos.categoryId);
+        }
+        if (from < 4) {
+          // Add recurrence fields for recurring todos
+          await migrator.addColumn(todos, todos.recurrenceRule);
+          await migrator.addColumn(todos, todos.parentRecurringTodoId);
         }
       },
     );

@@ -8,6 +8,8 @@ class Todo {
   final DateTime? completedAt;
   final DateTime? dueDate;
   final DateTime? notificationTime;
+  final String? recurrenceRule; // RRULE format (e.g., "FREQ=DAILY;INTERVAL=1")
+  final int? parentRecurringTodoId; // Reference to parent recurring todo
 
   const Todo({
     required this.id,
@@ -19,6 +21,8 @@ class Todo {
     this.completedAt,
     this.dueDate,
     this.notificationTime,
+    this.recurrenceRule,
+    this.parentRecurringTodoId,
   });
 
   Todo copyWith({
@@ -31,6 +35,8 @@ class Todo {
     DateTime? completedAt,
     DateTime? dueDate,
     DateTime? notificationTime,
+    String? recurrenceRule,
+    int? parentRecurringTodoId,
   }) {
     return Todo(
       id: id ?? this.id,
@@ -42,6 +48,8 @@ class Todo {
       completedAt: completedAt ?? this.completedAt,
       dueDate: dueDate ?? this.dueDate,
       notificationTime: notificationTime ?? this.notificationTime,
+      recurrenceRule: recurrenceRule ?? this.recurrenceRule,
+      parentRecurringTodoId: parentRecurringTodoId ?? this.parentRecurringTodoId,
     );
   }
 }

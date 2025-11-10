@@ -379,28 +379,63 @@ See [GOOGLE_PLAY_RELEASE.md](GOOGLE_PLAY_RELEASE.md) for detailed guide.
 
 ## Feature Development Workflow
 
-**IMPORTANT**: When adding new features, always update [FUTURE_TASKS.md](FUTURE_TASKS.md) to track progress.
+**IMPORTANT**: When adding new features, always update [FUTURE_TASKS.md](FUTURE_TASKS.md) and [RELEASE_NOTES.md](RELEASE_NOTES.md) to track progress and document changes.
 
 ### Process:
 1. **Before starting**: Review FUTURE_TASKS.md to check if the feature is already planned
 2. **During development**: Mark tasks with checkboxes as you complete them
-3. **After completion**: Update the task status and document any changes
+3. **After completion**:
+   - Update the task status in FUTURE_TASKS.md
+   - Document changes in RELEASE_NOTES.md
+   - Commit and push changes
 
-### Checkbox Format:
+### Checkbox Format (FUTURE_TASKS.md):
 ```markdown
 - [ ] Feature not started
 - [x] Feature completed
 ```
 
-### Example Workflow:
+### Release Notes Format (RELEASE_NOTES.md):
 ```markdown
-## 1. Core Features 🔴 High Priority
+### v1.0.X (YYYY-MM-DD)
+**[버전 설명]**
 
-### 1.1 Todo Editing
-- [x] Edit todo title
-- [x] Edit todo description
-- [ ] Edit todo due date (in progress)
-- [ ] Edit todo category
+**신규 기능**
+- ✅ **[기능 이름]**
+  - 세부 기능 1
+  - 세부 기능 2
+
+**기술 개선**
+- ✅ **[개선 사항]**
+  - 세부 개선 1
+
+**수정된 파일**
+- `파일경로` (변경 내역)
+
+**커밋 정보**
+- 커밋 해시: [hash]
+- 커밋 메시지: "[message]"
+- 푸시 날짜: YYYY-MM-DD
 ```
 
-**Purpose**: Maintain a clear history of implemented features and prevent duplicate work. This file serves as the single source of truth for feature planning and progress tracking.
+### Example Workflow:
+```markdown
+## FUTURE_TASKS.md
+### 🔴 1.1 Todo 편집 기능 ✅
+- [x] Todo 수정 다이얼로그 추가
+- [x] 기존 Todo 정보 폼에 자동 입력
+- [x] 제목, 설명, 마감일, 알림 시간, 카테고리 수정 가능
+
+## RELEASE_NOTES.md
+### v1.0.3 (2025-11-10)
+**할 일 편집 기능 추가**
+
+**신규 기능**
+- ✅ **할 일 편집 기능 완전 구현**
+  - 할 일 상세 화면에서 편집 버튼 추가
+  - 편집 모드에서 기존 데이터 자동 입력
+```
+
+**Purpose**:
+- **FUTURE_TASKS.md**: Single source of truth for feature planning and progress tracking
+- **RELEASE_NOTES.md**: Complete history of changes for each version, useful for Play Store releases and team communication

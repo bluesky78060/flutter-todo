@@ -513,6 +513,27 @@ class $TodosTable extends Todos with TableInfo<$TodosTable, Todo> {
         type: DriftSqlType.dateTime,
         requiredDuringInsert: false,
       );
+  static const VerificationMeta _recurrenceRuleMeta = const VerificationMeta(
+    'recurrenceRule',
+  );
+  @override
+  late final GeneratedColumn<String> recurrenceRule = GeneratedColumn<String>(
+    'recurrence_rule',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _parentRecurringTodoIdMeta =
+      const VerificationMeta('parentRecurringTodoId');
+  @override
+  late final GeneratedColumn<int> parentRecurringTodoId = GeneratedColumn<int>(
+    'parent_recurring_todo_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -524,6 +545,8 @@ class $TodosTable extends Todos with TableInfo<$TodosTable, Todo> {
     completedAt,
     dueDate,
     notificationTime,
+    recurrenceRule,
+    parentRecurringTodoId,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -606,6 +629,24 @@ class $TodosTable extends Todos with TableInfo<$TodosTable, Todo> {
         ),
       );
     }
+    if (data.containsKey('recurrence_rule')) {
+      context.handle(
+        _recurrenceRuleMeta,
+        recurrenceRule.isAcceptableOrUnknown(
+          data['recurrence_rule']!,
+          _recurrenceRuleMeta,
+        ),
+      );
+    }
+    if (data.containsKey('parent_recurring_todo_id')) {
+      context.handle(
+        _parentRecurringTodoIdMeta,
+        parentRecurringTodoId.isAcceptableOrUnknown(
+          data['parent_recurring_todo_id']!,
+          _parentRecurringTodoIdMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -651,6 +692,14 @@ class $TodosTable extends Todos with TableInfo<$TodosTable, Todo> {
         DriftSqlType.dateTime,
         data['${effectivePrefix}notification_time'],
       ),
+      recurrenceRule: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}recurrence_rule'],
+      ),
+      parentRecurringTodoId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}parent_recurring_todo_id'],
+      ),
     );
   }
 
@@ -670,6 +719,8 @@ class Todo extends DataClass implements Insertable<Todo> {
   final DateTime? completedAt;
   final DateTime? dueDate;
   final DateTime? notificationTime;
+  final String? recurrenceRule;
+  final int? parentRecurringTodoId;
   const Todo({
     required this.id,
     required this.title,
@@ -680,6 +731,8 @@ class Todo extends DataClass implements Insertable<Todo> {
     this.completedAt,
     this.dueDate,
     this.notificationTime,
+    this.recurrenceRule,
+    this.parentRecurringTodoId,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -700,6 +753,12 @@ class Todo extends DataClass implements Insertable<Todo> {
     }
     if (!nullToAbsent || notificationTime != null) {
       map['notification_time'] = Variable<DateTime>(notificationTime);
+    }
+    if (!nullToAbsent || recurrenceRule != null) {
+      map['recurrence_rule'] = Variable<String>(recurrenceRule);
+    }
+    if (!nullToAbsent || parentRecurringTodoId != null) {
+      map['parent_recurring_todo_id'] = Variable<int>(parentRecurringTodoId);
     }
     return map;
   }
@@ -723,6 +782,12 @@ class Todo extends DataClass implements Insertable<Todo> {
       notificationTime: notificationTime == null && nullToAbsent
           ? const Value.absent()
           : Value(notificationTime),
+      recurrenceRule: recurrenceRule == null && nullToAbsent
+          ? const Value.absent()
+          : Value(recurrenceRule),
+      parentRecurringTodoId: parentRecurringTodoId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(parentRecurringTodoId),
     );
   }
 
@@ -743,6 +808,10 @@ class Todo extends DataClass implements Insertable<Todo> {
       notificationTime: serializer.fromJson<DateTime?>(
         json['notificationTime'],
       ),
+      recurrenceRule: serializer.fromJson<String?>(json['recurrenceRule']),
+      parentRecurringTodoId: serializer.fromJson<int?>(
+        json['parentRecurringTodoId'],
+      ),
     );
   }
   @override
@@ -758,6 +827,8 @@ class Todo extends DataClass implements Insertable<Todo> {
       'completedAt': serializer.toJson<DateTime?>(completedAt),
       'dueDate': serializer.toJson<DateTime?>(dueDate),
       'notificationTime': serializer.toJson<DateTime?>(notificationTime),
+      'recurrenceRule': serializer.toJson<String?>(recurrenceRule),
+      'parentRecurringTodoId': serializer.toJson<int?>(parentRecurringTodoId),
     };
   }
 
@@ -771,6 +842,8 @@ class Todo extends DataClass implements Insertable<Todo> {
     Value<DateTime?> completedAt = const Value.absent(),
     Value<DateTime?> dueDate = const Value.absent(),
     Value<DateTime?> notificationTime = const Value.absent(),
+    Value<String?> recurrenceRule = const Value.absent(),
+    Value<int?> parentRecurringTodoId = const Value.absent(),
   }) => Todo(
     id: id ?? this.id,
     title: title ?? this.title,
@@ -783,6 +856,12 @@ class Todo extends DataClass implements Insertable<Todo> {
     notificationTime: notificationTime.present
         ? notificationTime.value
         : this.notificationTime,
+    recurrenceRule: recurrenceRule.present
+        ? recurrenceRule.value
+        : this.recurrenceRule,
+    parentRecurringTodoId: parentRecurringTodoId.present
+        ? parentRecurringTodoId.value
+        : this.parentRecurringTodoId,
   );
   Todo copyWithCompanion(TodosCompanion data) {
     return Todo(
@@ -805,6 +884,12 @@ class Todo extends DataClass implements Insertable<Todo> {
       notificationTime: data.notificationTime.present
           ? data.notificationTime.value
           : this.notificationTime,
+      recurrenceRule: data.recurrenceRule.present
+          ? data.recurrenceRule.value
+          : this.recurrenceRule,
+      parentRecurringTodoId: data.parentRecurringTodoId.present
+          ? data.parentRecurringTodoId.value
+          : this.parentRecurringTodoId,
     );
   }
 
@@ -819,7 +904,9 @@ class Todo extends DataClass implements Insertable<Todo> {
           ..write('createdAt: $createdAt, ')
           ..write('completedAt: $completedAt, ')
           ..write('dueDate: $dueDate, ')
-          ..write('notificationTime: $notificationTime')
+          ..write('notificationTime: $notificationTime, ')
+          ..write('recurrenceRule: $recurrenceRule, ')
+          ..write('parentRecurringTodoId: $parentRecurringTodoId')
           ..write(')'))
         .toString();
   }
@@ -835,6 +922,8 @@ class Todo extends DataClass implements Insertable<Todo> {
     completedAt,
     dueDate,
     notificationTime,
+    recurrenceRule,
+    parentRecurringTodoId,
   );
   @override
   bool operator ==(Object other) =>
@@ -848,7 +937,9 @@ class Todo extends DataClass implements Insertable<Todo> {
           other.createdAt == this.createdAt &&
           other.completedAt == this.completedAt &&
           other.dueDate == this.dueDate &&
-          other.notificationTime == this.notificationTime);
+          other.notificationTime == this.notificationTime &&
+          other.recurrenceRule == this.recurrenceRule &&
+          other.parentRecurringTodoId == this.parentRecurringTodoId);
 }
 
 class TodosCompanion extends UpdateCompanion<Todo> {
@@ -861,6 +952,8 @@ class TodosCompanion extends UpdateCompanion<Todo> {
   final Value<DateTime?> completedAt;
   final Value<DateTime?> dueDate;
   final Value<DateTime?> notificationTime;
+  final Value<String?> recurrenceRule;
+  final Value<int?> parentRecurringTodoId;
   const TodosCompanion({
     this.id = const Value.absent(),
     this.title = const Value.absent(),
@@ -871,6 +964,8 @@ class TodosCompanion extends UpdateCompanion<Todo> {
     this.completedAt = const Value.absent(),
     this.dueDate = const Value.absent(),
     this.notificationTime = const Value.absent(),
+    this.recurrenceRule = const Value.absent(),
+    this.parentRecurringTodoId = const Value.absent(),
   });
   TodosCompanion.insert({
     this.id = const Value.absent(),
@@ -882,6 +977,8 @@ class TodosCompanion extends UpdateCompanion<Todo> {
     this.completedAt = const Value.absent(),
     this.dueDate = const Value.absent(),
     this.notificationTime = const Value.absent(),
+    this.recurrenceRule = const Value.absent(),
+    this.parentRecurringTodoId = const Value.absent(),
   }) : title = Value(title),
        description = Value(description),
        createdAt = Value(createdAt);
@@ -895,6 +992,8 @@ class TodosCompanion extends UpdateCompanion<Todo> {
     Expression<DateTime>? completedAt,
     Expression<DateTime>? dueDate,
     Expression<DateTime>? notificationTime,
+    Expression<String>? recurrenceRule,
+    Expression<int>? parentRecurringTodoId,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -906,6 +1005,9 @@ class TodosCompanion extends UpdateCompanion<Todo> {
       if (completedAt != null) 'completed_at': completedAt,
       if (dueDate != null) 'due_date': dueDate,
       if (notificationTime != null) 'notification_time': notificationTime,
+      if (recurrenceRule != null) 'recurrence_rule': recurrenceRule,
+      if (parentRecurringTodoId != null)
+        'parent_recurring_todo_id': parentRecurringTodoId,
     });
   }
 
@@ -919,6 +1021,8 @@ class TodosCompanion extends UpdateCompanion<Todo> {
     Value<DateTime?>? completedAt,
     Value<DateTime?>? dueDate,
     Value<DateTime?>? notificationTime,
+    Value<String?>? recurrenceRule,
+    Value<int?>? parentRecurringTodoId,
   }) {
     return TodosCompanion(
       id: id ?? this.id,
@@ -930,6 +1034,9 @@ class TodosCompanion extends UpdateCompanion<Todo> {
       completedAt: completedAt ?? this.completedAt,
       dueDate: dueDate ?? this.dueDate,
       notificationTime: notificationTime ?? this.notificationTime,
+      recurrenceRule: recurrenceRule ?? this.recurrenceRule,
+      parentRecurringTodoId:
+          parentRecurringTodoId ?? this.parentRecurringTodoId,
     );
   }
 
@@ -963,6 +1070,14 @@ class TodosCompanion extends UpdateCompanion<Todo> {
     if (notificationTime.present) {
       map['notification_time'] = Variable<DateTime>(notificationTime.value);
     }
+    if (recurrenceRule.present) {
+      map['recurrence_rule'] = Variable<String>(recurrenceRule.value);
+    }
+    if (parentRecurringTodoId.present) {
+      map['parent_recurring_todo_id'] = Variable<int>(
+        parentRecurringTodoId.value,
+      );
+    }
     return map;
   }
 
@@ -977,7 +1092,9 @@ class TodosCompanion extends UpdateCompanion<Todo> {
           ..write('createdAt: $createdAt, ')
           ..write('completedAt: $completedAt, ')
           ..write('dueDate: $dueDate, ')
-          ..write('notificationTime: $notificationTime')
+          ..write('notificationTime: $notificationTime, ')
+          ..write('recurrenceRule: $recurrenceRule, ')
+          ..write('parentRecurringTodoId: $parentRecurringTodoId')
           ..write(')'))
         .toString();
   }
@@ -1670,6 +1787,8 @@ typedef $$TodosTableCreateCompanionBuilder =
       Value<DateTime?> completedAt,
       Value<DateTime?> dueDate,
       Value<DateTime?> notificationTime,
+      Value<String?> recurrenceRule,
+      Value<int?> parentRecurringTodoId,
     });
 typedef $$TodosTableUpdateCompanionBuilder =
     TodosCompanion Function({
@@ -1682,6 +1801,8 @@ typedef $$TodosTableUpdateCompanionBuilder =
       Value<DateTime?> completedAt,
       Value<DateTime?> dueDate,
       Value<DateTime?> notificationTime,
+      Value<String?> recurrenceRule,
+      Value<int?> parentRecurringTodoId,
     });
 
 final class $$TodosTableReferences
@@ -1751,6 +1872,16 @@ class $$TodosTableFilterComposer extends Composer<_$AppDatabase, $TodosTable> {
 
   ColumnFilters<DateTime> get notificationTime => $composableBuilder(
     column: $table.notificationTime,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get recurrenceRule => $composableBuilder(
+    column: $table.recurrenceRule,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get parentRecurringTodoId => $composableBuilder(
+    column: $table.parentRecurringTodoId,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -1827,6 +1958,16 @@ class $$TodosTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get recurrenceRule => $composableBuilder(
+    column: $table.recurrenceRule,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get parentRecurringTodoId => $composableBuilder(
+    column: $table.parentRecurringTodoId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   $$CategoriesTableOrderingComposer get categoryId {
     final $$CategoriesTableOrderingComposer composer = $composerBuilder(
       composer: this,
@@ -1892,6 +2033,16 @@ class $$TodosTableAnnotationComposer
     builder: (column) => column,
   );
 
+  GeneratedColumn<String> get recurrenceRule => $composableBuilder(
+    column: $table.recurrenceRule,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get parentRecurringTodoId => $composableBuilder(
+    column: $table.parentRecurringTodoId,
+    builder: (column) => column,
+  );
+
   $$CategoriesTableAnnotationComposer get categoryId {
     final $$CategoriesTableAnnotationComposer composer = $composerBuilder(
       composer: this,
@@ -1953,6 +2104,8 @@ class $$TodosTableTableManager
                 Value<DateTime?> completedAt = const Value.absent(),
                 Value<DateTime?> dueDate = const Value.absent(),
                 Value<DateTime?> notificationTime = const Value.absent(),
+                Value<String?> recurrenceRule = const Value.absent(),
+                Value<int?> parentRecurringTodoId = const Value.absent(),
               }) => TodosCompanion(
                 id: id,
                 title: title,
@@ -1963,6 +2116,8 @@ class $$TodosTableTableManager
                 completedAt: completedAt,
                 dueDate: dueDate,
                 notificationTime: notificationTime,
+                recurrenceRule: recurrenceRule,
+                parentRecurringTodoId: parentRecurringTodoId,
               ),
           createCompanionCallback:
               ({
@@ -1975,6 +2130,8 @@ class $$TodosTableTableManager
                 Value<DateTime?> completedAt = const Value.absent(),
                 Value<DateTime?> dueDate = const Value.absent(),
                 Value<DateTime?> notificationTime = const Value.absent(),
+                Value<String?> recurrenceRule = const Value.absent(),
+                Value<int?> parentRecurringTodoId = const Value.absent(),
               }) => TodosCompanion.insert(
                 id: id,
                 title: title,
@@ -1985,6 +2142,8 @@ class $$TodosTableTableManager
                 completedAt: completedAt,
                 dueDate: dueDate,
                 notificationTime: notificationTime,
+                recurrenceRule: recurrenceRule,
+                parentRecurringTodoId: parentRecurringTodoId,
               ),
           withReferenceMapper: (p0) => p0
               .map(
