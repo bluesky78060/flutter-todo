@@ -57,6 +57,7 @@ class AuthRepositoryImpl implements AuthRepository {
 
       return Right(AuthUser(
         id: id,
+        uuid: id.toString(), // Convert int ID to string for compatibility
         email: email,
         name: name,
         createdAt: DateTime.now(),
@@ -100,6 +101,7 @@ class AuthRepositoryImpl implements AuthRepository {
   AuthUser _mapUserToEntity(User user) {
     return AuthUser(
       id: user.id,
+      uuid: user.id.toString(), // Convert int ID to string for compatibility
       email: user.email,
       name: user.name,
       createdAt: user.createdAt,
