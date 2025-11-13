@@ -40,7 +40,7 @@ const RESOURCES = {"sql-wasm.wasm": "8f5029a1d3545424d4f25647673e5e32",
 "sqlite3.wasm": "fa7637a49a0e434f2a98f9981856d118",
 "sql-wasm.js": "6bd05b179c947cce4eea15193868ef14",
 "404.html": "2aca34fca096ea4d005b866dba8508bf",
-"flutter_bootstrap.js": "cc1926d030071fcba00b1c45add2fd6a",
+"flutter_bootstrap.js": "b6ad53bb98c01c0f708c72dd1a57b04c",
 "version.json": "7c2872667cd1bddbb0c085813a2dd637",
 "main.dart.js": "e379c0103476c120722c556f34a05c8e"};
 // The application shell files that are downloaded before a service worker can
