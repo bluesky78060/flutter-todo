@@ -63,11 +63,6 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-
-            // 네이티브 디버그 심볼 생성 (Google Play 크래시 분석용)
-            ndk {
-                debugSymbolLevel = "FULL"
-            }
         }
     }
 

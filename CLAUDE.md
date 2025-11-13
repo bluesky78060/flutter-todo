@@ -69,8 +69,14 @@ dart run build_runner watch --delete-conflicting-outputs
 # Run all tests
 flutter test
 
-# Run specific test
-flutter test test/widget_test.dart
+# Run specific test file
+flutter test test/unit/utils/recurrence_utils_test.dart
+
+# Run specific test group
+flutter test test/unit/utils/recurrence_utils_test.dart --plain-name "getNextOccurrences"
+
+# Generate mock files (for tests using @GenerateMocks)
+dart run build_runner build --delete-conflicting-outputs
 
 # Analyze code
 flutter analyze
@@ -78,6 +84,12 @@ flutter analyze
 # Check dependencies
 flutter pub outdated
 ```
+
+**Testing Standards**:
+- **Date Convention**: All test dates use **2025 as the base year** for consistency and to avoid past-date issues
+- **UTC DateTime**: Always use `DateTime.utc()` for RRULE-related tests (required by rrule package)
+- **Test Structure**: Follow Arrange-Act-Assert pattern with clear group organization
+- **Mock Setup**: Use mockito with `@GenerateMocks` annotation and fpdart's Either type
 
 ### Android Debugging
 
@@ -439,3 +451,101 @@ See [GOOGLE_PLAY_RELEASE.md](GOOGLE_PLAY_RELEASE.md) for detailed guide.
 **Purpose**:
 - **FUTURE_TASKS.md**: Single source of truth for feature planning and progress tracking
 - **RELEASE_NOTES.md**: Complete history of changes for each version, useful for Play Store releases and team communication
+
+## Testing Guidelines
+
+### Date Convention in Tests
+
+**Critical Rule**: All test dates MUST use **2025 as the base year**.
+
+**Rationale**:
+- Avoids past-date issues with RRULE calculations
+- Ensures consistency across all tests
+- Prevents timezone and date calculation errors
+- Makes tests future-proof for longer periods
+
+**Examples**:
+```dart
+// ✅ CORRECT - Using 2025
+final startDate = DateTime.utc(2025, 1, 1, 10, 0);
+final dueDate = DateTime(2025, 3, 15, 14, 30);
+
+// ❌ WRONG - Using 2024 or current year
+final startDate = DateTime.utc(2024, 1, 1, 10, 0);
+final dueDate = DateTime.now().add(Duration(days: 7));
+```
+
+### RRULE Test Requirements
+
+**UTC DateTime Mandatory**: The `rrule` package requires UTC DateTime objects.
+
+```dart
+// ✅ CORRECT
+final startDate = DateTime.utc(2025, 1, 1, 10, 0);
+RecurrenceUtils.getNextOccurrences('FREQ=DAILY', startDate);
+
+// ❌ WRONG - Local time causes assertion errors
+final startDate = DateTime(2025, 1, 1, 10, 0);
+```
+
+### Mock Setup for fpdart
+
+When testing code using `fpdart`'s `Either` type, provide dummy values:
+
+```dart
+import 'package:fpdart/fpdart.dart';
+import 'package:mockito/mockito.dart';
+
+setUp(() {
+  mockRepository = MockTodoRepository();
+
+  // Provide dummy values for Either types
+  provideDummy<Either<Failure, List<Todo>>>(right(<Todo>[]));
+  provideDummy<Either<Failure, int>>(right(1));
+  provideDummy<Either<Failure, Unit>>(right(unit));
+});
+```
+
+### Test File Organization
+
+```
+test/
+├── unit/              # 단위 테스트
+│   ├── services/      # 서비스 로직 테스트
+│   ├── repositories/  # 리포지토리 테스트
+│   └── utils/         # 유틸리티 테스트 ✅
+├── widget/            # 위젯 테스트 (향후)
+└── integration/       # 통합 테스트 (향후)
+```
+
+### Running Specific Tests
+
+```bash
+# Run all tests
+flutter test
+
+# Run specific test file
+flutter test test/unit/utils/recurrence_utils_test.dart
+
+# Run specific test group
+flutter test test/unit/utils/recurrence_utils_test.dart --plain-name "getNextOccurrences"
+
+# Run with verbose output
+flutter test --verbose
+
+# Generate and view coverage report (향후)
+flutter test --coverage
+genhtml coverage/lcov.info -o coverage/html
+open coverage/html/index.html
+```
+
+### Test Coverage Status
+
+**Current**: 31 tests (RecurrenceUtils 100% coverage) ✅
+**Target**: 40-50% overall coverage
+**Next Priorities**:
+1. Repository tests (CategoryRepository 우선)
+2. Provider tests (CategoryProviders)
+3. Service tests (RecurringTodoService with date mocking)
+
+See [claudedocs/TEST_COVERAGE_REPORT.md](claudedocs/TEST_COVERAGE_REPORT.md) for detailed coverage information.

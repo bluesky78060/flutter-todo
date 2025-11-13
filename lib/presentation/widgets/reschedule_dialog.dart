@@ -1,0 +1,142 @@
+import 'package:flutter/material.dart';
+import 'package:todo_app/core/theme/app_colors.dart';
+import 'package:fluentui_system_icons/fluentui_system_icons.dart';
+
+enum RescheduleOption {
+  today,
+  tomorrow,
+  custom,
+}
+
+class RescheduleDialog extends StatelessWidget {
+  const RescheduleDialog({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      backgroundColor: AppColors.darkCard,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Title
+            Row(
+              children: [
+                const Icon(
+                  FluentIcons.calendar_arrow_right_24_regular,
+                  color: AppColors.primaryBlue,
+                  size: 24,
+                ),
+                const SizedBox(width: 12),
+                const Text(
+                  '일정 이월',
+                  style: TextStyle(
+                    color: AppColors.textWhite,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+
+            // Options
+            _RescheduleOption(
+              icon: FluentIcons.calendar_today_24_regular,
+              label: '오늘로',
+              onTap: () => Navigator.of(context).pop(RescheduleOption.today),
+            ),
+            const SizedBox(height: 12),
+            _RescheduleOption(
+              icon: FluentIcons.calendar_arrow_right_24_regular,
+              label: '내일로',
+              onTap: () => Navigator.of(context).pop(RescheduleOption.tomorrow),
+            ),
+            const SizedBox(height: 12),
+            _RescheduleOption(
+              icon: FluentIcons.calendar_edit_24_regular,
+              label: '직접 선택',
+              onTap: () => Navigator.of(context).pop(RescheduleOption.custom),
+            ),
+            const SizedBox(height: 20),
+
+            // Cancel button
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              style: TextButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 12),
+              ),
+              child: const Text(
+                '취소',
+                style: TextStyle(
+                  color: AppColors.textGray,
+                  fontSize: 16,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _RescheduleOption extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+
+  const _RescheduleOption({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        decoration: BoxDecoration(
+          color: AppColors.darkBackground,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: AppColors.textGray.withValues(alpha: 0.2),
+            width: 1,
+          ),
+        ),
+        child: Row(
+          children: [
+            Icon(
+              icon,
+              color: AppColors.primaryBlue,
+              size: 24,
+            ),
+            const SizedBox(width: 12),
+            Text(
+              label,
+              style: const TextStyle(
+                color: AppColors.textWhite,
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            const Spacer(),
+            const Icon(
+              FluentIcons.chevron_right_24_regular,
+              color: AppColors.textGray,
+              size: 20,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}

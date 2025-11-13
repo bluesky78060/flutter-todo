@@ -595,7 +595,7 @@ class _CategoryDialogState extends ConsumerState<CategoryDialog> {
       if (widget.category == null) {
         // Create new category
         await ref.read(categoryActionsProvider).createCategory(
-              currentUser.id.toString(),
+              currentUser.uuid,  // ✅ Use Supabase UUID instead of id
               _nameController.text.trim(),
               _selectedColor,
               _selectedIcon,

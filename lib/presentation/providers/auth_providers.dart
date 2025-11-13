@@ -11,7 +11,24 @@ final currentUserProvider = StreamProvider<domain.AuthUser?>((ref) async* {
 
   logger.d('🎯 currentUserProvider: Starting auth stream');
 
-  // Listen to Supabase auth state changes
+  // Emit initial auth state immediately to avoid long loading on startup
+  try {
+    final initial = await repository.getCurrentUser();
+    final initialUser = initial.fold(
+      (failure) {
+        logger.d('⚠️ Failed to get initial user: $failure');
+        return null;
+      },
+      (user) => user,
+    );
+    logger.d('🚀 Initial auth user: ${initialUser != null}');
+    yield initialUser;
+  } catch (e) {
+    logger.d('⚠️ Initial auth check error: $e');
+    yield null;
+  }
+
+  // Then listen to Supabase auth state changes
   await for (final authState in Supabase.instance.client.auth.onAuthStateChange) {
     logger.d('🔐 Auth stream update: ${authState.event}, session=${authState.session != null}');
 

@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:todo_app/core/services/notification_service.dart';
 import 'package:todo_app/domain/entities/todo.dart';
@@ -54,11 +55,21 @@ final todosProvider = FutureProvider<List<Todo>>((ref) async {
   return result.fold(
     (failure) => throw Exception(failure),
     (todos) {
+      // Filter out master recurring todos (they should not be displayed, only their instances)
+      var filteredTodos = todos.where((todo) {
+        // Hide master todos: those with recurrenceRule but no parentRecurringTodoId
+        final isMasterRecurringTodo = todo.recurrenceRule != null &&
+                                       todo.recurrenceRule!.isNotEmpty &&
+                                       todo.parentRecurringTodoId == null;
+        return !isMasterRecurringTodo;
+      }).toList();
+
       // Apply category filter if selected
       if (categoryFilter != null) {
-        return todos.where((todo) => todo.categoryId == categoryFilter).toList();
+        filteredTodos = filteredTodos.where((todo) => todo.categoryId == categoryFilter).toList();
       }
-      return todos;
+
+      return filteredTodos;
     },
   );
 });
@@ -432,12 +443,153 @@ class TodoActions {
 
   Future<void> toggleCompletion(int id) async {
     final repository = ref.read(todoRepositoryProvider);
-    final result = await repository.toggleCompletion(id);
-    result.fold(
-      (failure) => throw Exception(failure),
-      (_) {
-        ref.invalidate(todosProvider);
-        ref.invalidate(todoDetailProvider(id));
+
+    // First, fetch the todo to check if it's a recurring instance
+    final todoResult = await repository.getTodoById(id);
+    await todoResult.fold(
+      (failure) {
+        logger.e('❌ TodoActions: Failed to fetch todo for toggle completion');
+        throw Exception('Todo 조회 실패: $failure');
+      },
+      (todo) async {
+        // Toggle the completion status
+        final result = await repository.toggleCompletion(id);
+        await result.fold(
+          (failure) {
+            logger.e('❌ TodoActions: Failed to toggle completion');
+            throw Exception(failure);
+          },
+          (_) async {
+            logger.d('✅ TodoActions: Todo completion toggled: $id');
+
+            // If this is a recurring instance being completed, generate next instances
+            if (!todo.isCompleted && todo.parentRecurringTodoId != null) {
+              logger.d('🔄 TodoActions: Recurring instance completed, regenerating instances');
+
+              try {
+                // Fetch the master todo
+                final masterResult = await repository.getTodoById(todo.parentRecurringTodoId!);
+                await masterResult.fold(
+                  (failure) {
+                    logger.e('❌ TodoActions: Failed to fetch master todo');
+                  },
+                  (masterTodo) async {
+                    // Regenerate instances for the master todo
+                    final recurringService = ref.read(recurringTodoServiceProvider);
+                    final allTodosResult = await repository.getTodos();
+
+                    await allTodosResult.fold(
+                      (failure) {
+                        logger.e('❌ TodoActions: Failed to fetch todos for regeneration');
+                      },
+                      (allTodos) async {
+                        await recurringService.generateInstancesForNewMaster(masterTodo);
+                        logger.d('✅ TodoActions: Next recurring instances generated');
+                      },
+                    );
+                  },
+                );
+              } catch (e, stackTrace) {
+                logger.e('❌ TodoActions: Failed to generate next recurring instance',
+                  error: e, stackTrace: stackTrace);
+                // Don't throw - allow completion to succeed even if generation fails
+              }
+            }
+
+            ref.invalidate(todosProvider);
+            ref.invalidate(todoDetailProvider(id));
+          },
+        );
+      },
+    );
+  }
+
+  /// Reschedule a todo to a new date
+  /// Maintains the original time, only changes the date
+  Future<void> rescheduleTodo(
+    int id,
+    DateTime newDate,
+  ) async {
+    final repository = ref.read(todoRepositoryProvider);
+    final notificationService = ref.read(notificationServiceProvider);
+
+    logger.d('📅 TodoActions: Rescheduling todo $id to $newDate');
+
+    // Fetch the current todo
+    final todoResult = await repository.getTodoById(id);
+    await todoResult.fold(
+      (failure) {
+        logger.e('❌ TodoActions: Failed to fetch todo for rescheduling');
+        throw Exception('Todo 조회 실패: $failure');
+      },
+      (todo) async {
+        if (todo.dueDate == null) {
+          throw Exception('마감일이 없는 할일은 이월할 수 없습니다');
+        }
+
+        // Keep the original time, change only the date
+        final originalTime = TimeOfDay(
+          hour: todo.dueDate!.hour,
+          minute: todo.dueDate!.minute,
+        );
+        final newDueDate = DateTime(
+          newDate.year,
+          newDate.month,
+          newDate.day,
+          originalTime.hour,
+          originalTime.minute,
+        );
+
+        // Calculate new notification time if it exists
+        DateTime? newNotificationTime;
+        if (todo.notificationTime != null && todo.dueDate != null) {
+          // Calculate the time difference between notification and due date
+          final difference = todo.dueDate!.difference(todo.notificationTime!);
+          // Apply the same difference to the new due date
+          newNotificationTime = newDueDate.subtract(difference);
+        }
+
+        // Update the todo
+        final updatedTodo = todo.copyWith(
+          dueDate: newDueDate,
+          notificationTime: newNotificationTime,
+        );
+
+        logger.d('   New due date: $newDueDate');
+        logger.d('   New notification time: $newNotificationTime');
+
+        final result = await repository.updateTodo(updatedTodo);
+        await result.fold(
+          (failure) {
+            logger.e('❌ TodoActions: Failed to reschedule todo');
+            throw Exception('일정 이월 실패: $failure');
+          },
+          (_) async {
+            logger.d('✅ TodoActions: Todo rescheduled successfully');
+
+            // Update notification if it exists
+            if (newNotificationTime != null) {
+              try {
+                // Cancel old notification
+                await notificationService.cancelNotification(id);
+                // Schedule new notification
+                await notificationService.scheduleNotification(
+                  id: id,
+                  title: '할일 알림',
+                  body: todo.title,
+                  scheduledDate: newNotificationTime,
+                );
+                logger.d('✅ TodoActions: Notification rescheduled');
+              } catch (e) {
+                logger.e('❌ TodoActions: Failed to reschedule notification: $e');
+                // Don't throw - allow reschedule to succeed even if notification fails
+              }
+            }
+
+            ref.invalidate(todosProvider);
+            ref.invalidate(todoDetailProvider(id));
+          },
+        );
       },
     );
   }

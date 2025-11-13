@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:todo_app/core/utils/app_logger.dart';
+import 'package:todo_app/core/utils/clock.dart';
 import 'package:todo_app/core/utils/recurrence_utils.dart';
 import 'package:todo_app/domain/entities/todo.dart';
 import 'package:todo_app/domain/repositories/todo_repository.dart';
@@ -12,8 +13,10 @@ import 'package:todo_app/domain/repositories/todo_repository.dart';
 /// - Managing the lifecycle of recurring todo instances
 class RecurringTodoService {
   final TodoRepository repository;
+  final Clock clock;
 
-  RecurringTodoService(this.repository);
+  RecurringTodoService(this.repository, {Clock? clock})
+      : clock = clock ?? Clock();
 
   /// Generate upcoming instances for all recurring todos
   ///
@@ -85,14 +88,6 @@ class RecurringTodoService {
         logger.d('   RRULE: $rrule');
       }
 
-      // Check if recurrence has ended
-      if (RecurrenceUtils.isRecurrenceEnded(rrule, DateTime.now())) {
-        if (kDebugMode) {
-          logger.d('⏹️ RecurringTodoService: Recurrence has ended for todo #${masterTodo.id}');
-        }
-        return;
-      }
-
       // Get existing instances for this master todo
       final existingInstances = allTodos.where((todo) =>
         todo.parentRecurringTodoId == masterTodo.id
@@ -107,18 +102,29 @@ class RecurringTodoService {
       final baseDate = masterTodo.dueDate ?? masterTodo.createdAt;
 
       // Calculate the end date for instance generation
-      final endDate = DateTime.now().add(Duration(days: lookAheadDays));
+      final now = clock.now();
+      final endDate = now.add(Duration(days: lookAheadDays));
 
       // Get all occurrences within the look-ahead period
+      if (kDebugMode) {
+        logger.d('   Base date: ${baseDate.toIso8601String()}');
+        logger.d('   Current time: ${now.toIso8601String()}');
+      }
+
       final occurrences = RecurrenceUtils.getNextOccurrences(
         rrule,
         baseDate,
         count: 100, // Get up to 100 occurrences
-        after: DateTime.now(),
+        after: now,
       );
 
       if (kDebugMode) {
         logger.d('   Calculated occurrences: ${occurrences.length}');
+        if (occurrences.isNotEmpty && occurrences.length <= 5) {
+          for (var i = 0; i < occurrences.length; i++) {
+            logger.d('      Occurrence ${i + 1}: ${occurrences[i].toIso8601String()}');
+          }
+        }
       }
 
       // Filter occurrences to only those within the look-ahead period
@@ -186,7 +192,7 @@ class RecurringTodoService {
         notificationTime = occurrence.subtract(offset);
 
         // Only set notification if it's in the future
-        if (notificationTime.isBefore(DateTime.now())) {
+        if (notificationTime.isBefore(clock.now())) {
           notificationTime = null;
         }
       }

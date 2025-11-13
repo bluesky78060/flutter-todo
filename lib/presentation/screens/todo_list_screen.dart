@@ -16,6 +16,7 @@ import 'package:todo_app/presentation/screens/statistics_screen.dart';
 import 'package:todo_app/presentation/widgets/custom_todo_item.dart';
 import 'package:todo_app/presentation/widgets/todo_form_dialog.dart';
 import 'package:todo_app/presentation/widgets/recurring_delete_dialog.dart';
+import 'package:todo_app/core/utils/recurrence_utils.dart';
 
 class TodoListScreen extends ConsumerStatefulWidget {
   const TodoListScreen({super.key});
@@ -59,7 +60,14 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> {
         // 짧은 지연 후 다음 권한 요청
         await Future.delayed(const Duration(milliseconds: 300));
 
-        // 2단계: 배터리 최적화 제외 요청 (알림 권한 허용 후)
+        // 2단계: 정확한 알람 권한 요청 (Android 14+)
+        if (mounted) {
+          await _requestExactAlarmPermission();
+        }
+
+        await Future.delayed(const Duration(milliseconds: 300));
+
+        // 3단계: 배터리 최적화 제외 요청
         if (mounted) {
           await _requestBatteryOptimization();
         }
@@ -108,7 +116,54 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> {
 
       if (shouldRequest == true) {
         await notificationService.requestPermissions();
+
+        // 권한 허용 후 설정 화면 안내
+        if (mounted) {
+          await Future.delayed(const Duration(milliseconds: 500));
+          await _showNotificationSettingsGuide();
+        }
       }
+    }
+  }
+
+  Future<void> _showNotificationSettingsGuide() async {
+    final shouldOpen = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppColors.darkCard,
+        title: const Row(
+          children: [
+            Icon(FluentIcons.info_24_regular, color: AppColors.primaryBlue),
+            SizedBox(width: 12),
+            Text(
+              '알림 설정 확인',
+              style: TextStyle(color: AppColors.textWhite),
+            ),
+          ],
+        ),
+        content: const Text(
+          '알림이 정상적으로 표시되려면 알림 중요도를 "높음" 또는 "긴급"으로 설정해야 합니다.\n\n설정 화면으로 이동하시겠습니까?',
+          style: TextStyle(color: AppColors.textGray),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('나중에', style: TextStyle(color: AppColors.textGray)),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primaryBlue,
+            ),
+            child: const Text('설정 열기', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+
+    if (shouldOpen == true) {
+      final notificationService = NotificationService();
+      await notificationService.openNotificationSettings();
     }
   }
 
@@ -152,6 +207,56 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> {
     } catch (e) {
       // 배터리 최적화 요청 실패는 무시 (치명적이지 않음)
       debugPrint('Battery optimization request failed: $e');
+    }
+  }
+
+  Future<void> _requestExactAlarmPermission() async {
+    try {
+      final notificationService = NotificationService();
+      final canSchedule = await notificationService.canScheduleExactAlarms();
+
+      if (!canSchedule && mounted) {
+        final shouldRequest = await showDialog<bool>(
+          context: context,
+          builder: (context) => AlertDialog(
+            backgroundColor: AppColors.darkCard,
+            title: const Row(
+              children: [
+                Icon(FluentIcons.alert_24_regular, color: AppColors.accentOrange),
+                SizedBox(width: 12),
+                Text(
+                  '정확한 알람 권한',
+                  style: TextStyle(color: AppColors.textWhite),
+                ),
+              ],
+            ),
+            content: const Text(
+              'Android 14 이상에서 정확한 시간에 알림을 받으려면 "정확한 알람" 권한이 필요합니다.\n\n이 권한을 허용하지 않으면 알림이 최대 15분까지 지연될 수 있습니다.\n\n권한을 허용하시겠습니까?',
+              style: TextStyle(color: AppColors.textGray, height: 1.5),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: const Text('나중에', style: TextStyle(color: AppColors.textGray)),
+              ),
+              ElevatedButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primaryBlue,
+                ),
+                child: const Text('허용하기', style: TextStyle(color: Colors.white)),
+              ),
+            ],
+          ),
+        );
+
+        if (shouldRequest == true) {
+          await notificationService.openExactAlarmSettings();
+        }
+      }
+    } catch (e) {
+      // Exact alarm 권한 요청 실패는 무시 (치명적이지 않음)
+      debugPrint('Exact alarm permission request failed: $e');
     }
   }
 
@@ -259,6 +364,36 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> {
                                   height: 48,
                                   child: const Icon(
                                     FluentIcons.arrow_clockwise_24_regular,
+                                    color: AppColors.textGray,
+                                    size: 22,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          // Calendar Button
+                          Container(
+                            decoration: BoxDecoration(
+                              color: AppColors.darkCard,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: AppColors.darkBorder.withValues(alpha: 0.5),
+                                width: 1,
+                              ),
+                            ),
+                            child: Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                onTap: () {
+                                  context.go('/calendar');
+                                },
+                                borderRadius: BorderRadius.circular(12),
+                                child: SizedBox(
+                                  width: 48,
+                                  height: 48,
+                                  child: const Icon(
+                                    FluentIcons.calendar_24_regular,
                                     color: AppColors.textGray,
                                     size: 22,
                                   ),
@@ -475,19 +610,38 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> {
                     );
                   }
 
+                  // Group todos by recurring series
+                  final groupedTodos = _groupTodosBySeries(todos);
+
                   return ListView.builder(
                     padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
-                    itemCount: todos.length,
+                    itemCount: groupedTodos.length,
                     itemBuilder: (context, index) {
-                      final todo = todos[index];
-                      return CustomTodoItem(
-                        key: ValueKey(todo.id),
-                        todo: todo,
-                        onToggle: () => ref
+                      final group = groupedTodos[index];
+
+                      // If it's a single todo or non-recurring, show normal item
+                      if (group.length == 1) {
+                        final todo = group.first;
+                        return CustomTodoItem(
+                          key: ValueKey(todo.id),
+                          todo: todo,
+                          onToggle: () => ref
+                              .read(todoActionsProvider)
+                              .toggleCompletion(todo.id),
+                          onDelete: () => _handleDelete(todo),
+                          onTap: () => context.go('/todos/${todo.id}'),
+                        );
+                      }
+
+                      // If it's a recurring series, show grouped item
+                      return _RecurringTodoGroup(
+                        key: ValueKey('group_${group.first.parentRecurringTodoId}'),
+                        todos: group,
+                        onToggle: (todo) => ref
                             .read(todoActionsProvider)
                             .toggleCompletion(todo.id),
-                        onDelete: () => _handleDelete(todo),
-                        onTap: () => context.go('/todos/${todo.id}'),
+                        onDelete: (todo) => _handleDelete(todo),
+                        onTap: (todo) => context.go('/todos/${todo.id}'),
                       );
                     },
                   );
@@ -585,6 +739,69 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> {
         ),
       ),
     );
+  }
+
+  /// Group todos by recurring series
+  /// Returns a list of lists, where each inner list contains todos from the same recurring series
+  /// Non-recurring todos are wrapped in single-element lists
+  List<List<Todo>> _groupTodosBySeries(List<Todo> todos) {
+    print('🔍 _groupTodosBySeries: Processing ${todos.length} todos');
+
+    final Map<int, List<Todo>> groupedByParent = {};
+    final List<Todo> nonRecurring = [];
+
+    for (final todo in todos) {
+      print('   Todo: ${todo.id} - ${todo.title}, parent: ${todo.parentRecurringTodoId}');
+      if (todo.parentRecurringTodoId != null) {
+        // This is a recurring instance
+        final parentId = todo.parentRecurringTodoId!;
+        if (!groupedByParent.containsKey(parentId)) {
+          groupedByParent[parentId] = [];
+        }
+        groupedByParent[parentId]!.add(todo);
+      } else {
+        // Non-recurring todo
+        nonRecurring.add(todo);
+      }
+    }
+
+    print('   Grouped by parent: ${groupedByParent.length} groups');
+    for (final entry in groupedByParent.entries) {
+      print('      Parent ${entry.key}: ${entry.value.length} todos');
+    }
+    print('   Non-recurring: ${nonRecurring.length} todos');
+
+    // Combine and sort: single todos + grouped recurring series
+    final List<List<Todo>> result = [];
+
+    // Add non-recurring todos as single-element lists
+    for (final todo in nonRecurring) {
+      result.add([todo]);
+    }
+
+    // Add grouped recurring series (sorted by due date within each group)
+    for (final group in groupedByParent.values) {
+      // Sort by due date within group
+      group.sort((a, b) {
+        if (a.dueDate == null && b.dueDate == null) return 0;
+        if (a.dueDate == null) return 1;
+        if (b.dueDate == null) return -1;
+        return a.dueDate!.compareTo(b.dueDate!);
+      });
+      result.add(group);
+    }
+
+    // Sort the result by the first todo's due date in each group
+    result.sort((a, b) {
+      final aDueDate = a.first.dueDate;
+      final bDueDate = b.first.dueDate;
+      if (aDueDate == null && bDueDate == null) return 0;
+      if (aDueDate == null) return 1;
+      if (bDueDate == null) return -1;
+      return aDueDate.compareTo(bDueDate);
+    });
+
+    return result;
   }
 }
 
@@ -775,6 +992,150 @@ class _CategoryChip extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Widget for displaying a group of recurring todos
+class _RecurringTodoGroup extends StatefulWidget {
+  final List<Todo> todos;
+  final Function(Todo) onToggle;
+  final Function(Todo) onDelete;
+  final Function(Todo) onTap;
+
+  const _RecurringTodoGroup({
+    super.key,
+    required this.todos,
+    required this.onToggle,
+    required this.onDelete,
+    required this.onTap,
+  });
+
+  @override
+  State<_RecurringTodoGroup> createState() => _RecurringTodoGroupState();
+}
+
+class _RecurringTodoGroupState extends State<_RecurringTodoGroup> {
+  bool _isExpanded = false;
+
+  @override
+  Widget build(BuildContext context) {
+    if (widget.todos.isEmpty) return const SizedBox.shrink();
+
+    final firstTodo = widget.todos.first;
+    final completedCount = widget.todos.where((t) => t.isCompleted).length;
+    final totalCount = widget.todos.length;
+
+    return Column(
+      children: [
+        // Group header
+        Container(
+          margin: const EdgeInsets.only(bottom: 8),
+          decoration: BoxDecoration(
+            color: AppColors.darkCard,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: AppColors.primaryBlue.withValues(alpha: 0.3),
+              width: 1.5,
+            ),
+          ),
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: () {
+                setState(() {
+                  _isExpanded = !_isExpanded;
+                });
+              },
+              borderRadius: BorderRadius.circular(16),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Row(
+                  children: [
+                    // Expand/collapse icon
+                    Icon(
+                      _isExpanded
+                          ? FluentIcons.chevron_down_24_filled
+                          : FluentIcons.chevron_right_24_filled,
+                      color: AppColors.primaryBlue,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 12),
+
+                    // Recurring icon
+                    const Icon(
+                      FluentIcons.arrow_repeat_all_24_filled,
+                      color: AppColors.primaryBlue,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 12),
+
+                    // Title and info
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            firstTodo.title,
+                            style: const TextStyle(
+                              color: AppColors.textWhite,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            '반복 일정 · $completedCount/$totalCount 완료',
+                            style: const TextStyle(
+                              color: AppColors.textGray,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    // Progress indicator
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.primaryBlue.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        '$totalCount개',
+                        style: const TextStyle(
+                          color: AppColors.primaryBlue,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+
+        // Expanded list
+        if (_isExpanded)
+          ...widget.todos.map((todo) => Padding(
+            padding: const EdgeInsets.only(left: 16, bottom: 8),
+            child: CustomTodoItem(
+              key: ValueKey(todo.id),
+              todo: todo,
+              onToggle: () => widget.onToggle(todo),
+              onDelete: () => widget.onDelete(todo),
+              onTap: () => widget.onTap(todo),
+            ),
+          )),
+      ],
     );
   }
 }

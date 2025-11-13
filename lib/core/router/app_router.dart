@@ -10,6 +10,7 @@ import 'package:todo_app/presentation/screens/todo_detail_screen.dart';
 import 'package:todo_app/presentation/screens/todo_list_screen.dart';
 import 'package:todo_app/presentation/screens/oauth_callback_screen.dart';
 import 'package:todo_app/presentation/screens/category_management_screen.dart';
+import 'package:todo_app/presentation/screens/calendar_screen.dart';
 import 'package:todo_app/core/utils/app_logger.dart';
 
 final goRouterProvider = Provider<GoRouter>((ref) {
@@ -106,6 +107,11 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         path: '/categories',
         name: 'categories',
         builder: (context, state) => const CategoryManagementScreen(),
+      ),
+      GoRoute(
+        path: '/calendar',
+        name: 'calendar',
+        builder: (context, state) => const CalendarScreen(),
       ),
     ],
     errorBuilder: (context, state) => Scaffold(

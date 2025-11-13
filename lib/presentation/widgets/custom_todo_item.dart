@@ -182,6 +182,27 @@ class _CustomTodoItemState extends State<CustomTodoItem>
                               ],
                             ),
                           ],
+                          if (widget.todo.recurrenceRule != null && widget.todo.recurrenceRule!.isNotEmpty) ...[
+                            const SizedBox(height: 6),
+                            Row(
+                              children: [
+                                const Icon(
+                                  FluentIcons.arrow_repeat_all_24_regular,
+                                  color: AppColors.primaryBlue,
+                                  size: 14,
+                                ),
+                                const SizedBox(width: 6),
+                                Text(
+                                  '반복',
+                                  style: const TextStyle(
+                                    color: AppColors.primaryBlue,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
                         ],
                       ),
                     ),

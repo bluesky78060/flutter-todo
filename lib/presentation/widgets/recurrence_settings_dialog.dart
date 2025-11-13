@@ -117,12 +117,13 @@ class _RecurrenceSettingsDialogState extends State<RecurrenceSettingsDialog> {
         borderRadius: BorderRadius.circular(16),
       ),
       child: Container(
-        constraints: const BoxConstraints(maxWidth: 500),
+        constraints: const BoxConstraints(maxWidth: 500, maxHeight: 600),
         padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
             // Header
             Row(
               children: [
@@ -219,6 +220,7 @@ class _RecurrenceSettingsDialogState extends State<RecurrenceSettingsDialog> {
               ],
             ),
           ],
+        ),
         ),
       ),
     );

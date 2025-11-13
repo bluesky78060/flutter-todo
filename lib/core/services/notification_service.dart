@@ -75,6 +75,11 @@ class NotificationService {
         requestAlertPermission: true,
         requestBadgePermission: true,
         requestSoundPermission: true,
+        // CRITICAL: Show notifications even when app is in foreground
+        // Without this, notifications won't appear while app is open
+        defaultPresentAlert: true,
+        defaultPresentSound: true,
+        defaultPresentBadge: true,
       );
 
       const initSettings = InitializationSettings(
@@ -110,8 +115,27 @@ class NotificationService {
 
   /// Create notification channel for Android
   Future<void> _createNotificationChannel() async {
+    final androidPlugin = _notificationsPlugin
+        .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin>();
+
+    // 이전 채널 삭제 (v1, v2) - 캐시된 잘못된 설정 제거
+    if (androidPlugin != null) {
+      try {
+        await androidPlugin.deleteNotificationChannel('todo_notifications');
+        await androidPlugin.deleteNotificationChannel('todo_notifications_v2');
+        if (kDebugMode) {
+          print('🗑️ Old notification channels deleted');
+        }
+      } catch (e) {
+        if (kDebugMode) {
+          print('⚠️ Could not delete old channels (might not exist): $e');
+        }
+      }
+    }
+
     const androidChannel = AndroidNotificationChannel(
-      'todo_notifications_v2',  // 새 채널 ID - 업데이트 시 새 설정 적용
+      'todo_notifications_v3',  // v3로 업데이트 - 채널 캐싱 문제 해결
       'Todo Reminders',
       description: 'Notifications for todo items',
       importance: Importance.max,  // high -> max로 변경 (헤드업 알림 필수)
@@ -121,13 +145,10 @@ class NotificationService {
       ledColor: const Color.fromARGB(255, 255, 0, 0),
     );
 
-    await _notificationsPlugin
-        .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>()
-        ?.createNotificationChannel(androidChannel);
+    await androidPlugin?.createNotificationChannel(androidChannel);
 
     if (kDebugMode) {
-      print('📱 Android notification channel created');
+      print('📱 Android notification channel v3 created');
     }
   }
 
@@ -247,22 +268,48 @@ class NotificationService {
         await requestPermissions();
       }
 
+      // Android 14+ (API 34+): Check if we can schedule exact alarms
+      // This permission is DENIED by default for fresh installs
+      if (_isAndroid) {
+        try {
+          final alarmStatus = await Permission.scheduleExactAlarm.status;
+          if (!alarmStatus.isGranted) {
+            if (kDebugMode) {
+              print('❌ Cannot schedule exact alarm - permission denied');
+              print('   User must grant permission in Settings');
+            }
+            // Don't throw - just log and let it schedule with best effort
+            // The system will use inexact timing instead
+          } else {
+            if (kDebugMode) {
+              print('✅ Exact alarm permission granted');
+            }
+          }
+        } catch (e) {
+          if (kDebugMode) {
+            print('⚠️ Exact alarm check failed: $e');
+          }
+        }
+      }
+
       final androidDetails = AndroidNotificationDetails(
-        'todo_notifications_v2',  // 새 채널 ID와 일치
+        'todo_notifications_v3',  // v3 채널 ID와 일치
         'Todo Reminders',
         channelDescription: 'Notifications for todo items',
         importance: Importance.max,
-        priority: Priority.max,  // high -> max로 변경
+        priority: Priority.max,
         showWhen: true,
         enableVibration: true,
         playSound: true,
         // 포그라운드에서도 알림 표시
         channelShowBadge: true,
-        autoCancel: false,  // 사용자가 직접 닫을 때까지 유지
+        autoCancel: true,  // 탭하면 자동으로 사라짐
         // 헤드업 알림으로 표시 (앱이 열려있어도 위에 팝업으로 표시)
-        // 일부 기기에서 풀스크린 인텐트는 별도 구성 없이는 크래시를 유발할 수 있어 비활성화
         fullScreenIntent: false,
         category: AndroidNotificationCategory.reminder,
+        // 알림 그룹 설정 (여러 알림을 그룹화)
+        groupKey: 'kr.bluesky.dodo.TODO_REMINDERS',
+        setAsGroupSummary: false,
         // 알림 스타일 설정 - body 내용을 표시
         styleInformation: BigTextStyleInformation(
           body,
@@ -383,6 +430,47 @@ class NotificationService {
     return status.isGranted;
   }
 
+  /// Open app notification settings
+  Future<bool> openNotificationSettings() async {
+    if (kIsWeb) {
+      if (kDebugMode) {
+        print('⚠️ Cannot open settings on web platform');
+      }
+      return false;
+    }
+
+    try {
+      final opened = await Permission.notification.status.isDenied
+          ? await Permission.notification.request().isGranted
+          : true;
+
+      if (!opened || _isAndroid) {
+        // Open app-specific notification settings
+        await Permission.notification.shouldShowRequestRationale
+            ? await Permission.notification.request()
+            : null;
+
+        // For Android, always try to open settings
+        final settingsOpened = await openAppSettings();
+
+        if (kDebugMode) {
+          print(settingsOpened
+              ? '✅ Opened app notification settings'
+              : '❌ Failed to open notification settings');
+        }
+
+        return settingsOpened;
+      }
+
+      return opened;
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ Error opening notification settings: $e');
+      }
+      return false;
+    }
+  }
+
   /// Get pending notifications
   Future<List<PendingNotificationRequest>> getPendingNotifications() async {
     if (kIsWeb) {
@@ -396,5 +484,54 @@ class NotificationService {
     }
 
     return await _notificationsPlugin.pendingNotificationRequests();
+  }
+
+  /// Check if exact alarm permission is granted (Android 14+)
+  /// Returns true if granted, false if denied or not available
+  Future<bool> canScheduleExactAlarms() async {
+    if (!_isAndroid) {
+      return true; // iOS doesn't need this permission
+    }
+
+    try {
+      final status = await Permission.scheduleExactAlarm.status;
+      return status.isGranted;
+    } catch (e) {
+      if (kDebugMode) {
+        print('⚠️ Could not check exact alarm permission: $e');
+      }
+      return false;
+    }
+  }
+
+  /// Open exact alarm settings page (Android 14+)
+  /// Returns true if settings opened successfully
+  Future<bool> openExactAlarmSettings() async {
+    if (!_isAndroid) {
+      return false;
+    }
+
+    try {
+      // First try to request permission
+      final status = await Permission.scheduleExactAlarm.request();
+
+      if (!status.isGranted) {
+        // If still not granted, open app settings
+        final opened = await openAppSettings();
+        if (kDebugMode) {
+          print(opened
+              ? '✅ Opened exact alarm settings'
+              : '❌ Failed to open exact alarm settings');
+        }
+        return opened;
+      }
+
+      return true;
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ Error opening exact alarm settings: $e');
+      }
+      return false;
+    }
   }
 }

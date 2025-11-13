@@ -12,11 +12,18 @@ class RecurrenceUtils {
     }
 
     try {
-      return RecurrenceRule.fromString(rruleString);
+      // rrule package requires "RRULE:" prefix
+      final rruleWithPrefix = rruleString.startsWith('RRULE:')
+          ? rruleString
+          : 'RRULE:$rruleString';
+      return RecurrenceRule.fromString(rruleWithPrefix);
     } catch (e) {
       return null;
     }
   }
+
+  /// Maximum number of occurrences to generate (safety limit)
+  static const int maxOccurrences = 1000;
 
   /// Get the next N occurrences from a start date
   /// Returns list of DateTime when the todo should occur
@@ -29,15 +36,29 @@ class RecurrenceUtils {
     final rule = parseRRule(rruleString);
     if (rule == null) return [];
 
+    // Enforce maximum count to prevent excessive memory usage
+    final safeCount = count > maxOccurrences ? maxOccurrences : count;
+
     try {
-      final occurrences = rule
+      // Always start from the original startDate to get the recurrence sequence
+      // Use .take() to prevent infinite iteration when RRULE has no COUNT/UNTIL
+      final allOccurrences = rule
           .getInstances(
-            start: after ?? startDate,
+            start: startDate,
           )
-          .take(count)
+          .take(safeCount * 2) // Take more than needed to allow for filtering
           .toList();
 
-      return occurrences;
+      // If 'after' is specified, filter to only get occurrences after that date
+      if (after != null) {
+        final filteredOccurrences = allOccurrences
+            .where((occurrence) => occurrence.isAfter(after))
+            .take(safeCount)
+            .toList();
+        return filteredOccurrences;
+      }
+
+      return allOccurrences.take(safeCount).toList();
     } catch (e) {
       return [];
     }
@@ -57,9 +78,14 @@ class RecurrenceUtils {
     final rule = parseRRule(rruleString);
     if (rule == null) return true;
 
-    // Check if there are any more occurrences after current date
-    final nextOccurrences = getNextOccurrences(rruleString, currentDate, count: 1, after: currentDate);
-    return nextOccurrences.isEmpty;
+    try {
+      // Get instances starting from currentDate
+      final instances = rule.getInstances(start: currentDate).take(1).toList();
+      return instances.isEmpty;
+    } catch (e) {
+      // If there's an error, assume recurrence has ended
+      return true;
+    }
   }
 
   /// Create RRULE string from parameters

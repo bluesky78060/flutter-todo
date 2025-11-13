@@ -4,6 +4,8 @@ import 'package:todo_app/presentation/providers/todo_providers.dart';
 import 'package:todo_app/core/theme/app_colors.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:todo_app/presentation/widgets/todo_form_dialog.dart';
+import 'package:todo_app/core/utils/recurrence_utils.dart';
+import 'package:todo_app/presentation/widgets/reschedule_dialog.dart';
 
 class TodoDetailScreen extends ConsumerWidget {
   final int todoId;
@@ -17,6 +19,15 @@ class TodoDetailScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final todoAsync = ref.watch(todoDetailProvider(todoId));
+
+    // Debug logging
+    todoAsync.whenData((todo) {
+      print('🔍 Todo Detail Debug:');
+      print('   ID: ${todo.id}');
+      print('   Title: ${todo.title}');
+      print('   recurrenceRule: ${todo.recurrenceRule}');
+      print('   parentRecurringTodoId: ${todo.parentRecurringTodoId}');
+    });
 
     return Scaffold(
       backgroundColor: AppColors.darkBackground,
@@ -109,15 +120,182 @@ class TodoDetailScreen extends ConsumerWidget {
                 const SizedBox(height: 12),
               ],
 
-              // Status
-              _InfoRow(
-                icon: todo.isCompleted
-                    ? FluentIcons.checkmark_circle_24_filled
-                    : FluentIcons.circle_24_regular,
-                label: '상태',
-                value: todo.isCompleted ? '완료' : '진행중',
-                color: todo.isCompleted ? Colors.green : AppColors.textGray,
+              // Recurrence
+              if (todo.recurrenceRule != null && todo.recurrenceRule!.isNotEmpty) ...[
+                _InfoRow(
+                  icon: FluentIcons.arrow_repeat_all_24_regular,
+                  label: '반복',
+                  value: RecurrenceUtils.getDescription(todo.recurrenceRule, 'ko'),
+                  color: AppColors.primaryBlue,
+                ),
+                const SizedBox(height: 12),
+              ],
+
+              // Status (tappable to toggle completion)
+              InkWell(
+                onTap: () async {
+                  try {
+                    await ref.read(todoActionsProvider).toggleCompletion(todoId);
+                  } catch (e) {
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('오류: $e'),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                    }
+                  }
+                },
+                borderRadius: BorderRadius.circular(12),
+                child: _InfoRow(
+                  icon: todo.isCompleted
+                      ? FluentIcons.checkmark_circle_24_filled
+                      : FluentIcons.circle_24_regular,
+                  label: '상태',
+                  value: todo.isCompleted ? '완료' : '진행중',
+                  color: todo.isCompleted ? Colors.green : AppColors.textGray,
+                  showTapHint: true,
+                ),
               ),
+
+              // Overdue warning and reschedule button
+              if (todo.dueDate != null &&
+                  !todo.isCompleted &&
+                  todo.dueDate!.isBefore(DateTime.now())) ...[
+                const SizedBox(height: 20),
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: AppColors.accentOrange.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: AppColors.accentOrange.withValues(alpha: 0.3),
+                      width: 1,
+                    ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(
+                            FluentIcons.warning_24_filled,
+                            color: AppColors.accentOrange,
+                            size: 20,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            '마감일이 지났습니다',
+                            style: TextStyle(
+                              color: AppColors.accentOrange,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            '(${DateTime.now().difference(todo.dueDate!).inDays}일 지남)',
+                            style: TextStyle(
+                              color: AppColors.textGray,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton.icon(
+                          onPressed: () async {
+                            final option = await showDialog<RescheduleOption>(
+                              context: context,
+                              builder: (context) => const RescheduleDialog(),
+                            );
+
+                            if (option != null && context.mounted) {
+                              DateTime? newDate;
+
+                              switch (option) {
+                                case RescheduleOption.today:
+                                  newDate = DateTime.now();
+                                  break;
+                                case RescheduleOption.tomorrow:
+                                  newDate = DateTime.now().add(const Duration(days: 1));
+                                  break;
+                                case RescheduleOption.custom:
+                                  final picked = await showDatePicker(
+                                    context: context,
+                                    initialDate: DateTime.now(),
+                                    firstDate: DateTime.now(),
+                                    lastDate: DateTime.now().add(const Duration(days: 365)),
+                                    builder: (context, child) {
+                                      return Theme(
+                                        data: ThemeData.dark().copyWith(
+                                          colorScheme: const ColorScheme.dark(
+                                            primary: AppColors.primaryBlue,
+                                            surface: AppColors.darkCard,
+                                          ),
+                                        ),
+                                        child: child!,
+                                      );
+                                    },
+                                  );
+                                  if (picked != null) {
+                                    newDate = picked;
+                                  }
+                                  break;
+                              }
+
+                              if (newDate != null && context.mounted) {
+                                try {
+                                  await ref.read(todoActionsProvider).rescheduleTodo(
+                                        todoId,
+                                        newDate,
+                                      );
+                                  if (context.mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text('일정이 이월되었습니다'),
+                                        backgroundColor: Colors.green,
+                                      ),
+                                    );
+                                  }
+                                } catch (e) {
+                                  if (context.mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text('오류: $e'),
+                                        backgroundColor: Colors.red,
+                                      ),
+                                    );
+                                  }
+                                }
+                              }
+                            }
+                          },
+                          icon: const Icon(
+                            FluentIcons.calendar_arrow_right_24_regular,
+                            size: 18,
+                          ),
+                          label: const Text('일정 이월하기'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.primaryBlue,
+                            foregroundColor: AppColors.textWhite,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 12,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
 
               // Completed date
               if (todo.completedAt != null) ...[
@@ -153,12 +331,14 @@ class _InfoRow extends StatelessWidget {
   final String label;
   final String value;
   final Color? color;
+  final bool showTapHint;
 
   const _InfoRow({
     required this.icon,
     required this.label,
     required this.value,
     this.color,
+    this.showTapHint = false,
   });
 
   @override
@@ -202,6 +382,12 @@ class _InfoRow extends StatelessWidget {
               ],
             ),
           ),
+          if (showTapHint)
+            Icon(
+              FluentIcons.chevron_right_24_regular,
+              color: AppColors.textGray,
+              size: 20,
+            ),
         ],
       ),
     );

@@ -30,7 +30,16 @@ class SupabaseTodoDataSource {
     }
 
     final response = await query.order('created_at', ascending: false);
-    return (response as List).map((json) => _todoFromJson(json)).toList();
+    final todos = (response as List).map((json) => _todoFromJson(json)).toList();
+
+    // Filter out master recurring todos (those with recurrence_rule but no parent)
+    // Master todos are templates used only for generating instances
+    return todos.where((todo) {
+      // Keep todos that are either:
+      // 1. Not recurring (no recurrence_rule), OR
+      // 2. Recurring instances (has parent_recurring_todo_id)
+      return todo.recurrenceRule == null || todo.parentRecurringTodoId != null;
+    }).toList();
   }
 
   // Get single todo by ID
@@ -185,7 +194,9 @@ class SupabaseAuthDataSource {
     if (user == null) return null;
 
     return domain.AuthUser(
-      id: 0, // Supabase uses UUID, but keeping int for compatibility
+      // ignore: deprecated_member_use_from_same_package
+      id: user.id.hashCode,  // Legacy: hash UUID to int for backward compatibility
+      uuid: user.id,  // Primary: use Supabase UUID
       email: user.email ?? '',
       name: user.userMetadata?['name'] as String? ?? user.email ?? '',
       createdAt: user.createdAt.isNotEmpty ? DateTime.parse(user.createdAt) : null,
@@ -226,7 +237,9 @@ class SupabaseAuthDataSource {
       if (user == null) return null;
 
       return domain.AuthUser(
-        id: 0,
+        // ignore: deprecated_member_use_from_same_package
+        id: user.id.hashCode,  // Legacy: hash UUID to int
+        uuid: user.id,  // Primary: Supabase UUID
         email: user.email ?? '',
         name: user.userMetadata?['name'] as String? ?? user.email ?? '',
         createdAt: user.createdAt.isNotEmpty ? DateTime.parse(user.createdAt) : null,
