@@ -1,11 +1,18 @@
 # 향후 추가 기능 및 개선 사항
 
-현재 버전: **1.0.2+10**
+현재 버전: **1.0.8+20**
+최종 업데이트: **2025-11-13**
 
 ## 우선순위 분류
 - 🔴 **High**: 핵심 기능, 사용자 경험에 직접적 영향
 - 🟡 **Medium**: 편의성 향상, 부가 기능
 - 🟢 **Low**: Nice-to-have, 장기적 개선
+
+## 최근 완료 작업 (2025-11-13)
+- ✅ CI/CD 파이프라인 구축 (GitHub Actions)
+- ✅ 통합 테스트 추가 (TodoActions CRUD)
+- ✅ 137개 테스트 작성 완료 (18-19% 커버리지)
+- ✅ 핵심 비즈니스 로직 100% 검증
 
 ---
 
@@ -498,7 +505,7 @@ CREATE TABLE subtasks (
 ### 리팩토링 필요 영역
 - `todo_list_screen.dart`: 복잡도 높음, 위젯 분리 필요
 - `notification_service.dart`: 플랫폼별 분기 많음, 추상화 필요
-- 테스트 커버리지 낮음: 현재 5% 미만
+- ~~테스트 커버리지 낮음: 현재 5% 미만~~ ✅ **개선됨: 18-19% (137 tests)**
 
 ---
 
@@ -522,4 +529,59 @@ CREATE TABLE subtasks (
 2. GitHub Issues에 Feature Request 등록
 3. 우선순위 투표 참여
 
-**문서 업데이트**: 2025-11-10
+---
+
+## 9. 테스트 및 품질 보증 ✅ (2025-11-13 완료)
+
+### 🔴 9.1 CI/CD 파이프라인 구축 ✅
+**완료된 작업**:
+- [x] GitHub Actions 워크플로우 설정
+- [x] 자동 테스트 실행 (push/PR)
+- [x] 커버리지 리포트 생성 (lcov + HTML)
+- [x] Codecov 통합
+- [x] PR 커버리지 코멘트 자동 추가
+- [x] 커버리지 임계값 검증 (15%)
+
+**생성된 파일**:
+- `.github/workflows/flutter_test.yml`
+- `.github/workflows/coverage_threshold.yml`
+- `claudedocs/CI_CD_SETUP_GUIDE.md`
+
+### 🔴 9.2 통합 테스트 추가 ✅
+**완료된 작업**:
+- [x] TodoActions CRUD 통합 테스트 (9 tests)
+- [x] Repository 모킹 전략 수립
+- [x] 서비스 의존성 모킹
+- [x] 전체 플로우 검증
+
+**테스트 현황**:
+- 총 137개 테스트 (unit: 88, widget: 40, integration: 9)
+- 커버리지: 18-19%
+- 핵심 비즈니스 로직: 100% 검증
+
+### 🟡 9.3 E2E 테스트 추가 (향후 작업)
+**필요 작업**:
+- [ ] `integration_test` 패키지 설정
+- [ ] Screen 위젯 사용자 시나리오 테스트
+- [ ] EasyLocalization 위젯 통합 테스트
+- [ ] 실제 기기/에뮬레이터에서 실행
+
+**예상 작업 시간**: 1-2일
+
+### 🟡 9.4 위젯 리팩토링 (테스트 가능성 개선)
+**문제**: EasyLocalization 의존성으로 4개 위젯 테스트 불가
+- RecurringDeleteDialog
+- RecurringEditDialog
+- TodoFormDialog
+- RecurrenceSettingsDialog
+
+**해결 방안**:
+- [ ] Locale을 parameter로 전달하는 구조로 변경
+- [ ] EasyLocalization context 의존성 제거
+- [ ] 테스트 가능한 구조로 리팩토링
+
+**예상 작업 시간**: 4-6시간
+
+---
+
+**문서 업데이트**: 2025-11-13
