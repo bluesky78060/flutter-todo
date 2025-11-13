@@ -25,6 +25,11 @@ jobs:
     - name: Verify Flutter installation
       run: flutter --version
 
+    - name: Create .env file
+      run: |
+        echo "SUPABASE_URL=https://example.supabase.co" > .env
+        echo "SUPABASE_ANON_KEY=dummy-key" >> .env
+
     - name: Install dependencies
       run: flutter pub get
 
