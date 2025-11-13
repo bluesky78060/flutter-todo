@@ -1,0 +1,95 @@
+name: Coverage Threshold Check
+
+on:
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  coverage-check:
+    name: Check Coverage Threshold
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: '3.24.0'
+        channel: 'stable'
+        cache: true
+
+    - name: Install dependencies
+      run: flutter pub get
+
+    - name: Run code generation
+      run: dart run build_runner build --delete-conflicting-outputs
+
+    - name: Run tests with coverage
+      run: flutter test --coverage test/unit/ test/widget/
+
+    - name: Check coverage threshold
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y lcov
+
+        # Parse coverage data
+        COVERAGE_DATA=$(lcov --summary coverage/lcov.info 2>&1)
+        COVERAGE_PERCENT=$(echo "$COVERAGE_DATA" | grep "lines" | grep -oP '\d+\.\d+(?=%)')
+
+        echo "Current coverage: ${COVERAGE_PERCENT}%"
+        echo "Minimum threshold: 15%"
+
+        # Check if coverage meets minimum threshold (15%)
+        if (( $(echo "$COVERAGE_PERCENT < 15.0" | bc -l) )); then
+          echo "❌ Coverage ${COVERAGE_PERCENT}% is below minimum threshold of 15%"
+          exit 1
+        else
+          echo "✅ Coverage ${COVERAGE_PERCENT}% meets minimum threshold"
+        fi
+
+    - name: Check for coverage decrease
+      if: github.event_name == 'pull_request'
+      run: |
+        # Fetch main branch
+        git fetch origin main
+
+        # Checkout main branch and get its coverage
+        git checkout origin/main
+        flutter pub get
+        dart run build_runner build --delete-conflicting-outputs
+        flutter test --coverage test/unit/ test/widget/ || true
+
+        if [ -f coverage/lcov.info ]; then
+          MAIN_COVERAGE=$(lcov --summary coverage/lcov.info 2>&1 | grep "lines" | grep -oP '\d+\.\d+(?=%)')
+          echo "Main branch coverage: ${MAIN_COVERAGE}%"
+        else
+          MAIN_COVERAGE=0
+          echo "Main branch has no coverage data, assuming 0%"
+        fi
+
+        # Switch back to PR branch
+        git checkout -
+
+        # Get PR coverage
+        flutter pub get
+        dart run build_runner build --delete-conflicting-outputs
+        flutter test --coverage test/unit/ test/widget/
+        PR_COVERAGE=$(lcov --summary coverage/lcov.info 2>&1 | grep "lines" | grep -oP '\d+\.\d+(?=%)')
+
+        echo "PR coverage: ${PR_COVERAGE}%"
+
+        # Allow small decrease (0.5%) for refactoring, but warn
+        DIFF=$(echo "$PR_COVERAGE - $MAIN_COVERAGE" | bc -l)
+        echo "Coverage difference: ${DIFF}%"
+
+        if (( $(echo "$DIFF < -0.5" | bc -l) )); then
+          echo "⚠️ Warning: Coverage decreased by more than 0.5%"
+          echo "Consider adding tests for new code"
+          # Don't fail the build, just warn
+        elif (( $(echo "$DIFF > 0" | bc -l) )); then
+          echo "🎉 Coverage increased by ${DIFF}%!"
+        else
+          echo "✅ Coverage maintained"
+        fi
