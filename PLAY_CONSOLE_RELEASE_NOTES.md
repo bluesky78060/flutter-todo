@@ -79,7 +79,7 @@ Added Samsung device optimization and foldable device (Fold/Flip) support. Inclu
 ---
 
 ## Technical Changes
-- Version: 1.0.9+31 → 1.0.10+32
+- Version: 1.0.9+31 → 1.0.10+33
 - Added 52 translation keys (29 Samsung/Foldable, 23 recurrence)
 - Modified 7+ files for translation system
 - Implemented Samsung device detection via platform channels
