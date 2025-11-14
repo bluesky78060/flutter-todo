@@ -64,7 +64,8 @@ android {
                 "proguard-rules.pro"
             )
 
-            // 네이티브 디버그 심볼 비활성화 (AAB 빌드 에러 우회)
+            // 네이티브 디버그 심볼 - NONE으로 설정하여 빌드 에러 우회
+            // Play Console 경고는 무시 가능 (크래시 리포트는 여전히 작동함)
             ndk {
                 debugSymbolLevel = "NONE"
             }
