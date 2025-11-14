@@ -213,7 +213,18 @@ class CategoryManagementScreen extends ConsumerWidget {
 
   Color _parseColor(String colorString) {
     try {
-      return Color(int.parse(colorString.replaceFirst('#', '0xFF')));
+      // Normalize color string: remove 0xFF prefix and ensure # is present
+      String normalized = colorString
+          .replaceAll('0xFF', '')
+          .replaceAll('0xff', '')
+          .trim();
+
+      if (!normalized.startsWith('#')) {
+        normalized = '#$normalized';
+      }
+
+      final hexString = normalized.replaceAll('#', '');
+      return Color(int.parse('0xFF$hexString', radix: 16));
     } catch (e) {
       return AppColors.primaryBlue;
     }
@@ -376,8 +387,60 @@ class _CategoryDialogState extends ConsumerState<CategoryDialog> {
     super.initState();
     _nameController = TextEditingController(text: widget.category?.name ?? '');
     if (widget.category != null) {
-      _selectedColor = widget.category!.color;
+      _selectedColor = _normalizeColor(widget.category!.color);
       _selectedIcon = widget.category!.icon ?? '📁';
+    }
+  }
+
+  // Normalize color string to #RRGGBB format
+  String _normalizeColor(String color) {
+    // Remove any 0xFF prefix and ensure # is present
+    String normalized = color
+        .replaceAll('0xFF', '')
+        .replaceAll('0xff', '')
+        .trim();
+
+    if (!normalized.startsWith('#')) {
+      normalized = '#$normalized';
+    }
+
+    return normalized.toUpperCase();
+  }
+
+  // Parse color string safely to Color object
+  Color _parseColorInDialog(String colorString) {
+    try {
+      // Remove any whitespace
+      String normalized = colorString.trim();
+
+      // Remove 0xFF or 0xff prefix if present
+      if (normalized.startsWith('0xFF') || normalized.startsWith('0xff')) {
+        normalized = normalized.substring(4);
+      }
+
+      // Add # prefix if not present
+      if (!normalized.startsWith('#')) {
+        normalized = '#$normalized';
+      }
+
+      // Remove # and parse hex
+      final hexString = normalized.replaceFirst('#', '');
+
+      // Validate hex string length (should be 6 characters: RRGGBB)
+      if (hexString.length != 6) {
+        print('⚠️ Invalid color hex length: $colorString -> $hexString');
+        return AppColors.primaryBlue;
+      }
+
+      // Parse and create Color
+      final colorValue = int.parse(hexString, radix: 16);
+      final color = Color(0xFF000000 | colorValue);
+
+      print('✅ Parsed color: $colorString -> ${color.value.toRadixString(16)}');
+      return color;
+    } catch (e) {
+      print('❌ Failed to parse color: $colorString, error: $e');
+      return AppColors.primaryBlue;
     }
   }
 
@@ -458,6 +521,7 @@ class _CategoryDialogState extends ConsumerState<CategoryDialog> {
                 runSpacing: 12,
                 children: _colors.map((color) {
                   final isSelected = color == _selectedColor;
+                  final parsedColor = _parseColorInDialog(color);
                   return GestureDetector(
                     onTap: () {
                       setState(() {
@@ -468,11 +532,12 @@ class _CategoryDialogState extends ConsumerState<CategoryDialog> {
                       width: 48,
                       height: 48,
                       decoration: BoxDecoration(
-                        color: Color(int.parse(color.replaceFirst('#', '0xFF'))),
+                        color: parsedColor,
                         borderRadius: BorderRadius.circular(12),
-                        border: isSelected
-                            ? Border.all(color: Colors.white, width: 3)
-                            : null,
+                        border: Border.all(
+                          color: isSelected ? Colors.white : Colors.grey.withOpacity(0.3),
+                          width: isSelected ? 3 : 1,
+                        ),
                       ),
                       child: isSelected
                           ? const Icon(
@@ -577,6 +642,7 @@ class _CategoryDialogState extends ConsumerState<CategoryDialog> {
 
   Future<void> _saveCategory() async {
     if (_nameController.text.trim().isEmpty) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('카테고리 이름을 입력하세요'),
@@ -611,8 +677,14 @@ class _CategoryDialogState extends ConsumerState<CategoryDialog> {
             );
       }
 
+      // Check mounted before navigation
+      if (!mounted) return;
+
+      // Pop dialog first
+      Navigator.pop(context);
+
+      // Show success message
       if (mounted) {
-        Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
@@ -625,14 +697,14 @@ class _CategoryDialogState extends ConsumerState<CategoryDialog> {
         );
       }
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('오류: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('오류: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
   }
 }

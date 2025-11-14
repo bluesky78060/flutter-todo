@@ -159,6 +159,53 @@ class SupabaseTodoDataSource {
     }).eq('id', id);
   }
 
+  // Delete all completed todos and return count
+  Future<int> deleteCompletedTodos() async {
+    final user = client.auth.currentUser;
+    if (user == null) throw Exception('User not authenticated');
+
+    // Get completed todos count first
+    final completedTodos = await client
+        .from('todos')
+        .select()
+        .eq('user_id', user.id)
+        .eq('is_completed', true);
+
+    final count = (completedTodos as List).length;
+
+    // Delete completed todos
+    await client
+        .from('todos')
+        .delete()
+        .eq('user_id', user.id)
+        .eq('is_completed', true);
+
+    return count;
+  }
+
+  // Search todos by title or description
+  Future<List<Todo>> searchTodos(String query) async {
+    if (query.trim().isEmpty) {
+      // Return all todos if query is empty
+      return getTodos();
+    }
+
+    final searchPattern = '%$query%';
+
+    final response = await client
+        .from('todos')
+        .select()
+        .or('title.ilike.$searchPattern,description.ilike.$searchPattern')
+        .order('created_at', ascending: false);
+
+    final todos = (response as List).map((json) => _todoFromJson(json)).toList();
+
+    // Filter out master recurring todos (same logic as getFilteredTodos)
+    return todos.where((todo) {
+      return todo.recurrenceRule == null || todo.parentRecurringTodoId != null;
+    }).toList();
+  }
+
   // Convert JSON to Todo entity
   Todo _todoFromJson(Map<String, dynamic> json) {
     return Todo(

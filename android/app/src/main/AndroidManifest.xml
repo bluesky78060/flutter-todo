@@ -9,6 +9,10 @@
     <!-- Request to disable battery optimization for Samsung devices -->
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS"/>
 
+    <!-- Storage permissions for backup/restore -->
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="32"/>
+
     <application
         android:label="DoDo"
         android:name="${applicationName}"

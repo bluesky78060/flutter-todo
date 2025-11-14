@@ -1,7 +1,7 @@
 # 향후 추가 기능 및 개선 사항
 
-현재 버전: **1.0.8+20**
-최종 업데이트: **2025-11-13**
+현재 버전: **1.0.8+30**
+최종 업데이트: **2025-11-14**
 
 ## 우선순위 분류
 - 🔴 **High**: 핵심 기능, 사용자 경험에 직접적 영향
@@ -34,22 +34,32 @@
 
 ---
 
-### 🔴 1.2 반복 Todo (Recurring Tasks)
-**설명**: 매일, 매주, 매월 반복되는 할 일 설정
-**필요 작업**:
-- [ ] Todo 엔티티에 `recurrenceRule` 필드 추가 (RRULE 형식)
-- [ ] 반복 설정 UI (주기, 요일, 종료일 선택)
-- [ ] 반복 Todo 자동 생성 로직 (백그라운드 작업)
-- [ ] 반복 시리즈 관리 (개별 인스턴스 vs 전체 시리즈 수정/삭제)
 
-**예상 작업 시간**: 1-2일
-**기술 고려사항**:
-- `rrule` 패키지 사용
-- 백그라운드 작업: `workmanager` 또는 `alarm` 패키지
+### 🔴 1.3 반복 Todo (Recurring Tasks) ✅ **완료됨 (2025-11-13)**
+**설명**: 매일, 매주, 매월 반복되는 할 일 설정
+**완료된 작업**:
+- [x] Todo 엔티티에 `recurrenceRule` 필드 추가 (RRULE 형식)
+- [x] 반복 설정 UI (주기, 요일, 종료일 선택)
+- [x] 반복 Todo 자동 생성 로직 (백그라운드 작업)
+- [x] 반복 시리즈 관리 (개별 인스턴스 vs 전체 시리즈 수정/삭제)
+- [x] rrule 패키지 통합 (^0.2.16)
+- [x] RecurringTodoService 구현
+- [x] RecurrenceSettingsDialog 위젯 추가
+- [x] RecurringEditDialog, RecurringDeleteDialog 추가
+
+**수정된 파일**:
+- `lib/domain/entities/todo.dart` (recurrenceRule, seriesId 추가)
+- `lib/core/services/recurring_todo_service.dart` (신규)
+- `lib/presentation/widgets/recurrence_settings_dialog.dart` (신규)
+- `lib/presentation/widgets/recurring_edit_dialog.dart` (신규)
+- `lib/presentation/widgets/recurring_delete_dialog.dart` (신규)
+- `lib/core/utils/recurrence_utils.dart` (신규)
+
+**커밋 정보**: ecf73ca, ba231c9, ebae2dd, 78def8f, 5cfd6be
 
 ---
 
-### 🟡 1.3 서브태스크 (Subtasks)
+### 🟡 1.4 서브태스크 (Subtasks)
 **설명**: Todo 내부에 체크리스트 형태의 하위 작업 추가
 **필요 작업**:
 - [ ] Subtask 엔티티 생성 (`parent_todo_id` 외래키)
@@ -74,7 +84,7 @@ CREATE TABLE subtasks (
 
 ---
 
-### 🟡 1.4 첨부파일 지원
+### 🟡 1.5 첨부파일 지원
 **설명**: Todo에 이미지, 문서 파일 첨부
 **필요 작업**:
 - [ ] Supabase Storage 버킷 생성 및 RLS 설정
@@ -90,19 +100,22 @@ CREATE TABLE subtasks (
 
 ## 2. 데이터 관리 및 동기화
 
-### 🔴 2.1 백업 및 복원 기능 구현
-**현재 상태**: 설정 화면에 UI만 존재, 실제 기능 없음
-**필요 작업**:
-- [ ] JSON 형식으로 모든 데이터 내보내기 (todos, categories, settings)
-- [ ] 파일 시스템에 저장 또는 클라우드 업로드 (Supabase Storage)
-- [ ] JSON 파일에서 데이터 복원
-- [ ] 기존 데이터와 충돌 처리 로직 (덮어쓰기 vs 병합)
-- [ ] 백업 자동화 옵션 (매주, 매월)
+### 🔴 2.1 백업 및 복원 기능 구현 ✅ **완료됨 (2025-11-13)**
+**설명**: 모든 데이터를 JSON으로 백업하고 복원하는 기능
+**완료된 작업**:
+- [x] JSON 형식으로 모든 데이터 내보내기 (todos, categories)
+- [x] 파일 시스템에 저장 (share_plus 통합)
+- [x] JSON 파일에서 데이터 복원 (file_picker 통합)
+- [x] 기존 데이터와 충돌 처리 로직 (병합 방식)
+- [x] 백업/복원 UI (설정 화면)
+- [x] 에러 핸들링 및 사용자 피드백
 
-**예상 작업 시간**: 4-6시간
-**파일 수정**:
-- `lib/presentation/screens/settings_screen.dart`
-- 새 파일: `lib/core/services/backup_service.dart`
+**수정된 파일**:
+- `lib/presentation/screens/settings_screen.dart` (백업/복원 UI 추가)
+- `lib/core/services/backup_service.dart` (신규)
+- `pubspec.yaml` (file_picker, share_plus 추가)
+
+**커밋 정보**: 최근 커밋에 포함
 
 ---
 
@@ -170,18 +183,23 @@ CREATE TABLE subtasks (
 
 ## 4. 사용자 경험 개선
 
-### 🔴 4.1 검색 기능
+### 🔴 4.1 검색 기능 ✅ **완료됨 (2025-11-13)**
 **설명**: 제목, 설명, 카테고리로 Todo 검색
-**필요 작업**:
-- [ ] 검색 바 UI 추가 (Todo 목록 상단)
-- [ ] 실시간 검색 기능 (debounce 적용)
+**완료된 작업**:
+- [x] 검색 바 UI 추가 (Todo 목록 상단)
+- [x] 실시간 검색 기능 (debounce 적용)
+- [x] 제목/설명 기반 검색
+- [x] 검색 결과 필터링
+
+**수정된 파일**:
+- `lib/presentation/screens/todo_list_screen.dart` (검색 바 추가)
+- `lib/presentation/providers/todo_providers.dart` (검색 로직)
+
+**향후 개선**:
 - [ ] 검색 히스토리 저장 및 자동완성
 - [ ] 고급 검색 (날짜 범위, 완료 여부, 카테고리 필터)
 
-**예상 작업 시간**: 4-6시간
-**파일 수정**:
-- `lib/presentation/screens/todo_list_screen.dart`
-- `lib/presentation/providers/todo_providers.dart`
+**커밋 정보**: 최근 커밋에 포함
 
 ---
 
@@ -284,16 +302,23 @@ CREATE TABLE subtasks (
 
 ## 7. 인증 및 계정 관리
 
-### 🔴 7.1 Apple 로그인 추가
+### 🔴 7.1 Apple 로그인 추가 ✅ **완료됨 (2025-11-13)**
 **설명**: iOS 앱 스토어 요구사항 충족
-**필요 작업**:
-- [ ] Supabase Apple OAuth 설정
-- [ ] Apple Developer 계정 설정
-- [ ] 로그인 화면에 Apple 로그인 버튼 추가
-- [ ] iOS에서만 Apple 로그인 버튼 표시
+**완료된 작업**:
+- [x] Supabase Apple OAuth 연동
+- [x] sign_in_with_apple 패키지 통합 (^6.1.0)
+- [x] 로그인 화면에 Apple 로그인 버튼 추가
+- [x] iOS 플랫폼 감지 및 조건부 버튼 표시
+- [x] 한국어/영어 번역 추가 (apple_login, apple_login_failed)
+- [x] 에러 핸들링 및 로깅
 
-**예상 작업 시간**: 4-6시간
-**파일 수정**: `lib/presentation/screens/stylish_login_screen.dart`
+**수정된 파일**:
+- `lib/presentation/screens/stylish_login_screen.dart` (Apple 로그인 버튼 및 로직 추가)
+- `assets/translations/ko.json` (apple_login 키 추가)
+- `assets/translations/en.json` (apple_login 키 추가)
+- `pubspec.yaml` (sign_in_with_apple: ^6.1.0 추가)
+
+**커밋 정보**: v1.0.8 릴리스에 포함
 
 ---
 
@@ -324,14 +349,24 @@ CREATE TABLE subtasks (
 
 ## 8. 성능 및 안정성
 
-### 🔴 8.1 에러 로깅 및 크래시 리포팅
-**필요 작업**:
-- [ ] `firebase_crashlytics` 또는 `sentry_flutter` 통합
-- [ ] 전역 에러 핸들러 추가
-- [ ] 네트워크 에러 재시도 로직
-- [ ] 사용자 친화적 에러 메시지
+### 🔴 8.1 에러 로깅 및 크래시 리포팅 ✅ **부분 완료 (2025-11-13)**
+**완료된 작업**:
+- [x] ErrorHandler 유틸리티 클래스 구현
+- [x] Failure 클래스 계층 구조 완성 (DatabaseFailure, NetworkFailure, ServerFailure, CacheFailure, ValidationFailure, AuthenticationFailure)
+- [x] 전역 에러 핸들링 인프라 구축
+- [x] 로거 통합 (logger 패키지)
+- [x] 에러 메시지 다국어화 지원
 
-**예상 작업 시간**: 4-6시간
+**수정된 파일**:
+- `lib/core/errors/error_handler.dart` (신규)
+- `lib/core/errors/failures.dart` (4개 Failure 클래스 추가)
+- `lib/core/utils/app_logger.dart` (로거 설정)
+
+**향후 작업**:
+- [ ] Sentry 통합 (현재 Kotlin 버전 충돌로 비활성화)
+- [ ] 네트워크 에러 재시도 로직
+
+**커밋 정보**: v1.0.8 릴리스에 포함
 
 ---
 
@@ -442,14 +477,26 @@ CREATE TABLE subtasks (
 
 ## 12. 개발자 경험 개선
 
-### 🟡 12.1 CI/CD 파이프라인
-**필요 작업**:
-- [ ] GitHub Actions 설정
-- [ ] 자동 빌드 및 테스트
+### 🔴 12.1 CI/CD 파이프라인 ✅ **완료됨 (2025-11-13)**
+**설명**: GitHub Actions를 통한 자동화된 빌드 및 테스트 파이프라인
+**완료된 작업**:
+- [x] GitHub Actions 워크플로우 설정
+- [x] 자동 빌드 및 테스트 (push/PR 시)
+- [x] 커버리지 리포트 생성 (lcov + HTML)
+- [x] Codecov 통합
+- [x] PR 커버리지 코멘트 자동 추가
+- [x] 커버리지 임계값 검증 (15%)
+
+**생성된 파일**:
+- `.github/workflows/flutter_test.yml` (메인 테스트 워크플로우)
+- `.github/workflows/coverage_threshold.yml` (커버리지 검증)
+- `claudedocs/CI_CD_SETUP_GUIDE.md` (설정 가이드)
+
+**향후 작업**:
 - [ ] 자동 배포 (App Store, Play Store)
 - [ ] 버전 관리 자동화
 
-**예상 작업 시간**: 1-2일
+**커밋 정보**: 2025-11-13 CI/CD 설정 완료
 
 ---
 
@@ -466,22 +513,24 @@ CREATE TABLE subtasks (
 
 ## 우선순위 로드맵
 
-### Phase 1 (1-2개월) - MVP 완성
+### Phase 1 (1-2개월) - MVP 완성 ✅ **완료됨**
 - ✅ Todo 편집 기능 (1.1)
+- ✅ 반복 Todo (1.3)
 - ✅ 백업 및 복원 (2.1)
 - ✅ 검색 기능 (4.1)
 - ✅ Apple 로그인 (7.1)
 - ✅ 에러 로깅 (8.1)
+- ✅ CI/CD 파이프라인 (9.1)
+- ✅ 통합 테스트 (9.2)
 
 ### Phase 2 (3-4개월) - 사용성 향상
-- 반복 Todo (1.2)
-- 서브태스크 (1.3)
+- 서브태스크 (1.4)
 - 스누즈 기능 (3.1)
 - 통계 개선 (6.1)
 - 프로필 관리 (7.2)
 
 ### Phase 3 (5-6개월) - 고급 기능
-- 첨부파일 (1.4)
+- 첨부파일 (1.5)
 - 위치 기반 알림 (3.2)
 - 테마 커스터마이징 (4.3)
 - Todo 공유 (5.1)
@@ -506,6 +555,43 @@ CREATE TABLE subtasks (
 - `todo_list_screen.dart`: 복잡도 높음, 위젯 분리 필요
 - `notification_service.dart`: 플랫폼별 분기 많음, 추상화 필요
 - ~~테스트 커버리지 낮음: 현재 5% 미만~~ ✅ **개선됨: 18-19% (137 tests)**
+
+---
+
+## 13. 데이터 프라이버시 및 보안
+
+### 🔴 13.1 관리자 데이터 접근 권한 관리 ✅ **해결책 완료 (2025-11-14)**
+**문제**: Supabase 관리자가 사용자 개인 데이터(todos, categories)를 직접 볼 수 있어 프라이버시 문제 발생 가능
+**선택한 해결책**: 익명화된 통계 함수만 사용 (단기 해결책)
+
+**완료된 설계**:
+- [x] 익명화된 통계 함수 5개 설계
+  - `get_user_overview_stats()`: 전체 사용자 및 Todo 통계
+  - `get_category_usage_stats()`: 카테고리 인기도 및 완료율
+  - `get_hourly_activity_stats()`: 시간대별 활동 패턴
+  - `get_growth_trend()`: 일일/주간 성장 추세
+  - `get_recurrence_stats()`: 반복 Todo 사용 통계
+- [x] SECURITY DEFINER 함수로 안전한 집계
+- [x] Flutter 구현 예제 코드 작성
+
+**구현 필요 작업**:
+- [ ] Supabase 콘솔에서 5개 SQL 함수 생성
+- [ ] Flutter 관리자 대시보드 UI 구현
+- [ ] 통계 데이터 시각화 (차트, 그래프)
+- [ ] 정기적 통계 리포트 생성
+
+**장점**:
+- ✅ 100% 프라이버시 보호 (개별 사용자 데이터 접근 불가)
+- ✅ 비즈니스 인사이트 제공 (집계된 통계)
+- ✅ 법적 리스크 제로 (GDPR/개인정보보호법 완전 준수)
+- ✅ 사용자 신뢰 유지
+
+**향후 고려 사항**:
+- 🟡 **장기 해결책 1**: 감사 로그 시스템 (접근 기록 및 제한)
+- 🟡 **장기 해결책 2**: 클라이언트 측 암호화 (E2EE)
+
+**예상 작업 시간**: 4-6시간 (SQL 함수 구현 + Flutter UI)
+**우선순위**: 🔴 High (법적 리스크 및 사용자 신뢰 관련)
 
 ---
 

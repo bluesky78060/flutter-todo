@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
@@ -17,6 +18,7 @@ import 'package:todo_app/presentation/widgets/custom_todo_item.dart';
 import 'package:todo_app/presentation/widgets/todo_form_dialog.dart';
 import 'package:todo_app/presentation/widgets/recurring_delete_dialog.dart';
 import 'package:todo_app/core/utils/recurrence_utils.dart';
+import 'package:todo_app/core/utils/color_utils.dart';
 
 class TodoListScreen extends ConsumerStatefulWidget {
   const TodoListScreen({super.key});
@@ -27,11 +29,18 @@ class TodoListScreen extends ConsumerStatefulWidget {
 
 class _TodoListScreenState extends ConsumerState<TodoListScreen> {
   final TextEditingController _inputController = TextEditingController();
+  final TextEditingController _searchController = TextEditingController();
   bool _isRequestingPermissions = false; // 중복 요청 방지 플래그
+  bool _isSearching = false;
+  Timer? _debounceTimer;
 
   @override
   void initState() {
     super.initState();
+
+    // Setup search debounce
+    _searchController.addListener(_onSearchChanged);
+
     // Activity context가 준비된 후 권한 요청 (첫 실행 시에만)
     // 추가 지연을 둬서 Activity가 완전히 준비되도록 함
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -40,6 +49,18 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> {
           _checkAndRequestPermissions();
         }
       });
+    });
+  }
+
+  void _onSearchChanged() {
+    // Cancel previous timer
+    _debounceTimer?.cancel();
+
+    // Start new timer (500ms debounce)
+    _debounceTimer = Timer(const Duration(milliseconds: 500), () {
+      if (mounted) {
+        ref.read(searchQueryProvider.notifier).setQuery(_searchController.text);
+      }
     });
   }
 
@@ -263,6 +284,8 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> {
   @override
   void dispose() {
     _inputController.dispose();
+    _searchController.dispose();
+    _debounceTimer?.cancel();
     super.dispose();
   }
 
@@ -293,6 +316,69 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> {
     } else {
       // Regular todo deletion
       await ref.read(todoActionsProvider).deleteTodo(todo.id);
+    }
+  }
+
+  /// Handle clearing all completed todos
+  Future<void> _handleClearCompleted() async {
+    final shouldClear = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppColors.darkCard,
+        title: Row(
+          children: [
+            const Icon(FluentIcons.delete_24_regular, color: AppColors.accentOrange),
+            const SizedBox(width: 12),
+            Text(
+              'clear_completed_title'.tr(),
+              style: const TextStyle(color: AppColors.textWhite),
+            ),
+          ],
+        ),
+        content: Text(
+          'clear_completed_message'.tr(),
+          style: const TextStyle(color: AppColors.textGray, height: 1.5),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text('cancel'.tr(), style: const TextStyle(color: AppColors.textGray)),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.dangerRed,
+            ),
+            child: Text('delete'.tr(), style: const TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+
+    if (shouldClear != true) return;
+
+    try {
+      final deletedCount = await ref.read(todoActionsProvider).deleteCompletedTodos();
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('clear_completed_success'.tr(args: [deletedCount.toString()])),
+            backgroundColor: AppColors.primaryBlue,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('clear_completed_failed'.tr(args: [e.toString()])),
+            backgroundColor: AppColors.dangerRed,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
     }
   }
 
@@ -364,6 +450,34 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> {
                                   height: 48,
                                   child: const Icon(
                                     FluentIcons.arrow_clockwise_24_regular,
+                                    color: AppColors.textGray,
+                                    size: 22,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          // Clear Completed Button
+                          Container(
+                            decoration: BoxDecoration(
+                              color: AppColors.darkCard,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: AppColors.darkBorder.withValues(alpha: 0.5),
+                                width: 1,
+                              ),
+                            ),
+                            child: Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                onTap: _handleClearCompleted,
+                                borderRadius: BorderRadius.circular(12),
+                                child: SizedBox(
+                                  width: 48,
+                                  height: 48,
+                                  child: const Icon(
+                                    FluentIcons.delete_24_regular,
                                     color: AppColors.textGray,
                                     size: 22,
                                   ),
@@ -490,6 +604,61 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> {
                     loading: () => const SizedBox.shrink(),
                     error: (_, __) => const SizedBox.shrink(),
                   ),
+                  const SizedBox(height: 12),
+
+                  // Search Bar
+                  Container(
+                    decoration: BoxDecoration(
+                      color: AppColors.darkInput,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: AppColors.darkBorder.withValues(alpha: 0.5),
+                        width: 1,
+                      ),
+                    ),
+                    child: ValueListenableBuilder<TextEditingValue>(
+                      valueListenable: _searchController,
+                      builder: (context, value, child) {
+                        return TextField(
+                          controller: _searchController,
+                          style: const TextStyle(
+                            color: AppColors.textWhite,
+                            fontSize: 14,
+                          ),
+                          decoration: InputDecoration(
+                            hintText: 'search_todos'.tr(),
+                            hintStyle: const TextStyle(
+                              color: AppColors.textGray,
+                              fontSize: 14,
+                            ),
+                            prefixIcon: const Icon(
+                              FluentIcons.search_24_regular,
+                              color: AppColors.textGray,
+                              size: 20,
+                            ),
+                            suffixIcon: value.text.isNotEmpty
+                                ? IconButton(
+                                    icon: const Icon(
+                                      FluentIcons.dismiss_circle_24_filled,
+                                      color: AppColors.textGray,
+                                      size: 20,
+                                    ),
+                                    onPressed: () {
+                                      _searchController.clear();
+                                      ref.read(searchQueryProvider.notifier).clearQuery();
+                                    },
+                                  )
+                                : null,
+                            border: InputBorder.none,
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 12,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -528,7 +697,7 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> {
                           child: _CategoryChip(
                             label: category.name,
                             icon: category.icon,
-                            color: Color(int.parse('0xFF${category.color}')),
+                            color: ColorUtils.parseColor(category.color),
                             isSelected: selectedCategoryId == category.id,
                             onTap: () => ref
                                 .read(categoryFilterProvider.notifier)

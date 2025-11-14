@@ -39,19 +39,39 @@ class CategoryFilterNotifier extends Notifier<int?> {
 final categoryFilterProvider =
     NotifierProvider<CategoryFilterNotifier, int?>(CategoryFilterNotifier.new);
 
+// Search query state
+class SearchQueryNotifier extends Notifier<String> {
+  @override
+  String build() => '';
+
+  void setQuery(String query) {
+    state = query;
+  }
+
+  void clearQuery() {
+    state = '';
+  }
+}
+
+final searchQueryProvider =
+    NotifierProvider<SearchQueryNotifier, String>(SearchQueryNotifier.new);
+
 // Todos List Provider
 final todosProvider = FutureProvider<List<Todo>>((ref) async {
   final repository = ref.watch(todoRepositoryProvider);
   final filter = ref.watch(todoFilterProvider);
   final categoryFilter = ref.watch(categoryFilterProvider);
+  final searchQuery = ref.watch(searchQueryProvider);
 
-  final filterString = switch (filter) {
-    TodoFilter.all => 'all',
-    TodoFilter.pending => 'pending',
-    TodoFilter.completed => 'completed',
-  };
+  // If search query exists, use search instead of filter
+  final result = searchQuery.trim().isNotEmpty
+      ? await repository.searchTodos(searchQuery)
+      : await repository.getFilteredTodos(switch (filter) {
+          TodoFilter.all => 'all',
+          TodoFilter.pending => 'pending',
+          TodoFilter.completed => 'completed',
+        });
 
-  final result = await repository.getFilteredTodos(filterString);
   return result.fold(
     (failure) => throw Exception(failure),
     (todos) {
@@ -590,6 +610,21 @@ class TodoActions {
             ref.invalidate(todoDetailProvider(id));
           },
         );
+      },
+    );
+  }
+
+  /// Delete all completed todos
+  Future<int> deleteCompletedTodos() async {
+    final repository = ref.read(todoRepositoryProvider);
+
+    final result = await repository.deleteCompletedTodos();
+
+    return result.fold(
+      (failure) => throw Exception('Failed to delete completed todos'),
+      (count) {
+        ref.invalidate(todosProvider);
+        return count;
       },
     );
   }

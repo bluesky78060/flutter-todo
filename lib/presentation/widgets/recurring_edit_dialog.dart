@@ -13,8 +13,6 @@ class RecurringEditDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isKorean = context.locale.languageCode == 'ko';
-
     return Dialog(
       backgroundColor: AppColors.darkCard,
       shape: RoundedRectangleBorder(
@@ -29,7 +27,7 @@ class RecurringEditDialog extends StatelessWidget {
           children: [
             // Title
             Text(
-              isKorean ? '반복 일정 수정' : 'Edit Recurring Event',
+              'edit_recurring_event'.tr(),
               style: const TextStyle(
                 color: AppColors.textWhite,
                 fontSize: 20,
@@ -40,9 +38,7 @@ class RecurringEditDialog extends StatelessWidget {
 
             // Description
             Text(
-              isKorean
-                  ? '이 일정은 반복 일정입니다. 어떻게 수정하시겠습니까?'
-                  : 'This is a recurring event. How would you like to edit it?',
+              'edit_recurring_message'.tr(),
               style: const TextStyle(
                 color: AppColors.textGray,
                 fontSize: 14,
@@ -53,8 +49,8 @@ class RecurringEditDialog extends StatelessWidget {
             // Option 1: Edit only this instance
             _buildOption(
               context,
-              title: isKorean ? '이 일정만' : 'Only this event',
-              description: isKorean ? '이 일정만 수정합니다' : 'Edit only this event',
+              title: 'edit_only_this'.tr(),
+              description: 'edit_only_this_desc'.tr(),
               onTap: () => Navigator.of(context).pop(RecurringEditMode.thisOnly),
             ),
             const SizedBox(height: 12),
@@ -62,10 +58,8 @@ class RecurringEditDialog extends StatelessWidget {
             // Option 2: Edit this and future instances
             _buildOption(
               context,
-              title: isKorean ? '이 일정 및 향후 일정' : 'This and future events',
-              description: isKorean
-                  ? '이 일정과 이후의 모든 반복 일정을 수정합니다'
-                  : 'Edit this and all future recurring events',
+              title: 'edit_this_and_future'.tr(),
+              description: 'edit_this_and_future_desc'.tr(),
               onTap: () => Navigator.of(context).pop(RecurringEditMode.thisAndFuture),
             ),
             const SizedBox(height: 24),
@@ -87,7 +81,7 @@ class RecurringEditDialog extends StatelessWidget {
                   ),
                 ),
                 child: Text(
-                  isKorean ? '취소' : 'Cancel',
+                  'cancel'.tr(),
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,

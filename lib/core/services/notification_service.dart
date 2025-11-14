@@ -6,6 +6,8 @@ import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 import 'package:todo_app/core/services/web_notification_service_stub.dart'
     if (dart.library.html) 'package:todo_app/core/services/web_notification_service.dart';
+import 'package:todo_app/core/services/workmanager_notification_service.dart';
+import 'package:todo_app/core/utils/samsung_device_utils.dart';
 import 'package:todo_app/main.dart' show notificationTapBackground;
 
 // Helper to check if running on Android (web-safe)
@@ -21,8 +23,10 @@ class NotificationService {
 
   FlutterLocalNotificationsPlugin? _notifications;
   final WebNotificationService _webNotifications = WebNotificationService();
+  final WorkManagerNotificationService _workManagerService = WorkManagerNotificationService();
 
   bool _initialized = false;
+  bool _isSamsungDevice = false;
 
   FlutterLocalNotificationsPlugin get _notificationsPlugin {
     if (kIsWeb) {
@@ -102,6 +106,20 @@ class NotificationService {
       // Create notification channel for Android
       if (_isAndroid) {
         await _createNotificationChannel();
+
+        // Check if Samsung device and apply workarounds
+        _isSamsungDevice = await SamsungDeviceUtils.isSamsungDevice();
+        if (_isSamsungDevice) {
+          if (kDebugMode) {
+            print('📱 Samsung device detected - initializing WorkManager');
+          }
+
+          // Initialize WorkManager for Samsung devices
+          await _workManagerService.initialize();
+
+          // Apply Samsung-specific workarounds
+          await SamsungDeviceUtils.applySamsungWorkarounds();
+        }
       }
 
       _initialized = true;
@@ -266,6 +284,35 @@ class NotificationService {
           print('⚠️ Notification permission not granted');
         }
         await requestPermissions();
+      }
+
+      // Use WorkManager for Samsung devices or devices with battery optimization
+      final shouldUseWorkManager = await SamsungDeviceUtils.shouldUseWorkManager();
+      if (shouldUseWorkManager) {
+        if (kDebugMode) {
+          print('📱 Using WorkManager for notification scheduling');
+        }
+
+        await _workManagerService.scheduleNotification(
+          id: id,
+          title: title,
+          body: body,
+          scheduledDate: scheduledDate,
+        );
+
+        if (kDebugMode) {
+          print('✅ Notification scheduled via WorkManager');
+        }
+        return;
+      }
+
+      // Log Samsung device detection
+      if (_isSamsungDevice) {
+        if (kDebugMode) {
+          print('📱 Samsung device detected - using WorkManager');
+        }
+        // Apply Samsung workarounds
+        await SamsungDeviceUtils.applySamsungWorkarounds();
       }
 
       // Android 14+ (API 34+): Check if we can schedule exact alarms

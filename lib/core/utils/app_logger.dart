@@ -24,3 +24,22 @@ final simpleLogger = Logger(
   level: kDebugMode ? Level.debug : Level.info,
   filter: ProductionFilter(),
 );
+
+/// Static logger wrapper for cleaner API
+class AppLogger {
+  static void info(String message, {dynamic error, StackTrace? stackTrace}) {
+    logger.i(message, error: error, stackTrace: stackTrace);
+  }
+
+  static void error(String message, {dynamic error, StackTrace? stackTrace}) {
+    logger.e(message, error: error, stackTrace: stackTrace);
+  }
+
+  static void warning(String message, {dynamic error, StackTrace? stackTrace}) {
+    logger.w(message, error: error, stackTrace: stackTrace);
+  }
+
+  static void debug(String message, {dynamic error, StackTrace? stackTrace}) {
+    logger.d(message, error: error, stackTrace: stackTrace);
+  }
+}

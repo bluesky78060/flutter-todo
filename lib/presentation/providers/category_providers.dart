@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:todo_app/data/repositories/category_repository_impl.dart';
 import 'package:todo_app/domain/entities/category.dart';
 import 'package:todo_app/domain/repositories/category_repository.dart';
@@ -7,7 +8,8 @@ import 'package:todo_app/presentation/providers/database_provider.dart';
 // Category Repository Provider
 final categoryRepositoryProvider = Provider<CategoryRepository>((ref) {
   final database = ref.watch(localDatabaseProvider);
-  return CategoryRepositoryImpl(database);
+  final supabaseClient = Supabase.instance.client;
+  return CategoryRepositoryImpl(database, supabaseClient);
 });
 
 // Categories List Provider

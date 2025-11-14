@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:rrule/rrule.dart';
 
 /// Utility class for handling recurrence rules (RRULE format)
@@ -144,14 +145,14 @@ class RecurrenceUtils {
   }
 
   /// Get human-readable description of recurrence rule
-  static String getDescription(String? rruleString, String locale) {
+  static String getDescription(String? rruleString) {
     if (rruleString == null || rruleString.isEmpty) {
-      return locale == 'ko' ? '반복 없음' : 'No recurrence';
+      return 'no_recurrence'.tr();
     }
 
     final rule = parseRRule(rruleString);
     if (rule == null) {
-      return locale == 'ko' ? '잘못된 반복 규칙' : 'Invalid recurrence';
+      return 'invalid_recurrence'.tr();
     }
 
     // Parse frequency and interval
@@ -177,67 +178,52 @@ class RecurrenceUtils {
       }
     }
 
-    // Build description
-    if (locale == 'ko') {
-      String desc = '';
-      if (interval > 1) {
-        desc = '$interval';
-      }
+    // Build description using translation keys
+    String desc = '';
+
+    if (interval > 1) {
+      desc = '$interval';
 
       switch (freq) {
         case 'DAILY':
-          desc += interval > 1 ? '일마다' : '매일';
+          desc += '${'day_unit'.tr()}${'every_unit'.tr()}';
           break;
         case 'WEEKLY':
-          desc += interval > 1 ? '주마다' : '매주';
+          desc += '${'week_unit'.tr()}${'every_unit'.tr()}';
           break;
         case 'MONTHLY':
-          desc += interval > 1 ? '개월마다' : '매월';
+          desc += '${'month_unit'.tr()}${'every_unit'.tr()}';
           break;
         case 'YEARLY':
-          desc += interval > 1 ? '년마다' : '매년';
+          desc += '${'year_unit'.tr()}${'every_unit'.tr()}';
           break;
         default:
-          return '사용자 지정 반복';
+          return 'custom_recurrence'.tr();
       }
-
-      if (count != null) {
-        desc += ' ($count회)';
-      }
-
-      return desc;
     } else {
-      // English
-      String desc = '';
-      if (interval > 1) {
-        desc = 'Every $interval ';
-      } else {
-        desc = 'Every ';
-      }
-
       switch (freq) {
         case 'DAILY':
-          desc += interval > 1 ? 'days' : 'day';
+          desc = 'daily'.tr();
           break;
         case 'WEEKLY':
-          desc += interval > 1 ? 'weeks' : 'week';
+          desc = 'weekly'.tr();
           break;
         case 'MONTHLY':
-          desc += interval > 1 ? 'months' : 'month';
+          desc = 'monthly'.tr();
           break;
         case 'YEARLY':
-          desc += interval > 1 ? 'years' : 'year';
+          desc = 'yearly'.tr();
           break;
         default:
-          return 'Custom recurrence';
+          return 'custom_recurrence'.tr();
       }
-
-      if (count != null) {
-        desc += ' ($count times)';
-      }
-
-      return desc;
     }
+
+    if (count != null) {
+      desc += ' ($count${'times_unit'.tr()})';
+    }
+
+    return desc;
   }
 }
 

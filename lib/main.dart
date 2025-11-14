@@ -1,9 +1,12 @@
+import 'dart:async';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart' show kDebugMode, kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+// import 'package:todo_app/core/services/workmanager_notification_service.dart'; // Temporarily disabled
+// import 'package:sentry_flutter/sentry_flutter.dart';  // Temporarily disabled due to Kotlin conflict
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:todo_app/core/config/supabase_config.dart';
@@ -32,6 +35,45 @@ void main() async {
   await dotenv.load(fileName: '.env');
   logger.d('✅ Environment variables loaded from .env');
 
+  // TODO: Re-enable Sentry after resolving Kotlin version conflict
+  // Get Sentry DSN from environment
+  // final sentryDsn = dotenv.env['SENTRY_DSN'] ?? '';
+  // final enableSentry = sentryDsn.isNotEmpty && !kDebugMode;
+
+  // await SentryFlutter.init(
+  //   (options) {
+  //     options.dsn = enableSentry ? sentryDsn : '';
+  //     options.environment = kDebugMode ? 'development' : 'production';
+  //     options.release = 'todo_app@1.0.8+20'; // Match pubspec.yaml version
+  //     options.tracesSampleRate = 1.0; // Performance monitoring (100% in production)
+  //     options.enableAutoPerformanceTracing = true;
+
+  //     // Capture error context
+  //     options.attachStacktrace = true;
+  //     options.attachScreenshot = true;
+  //     options.attachViewHierarchy = true;
+
+  //     // Filter out sensitive data
+  //     options.beforeSend = (event, {hint}) {
+  //       // Don't send events in debug mode
+  //       if (kDebugMode) return null;
+  //       return event;
+  //     };
+
+  //     // Log Sentry initialization
+  //     if (enableSentry) {
+  //       logger.d('✅ Sentry initialized for production');
+  //     } else {
+  //       logger.d('ℹ️ Sentry disabled (debug mode or no DSN)');
+  //     }
+  //   },
+  //   appRunner: () => runAppWithErrorHandling(),
+  // );
+
+  runAppWithErrorHandling();
+}
+
+Future<void> runAppWithErrorHandling() async {
   // Initialize Supabase with platform-specific auth options
   if (kIsWeb) {
     await Supabase.initialize(
@@ -56,8 +98,6 @@ void main() async {
     logger.d('✅ Supabase initialized for mobile with PKCE auth flow');
   }
 
-  // No need for manual auth listener - StreamProvider handles this automatically
-
   // Initialize Notification Service (without requesting permissions yet)
   // Permissions will be requested in TodoListScreen after Activity context is ready
   final notificationService = NotificationService();
@@ -65,8 +105,10 @@ void main() async {
     await notificationService.initialize();
     logger.d('✅ Main: Notification service initialized successfully');
   } catch (e, stackTrace) {
-    logger.d('❌ Main: Failed to initialize notification service: $e');
-    logger.d('   Stack trace: $stackTrace');
+    logger.e('❌ Main: Failed to initialize notification service',
+        error: e, stackTrace: stackTrace);
+    // TODO: Report to Sentry after re-enabling
+    // await Sentry.captureException(e, stackTrace: stackTrace);
   }
 
   final prefs = await SharedPreferences.getInstance();

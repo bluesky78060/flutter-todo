@@ -63,6 +63,11 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+
+            // 네이티브 디버그 심볼 비활성화 (AAB 빌드 에러 우회)
+            ndk {
+                debugSymbolLevel = "NONE"
+            }
         }
     }
 

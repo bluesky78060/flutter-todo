@@ -1,15 +1,22 @@
 import 'package:drift/drift.dart' as drift;
 import 'package:fpdart/fpdart.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:todo_app/core/errors/failures.dart';
+import 'package:todo_app/core/utils/app_logger.dart';
 import 'package:todo_app/data/datasources/local/app_database.dart';
+import 'package:todo_app/data/datasources/remote/supabase_category_datasource.dart';
 import 'package:todo_app/domain/entities/category.dart' as entity;
 import 'package:todo_app/domain/entities/todo.dart' as entity;
 import 'package:todo_app/domain/repositories/category_repository.dart';
 
 class CategoryRepositoryImpl implements CategoryRepository {
   final AppDatabase database;
+  final SupabaseCategoryDataSource? supabaseDataSource;
 
-  CategoryRepositoryImpl(this.database);
+  CategoryRepositoryImpl(this.database, [SupabaseClient? supabaseClient])
+      : supabaseDataSource = supabaseClient != null
+            ? SupabaseCategoryDataSource(supabaseClient)
+            : null;
 
   @override
   Future<Either<Failure, List<entity.Category>>> getCategories() async {
@@ -38,15 +45,37 @@ class CategoryRepositoryImpl implements CategoryRepository {
   Future<Either<Failure, int>> createCategory(
       String userId, String name, String color, String? icon) async {
     try {
+      final createdAt = DateTime.now();
+
+      // Insert into local database first
       final id = await database.insertCategory(
         CategoriesCompanion(
           userId: drift.Value(userId),
           name: drift.Value(name),
           color: drift.Value(color),
           icon: drift.Value(icon),
-          createdAt: drift.Value(DateTime.now()),
+          createdAt: drift.Value(createdAt),
         ),
       );
+
+      // Sync to Supabase if available
+      if (supabaseDataSource != null) {
+        try {
+          await supabaseDataSource!.syncCategory(
+            localId: id,
+            userId: userId,
+            name: name,
+            color: color,
+            icon: icon,
+            createdAt: createdAt,
+          );
+        } catch (e) {
+          AppLogger.warning('⚠️ Failed to sync category to Supabase, will retry later', error: e);
+          // Don't fail the operation if Supabase sync fails
+          // The category is still saved locally
+        }
+      }
+
       return Right(id);
     } catch (e) {
       return Left(DatabaseFailure(e.toString()));

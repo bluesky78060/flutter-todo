@@ -13,8 +13,6 @@ class RecurringDeleteDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isKorean = context.locale.languageCode == 'ko';
-
     return Dialog(
       backgroundColor: AppColors.darkCard,
       shape: RoundedRectangleBorder(
@@ -29,7 +27,7 @@ class RecurringDeleteDialog extends StatelessWidget {
           children: [
             // Title
             Text(
-              isKorean ? '반복 일정 삭제' : 'Delete Recurring Event',
+              'delete_recurring_event'.tr(),
               style: const TextStyle(
                 color: AppColors.textWhite,
                 fontSize: 20,
@@ -40,9 +38,7 @@ class RecurringDeleteDialog extends StatelessWidget {
 
             // Description
             Text(
-              isKorean
-                  ? '이 일정은 반복 일정입니다. 어떻게 삭제하시겠습니까?'
-                  : 'This is a recurring event. How would you like to delete it?',
+              'delete_recurring_message'.tr(),
               style: const TextStyle(
                 color: AppColors.textGray,
                 fontSize: 14,
@@ -53,8 +49,8 @@ class RecurringDeleteDialog extends StatelessWidget {
             // Option 1: Delete only this instance
             _buildOption(
               context,
-              title: isKorean ? '이 일정만' : 'Only this event',
-              description: isKorean ? '이 일정만 삭제합니다' : 'Delete only this event',
+              title: 'delete_only_this'.tr(),
+              description: 'delete_only_this_desc'.tr(),
               onTap: () => Navigator.of(context).pop(RecurringDeleteMode.thisOnly),
             ),
             const SizedBox(height: 12),
@@ -62,10 +58,8 @@ class RecurringDeleteDialog extends StatelessWidget {
             // Option 2: Delete this and future instances
             _buildOption(
               context,
-              title: isKorean ? '이 일정 및 향후 일정' : 'This and future events',
-              description: isKorean
-                  ? '이 일정과 이후의 모든 반복 일정을 삭제합니다'
-                  : 'Delete this and all future recurring events',
+              title: 'delete_this_and_future'.tr(),
+              description: 'delete_this_and_future_desc'.tr(),
               onTap: () => Navigator.of(context).pop(RecurringDeleteMode.thisAndFuture),
             ),
             const SizedBox(height: 12),
@@ -73,10 +67,8 @@ class RecurringDeleteDialog extends StatelessWidget {
             // Option 3: Delete entire series
             _buildOption(
               context,
-              title: isKorean ? '전체 시리즈' : 'Entire series',
-              description: isKorean
-                  ? '모든 반복 일정을 삭제합니다'
-                  : 'Delete all recurring events in the series',
+              title: 'delete_entire_series'.tr(),
+              description: 'delete_entire_series_desc'.tr(),
               onTap: () => Navigator.of(context).pop(RecurringDeleteMode.entireSeries),
               isDestructive: true,
             ),
@@ -99,7 +91,7 @@ class RecurringDeleteDialog extends StatelessWidget {
                   ),
                 ),
                 child: Text(
-                  isKorean ? '취소' : 'Cancel',
+                  'cancel'.tr(),
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,

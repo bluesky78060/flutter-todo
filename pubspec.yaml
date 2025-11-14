@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 1.0.8+20
+version: 1.0.10+33
 
 environment:
   sdk: ^3.9.2
@@ -52,6 +52,7 @@ dependencies:
 
   # Social Login
   google_sign_in: ^6.2.1
+  sign_in_with_apple: ^6.1.0
 
   # Internationalization
   easy_localization: ^3.0.5
@@ -86,8 +87,24 @@ dependencies:
   # Calendar
   table_calendar: ^3.1.2
 
+  # File Picker
+  file_picker: ^8.0.0
+
+  # Share
+  share_plus: ^10.0.0
+
+  # Background Processing (using GitHub repo for Flutter 3.38 compatibility)
+  workmanager:
+    git:
+      url: https://github.com/fluttercommunity/flutter_workmanager.git
+      path: workmanager
+      ref: main
+
   # Logging
   logger: ^2.4.0
+
+  # Error Tracking & Crash Reporting
+  # sentry_flutter: ^7.8.0  # Temporarily disabled due to Kotlin version conflict
 
   # Environment Variables
   flutter_dotenv: ^5.1.0

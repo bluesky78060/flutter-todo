@@ -94,4 +94,24 @@ class SupabaseTodoRepository implements TodoRepository {
       return Left(DatabaseFailure(e.toString()));
     }
   }
+
+  @override
+  Future<Either<Failure, int>> deleteCompletedTodos() async {
+    try {
+      final deletedCount = await dataSource.deleteCompletedTodos();
+      return Right(deletedCount);
+    } catch (e) {
+      return Left(DatabaseFailure(e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, List<Todo>>> searchTodos(String query) async {
+    try {
+      final todos = await dataSource.searchTodos(query);
+      return Right(todos);
+    } catch (e) {
+      return Left(DatabaseFailure(e.toString()));
+    }
+  }
 }

@@ -50,8 +50,32 @@ flutter build appbundle --release
 
 # Build outputs:
 # - AAB: build/app/outputs/bundle/release/app-release.aab
-# - APK: build/app/outputs/apk/release/app-release.apk
+# - APK: build/app/outputs/flutter-apk/app-release.apk
 ```
+
+**IMPORTANT - Build File Naming Convention**:
+After building, ALWAYS create a copy with version number in the filename for easy tracking:
+
+```bash
+# Get current version from pubspec.yaml (e.g., 1.0.8+20)
+VERSION=$(grep "^version:" pubspec.yaml | awk '{print $2}')
+
+# Copy AAB with version number
+cp build/app/outputs/bundle/release/app-release.aab \
+   build/app/outputs/bundle/release/app-release-${VERSION}.aab
+
+# Copy APK with version number
+cp build/app/outputs/flutter-apk/app-release.apk \
+   build/app/outputs/flutter-apk/app-release-${VERSION}.apk
+
+# Manual alternative (replace VERSION with actual version):
+cp build/app/outputs/bundle/release/app-release.aab \
+   build/app/outputs/bundle/release/app-release-1.0.8+20.aab
+cp build/app/outputs/flutter-apk/app-release.apk \
+   build/app/outputs/flutter-apk/app-release-1.0.8+20.apk
+```
+
+**Why**: Version-numbered files prevent confusion when managing multiple builds and make it easy to identify which version is deployed.
 
 ### Code Generation
 

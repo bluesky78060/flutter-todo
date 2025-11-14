@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:todo_app/core/theme/app_colors.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
@@ -33,9 +34,9 @@ class RescheduleDialog extends StatelessWidget {
                   size: 24,
                 ),
                 const SizedBox(width: 12),
-                const Text(
-                  '일정 이월',
-                  style: TextStyle(
+                Text(
+                  'reschedule_title'.tr(),
+                  style: const TextStyle(
                     color: AppColors.textWhite,
                     fontSize: 20,
                     fontWeight: FontWeight.w600,
@@ -48,19 +49,19 @@ class RescheduleDialog extends StatelessWidget {
             // Options
             _RescheduleOption(
               icon: FluentIcons.calendar_today_24_regular,
-              label: '오늘로',
+              label: 'reschedule_to_today'.tr(),
               onTap: () => Navigator.of(context).pop(RescheduleOption.today),
             ),
             const SizedBox(height: 12),
             _RescheduleOption(
               icon: FluentIcons.calendar_arrow_right_24_regular,
-              label: '내일로',
+              label: 'reschedule_to_tomorrow'.tr(),
               onTap: () => Navigator.of(context).pop(RescheduleOption.tomorrow),
             ),
             const SizedBox(height: 12),
             _RescheduleOption(
               icon: FluentIcons.calendar_edit_24_regular,
-              label: '직접 선택',
+              label: 'reschedule_custom'.tr(),
               onTap: () => Navigator.of(context).pop(RescheduleOption.custom),
             ),
             const SizedBox(height: 20),
@@ -71,9 +72,9 @@ class RescheduleDialog extends StatelessWidget {
               style: TextButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 12),
               ),
-              child: const Text(
-                '취소',
-                style: TextStyle(
+              child: Text(
+                'cancel'.tr(),
+                style: const TextStyle(
                   color: AppColors.textGray,
                   fontSize: 16,
                 ),

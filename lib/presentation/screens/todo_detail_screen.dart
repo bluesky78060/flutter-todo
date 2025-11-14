@@ -6,6 +6,7 @@ import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:todo_app/presentation/widgets/todo_form_dialog.dart';
 import 'package:todo_app/core/utils/recurrence_utils.dart';
 import 'package:todo_app/presentation/widgets/reschedule_dialog.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 class TodoDetailScreen extends ConsumerWidget {
   final int todoId;
@@ -124,8 +125,8 @@ class TodoDetailScreen extends ConsumerWidget {
               if (todo.recurrenceRule != null && todo.recurrenceRule!.isNotEmpty) ...[
                 _InfoRow(
                   icon: FluentIcons.arrow_repeat_all_24_regular,
-                  label: '반복',
-                  value: RecurrenceUtils.getDescription(todo.recurrenceRule, 'ko'),
+                  label: 'recurrence_settings'.tr(),
+                  value: RecurrenceUtils.getDescription(todo.recurrenceRule),
                   color: AppColors.primaryBlue,
                 ),
                 const SizedBox(height: 12),

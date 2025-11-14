@@ -1,8 +1,11 @@
+import 'dart:io' show Platform;
 import 'dart:math' as math;
 import 'dart:ui';
 import 'package:easy_localization/easy_localization.dart' hide TextDirection;
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:todo_app/core/config/oauth_redirect.dart';
 import 'package:todo_app/core/utils/app_logger.dart';
@@ -170,6 +173,46 @@ class _StylishLoginScreenState extends ConsumerState<StylishLoginScreen>
     } catch (e) {
       if (mounted) {
         _showSnackBar('${'kakao_login_failed'.tr()}: ${e.toString()}');
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
+  Future<void> _signInWithApple() async {
+    setState(() => _isLoading = true);
+
+    try {
+      logger.d('🍎 Starting Apple Sign In...');
+
+      // Request Apple Sign In credentials
+      final credential = await SignInWithApple.getAppleIDCredential(
+        scopes: [
+          AppleIDAuthorizationScopes.email,
+          AppleIDAuthorizationScopes.fullName,
+        ],
+      );
+
+      logger.d('🍎 Apple Sign In credential received');
+      logger.d('🍎 identityToken: ${credential.identityToken != null}');
+      logger.d('🍎 authorizationCode: ${credential.authorizationCode}');
+
+      // Sign in to Supabase with Apple credentials
+      final authResponse = await Supabase.instance.client.auth.signInWithIdToken(
+        provider: OAuthProvider.apple,
+        idToken: credential.identityToken!,
+        accessToken: credential.authorizationCode,
+      );
+
+      logger.d('✅ Apple Sign In 응답: user=${authResponse.user?.id}, session=${authResponse.session?.accessToken != null}');
+
+      if (mounted && authResponse.user != null) {
+        logger.d('✅ Apple Sign In 성공 - StreamProvider가 자동으로 업데이트합니다');
+        _showSnackBar('login_success'.tr(), isSuccess: true);
+      }
+    } catch (e) {
+      logger.e('❌ Apple Sign In 에러: $e');
+      if (mounted) {
+        _showSnackBar('${'apple_login_failed'.tr()}: ${e.toString()}');
         setState(() => _isLoading = false);
       }
     }
@@ -557,6 +600,17 @@ class _StylishLoginScreenState extends ConsumerState<StylishLoginScreen>
                               textColor: Colors.black87,
                               onPressed: _signInWithKakao,
                             ),
+                            // Apple Login (iOS only)
+                            if (!kIsWeb && Platform.isIOS) ...[
+                              const SizedBox(height: 12),
+                              _buildSocialButton(
+                                label: 'apple_login'.tr(),
+                                icon: Icons.apple,
+                                color: Colors.black,
+                                textColor: Colors.white,
+                                onPressed: _signInWithApple,
+                              ),
+                            ],
                               ],
                             ),
                           ),

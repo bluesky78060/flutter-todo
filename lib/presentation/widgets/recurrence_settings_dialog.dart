@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:todo_app/core/theme/app_colors.dart';
 import 'package:todo_app/core/utils/recurrence_utils.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 /// Dialog for configuring recurrence settings
 class RecurrenceSettingsDialog extends StatefulWidget {
@@ -133,9 +134,9 @@ class _RecurrenceSettingsDialogState extends State<RecurrenceSettingsDialog> {
                   size: 24,
                 ),
                 const SizedBox(width: 12),
-                const Text(
-                  '반복 설정',
-                  style: TextStyle(
+                Text(
+                  'recurrence_settings'.tr(),
+                  style: const TextStyle(
                     color: AppColors.textWhite,
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
@@ -188,7 +189,7 @@ class _RecurrenceSettingsDialogState extends State<RecurrenceSettingsDialog> {
                   style: TextButton.styleFrom(
                     foregroundColor: AppColors.textGray,
                   ),
-                  child: const Text('반복 안함'),
+                  child: Text('no_recurrence'.tr()),
                 ),
                 const SizedBox(width: 12),
                 // Cancel Button
@@ -197,7 +198,7 @@ class _RecurrenceSettingsDialogState extends State<RecurrenceSettingsDialog> {
                   style: TextButton.styleFrom(
                     foregroundColor: AppColors.textGray,
                   ),
-                  child: const Text('취소'),
+                  child: Text('cancel'.tr()),
                 ),
                 const SizedBox(width: 12),
                 // Save Button
@@ -215,7 +216,7 @@ class _RecurrenceSettingsDialogState extends State<RecurrenceSettingsDialog> {
                       borderRadius: BorderRadius.circular(8),
                     ),
                   ),
-                  child: const Text('저장'),
+                  child: Text('save'.tr()),
                 ),
               ],
             ),
@@ -230,9 +231,9 @@ class _RecurrenceSettingsDialogState extends State<RecurrenceSettingsDialog> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          '반복 주기',
-          style: TextStyle(
+        Text(
+          'recurrence_frequency'.tr(),
+          style: const TextStyle(
             color: AppColors.textGray,
             fontSize: 14,
           ),
@@ -241,10 +242,10 @@ class _RecurrenceSettingsDialogState extends State<RecurrenceSettingsDialog> {
         Wrap(
           spacing: 8,
           children: [
-            _buildFrequencyChip('매일', RecurrenceFrequency.daily),
-            _buildFrequencyChip('매주', RecurrenceFrequency.weekly),
-            _buildFrequencyChip('매월', RecurrenceFrequency.monthly),
-            _buildFrequencyChip('매년', RecurrenceFrequency.yearly),
+            _buildFrequencyChip('daily'.tr(), RecurrenceFrequency.daily),
+            _buildFrequencyChip('weekly'.tr(), RecurrenceFrequency.weekly),
+            _buildFrequencyChip('monthly'.tr(), RecurrenceFrequency.monthly),
+            _buildFrequencyChip('yearly'.tr(), RecurrenceFrequency.yearly),
           ],
         ),
       ],
@@ -276,25 +277,25 @@ class _RecurrenceSettingsDialogState extends State<RecurrenceSettingsDialog> {
     String unit;
     switch (_frequency) {
       case RecurrenceFrequency.daily:
-        unit = '일';
+        unit = 'day_unit'.tr();
         break;
       case RecurrenceFrequency.weekly:
-        unit = '주';
+        unit = 'week_unit'.tr();
         break;
       case RecurrenceFrequency.monthly:
-        unit = '개월';
+        unit = 'month_unit'.tr();
         break;
       case RecurrenceFrequency.yearly:
-        unit = '년';
+        unit = 'year_unit'.tr();
         break;
     }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          '반복 간격',
-          style: TextStyle(
+        Text(
+          'recurrence_interval'.tr(),
+          style: const TextStyle(
             color: AppColors.textGray,
             fontSize: 14,
           ),
@@ -319,7 +320,7 @@ class _RecurrenceSettingsDialogState extends State<RecurrenceSettingsDialog> {
                 ),
               ),
               child: Text(
-                '$_interval $unit마다',
+                '$_interval $unit ${'every_unit'.tr()}',
                 style: const TextStyle(
                   color: AppColors.textWhite,
                   fontSize: 16,
@@ -340,14 +341,14 @@ class _RecurrenceSettingsDialogState extends State<RecurrenceSettingsDialog> {
   }
 
   Widget _buildWeekDaySelector() {
-    const weekDays = ['월', '화', '수', '목', '금', '토', '일'];
+    final weekDays = ['mon'.tr(), 'tue'.tr(), 'wed'.tr(), 'thu'.tr(), 'fri'.tr(), 'sat'.tr(), 'sun'.tr()];
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          '반복 요일',
-          style: TextStyle(
+        Text(
+          'recurrence_days'.tr(),
+          style: const TextStyle(
             color: AppColors.textGray,
             fontSize: 14,
           ),
@@ -388,9 +389,9 @@ class _RecurrenceSettingsDialogState extends State<RecurrenceSettingsDialog> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          '종료 조건',
-          style: TextStyle(
+        Text(
+          'end_condition'.tr(),
+          style: const TextStyle(
             color: AppColors.textGray,
             fontSize: 14,
           ),
@@ -399,9 +400,9 @@ class _RecurrenceSettingsDialogState extends State<RecurrenceSettingsDialog> {
 
         // Never ends
         RadioListTile<String>(
-          title: const Text(
-            '종료 안함',
-            style: TextStyle(color: AppColors.textWhite),
+          title: Text(
+            'no_end'.tr(),
+            style: const TextStyle(color: AppColors.textWhite),
           ),
           value: 'never',
           groupValue: !_hasEndDate && !_useCount ? 'never' : (_hasEndDate ? 'until' : 'count'),
@@ -420,9 +421,9 @@ class _RecurrenceSettingsDialogState extends State<RecurrenceSettingsDialog> {
         RadioListTile<String>(
           title: Row(
             children: [
-              const Text(
-                '반복 횟수:',
-                style: TextStyle(color: AppColors.textWhite),
+              Text(
+                'repeat_count'.tr(),
+                style: const TextStyle(color: AppColors.textWhite),
               ),
               const SizedBox(width: 12),
               SizedBox(
@@ -448,9 +449,9 @@ class _RecurrenceSettingsDialogState extends State<RecurrenceSettingsDialog> {
                 ),
               ),
               const SizedBox(width: 4),
-              const Text(
-                '회',
-                style: TextStyle(color: AppColors.textWhite),
+              Text(
+                'times_unit'.tr(),
+                style: const TextStyle(color: AppColors.textWhite),
               ),
             ],
           ),
@@ -471,9 +472,9 @@ class _RecurrenceSettingsDialogState extends State<RecurrenceSettingsDialog> {
         RadioListTile<String>(
           title: Row(
             children: [
-              const Text(
-                '종료일:',
-                style: TextStyle(color: AppColors.textWhite),
+              Text(
+                'end_date'.tr(),
+                style: const TextStyle(color: AppColors.textWhite),
               ),
               const SizedBox(width: 12),
               TextButton(
@@ -493,7 +494,7 @@ class _RecurrenceSettingsDialogState extends State<RecurrenceSettingsDialog> {
                 child: Text(
                   _untilDate != null
                       ? '${_untilDate!.year}.${_untilDate!.month}.${_untilDate!.day}'
-                      : '날짜 선택',
+                      : 'select_date'.tr(),
                   style: TextStyle(
                     color: _hasEndDate ? AppColors.primaryBlue : AppColors.textGray,
                   ),
@@ -521,7 +522,7 @@ class _RecurrenceSettingsDialogState extends State<RecurrenceSettingsDialog> {
 
   Widget _buildPreview() {
     final rrule = _buildRRule();
-    final description = RecurrenceUtils.getDescription(rrule, 'ko');
+    final description = RecurrenceUtils.getDescription(rrule);
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -544,9 +545,9 @@ class _RecurrenceSettingsDialogState extends State<RecurrenceSettingsDialog> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  '미리보기',
-                  style: TextStyle(
+                Text(
+                  'preview'.tr(),
+                  style: const TextStyle(
                     color: AppColors.textGray,
                     fontSize: 12,
                   ),

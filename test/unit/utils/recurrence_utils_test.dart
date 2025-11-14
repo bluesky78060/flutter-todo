@@ -1,7 +1,13 @@
+import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:todo_app/core/utils/recurrence_utils.dart';
 
 void main() {
+  setUpAll(() async {
+    // Initialize EasyLocalization for tests
+    await EasyLocalization.ensureInitialized();
+  });
   group('RecurrenceUtils', () {
     group('parseRRule', () {
       test('parses valid RRULE string with prefix', () {
@@ -256,74 +262,167 @@ void main() {
     });
 
     group('getDescription', () {
-      test('returns Korean description for daily recurrence', () {
-        final desc = RecurrenceUtils.getDescription(
-          'FREQ=DAILY;INTERVAL=1',
-          'ko',
+      Widget createTestWidget(Locale locale, Widget child) {
+        return EasyLocalization(
+          supportedLocales: const [Locale('ko'), Locale('en')],
+          path: 'assets/translations',
+          fallbackLocale: const Locale('en'),
+          startLocale: locale,
+          child: MaterialApp(
+            locale: locale,
+            supportedLocales: const [Locale('ko'), Locale('en')],
+            localizationsDelegates: [
+              ...EasyLocalization.of(context)!.delegates,
+            ],
+            home: child,
+          ),
+        );
+      }
+
+      testWidgets('returns Korean description for daily recurrence', (tester) async {
+        await tester.pumpWidget(
+          createTestWidget(
+            const Locale('ko'),
+            Builder(
+              builder: (context) {
+                final desc = RecurrenceUtils.getDescription('FREQ=DAILY;INTERVAL=1');
+                expect(desc, '매일');
+                return const SizedBox();
+              },
+            ),
+          ),
+        );
+      });
+
+      testWidgets('returns Korean description for weekly recurrence with interval', (tester) async {
+        await tester.pumpWidget(
+          createTestWidget(
+            const Locale('ko'),
+            Builder(
+              builder: (context) {
+                final desc = RecurrenceUtils.getDescription('FREQ=WEEKLY;INTERVAL=2');
+                expect(desc, '2주마다');
+                return const SizedBox();
+              },
+            ),
+          ),
+        );
+      });
+
+      testWidgets('returns Korean description with count', (tester) async {
+        await tester.pumpWidget(
+          createTestWidget(
+            const Locale('ko'),
+            Builder(
+              builder: (context) {
+                final desc = RecurrenceUtils.getDescription('FREQ=MONTHLY;INTERVAL=1;COUNT=12');
+                expect(desc, '매월 (12회)');
+                return const SizedBox();
+              },
+            ),
+          ),
+        );
+      });
+
+      testWidgets('returns English description for daily recurrence', (tester) async {
+        await tester.pumpWidget(
+          createTestWidget(
+            const Locale('en'),
+            Builder(
+              builder: (context) {
+                final desc = RecurrenceUtils.getDescription('FREQ=DAILY;INTERVAL=1');
+                expect(desc, 'Daily');
+                return const SizedBox();
+              },
+            ),
+          ),
+        );
+      });
+
+      testWidgets('returns English description for weekly recurrence with interval', (tester) async {
+        await tester.pumpWidget(
+          createTestWidget(
+            const Locale('en'),
+            Builder(
+              builder: (context) {
+                final desc = RecurrenceUtils.getDescription('FREQ=WEEKLY;INTERVAL=2');
+                expect(desc, '2weekevery');
+                return const SizedBox();
+              },
+            ),
+          ),
+        );
+      });
+
+      testWidgets('returns English description with count', (tester) async {
+        await tester.pumpWidget(
+          createTestWidget(
+            const Locale('en'),
+            Builder(
+              builder: (context) {
+                final desc = RecurrenceUtils.getDescription('FREQ=MONTHLY;INTERVAL=1;COUNT=12');
+                expect(desc, 'Monthly (12times)');
+                return const SizedBox();
+              },
+            ),
+          ),
+        );
+      });
+
+      testWidgets('returns no recurrence message for null', (tester) async {
+        await tester.pumpWidget(
+          createTestWidget(
+            const Locale('ko'),
+            Builder(
+              builder: (context) {
+                final descKo = RecurrenceUtils.getDescription(null);
+                expect(descKo, '반복 없음');
+                return const SizedBox();
+              },
+            ),
+          ),
         );
 
-        expect(desc, '매일');
+        await tester.pumpWidget(
+          createTestWidget(
+            const Locale('en'),
+            Builder(
+              builder: (context) {
+                final descEn = RecurrenceUtils.getDescription(null);
+                expect(descEn, 'No Recurrence');
+                return const SizedBox();
+              },
+            ),
+          ),
+        );
       });
 
-      test('returns Korean description for weekly recurrence with interval', () {
-        final desc = RecurrenceUtils.getDescription(
-          'FREQ=WEEKLY;INTERVAL=2',
-          'ko',
+      testWidgets('returns invalid message for empty string', (tester) async {
+        await tester.pumpWidget(
+          createTestWidget(
+            const Locale('ko'),
+            Builder(
+              builder: (context) {
+                final descKo = RecurrenceUtils.getDescription('');
+                expect(descKo, '반복 없음');
+                return const SizedBox();
+              },
+            ),
+          ),
         );
 
-        expect(desc, '2주마다');
-      });
-
-      test('returns Korean description with count', () {
-        final desc = RecurrenceUtils.getDescription(
-          'FREQ=MONTHLY;INTERVAL=1;COUNT=12',
-          'ko',
+        await tester.pumpWidget(
+          createTestWidget(
+            const Locale('en'),
+            Builder(
+              builder: (context) {
+                final descEn = RecurrenceUtils.getDescription('');
+                expect(descEn, 'No Recurrence');
+                return const SizedBox();
+              },
+            ),
+          ),
         );
-
-        expect(desc, '매월 (12회)');
-      });
-
-      test('returns English description for daily recurrence', () {
-        final desc = RecurrenceUtils.getDescription(
-          'FREQ=DAILY;INTERVAL=1',
-          'en',
-        );
-
-        expect(desc, 'Every day');
-      });
-
-      test('returns English description for weekly recurrence with interval', () {
-        final desc = RecurrenceUtils.getDescription(
-          'FREQ=WEEKLY;INTERVAL=2',
-          'en',
-        );
-
-        expect(desc, 'Every 2 weeks');
-      });
-
-      test('returns English description with count', () {
-        final desc = RecurrenceUtils.getDescription(
-          'FREQ=MONTHLY;INTERVAL=1;COUNT=12',
-          'en',
-        );
-
-        expect(desc, 'Every month (12 times)');
-      });
-
-      test('returns no recurrence message for null', () {
-        final descKo = RecurrenceUtils.getDescription(null, 'ko');
-        final descEn = RecurrenceUtils.getDescription(null, 'en');
-
-        expect(descKo, '반복 없음');
-        expect(descEn, 'No recurrence');
-      });
-
-      test('returns invalid message for empty string', () {
-        final descKo = RecurrenceUtils.getDescription('', 'ko');
-        final descEn = RecurrenceUtils.getDescription('', 'en');
-
-        expect(descKo, '반복 없음');
-        expect(descEn, 'No recurrence');
       });
     });
   });

@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:todo_app/core/theme/app_colors.dart';
 import 'package:todo_app/core/utils/recurrence_utils.dart';
+import 'package:todo_app/core/utils/color_utils.dart';
 import 'package:todo_app/domain/entities/todo.dart';
 import 'package:todo_app/presentation/providers/todo_providers.dart';
 import 'package:todo_app/presentation/providers/category_providers.dart';
@@ -536,7 +537,7 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
                                       width: 16,
                                       height: 16,
                                       decoration: BoxDecoration(
-                                        color: Color(int.parse('0xFF${category.color}')),
+                                        color: ColorUtils.parseColor(category.color),
                                         shape: BoxShape.circle,
                                       ),
                                     ),
@@ -754,8 +755,8 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
                         Expanded(
                           child: Text(
                             _recurrenceRule != null
-                                ? RecurrenceUtils.getDescription(_recurrenceRule, context.locale.languageCode)
-                                : (context.locale.languageCode == 'ko' ? '반복 안함' : 'No recurrence'),
+                                ? RecurrenceUtils.getDescription(_recurrenceRule)
+                                : 'no_recurrence'.tr(),
                             style: TextStyle(
                               color: _recurrenceRule != null
                                   ? AppColors.textWhite

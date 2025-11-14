@@ -132,12 +132,54 @@ class AppDatabase extends _$AppDatabase {
   Future<bool> updateCategory(Category category) =>
       update(categories).replace(category);
 
+  Future<bool> updateCategoryFromCompanion(CategoriesCompanion category) {
+    if (category.id.present) {
+      return update(categories).replace(
+        Category(
+          id: category.id.value,
+          userId: category.userId.value,
+          name: category.name.value,
+          color: category.color.value,
+          icon: category.icon.present ? category.icon.value : null,
+          createdAt: category.createdAt.value,
+        ),
+      );
+    }
+    return Future.value(false);
+  }
+
   Future<int> deleteCategory(int id) =>
       (delete(categories)..where((c) => c.id.equals(id))).go();
 
   // Get todos by category
   Future<List<Todo>> getTodosByCategory(int categoryId) =>
       (select(todos)..where((t) => t.categoryId.equals(categoryId))).get();
+
+  // Backup/Restore methods
+  Future<int> deleteAllTodos() => delete(todos).go();
+
+  Future<int> deleteAllCategories() => delete(categories).go();
+
+  Future<bool> updateTodoFromCompanion(TodosCompanion todo) {
+    if (todo.id.present) {
+      return update(todos).replace(
+        Todo(
+          id: todo.id.value,
+          title: todo.title.value,
+          description: todo.description.value,
+          isCompleted: todo.isCompleted.value,
+          categoryId: todo.categoryId.present ? todo.categoryId.value : null,
+          createdAt: todo.createdAt.value,
+          completedAt: todo.completedAt.present ? todo.completedAt.value : null,
+          dueDate: todo.dueDate.present ? todo.dueDate.value : null,
+          notificationTime: todo.notificationTime.present ? todo.notificationTime.value : null,
+          recurrenceRule: todo.recurrenceRule.present ? todo.recurrenceRule.value : null,
+          parentRecurringTodoId: todo.parentRecurringTodoId.present ? todo.parentRecurringTodoId.value : null,
+        ),
+      );
+    }
+    return Future.value(false);
+  }
 }
 
 LazyDatabase _openConnection() {
