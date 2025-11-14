@@ -61,5 +61,20 @@
 			</array>
 		</dict>
 	</array>
+	<!-- Permissions -->
+	<key>NSUserNotificationsUsageDescription</key>
+	<string>할 일 알림을 보내기 위해 알림 권한이 필요합니다.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>파일을 업로드하기 위해 사진 라이브러리 접근 권한이 필요합니다.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>파일을 업로드하기 위해 카메라 접근 권한이 필요합니다.</string>
+	<!-- OAuth Google Sign In -->
+	<key>GIDClientID</key>
+	<string>YOUR_GOOGLE_CLIENT_ID_HERE</string>
+	<!-- Supabase Deep Link -->
+	<key>com.apple.developer.associated-domains</key>
+	<array>
+		<string>applinks:your-supabase-project.supabase.co</string>
+	</array>
 </dict>
 </plist>
