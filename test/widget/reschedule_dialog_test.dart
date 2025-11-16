@@ -4,6 +4,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:todo_app/presentation/widgets/reschedule_dialog.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
   group('RescheduleDialog Widget', () {
     Widget createTestWidget(Widget child) {
       return EasyLocalization(

@@ -4,10 +4,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:todo_app/core/utils/recurrence_utils.dart';
 
 void main() {
-  setUpAll(() async {
-    // Initialize EasyLocalization for tests
-    await EasyLocalization.ensureInitialized();
-  });
   group('RecurrenceUtils', () {
     group('parseRRule', () {
       test('parses valid RRULE string with prefix', () {
