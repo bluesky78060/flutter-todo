@@ -70,11 +70,11 @@
 	<string>파일을 업로드하기 위해 카메라 접근 권한이 필요합니다.</string>
 	<!-- OAuth Google Sign In -->
 	<key>GIDClientID</key>
-	<string>YOUR_GOOGLE_CLIENT_ID_HERE</string>
+	<string>621785374771-2a4meibhjq1lmq4ccon9c5imt0ds9eks.apps.googleusercontent.com</string>
 	<!-- Supabase Deep Link -->
 	<key>com.apple.developer.associated-domains</key>
 	<array>
-		<string>applinks:your-supabase-project.supabase.co</string>
+		<string>applinks:bulwfcsyqgsvmbadhlye.supabase.co</string>
 	</array>
 </dict>
 </plist>

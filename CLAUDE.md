@@ -38,44 +38,59 @@ kill -SIGUSR2 <pid>
 
 ### Build Commands
 
+#### 플랫폼별 독립 버전 빌드 (권장)
+
+**빌드 스크립트 사용** (플랫폼별 버전 자동 관리):
+
 ```bash
-# Development APK
+# Android 빌드 (기본값: 1.0.10+34)
+./scripts/build_android.sh
+
+# Android 커스텀 버전 빌드
+./scripts/build_android.sh 1.0.11 35
+
+# iOS 빌드 (기본값: 1.0.5+15)
+./scripts/build_ios.sh
+
+# iOS 커스텀 버전 빌드
+./scripts/build_ios.sh 1.0.6 16
+```
+
+**자동 기능**:
+- 버전 번호 파일명 자동 생성 (예: `app-release-1.0.11+35.aab`)
+- pubspec.yaml 자동 백업 및 복원
+- Clean 및 dependency 설치 자동화
+- 상세한 빌드 로그 및 결과 표시
+
+**상세 가이드**: [VERSION_MANAGEMENT.md](VERSION_MANAGEMENT.md)
+
+#### 수동 빌드 (고급)
+
+```bash
+# Android Development APK
 flutter build apk --debug
 
-# Release APK
-flutter build apk --release
+# Android Release (커스텀 버전)
+flutter build apk --release --build-name=1.0.11 --build-number=35
+flutter build appbundle --release --build-name=1.0.11 --build-number=35
 
-# Release AAB (for Google Play)
-flutter build appbundle --release
+# iOS Release (커스텀 버전)
+flutter build ios --release --build-name=1.0.6 --build-number=16 --no-codesign
 
 # Build outputs:
-# - AAB: build/app/outputs/bundle/release/app-release.aab
-# - APK: build/app/outputs/flutter-apk/app-release.apk
+# Android:
+#   - AAB: build/app/outputs/bundle/release/app-release.aab
+#   - APK: build/app/outputs/flutter-apk/app-release.apk
+# iOS:
+#   - 추가로 Xcode에서 Archive 필요 (ios/Runner.xcworkspace)
 ```
 
-**IMPORTANT - Build File Naming Convention**:
-After building, ALWAYS create a copy with version number in the filename for easy tracking:
+**버전 관리 전략**:
+- Android와 iOS는 독립적인 버전 번호 사용 가능
+- 각 스토어별로 빌드 번호는 항상 증가해야 함
+- 현재 Android: 1.0.10+34, iOS: 1.0.5+15
 
-```bash
-# Get current version from pubspec.yaml (e.g., 1.0.8+20)
-VERSION=$(grep "^version:" pubspec.yaml | awk '{print $2}')
-
-# Copy AAB with version number
-cp build/app/outputs/bundle/release/app-release.aab \
-   build/app/outputs/bundle/release/app-release-${VERSION}.aab
-
-# Copy APK with version number
-cp build/app/outputs/flutter-apk/app-release.apk \
-   build/app/outputs/flutter-apk/app-release-${VERSION}.apk
-
-# Manual alternative (replace VERSION with actual version):
-cp build/app/outputs/bundle/release/app-release.aab \
-   build/app/outputs/bundle/release/app-release-1.0.8+20.aab
-cp build/app/outputs/flutter-apk/app-release.apk \
-   build/app/outputs/flutter-apk/app-release-1.0.8+20.apk
-```
-
-**Why**: Version-numbered files prevent confusion when managing multiple builds and make it easy to identify which version is deployed.
+**IMPORTANT**: 빌드 스크립트 사용 시 버전 번호가 포함된 파일이 자동 생성되므로 수동 복사 불필요
 
 ### Code Generation
 
