@@ -30,6 +30,7 @@ void main() {
       // Arrange & Act
       await tester.pumpWidget(createTestWidget(const RescheduleDialog()));
       await tester.pumpAndSettle();
+      await tester.pump(); // Extra pump for EasyLocalization
 
       // Assert
       expect(find.text('일정 이월'), findsOneWidget);
@@ -39,6 +40,7 @@ void main() {
       // Arrange & Act
       await tester.pumpWidget(createTestWidget(const RescheduleDialog()));
       await tester.pumpAndSettle();
+      await tester.pump(); // Extra pump for EasyLocalization
 
       // Assert
       expect(find.text('오늘로'), findsOneWidget);
@@ -50,6 +52,7 @@ void main() {
       // Arrange & Act
       await tester.pumpWidget(createTestWidget(const RescheduleDialog()));
       await tester.pumpAndSettle();
+      await tester.pump(); // Extra pump for EasyLocalization
 
       // Assert
       expect(find.text('취소'), findsOneWidget);
@@ -60,6 +63,7 @@ void main() {
       // Arrange & Act
       await tester.pumpWidget(createTestWidget(const RescheduleDialog()));
       await tester.pumpAndSettle();
+      await tester.pump(); // Extra pump for EasyLocalization
 
       // Assert
       expect(find.byType(Dialog), findsOneWidget);
@@ -101,6 +105,7 @@ void main() {
       // Act
       await tester.tap(find.text('Show Dialog'));
       await tester.pumpAndSettle();
+      await tester.pump(); // Extra pump for EasyLocalization
 
       await tester.tap(find.text('오늘로'));
       await tester.pumpAndSettle();
@@ -145,6 +150,7 @@ void main() {
       // Act
       await tester.tap(find.text('Show Dialog'));
       await tester.pumpAndSettle();
+      await tester.pump(); // Extra pump for EasyLocalization
 
       await tester.tap(find.text('내일로'));
       await tester.pumpAndSettle();
@@ -189,6 +195,7 @@ void main() {
       // Act
       await tester.tap(find.text('Show Dialog'));
       await tester.pumpAndSettle();
+      await tester.pump(); // Extra pump for EasyLocalization
 
       await tester.tap(find.text('직접 선택'));
       await tester.pumpAndSettle();
@@ -233,6 +240,7 @@ void main() {
       // Act
       await tester.tap(find.text('Show Dialog'));
       await tester.pumpAndSettle();
+      await tester.pump(); // Extra pump for EasyLocalization
 
       await tester.tap(find.text('취소'));
       await tester.pumpAndSettle();
@@ -245,6 +253,7 @@ void main() {
       // Arrange & Act
       await tester.pumpWidget(createTestWidget(const RescheduleDialog()));
       await tester.pumpAndSettle();
+      await tester.pump(); // Extra pump for EasyLocalization
 
       // Assert - verify InkWell widgets for options
       final inkWells = tester.widgetList<InkWell>(find.byType(InkWell));
@@ -255,6 +264,7 @@ void main() {
       // Arrange & Act
       await tester.pumpWidget(createTestWidget(const RescheduleDialog()));
       await tester.pumpAndSettle();
+      await tester.pump(); // Extra pump for EasyLocalization
 
       // Assert - verify Icon widgets (title icon + 3 option icons + 3 chevrons = 7 icons total)
       final icons = tester.widgetList<Icon>(find.byType(Icon));
