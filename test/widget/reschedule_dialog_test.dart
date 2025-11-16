@@ -6,12 +6,7 @@ import 'package:todo_app/presentation/widgets/reschedule_dialog.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  // Skip these tests in CI environment where EasyLocalization doesn't load properly
-  // CI is detected by checking if we're not running on a developer machine
-  final bool isCI = const bool.fromEnvironment('CI', defaultValue: false) ||
-      const String.fromEnvironment('GITHUB_ACTIONS', defaultValue: '') != '';
-
-  group('RescheduleDialog Widget', skip: isCI ? 'Skipping in CI due to EasyLocalization' : false, () {
+  group('RescheduleDialog Widget', () {
     Widget createTestWidget(Widget child) {
       return EasyLocalization(
         supportedLocales: const [Locale('ko'), Locale('en')],
@@ -37,8 +32,8 @@ void main() {
       await tester.pumpAndSettle();
       await tester.pump(); // Extra pump for EasyLocalization
 
-      // Assert - check for translation key (CI uses keys, not translated text)
-      expect(find.text('reschedule_title'), findsOneWidget);
+      // Assert
+      expect(find.text('일정 이월'), findsOneWidget);
     });
 
     testWidgets('renders three reschedule options', (WidgetTester tester) async {
@@ -47,10 +42,10 @@ void main() {
       await tester.pumpAndSettle();
       await tester.pump(); // Extra pump for EasyLocalization
 
-      // Assert - check for translation keys (CI uses keys, not translated text)
-      expect(find.text('reschedule_to_today'), findsOneWidget);
-      expect(find.text('reschedule_to_tomorrow'), findsOneWidget);
-      expect(find.text('reschedule_custom'), findsOneWidget);
+      // Assert
+      expect(find.text('오늘로'), findsOneWidget);
+      expect(find.text('내일로'), findsOneWidget);
+      expect(find.text('직접 선택'), findsOneWidget);
     });
 
     testWidgets('renders cancel button', (WidgetTester tester) async {
@@ -59,8 +54,8 @@ void main() {
       await tester.pumpAndSettle();
       await tester.pump(); // Extra pump for EasyLocalization
 
-      // Assert - check for translation key (CI uses keys, not translated text)
-      expect(find.text('cancel'), findsOneWidget);
+      // Assert
+      expect(find.text('취소'), findsOneWidget);
       expect(find.byType(TextButton), findsOneWidget);
     });
 
@@ -112,8 +107,7 @@ void main() {
       await tester.pumpAndSettle();
       await tester.pump(); // Extra pump for EasyLocalization
 
-      // Tap translation key (CI uses keys, not translated text)
-      await tester.tap(find.text('reschedule_to_today'));
+      await tester.tap(find.text('오늘로'));
       await tester.pumpAndSettle();
 
       // Assert
@@ -158,8 +152,7 @@ void main() {
       await tester.pumpAndSettle();
       await tester.pump(); // Extra pump for EasyLocalization
 
-      // Tap translation key (CI uses keys, not translated text)
-      await tester.tap(find.text('reschedule_to_tomorrow'));
+      await tester.tap(find.text('내일로'));
       await tester.pumpAndSettle();
 
       // Assert
@@ -204,8 +197,7 @@ void main() {
       await tester.pumpAndSettle();
       await tester.pump(); // Extra pump for EasyLocalization
 
-      // Tap translation key (CI uses keys, not translated text)
-      await tester.tap(find.text('reschedule_custom'));
+      await tester.tap(find.text('직접 선택'));
       await tester.pumpAndSettle();
 
       // Assert
@@ -250,8 +242,7 @@ void main() {
       await tester.pumpAndSettle();
       await tester.pump(); // Extra pump for EasyLocalization
 
-      // Tap translation key (CI uses keys, not translated text)
-      await tester.tap(find.text('cancel'));
+      await tester.tap(find.text('취소'));
       await tester.pumpAndSettle();
 
       // Assert
