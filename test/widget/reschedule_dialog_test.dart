@@ -1,19 +1,32 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:todo_app/presentation/widgets/reschedule_dialog.dart';
 
 void main() {
   group('RescheduleDialog Widget', () {
-    testWidgets('renders dialog title', (WidgetTester tester) async {
-      // Arrange & Act
-      await tester.pumpWidget(
-        const MaterialApp(
-          home: Scaffold(
-            body: RescheduleDialog(),
+    Widget createTestWidget(Widget child) {
+      return EasyLocalization(
+        supportedLocales: const [Locale('ko'), Locale('en')],
+        path: 'assets/translations',
+        fallbackLocale: const Locale('en'),
+        startLocale: const Locale('ko'),
+        child: Builder(
+          builder: (context) => MaterialApp(
+            locale: const Locale('ko'),
+            supportedLocales: const [Locale('ko'), Locale('en')],
+            localizationsDelegates: context.localizationDelegates,
+            home: Scaffold(
+              body: child,
+            ),
           ),
         ),
       );
+    }
 
+    testWidgets('renders dialog title', (WidgetTester tester) async {
+      // Arrange & Act
+      await tester.pumpWidget(createTestWidget(const RescheduleDialog()));
       await tester.pumpAndSettle();
 
       // Assert
@@ -22,14 +35,7 @@ void main() {
 
     testWidgets('renders three reschedule options', (WidgetTester tester) async {
       // Arrange & Act
-      await tester.pumpWidget(
-        const MaterialApp(
-          home: Scaffold(
-            body: RescheduleDialog(),
-          ),
-        ),
-      );
-
+      await tester.pumpWidget(createTestWidget(const RescheduleDialog()));
       await tester.pumpAndSettle();
 
       // Assert
@@ -40,14 +46,7 @@ void main() {
 
     testWidgets('renders cancel button', (WidgetTester tester) async {
       // Arrange & Act
-      await tester.pumpWidget(
-        const MaterialApp(
-          home: Scaffold(
-            body: RescheduleDialog(),
-          ),
-        ),
-      );
-
+      await tester.pumpWidget(createTestWidget(const RescheduleDialog()));
       await tester.pumpAndSettle();
 
       // Assert
@@ -57,14 +56,7 @@ void main() {
 
     testWidgets('renders Dialog widget', (WidgetTester tester) async {
       // Arrange & Act
-      await tester.pumpWidget(
-        const MaterialApp(
-          home: Scaffold(
-            body: RescheduleDialog(),
-          ),
-        ),
-      );
-
+      await tester.pumpWidget(createTestWidget(const RescheduleDialog()));
       await tester.pumpAndSettle();
 
       // Assert
@@ -76,17 +68,28 @@ void main() {
       RescheduleOption? result;
 
       await tester.pumpWidget(
-        MaterialApp(
-          home: Builder(
-            builder: (context) => Scaffold(
-              body: ElevatedButton(
-                onPressed: () async {
-                  result = await showDialog<RescheduleOption>(
-                    context: context,
-                    builder: (_) => const RescheduleDialog(),
-                  );
-                },
-                child: const Text('Show Dialog'),
+        EasyLocalization(
+          supportedLocales: const [Locale('ko'), Locale('en')],
+          path: 'assets/translations',
+          fallbackLocale: const Locale('en'),
+          startLocale: const Locale('ko'),
+          child: Builder(
+            builder: (context) => MaterialApp(
+              locale: const Locale('ko'),
+              supportedLocales: const [Locale('ko'), Locale('en')],
+              localizationsDelegates: context.localizationDelegates,
+              home: Builder(
+                builder: (innerContext) => Scaffold(
+                  body: ElevatedButton(
+                    onPressed: () async {
+                      result = await showDialog<RescheduleOption>(
+                        context: innerContext,
+                        builder: (_) => const RescheduleDialog(),
+                      );
+                    },
+                    child: const Text('Show Dialog'),
+                  ),
+                ),
               ),
             ),
           ),
@@ -109,17 +112,28 @@ void main() {
       RescheduleOption? result;
 
       await tester.pumpWidget(
-        MaterialApp(
-          home: Builder(
-            builder: (context) => Scaffold(
-              body: ElevatedButton(
-                onPressed: () async {
-                  result = await showDialog<RescheduleOption>(
-                    context: context,
-                    builder: (_) => const RescheduleDialog(),
-                  );
-                },
-                child: const Text('Show Dialog'),
+        EasyLocalization(
+          supportedLocales: const [Locale('ko'), Locale('en')],
+          path: 'assets/translations',
+          fallbackLocale: const Locale('en'),
+          startLocale: const Locale('ko'),
+          child: Builder(
+            builder: (context) => MaterialApp(
+              locale: const Locale('ko'),
+              supportedLocales: const [Locale('ko'), Locale('en')],
+              localizationsDelegates: context.localizationDelegates,
+              home: Builder(
+                builder: (innerContext) => Scaffold(
+                  body: ElevatedButton(
+                    onPressed: () async {
+                      result = await showDialog<RescheduleOption>(
+                        context: innerContext,
+                        builder: (_) => const RescheduleDialog(),
+                      );
+                    },
+                    child: const Text('Show Dialog'),
+                  ),
+                ),
               ),
             ),
           ),
@@ -142,17 +156,28 @@ void main() {
       RescheduleOption? result;
 
       await tester.pumpWidget(
-        MaterialApp(
-          home: Builder(
-            builder: (context) => Scaffold(
-              body: ElevatedButton(
-                onPressed: () async {
-                  result = await showDialog<RescheduleOption>(
-                    context: context,
-                    builder: (_) => const RescheduleDialog(),
-                  );
-                },
-                child: const Text('Show Dialog'),
+        EasyLocalization(
+          supportedLocales: const [Locale('ko'), Locale('en')],
+          path: 'assets/translations',
+          fallbackLocale: const Locale('en'),
+          startLocale: const Locale('ko'),
+          child: Builder(
+            builder: (context) => MaterialApp(
+              locale: const Locale('ko'),
+              supportedLocales: const [Locale('ko'), Locale('en')],
+              localizationsDelegates: context.localizationDelegates,
+              home: Builder(
+                builder: (innerContext) => Scaffold(
+                  body: ElevatedButton(
+                    onPressed: () async {
+                      result = await showDialog<RescheduleOption>(
+                        context: innerContext,
+                        builder: (_) => const RescheduleDialog(),
+                      );
+                    },
+                    child: const Text('Show Dialog'),
+                  ),
+                ),
               ),
             ),
           ),
@@ -175,17 +200,28 @@ void main() {
       RescheduleOption? result = RescheduleOption.today; // Start with non-null
 
       await tester.pumpWidget(
-        MaterialApp(
-          home: Builder(
-            builder: (context) => Scaffold(
-              body: ElevatedButton(
-                onPressed: () async {
-                  result = await showDialog<RescheduleOption>(
-                    context: context,
-                    builder: (_) => const RescheduleDialog(),
-                  );
-                },
-                child: const Text('Show Dialog'),
+        EasyLocalization(
+          supportedLocales: const [Locale('ko'), Locale('en')],
+          path: 'assets/translations',
+          fallbackLocale: const Locale('en'),
+          startLocale: const Locale('ko'),
+          child: Builder(
+            builder: (context) => MaterialApp(
+              locale: const Locale('ko'),
+              supportedLocales: const [Locale('ko'), Locale('en')],
+              localizationsDelegates: context.localizationDelegates,
+              home: Builder(
+                builder: (innerContext) => Scaffold(
+                  body: ElevatedButton(
+                    onPressed: () async {
+                      result = await showDialog<RescheduleOption>(
+                        context: innerContext,
+                        builder: (_) => const RescheduleDialog(),
+                      );
+                    },
+                    child: const Text('Show Dialog'),
+                  ),
+                ),
               ),
             ),
           ),
@@ -205,14 +241,7 @@ void main() {
 
     testWidgets('renders all option icons', (WidgetTester tester) async {
       // Arrange & Act
-      await tester.pumpWidget(
-        const MaterialApp(
-          home: Scaffold(
-            body: RescheduleDialog(),
-          ),
-        ),
-      );
-
+      await tester.pumpWidget(createTestWidget(const RescheduleDialog()));
       await tester.pumpAndSettle();
 
       // Assert - verify InkWell widgets for options
@@ -222,14 +251,7 @@ void main() {
 
     testWidgets('renders chevron icons for each option', (WidgetTester tester) async {
       // Arrange & Act
-      await tester.pumpWidget(
-        const MaterialApp(
-          home: Scaffold(
-            body: RescheduleDialog(),
-          ),
-        ),
-      );
-
+      await tester.pumpWidget(createTestWidget(const RescheduleDialog()));
       await tester.pumpAndSettle();
 
       // Assert - verify Icon widgets (title icon + 3 option icons + 3 chevrons = 7 icons total)

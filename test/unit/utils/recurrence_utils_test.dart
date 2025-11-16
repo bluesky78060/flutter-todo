@@ -268,13 +268,15 @@ void main() {
           path: 'assets/translations',
           fallbackLocale: const Locale('en'),
           startLocale: locale,
-          child: MaterialApp(
-            locale: locale,
-            supportedLocales: const [Locale('ko'), Locale('en')],
-            localizationsDelegates: [
-              ...EasyLocalization.of(context)!.delegates,
-            ],
-            home: child,
+          child: Builder(
+            builder: (context) => MaterialApp(
+              locale: locale,
+              supportedLocales: const [Locale('ko'), Locale('en')],
+              localizationsDelegates: [
+                ...EasyLocalization.of(context)!.delegates,
+              ],
+              home: child,
+            ),
           ),
         );
       }
