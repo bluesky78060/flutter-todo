@@ -32,11 +32,8 @@ void main() {
       await tester.pumpAndSettle();
       await tester.pump(); // Extra pump for EasyLocalization
 
-      // Assert - check for translation key if translation not loaded
-      final titleFinder = find.text('일정 이월').evaluate().isEmpty
-          ? find.text('reschedule_title')
-          : find.text('일정 이월');
-      expect(titleFinder, findsOneWidget);
+      // Assert - check for translation key (CI uses keys, not translated text)
+      expect(find.text('reschedule_title'), findsOneWidget);
     });
 
     testWidgets('renders three reschedule options', (WidgetTester tester) async {
@@ -45,20 +42,10 @@ void main() {
       await tester.pumpAndSettle();
       await tester.pump(); // Extra pump for EasyLocalization
 
-      // Assert - check for translation keys if translations not loaded
-      final todayFinder = find.text('오늘로').evaluate().isEmpty
-          ? find.text('reschedule_to_today')
-          : find.text('오늘로');
-      final tomorrowFinder = find.text('내일로').evaluate().isEmpty
-          ? find.text('reschedule_to_tomorrow')
-          : find.text('내일로');
-      final customFinder = find.text('직접 선택').evaluate().isEmpty
-          ? find.text('reschedule_custom')
-          : find.text('직접 선택');
-
-      expect(todayFinder, findsOneWidget);
-      expect(tomorrowFinder, findsOneWidget);
-      expect(customFinder, findsOneWidget);
+      // Assert - check for translation keys (CI uses keys, not translated text)
+      expect(find.text('reschedule_to_today'), findsOneWidget);
+      expect(find.text('reschedule_to_tomorrow'), findsOneWidget);
+      expect(find.text('reschedule_custom'), findsOneWidget);
     });
 
     testWidgets('renders cancel button', (WidgetTester tester) async {
@@ -67,11 +54,8 @@ void main() {
       await tester.pumpAndSettle();
       await tester.pump(); // Extra pump for EasyLocalization
 
-      // Assert - check for translation key if translation not loaded
-      final cancelFinder = find.text('취소').evaluate().isEmpty
-          ? find.text('cancel')
-          : find.text('취소');
-      expect(cancelFinder, findsOneWidget);
+      // Assert - check for translation key (CI uses keys, not translated text)
+      expect(find.text('cancel'), findsOneWidget);
       expect(find.byType(TextButton), findsOneWidget);
     });
 
@@ -123,11 +107,8 @@ void main() {
       await tester.pumpAndSettle();
       await tester.pump(); // Extra pump for EasyLocalization
 
-      // Try both Korean and English key
-      final todayButton = find.text('오늘로').evaluate().isNotEmpty
-          ? find.text('오늘로')
-          : find.text('reschedule_to_today');
-      await tester.tap(todayButton);
+      // Tap translation key (CI uses keys, not translated text)
+      await tester.tap(find.text('reschedule_to_today'));
       await tester.pumpAndSettle();
 
       // Assert
@@ -172,11 +153,8 @@ void main() {
       await tester.pumpAndSettle();
       await tester.pump(); // Extra pump for EasyLocalization
 
-      // Try both Korean and English key
-      final tomorrowButton = find.text('내일로').evaluate().isNotEmpty
-          ? find.text('내일로')
-          : find.text('reschedule_to_tomorrow');
-      await tester.tap(tomorrowButton);
+      // Tap translation key (CI uses keys, not translated text)
+      await tester.tap(find.text('reschedule_to_tomorrow'));
       await tester.pumpAndSettle();
 
       // Assert
@@ -221,11 +199,8 @@ void main() {
       await tester.pumpAndSettle();
       await tester.pump(); // Extra pump for EasyLocalization
 
-      // Try both Korean and English key
-      final customButton = find.text('직접 선택').evaluate().isNotEmpty
-          ? find.text('직접 선택')
-          : find.text('reschedule_custom');
-      await tester.tap(customButton);
+      // Tap translation key (CI uses keys, not translated text)
+      await tester.tap(find.text('reschedule_custom'));
       await tester.pumpAndSettle();
 
       // Assert
@@ -270,11 +245,8 @@ void main() {
       await tester.pumpAndSettle();
       await tester.pump(); // Extra pump for EasyLocalization
 
-      // Try both Korean and English key
-      final cancelButton = find.text('취소').evaluate().isNotEmpty
-          ? find.text('취소')
-          : find.text('cancel');
-      await tester.tap(cancelButton);
+      // Tap translation key (CI uses keys, not translated text)
+      await tester.tap(find.text('cancel'));
       await tester.pumpAndSettle();
 
       // Assert
