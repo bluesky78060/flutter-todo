@@ -124,6 +124,92 @@ lib/
 - **Todo 목록**: 진행률 표시, 필터링 (전체/진행중/완료)
 - **설정**: 프로필, 테마 전환, 로그아웃, 앱 정보
 
+## 🔐 Android 릴리스 빌드 및 키스토어 관리
+
+### 키스토어 생성 (최초 1회)
+
+```bash
+keytool -genkey -v -keystore android/app/upload-keystore.jks \
+  -keyalg RSA -keysize 2048 -validity 10000 -alias upload \
+  -storepass "YOUR_PASSWORD" -keypass "YOUR_PASSWORD"
+```
+
+### 키스토어 설정 파일 생성
+
+`android/key.properties` 파일을 생성하고 다음 내용을 입력:
+
+```properties
+storePassword=YOUR_PASSWORD
+keyPassword=YOUR_PASSWORD
+keyAlias=upload
+storeFile=upload-keystore.jks
+```
+
+⚠️ **보안 주의사항**:
+- `android/key.properties` 파일은 절대 Git에 커밋하지 마세요
+- `*.jks`, `*.pem` 파일도 Git에 커밋하지 마세요
+- 이미 `.gitignore`에 추가되어 있습니다
+
+### 릴리스 빌드 생성
+
+```bash
+# AAB 빌드 (Google Play 업로드용)
+flutter build appbundle --release
+
+# APK 빌드 (직접 배포용)
+flutter build apk --release
+```
+
+빌드된 파일 위치:
+- AAB: `build/app/outputs/bundle/release/app-release.aab`
+- APK: `build/app/outputs/flutter-apk/app-release.apk`
+
+### 키스토어 백업
+
+키스토어 파일은 **절대 분실하면 안 됩니다**. 안전한 곳에 백업하세요:
+
+```bash
+# 백업 디렉토리 생성
+mkdir -p ~/secure-backups/todo-app-keystore
+
+# 키스토어 파일 복사
+cp android/app/upload-keystore.jks ~/secure-backups/todo-app-keystore/
+cp android/key.properties ~/secure-backups/todo-app-keystore/
+```
+
+추가 권장사항:
+- 클라우드 스토리지에 암호화하여 백업
+- USB 드라이브에 물리적 백업
+- 비밀번호를 안전한 비밀번호 관리자에 저장
+
+### 키스토어 정보 확인
+
+```bash
+# 키스토어 세부 정보 확인
+keytool -list -v -keystore android/app/upload-keystore.jks -alias upload
+
+# SHA-1, SHA-256 fingerprint 확인
+keytool -list -v -keystore android/app/upload-keystore.jks -alias upload | grep -E "SHA1|SHA256"
+```
+
+### PEM 인증서 생성 (Google Play 업로드 키 재설정용)
+
+```bash
+keytool -export -rfc -keystore android/app/upload-keystore.jks \
+  -alias upload -file upload_certificate.pem
+```
+
+### CI/CD를 위한 GitHub Secrets 설정
+
+GitHub 저장소 → Settings → Secrets and variables → Actions에서 추가:
+
+- `KEYSTORE_BASE64`: `cat android/app/upload-keystore.jks | base64`
+- `KEYSTORE_PASSWORD`: 키스토어 비밀번호
+- `KEY_ALIAS`: upload
+- `KEY_PASSWORD`: 키 비밀번호
+
+---
+
 ## 문제 해결
 
 ### Supabase 400 Bad Request 에러
@@ -134,6 +220,13 @@ lib/
 - `vercel.json` 파일이 프로젝트 루트에 있는지 확인
 - Vercel 대시보드에서 빌드 로그 확인
 - `build/web` 디렉토리가 정상적으로 생성되는지 확인
+
+### 키스토어 분실 시
+Google Play에 이미 업로드한 앱의 키스토어를 분실한 경우:
+1. Google Play Console에서 업로드 키 재설정 요청
+2. 새 키스토어 생성 및 PEM 인증서 제출
+3. Google 승인 대기 (1-2일)
+4. 승인 후 새 키로 서명된 AAB 업로드
 
 ## 라이선스
 
