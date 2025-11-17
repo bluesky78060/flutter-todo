@@ -324,5 +324,20 @@
   "snooze_scheduled": "Notification rescheduled",
   "snooze_failed": "Failed to snooze notification",
   "snooze_count": "Snoozed {count} times",
-  "last_snoozed": "Last snoozed: {time}"
+  "last_snoozed": "Last snoozed: {time}",
+
+  "location": "Location",
+  "location_based_reminder": "Location-based Reminder",
+  "set_location": "Set Location",
+  "location_name": "Location Name",
+  "current_location": "Current Location",
+  "select_location": "Select Location",
+  "location_permission_required": "Location permission required",
+  "location_permission_denied": "Location permission denied",
+  "location_service_disabled": "Location service is disabled",
+  "geofence_radius": "Radius (meters)",
+  "location_set": "Location has been set",
+  "location_cleared": "Location has been cleared",
+  "getting_location": "Getting location...",
+  "location_error": "Unable to get location"
 }

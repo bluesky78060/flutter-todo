@@ -32,6 +32,10 @@ class Todos extends Table {
   IntColumn get parentRecurringTodoId => integer().nullable()(); // Reference to parent recurring todo
   IntColumn get snoozeCount => integer().withDefault(const Constant(0))(); // Number of times snoozed
   DateTimeColumn get lastSnoozeTime => dateTime().nullable()(); // Last time snoozed
+  RealColumn get locationLatitude => real().nullable()(); // Location latitude
+  RealColumn get locationLongitude => real().nullable()(); // Location longitude
+  TextColumn get locationName => text().nullable()(); // Human-readable location name
+  RealColumn get locationRadius => real().nullable()(); // Geofence radius in meters
 }
 
 // Users Table (for Auth)
@@ -60,7 +64,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 6;
+  int get schemaVersion => 7;
 
   @override
   MigrationStrategy get migration {
@@ -89,6 +93,13 @@ class AppDatabase extends _$AppDatabase {
           // Add snooze fields for notification snoozing
           await migrator.addColumn(todos, todos.snoozeCount);
           await migrator.addColumn(todos, todos.lastSnoozeTime);
+        }
+        if (from < 7) {
+          // Add location-based notification fields
+          await migrator.addColumn(todos, todos.locationLatitude);
+          await migrator.addColumn(todos, todos.locationLongitude);
+          await migrator.addColumn(todos, todos.locationName);
+          await migrator.addColumn(todos, todos.locationRadius);
         }
       },
     );

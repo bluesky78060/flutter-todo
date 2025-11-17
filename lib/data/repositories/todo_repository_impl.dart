@@ -91,6 +91,10 @@ class TodoRepositoryImpl implements TodoRepository {
         parentRecurringTodoId: todo.parentRecurringTodoId,
         snoozeCount: todo.snoozeCount,
         lastSnoozeTime: todo.lastSnoozeTime,
+        locationLatitude: todo.locationLatitude,
+        locationLongitude: todo.locationLongitude,
+        locationName: todo.locationName,
+        locationRadius: todo.locationRadius,
       );
       await database.updateTodo(dbTodo);
       return const Right(unit);
@@ -161,6 +165,10 @@ class TodoRepositoryImpl implements TodoRepository {
       parentRecurringTodoId: todo.parentRecurringTodoId,
       snoozeCount: todo.snoozeCount ?? 0,
       lastSnoozeTime: todo.lastSnoozeTime,
+      locationLatitude: todo.locationLatitude,
+      locationLongitude: todo.locationLongitude,
+      locationName: todo.locationName,
+      locationRadius: todo.locationRadius,
     );
   }
 }

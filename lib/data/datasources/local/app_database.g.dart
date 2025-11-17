@@ -558,6 +558,51 @@ class $TodosTable extends Todos with TableInfo<$TodosTable, Todo> {
         type: DriftSqlType.dateTime,
         requiredDuringInsert: false,
       );
+  static const VerificationMeta _locationLatitudeMeta = const VerificationMeta(
+    'locationLatitude',
+  );
+  @override
+  late final GeneratedColumn<double> locationLatitude = GeneratedColumn<double>(
+    'location_latitude',
+    aliasedName,
+    true,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _locationLongitudeMeta = const VerificationMeta(
+    'locationLongitude',
+  );
+  @override
+  late final GeneratedColumn<double> locationLongitude =
+      GeneratedColumn<double>(
+        'location_longitude',
+        aliasedName,
+        true,
+        type: DriftSqlType.double,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _locationNameMeta = const VerificationMeta(
+    'locationName',
+  );
+  @override
+  late final GeneratedColumn<String> locationName = GeneratedColumn<String>(
+    'location_name',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _locationRadiusMeta = const VerificationMeta(
+    'locationRadius',
+  );
+  @override
+  late final GeneratedColumn<double> locationRadius = GeneratedColumn<double>(
+    'location_radius',
+    aliasedName,
+    true,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -573,6 +618,10 @@ class $TodosTable extends Todos with TableInfo<$TodosTable, Todo> {
     parentRecurringTodoId,
     snoozeCount,
     lastSnoozeTime,
+    locationLatitude,
+    locationLongitude,
+    locationName,
+    locationRadius,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -691,6 +740,42 @@ class $TodosTable extends Todos with TableInfo<$TodosTable, Todo> {
         ),
       );
     }
+    if (data.containsKey('location_latitude')) {
+      context.handle(
+        _locationLatitudeMeta,
+        locationLatitude.isAcceptableOrUnknown(
+          data['location_latitude']!,
+          _locationLatitudeMeta,
+        ),
+      );
+    }
+    if (data.containsKey('location_longitude')) {
+      context.handle(
+        _locationLongitudeMeta,
+        locationLongitude.isAcceptableOrUnknown(
+          data['location_longitude']!,
+          _locationLongitudeMeta,
+        ),
+      );
+    }
+    if (data.containsKey('location_name')) {
+      context.handle(
+        _locationNameMeta,
+        locationName.isAcceptableOrUnknown(
+          data['location_name']!,
+          _locationNameMeta,
+        ),
+      );
+    }
+    if (data.containsKey('location_radius')) {
+      context.handle(
+        _locationRadiusMeta,
+        locationRadius.isAcceptableOrUnknown(
+          data['location_radius']!,
+          _locationRadiusMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -752,6 +837,22 @@ class $TodosTable extends Todos with TableInfo<$TodosTable, Todo> {
         DriftSqlType.dateTime,
         data['${effectivePrefix}last_snooze_time'],
       ),
+      locationLatitude: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}location_latitude'],
+      ),
+      locationLongitude: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}location_longitude'],
+      ),
+      locationName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}location_name'],
+      ),
+      locationRadius: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}location_radius'],
+      ),
     );
   }
 
@@ -775,6 +876,10 @@ class Todo extends DataClass implements Insertable<Todo> {
   final int? parentRecurringTodoId;
   final int snoozeCount;
   final DateTime? lastSnoozeTime;
+  final double? locationLatitude;
+  final double? locationLongitude;
+  final String? locationName;
+  final double? locationRadius;
   const Todo({
     required this.id,
     required this.title,
@@ -789,6 +894,10 @@ class Todo extends DataClass implements Insertable<Todo> {
     this.parentRecurringTodoId,
     required this.snoozeCount,
     this.lastSnoozeTime,
+    this.locationLatitude,
+    this.locationLongitude,
+    this.locationName,
+    this.locationRadius,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -819,6 +928,18 @@ class Todo extends DataClass implements Insertable<Todo> {
     map['snooze_count'] = Variable<int>(snoozeCount);
     if (!nullToAbsent || lastSnoozeTime != null) {
       map['last_snooze_time'] = Variable<DateTime>(lastSnoozeTime);
+    }
+    if (!nullToAbsent || locationLatitude != null) {
+      map['location_latitude'] = Variable<double>(locationLatitude);
+    }
+    if (!nullToAbsent || locationLongitude != null) {
+      map['location_longitude'] = Variable<double>(locationLongitude);
+    }
+    if (!nullToAbsent || locationName != null) {
+      map['location_name'] = Variable<String>(locationName);
+    }
+    if (!nullToAbsent || locationRadius != null) {
+      map['location_radius'] = Variable<double>(locationRadius);
     }
     return map;
   }
@@ -852,6 +973,18 @@ class Todo extends DataClass implements Insertable<Todo> {
       lastSnoozeTime: lastSnoozeTime == null && nullToAbsent
           ? const Value.absent()
           : Value(lastSnoozeTime),
+      locationLatitude: locationLatitude == null && nullToAbsent
+          ? const Value.absent()
+          : Value(locationLatitude),
+      locationLongitude: locationLongitude == null && nullToAbsent
+          ? const Value.absent()
+          : Value(locationLongitude),
+      locationName: locationName == null && nullToAbsent
+          ? const Value.absent()
+          : Value(locationName),
+      locationRadius: locationRadius == null && nullToAbsent
+          ? const Value.absent()
+          : Value(locationRadius),
     );
   }
 
@@ -878,6 +1011,12 @@ class Todo extends DataClass implements Insertable<Todo> {
       ),
       snoozeCount: serializer.fromJson<int>(json['snoozeCount']),
       lastSnoozeTime: serializer.fromJson<DateTime?>(json['lastSnoozeTime']),
+      locationLatitude: serializer.fromJson<double?>(json['locationLatitude']),
+      locationLongitude: serializer.fromJson<double?>(
+        json['locationLongitude'],
+      ),
+      locationName: serializer.fromJson<String?>(json['locationName']),
+      locationRadius: serializer.fromJson<double?>(json['locationRadius']),
     );
   }
   @override
@@ -897,6 +1036,10 @@ class Todo extends DataClass implements Insertable<Todo> {
       'parentRecurringTodoId': serializer.toJson<int?>(parentRecurringTodoId),
       'snoozeCount': serializer.toJson<int>(snoozeCount),
       'lastSnoozeTime': serializer.toJson<DateTime?>(lastSnoozeTime),
+      'locationLatitude': serializer.toJson<double?>(locationLatitude),
+      'locationLongitude': serializer.toJson<double?>(locationLongitude),
+      'locationName': serializer.toJson<String?>(locationName),
+      'locationRadius': serializer.toJson<double?>(locationRadius),
     };
   }
 
@@ -914,6 +1057,10 @@ class Todo extends DataClass implements Insertable<Todo> {
     Value<int?> parentRecurringTodoId = const Value.absent(),
     int? snoozeCount,
     Value<DateTime?> lastSnoozeTime = const Value.absent(),
+    Value<double?> locationLatitude = const Value.absent(),
+    Value<double?> locationLongitude = const Value.absent(),
+    Value<String?> locationName = const Value.absent(),
+    Value<double?> locationRadius = const Value.absent(),
   }) => Todo(
     id: id ?? this.id,
     title: title ?? this.title,
@@ -936,6 +1083,16 @@ class Todo extends DataClass implements Insertable<Todo> {
     lastSnoozeTime: lastSnoozeTime.present
         ? lastSnoozeTime.value
         : this.lastSnoozeTime,
+    locationLatitude: locationLatitude.present
+        ? locationLatitude.value
+        : this.locationLatitude,
+    locationLongitude: locationLongitude.present
+        ? locationLongitude.value
+        : this.locationLongitude,
+    locationName: locationName.present ? locationName.value : this.locationName,
+    locationRadius: locationRadius.present
+        ? locationRadius.value
+        : this.locationRadius,
   );
   Todo copyWithCompanion(TodosCompanion data) {
     return Todo(
@@ -970,6 +1127,18 @@ class Todo extends DataClass implements Insertable<Todo> {
       lastSnoozeTime: data.lastSnoozeTime.present
           ? data.lastSnoozeTime.value
           : this.lastSnoozeTime,
+      locationLatitude: data.locationLatitude.present
+          ? data.locationLatitude.value
+          : this.locationLatitude,
+      locationLongitude: data.locationLongitude.present
+          ? data.locationLongitude.value
+          : this.locationLongitude,
+      locationName: data.locationName.present
+          ? data.locationName.value
+          : this.locationName,
+      locationRadius: data.locationRadius.present
+          ? data.locationRadius.value
+          : this.locationRadius,
     );
   }
 
@@ -988,7 +1157,11 @@ class Todo extends DataClass implements Insertable<Todo> {
           ..write('recurrenceRule: $recurrenceRule, ')
           ..write('parentRecurringTodoId: $parentRecurringTodoId, ')
           ..write('snoozeCount: $snoozeCount, ')
-          ..write('lastSnoozeTime: $lastSnoozeTime')
+          ..write('lastSnoozeTime: $lastSnoozeTime, ')
+          ..write('locationLatitude: $locationLatitude, ')
+          ..write('locationLongitude: $locationLongitude, ')
+          ..write('locationName: $locationName, ')
+          ..write('locationRadius: $locationRadius')
           ..write(')'))
         .toString();
   }
@@ -1008,6 +1181,10 @@ class Todo extends DataClass implements Insertable<Todo> {
     parentRecurringTodoId,
     snoozeCount,
     lastSnoozeTime,
+    locationLatitude,
+    locationLongitude,
+    locationName,
+    locationRadius,
   );
   @override
   bool operator ==(Object other) =>
@@ -1025,7 +1202,11 @@ class Todo extends DataClass implements Insertable<Todo> {
           other.recurrenceRule == this.recurrenceRule &&
           other.parentRecurringTodoId == this.parentRecurringTodoId &&
           other.snoozeCount == this.snoozeCount &&
-          other.lastSnoozeTime == this.lastSnoozeTime);
+          other.lastSnoozeTime == this.lastSnoozeTime &&
+          other.locationLatitude == this.locationLatitude &&
+          other.locationLongitude == this.locationLongitude &&
+          other.locationName == this.locationName &&
+          other.locationRadius == this.locationRadius);
 }
 
 class TodosCompanion extends UpdateCompanion<Todo> {
@@ -1042,6 +1223,10 @@ class TodosCompanion extends UpdateCompanion<Todo> {
   final Value<int?> parentRecurringTodoId;
   final Value<int> snoozeCount;
   final Value<DateTime?> lastSnoozeTime;
+  final Value<double?> locationLatitude;
+  final Value<double?> locationLongitude;
+  final Value<String?> locationName;
+  final Value<double?> locationRadius;
   const TodosCompanion({
     this.id = const Value.absent(),
     this.title = const Value.absent(),
@@ -1056,6 +1241,10 @@ class TodosCompanion extends UpdateCompanion<Todo> {
     this.parentRecurringTodoId = const Value.absent(),
     this.snoozeCount = const Value.absent(),
     this.lastSnoozeTime = const Value.absent(),
+    this.locationLatitude = const Value.absent(),
+    this.locationLongitude = const Value.absent(),
+    this.locationName = const Value.absent(),
+    this.locationRadius = const Value.absent(),
   });
   TodosCompanion.insert({
     this.id = const Value.absent(),
@@ -1071,6 +1260,10 @@ class TodosCompanion extends UpdateCompanion<Todo> {
     this.parentRecurringTodoId = const Value.absent(),
     this.snoozeCount = const Value.absent(),
     this.lastSnoozeTime = const Value.absent(),
+    this.locationLatitude = const Value.absent(),
+    this.locationLongitude = const Value.absent(),
+    this.locationName = const Value.absent(),
+    this.locationRadius = const Value.absent(),
   }) : title = Value(title),
        description = Value(description),
        createdAt = Value(createdAt);
@@ -1088,6 +1281,10 @@ class TodosCompanion extends UpdateCompanion<Todo> {
     Expression<int>? parentRecurringTodoId,
     Expression<int>? snoozeCount,
     Expression<DateTime>? lastSnoozeTime,
+    Expression<double>? locationLatitude,
+    Expression<double>? locationLongitude,
+    Expression<String>? locationName,
+    Expression<double>? locationRadius,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -1104,6 +1301,10 @@ class TodosCompanion extends UpdateCompanion<Todo> {
         'parent_recurring_todo_id': parentRecurringTodoId,
       if (snoozeCount != null) 'snooze_count': snoozeCount,
       if (lastSnoozeTime != null) 'last_snooze_time': lastSnoozeTime,
+      if (locationLatitude != null) 'location_latitude': locationLatitude,
+      if (locationLongitude != null) 'location_longitude': locationLongitude,
+      if (locationName != null) 'location_name': locationName,
+      if (locationRadius != null) 'location_radius': locationRadius,
     });
   }
 
@@ -1121,6 +1322,10 @@ class TodosCompanion extends UpdateCompanion<Todo> {
     Value<int?>? parentRecurringTodoId,
     Value<int>? snoozeCount,
     Value<DateTime?>? lastSnoozeTime,
+    Value<double?>? locationLatitude,
+    Value<double?>? locationLongitude,
+    Value<String?>? locationName,
+    Value<double?>? locationRadius,
   }) {
     return TodosCompanion(
       id: id ?? this.id,
@@ -1137,6 +1342,10 @@ class TodosCompanion extends UpdateCompanion<Todo> {
           parentRecurringTodoId ?? this.parentRecurringTodoId,
       snoozeCount: snoozeCount ?? this.snoozeCount,
       lastSnoozeTime: lastSnoozeTime ?? this.lastSnoozeTime,
+      locationLatitude: locationLatitude ?? this.locationLatitude,
+      locationLongitude: locationLongitude ?? this.locationLongitude,
+      locationName: locationName ?? this.locationName,
+      locationRadius: locationRadius ?? this.locationRadius,
     );
   }
 
@@ -1184,6 +1393,18 @@ class TodosCompanion extends UpdateCompanion<Todo> {
     if (lastSnoozeTime.present) {
       map['last_snooze_time'] = Variable<DateTime>(lastSnoozeTime.value);
     }
+    if (locationLatitude.present) {
+      map['location_latitude'] = Variable<double>(locationLatitude.value);
+    }
+    if (locationLongitude.present) {
+      map['location_longitude'] = Variable<double>(locationLongitude.value);
+    }
+    if (locationName.present) {
+      map['location_name'] = Variable<String>(locationName.value);
+    }
+    if (locationRadius.present) {
+      map['location_radius'] = Variable<double>(locationRadius.value);
+    }
     return map;
   }
 
@@ -1202,7 +1423,11 @@ class TodosCompanion extends UpdateCompanion<Todo> {
           ..write('recurrenceRule: $recurrenceRule, ')
           ..write('parentRecurringTodoId: $parentRecurringTodoId, ')
           ..write('snoozeCount: $snoozeCount, ')
-          ..write('lastSnoozeTime: $lastSnoozeTime')
+          ..write('lastSnoozeTime: $lastSnoozeTime, ')
+          ..write('locationLatitude: $locationLatitude, ')
+          ..write('locationLongitude: $locationLongitude, ')
+          ..write('locationName: $locationName, ')
+          ..write('locationRadius: $locationRadius')
           ..write(')'))
         .toString();
   }
@@ -2422,6 +2647,10 @@ typedef $$TodosTableCreateCompanionBuilder =
       Value<int?> parentRecurringTodoId,
       Value<int> snoozeCount,
       Value<DateTime?> lastSnoozeTime,
+      Value<double?> locationLatitude,
+      Value<double?> locationLongitude,
+      Value<String?> locationName,
+      Value<double?> locationRadius,
     });
 typedef $$TodosTableUpdateCompanionBuilder =
     TodosCompanion Function({
@@ -2438,6 +2667,10 @@ typedef $$TodosTableUpdateCompanionBuilder =
       Value<int?> parentRecurringTodoId,
       Value<int> snoozeCount,
       Value<DateTime?> lastSnoozeTime,
+      Value<double?> locationLatitude,
+      Value<double?> locationLongitude,
+      Value<String?> locationName,
+      Value<double?> locationRadius,
     });
 
 final class $$TodosTableReferences
@@ -2546,6 +2779,26 @@ class $$TodosTableFilterComposer extends Composer<_$AppDatabase, $TodosTable> {
 
   ColumnFilters<DateTime> get lastSnoozeTime => $composableBuilder(
     column: $table.lastSnoozeTime,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get locationLatitude => $composableBuilder(
+    column: $table.locationLatitude,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get locationLongitude => $composableBuilder(
+    column: $table.locationLongitude,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get locationName => $composableBuilder(
+    column: $table.locationName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get locationRadius => $composableBuilder(
+    column: $table.locationRadius,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -2667,6 +2920,26 @@ class $$TodosTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<double> get locationLatitude => $composableBuilder(
+    column: $table.locationLatitude,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get locationLongitude => $composableBuilder(
+    column: $table.locationLongitude,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get locationName => $composableBuilder(
+    column: $table.locationName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get locationRadius => $composableBuilder(
+    column: $table.locationRadius,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   $$CategoriesTableOrderingComposer get categoryId {
     final $$CategoriesTableOrderingComposer composer = $composerBuilder(
       composer: this,
@@ -2749,6 +3022,26 @@ class $$TodosTableAnnotationComposer
 
   GeneratedColumn<DateTime> get lastSnoozeTime => $composableBuilder(
     column: $table.lastSnoozeTime,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get locationLatitude => $composableBuilder(
+    column: $table.locationLatitude,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get locationLongitude => $composableBuilder(
+    column: $table.locationLongitude,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get locationName => $composableBuilder(
+    column: $table.locationName,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get locationRadius => $composableBuilder(
+    column: $table.locationRadius,
     builder: (column) => column,
   );
 
@@ -2842,6 +3135,10 @@ class $$TodosTableTableManager
                 Value<int?> parentRecurringTodoId = const Value.absent(),
                 Value<int> snoozeCount = const Value.absent(),
                 Value<DateTime?> lastSnoozeTime = const Value.absent(),
+                Value<double?> locationLatitude = const Value.absent(),
+                Value<double?> locationLongitude = const Value.absent(),
+                Value<String?> locationName = const Value.absent(),
+                Value<double?> locationRadius = const Value.absent(),
               }) => TodosCompanion(
                 id: id,
                 title: title,
@@ -2856,6 +3153,10 @@ class $$TodosTableTableManager
                 parentRecurringTodoId: parentRecurringTodoId,
                 snoozeCount: snoozeCount,
                 lastSnoozeTime: lastSnoozeTime,
+                locationLatitude: locationLatitude,
+                locationLongitude: locationLongitude,
+                locationName: locationName,
+                locationRadius: locationRadius,
               ),
           createCompanionCallback:
               ({
@@ -2872,6 +3173,10 @@ class $$TodosTableTableManager
                 Value<int?> parentRecurringTodoId = const Value.absent(),
                 Value<int> snoozeCount = const Value.absent(),
                 Value<DateTime?> lastSnoozeTime = const Value.absent(),
+                Value<double?> locationLatitude = const Value.absent(),
+                Value<double?> locationLongitude = const Value.absent(),
+                Value<String?> locationName = const Value.absent(),
+                Value<double?> locationRadius = const Value.absent(),
               }) => TodosCompanion.insert(
                 id: id,
                 title: title,
@@ -2886,6 +3191,10 @@ class $$TodosTableTableManager
                 parentRecurringTodoId: parentRecurringTodoId,
                 snoozeCount: snoozeCount,
                 lastSnoozeTime: lastSnoozeTime,
+                locationLatitude: locationLatitude,
+                locationLongitude: locationLongitude,
+                locationName: locationName,
+                locationRadius: locationRadius,
               ),
           withReferenceMapper: (p0) => p0
               .map(

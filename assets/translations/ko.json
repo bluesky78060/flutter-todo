@@ -324,5 +324,20 @@
   "snooze_scheduled": "알림이 다시 설정되었습니다",
   "snooze_failed": "스누즈 설정에 실패했습니다",
   "snooze_count": "{count}번 다시 알림",
-  "last_snoozed": "마지막 스누즈: {time}"
+  "last_snoozed": "마지막 스누즈: {time}",
+
+  "location": "위치",
+  "location_based_reminder": "위치 기반 알림",
+  "set_location": "위치 설정",
+  "location_name": "위치 이름",
+  "current_location": "현재 위치",
+  "select_location": "위치 선택",
+  "location_permission_required": "위치 권한이 필요합니다",
+  "location_permission_denied": "위치 권한이 거부되었습니다",
+  "location_service_disabled": "위치 서비스가 비활성화되어 있습니다",
+  "geofence_radius": "반경 (미터)",
+  "location_set": "위치가 설정되었습니다",
+  "location_cleared": "위치가 제거되었습니다",
+  "getting_location": "위치 가져오는 중...",
+  "location_error": "위치를 가져올 수 없습니다"
 }

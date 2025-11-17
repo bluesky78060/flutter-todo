@@ -12,6 +12,10 @@ class Todo {
   final int? parentRecurringTodoId; // Reference to parent recurring todo
   final int snoozeCount; // Number of times snoozed
   final DateTime? lastSnoozeTime; // Last time the notification was snoozed
+  final double? locationLatitude; // Location-based notification latitude
+  final double? locationLongitude; // Location-based notification longitude
+  final String? locationName; // Human-readable location name (e.g., "Home", "Office")
+  final double? locationRadius; // Geofence radius in meters (default: 100m)
 
   const Todo({
     required this.id,
@@ -27,6 +31,10 @@ class Todo {
     this.parentRecurringTodoId,
     this.snoozeCount = 0,
     this.lastSnoozeTime,
+    this.locationLatitude,
+    this.locationLongitude,
+    this.locationName,
+    this.locationRadius,
   });
 
   Todo copyWith({
@@ -43,6 +51,10 @@ class Todo {
     int? parentRecurringTodoId,
     int? snoozeCount,
     DateTime? lastSnoozeTime,
+    double? locationLatitude,
+    double? locationLongitude,
+    String? locationName,
+    double? locationRadius,
   }) {
     return Todo(
       id: id ?? this.id,
@@ -58,6 +70,10 @@ class Todo {
       parentRecurringTodoId: parentRecurringTodoId ?? this.parentRecurringTodoId,
       snoozeCount: snoozeCount ?? this.snoozeCount,
       lastSnoozeTime: lastSnoozeTime ?? this.lastSnoozeTime,
+      locationLatitude: locationLatitude ?? this.locationLatitude,
+      locationLongitude: locationLongitude ?? this.locationLongitude,
+      locationName: locationName ?? this.locationName,
+      locationRadius: locationRadius ?? this.locationRadius,
     );
   }
 }

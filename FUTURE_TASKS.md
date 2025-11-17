@@ -210,21 +210,49 @@ CREATE TABLE subtasks (
 - 80fe1c0: fix: Make snoozeCount non-nullable with default value 0
 - 434cb88: test: Add snoozeCount parameter to test fixtures
 - 64d9e73: feat: Integrate snooze functionality in Todo detail screen
+- 288f753: docs: Update FUTURE_TASKS.md with completed snooze feature
+- d2e5b28: i18n: Replace hardcoded Korean text in snooze UI
 
+**완료 상태**: 100% (모든 기능 구현 및 테스트 완료)
 **남은 작업**:
 - [ ] Supabase 마이그레이션 실행 (사용자가 직접 실행 필요)
 
 ---
 
-### 🟡 3.2 위치 기반 알림
+### 🟡 3.2 위치 기반 알림 🚧 **진행 중 (2025-11-17)**
 **설명**: 특정 장소 도착 시 알림
-**필요 작업**:
-- [ ] 위치 권한 요청
-- [ ] Geofencing 설정 (`geolocator`, `flutter_geofence`)
-- [ ] 위치 선택 UI (지도 또는 주소 검색)
-- [ ] 백그라운드 위치 추적
 
-**예상 작업 시간**: 2-3일
+**완료된 작업**:
+- [x] Dependencies 추가 (geolocator, geocoding, google_maps_flutter)
+- [x] Todo 엔티티에 위치 필드 추가 (latitude, longitude, name, radius)
+- [x] Drift 스키마 v6 → v7 마이그레이션
+- [x] Supabase 마이그레이션 SQL 작성 (supabase_location_migration.sql)
+- [x] Repository/DataSource 업데이트 (위치 필드 매핑)
+- [x] LocationService 구현 (권한, 현재 위치, 주소 변환, geofence 체크)
+- [x] 한국어/영어 번역 추가 (14개 키)
+
+**수정된 파일**:
+- `pubspec.yaml` (geolocator, geocoding, google_maps_flutter 추가)
+- `lib/domain/entities/todo.dart` (위치 필드 4개 추가)
+- `lib/data/datasources/local/app_database.dart` (스키마 v7, 위치 컬럼)
+- `lib/data/repositories/todo_repository_impl.dart` (위치 필드 매핑)
+- `lib/data/datasources/remote/supabase_datasource.dart` (위치 필드 동기화)
+- `lib/core/services/location_service.dart` (신규, 위치 서비스)
+- `assets/translations/ko.json`, `en.json` (위치 관련 번역)
+- `supabase_location_migration.sql` (신규, DB 마이그레이션)
+
+**실제 작업 시간**: 약 1.5시간
+
+**남은 작업** (향후 구현 예정):
+- [ ] 위치 선택 UI (Google Maps 통합)
+- [ ] Todo 폼에 위치 설정 기능 추가
+- [ ] Geofencing 백그라운드 모니터링
+- [ ] 위치 도달 시 알림 트리거
+- [ ] Android/iOS 네이티브 권한 설정
+- [ ] 배터리 최적화
+- [ ] Supabase 마이그레이션 실행 (사용자가 직접 실행 필요)
+
+**예상 작업 시간 (남은 작업)**: 1-2일
 **기술 고려사항**: 배터리 소모 최적화 필요
 
 ---

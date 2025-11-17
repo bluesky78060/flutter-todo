@@ -114,6 +114,10 @@ class SupabaseTodoDataSource {
       'parent_recurring_todo_id': todo.parentRecurringTodoId,
       'snooze_count': todo.snoozeCount,
       'last_snooze_time': todo.lastSnoozeTime?.toIso8601String(),
+      'location_latitude': todo.locationLatitude,
+      'location_longitude': todo.locationLongitude,
+      'location_name': todo.locationName,
+      'location_radius': todo.locationRadius,
     }).eq('id', todo.id);
   }
 
@@ -232,6 +236,10 @@ class SupabaseTodoDataSource {
       lastSnoozeTime: json['last_snooze_time'] != null
           ? DateTime.parse(json['last_snooze_time'] as String)
           : null,
+      locationLatitude: json['location_latitude'] as double?,
+      locationLongitude: json['location_longitude'] as double?,
+      locationName: json['location_name'] as String?,
+      locationRadius: json['location_radius'] as double?,
     );
   }
 }
