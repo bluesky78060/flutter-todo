@@ -296,5 +296,20 @@
   "name": "이름",
   "color": "색상",
   "icon": "아이콘",
-  "confirm_delete_category_name": "{name} 카테고리를 삭제하시겠습니까?"
+  "confirm_delete_category_name": "{name} 카테고리를 삭제하시겠습니까?",
+
+  "due_date": "마감일",
+  "notification": "알림",
+  "status": "상태",
+  "in_progress": "진행중",
+  "overdue": "마감일이 지났습니다",
+  "days_overdue": "({days}일 지남)",
+  "rescheduled": "일정이 이월되었습니다",
+  "reschedule": "일정 이월하기",
+
+  "progress": "진행률",
+  "completed_count_format": "{completed} / {total} 완료",
+
+  "notification_prefix": "알림: {time}",
+  "recurring": "반복"
 }

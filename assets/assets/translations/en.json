@@ -296,5 +296,20 @@
   "name": "Name",
   "color": "Color",
   "icon": "Icon",
-  "confirm_delete_category_name": "Do you want to delete the {name} category?"
+  "confirm_delete_category_name": "Do you want to delete the {name} category?",
+
+  "due_date": "Due Date",
+  "notification": "Notification",
+  "status": "Status",
+  "in_progress": "In Progress",
+  "overdue": "Overdue",
+  "days_overdue": "({days} days overdue)",
+  "rescheduled": "Rescheduled successfully",
+  "reschedule": "Reschedule",
+
+  "progress": "Progress",
+  "completed_count_format": "{completed} / {total} completed",
+
+  "notification_prefix": "Notification: {time}",
+  "recurring": "Recurring"
 }
