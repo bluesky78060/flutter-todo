@@ -24,7 +24,7 @@ final remoteSubtaskRepositoryProvider = Provider<SubtaskRepository>((ref) {
 final subtaskListProvider =
     FutureProvider.family<List<entity.Subtask>, int>((ref, todoId) async {
   // Check if user is authenticated
-  final authState = ref.watch(authStateProvider);
+  final authState = ref.watch(currentUserProvider);
 
   return await authState.when(
     data: (session) async {
@@ -71,7 +71,7 @@ class SubtaskActions {
   SubtaskActions(this._ref);
 
   Future<void> createSubtask(entity.Subtask subtask) async {
-    final authState = _ref.read(authStateProvider);
+    final authState = _ref.read(currentUserProvider);
 
     await authState.when(
       data: (session) async {
@@ -95,7 +95,7 @@ class SubtaskActions {
   }
 
   Future<void> updateSubtask(entity.Subtask subtask) async {
-    final authState = _ref.read(authStateProvider);
+    final authState = _ref.read(currentUserProvider);
 
     await authState.when(
       data: (session) async {
@@ -119,7 +119,7 @@ class SubtaskActions {
   }
 
   Future<void> deleteSubtask(int id, int todoId) async {
-    final authState = _ref.read(authStateProvider);
+    final authState = _ref.read(currentUserProvider);
 
     await authState.when(
       data: (session) async {
@@ -143,7 +143,7 @@ class SubtaskActions {
   }
 
   Future<void> toggleSubtaskCompletion(int id, int todoId) async {
-    final authState = _ref.read(authStateProvider);
+    final authState = _ref.read(currentUserProvider);
 
     await authState.when(
       data: (session) async {
@@ -167,7 +167,7 @@ class SubtaskActions {
   }
 
   Future<void> reorderSubtasks(int todoId, List<entity.Subtask> subtasks) async {
-    final authState = _ref.read(authStateProvider);
+    final authState = _ref.read(currentUserProvider);
 
     await authState.when(
       data: (session) async {
