@@ -295,5 +295,6 @@
   "delete_failed": "Delete failed: {error}",
   "name": "Name",
   "color": "Color",
-  "icon": "Icon"
+  "icon": "Icon",
+  "confirm_delete_category_name": "Do you want to delete the {name} category?"
 }

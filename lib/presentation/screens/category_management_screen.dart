@@ -265,9 +265,9 @@ class CategoryManagementScreen extends ConsumerWidget {
                 size: 48,
               ),
               const SizedBox(height: 16),
-              const Text(
+              Text(
                 'delete_category'.tr(),
-                style: TextStyle(
+                style: const TextStyle(
                   color: AppColors.textWhite,
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
@@ -275,7 +275,7 @@ class CategoryManagementScreen extends ConsumerWidget {
               ),
               const SizedBox(height: 8),
               Text(
-                '${category.name} 카테고리를 삭제하시겠습니까?',
+                'confirm_delete_category_name'.tr(namedArgs: {'name': category.name}),
                 style: const TextStyle(
                   color: AppColors.textGray,
                   fontSize: 16,

@@ -295,5 +295,6 @@
   "delete_failed": "삭제 실패: {error}",
   "name": "이름",
   "color": "색상",
-  "icon": "아이콘"
+  "icon": "아이콘",
+  "confirm_delete_category_name": "{name} 카테고리를 삭제하시겠습니까?"
 }
