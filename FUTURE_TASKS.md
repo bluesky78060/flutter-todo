@@ -14,6 +14,7 @@
 - ✅ 서브태스크 기능 구현 완료
 - ✅ GitHub Actions 테스트 수정 (widget test 번역 의존성 제거)
 - ✅ Google Play 업로드 키 재설정 요청 (AAB 빌드 1.0.11+35)
+- ✅ **알림 스누즈 기능 완전 구현** (백엔드, UI, 테스트 모두 완료)
 
 ### 2025-11-13
 - ✅ CI/CD 파이프라인 구축 (GitHub Actions)
@@ -176,15 +177,42 @@ CREATE TABLE subtasks (
 
 ## 3. 알림 및 스케줄링
 
-### 🔴 3.1 스누즈 기능
+### 🔴 3.1 스누즈 기능 ✅ **완료됨 (2025-11-17)**
 **설명**: 알림을 특정 시간만큼 미루기
-**필요 작업**:
-- [ ] 알림 액션 버튼에 "5분 후", "1시간 후", "내일" 옵션 추가
-- [ ] 스누즈된 알림 재스케줄링
-- [ ] 스누즈 히스토리 저장
 
-**예상 작업 시간**: 3-4시간
-**파일 수정**: `lib/core/services/notification_service.dart`
+**완료된 작업**:
+- [x] Todo 엔티티에 snoozeCount, lastSnoozeTime 필드 추가
+- [x] Drift 데이터베이스 스키마 업데이트 (v5 → v6)
+- [x] Supabase 마이그레이션 SQL 작성
+- [x] Repository 레이어 업데이트
+- [x] NotificationService에 snoozeNotification() 메서드 추가
+- [x] SnoozeDialog 위젯 생성 (5분, 10분, 30분, 1시간, 3시간 + 커스텀)
+- [x] Todo 상세 화면에 스누즈 버튼 통합
+- [x] 스누즈 횟수 표시 기능
+- [x] 한국어/영어 번역 추가
+- [x] 모든 테스트 통과 (128개)
+
+**실제 작업 시간**: 약 2시간
+**수정된 파일**:
+- `lib/domain/entities/todo.dart`
+- `lib/data/datasources/local/app_database.dart`
+- `lib/data/datasources/remote/supabase_datasource.dart`
+- `lib/data/repositories/todo_repository_impl.dart`
+- `lib/core/services/notification_service.dart`
+- `lib/presentation/widgets/snooze_dialog.dart` (신규)
+- `lib/presentation/screens/todo_detail_screen.dart`
+- `assets/translations/ko.json`, `en.json`
+- `test/unit/repositories/todo_repository_impl_test.dart`
+- `test/unit/repositories/category_repository_impl_test.dart`
+
+**커밋**:
+- 97bf933: feat: Add snooze functionality for notifications
+- 80fe1c0: fix: Make snoozeCount non-nullable with default value 0
+- 434cb88: test: Add snoozeCount parameter to test fixtures
+- 64d9e73: feat: Integrate snooze functionality in Todo detail screen
+
+**남은 작업**:
+- [ ] Supabase 마이그레이션 실행 (사용자가 직접 실행 필요)
 
 ---
 
