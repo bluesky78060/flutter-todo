@@ -228,7 +228,7 @@ class TodoDetailScreen extends ConsumerWidget {
                   icon: FluentIcons.location_24_regular,
                   label: 'location'.tr(),
                   value: todo.locationName ?? '${todo.locationLatitude!.toStringAsFixed(6)}, ${todo.locationLongitude!.toStringAsFixed(6)}',
-                  color: AppColors.accentPurple,
+                  color: AppColors.primaryBlue,
                 ),
                 if (todo.locationRadius != null) ...[
                   const SizedBox(height: 8),
