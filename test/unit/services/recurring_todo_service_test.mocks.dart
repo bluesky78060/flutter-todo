@@ -65,6 +65,22 @@ class MockTodoRepository extends _i1.Mock implements _i2.TodoRepository {
           as _i3.Future<_i4.Either<_i5.Failure, List<_i6.Todo>>>);
 
   @override
+  _i3.Future<_i4.Either<_i5.Failure, List<_i6.Todo>>> searchTodos(
+    String? query,
+  ) =>
+      (super.noSuchMethod(
+            Invocation.method(#searchTodos, [query]),
+            returnValue:
+                _i3.Future<_i4.Either<_i5.Failure, List<_i6.Todo>>>.value(
+                  _i7.dummyValue<_i4.Either<_i5.Failure, List<_i6.Todo>>>(
+                    this,
+                    Invocation.method(#searchTodos, [query]),
+                  ),
+                ),
+          )
+          as _i3.Future<_i4.Either<_i5.Failure, List<_i6.Todo>>>);
+
+  @override
   _i3.Future<_i4.Either<_i5.Failure, _i6.Todo>> getTodoById(int? id) =>
       (super.noSuchMethod(
             Invocation.method(#getTodoById, [id]),
@@ -154,4 +170,17 @@ class MockTodoRepository extends _i1.Mock implements _i2.TodoRepository {
             ),
           )
           as _i3.Future<_i4.Either<_i5.Failure, _i4.Unit>>);
+
+  @override
+  _i3.Future<_i4.Either<_i5.Failure, int>> deleteCompletedTodos() =>
+      (super.noSuchMethod(
+            Invocation.method(#deleteCompletedTodos, []),
+            returnValue: _i3.Future<_i4.Either<_i5.Failure, int>>.value(
+              _i7.dummyValue<_i4.Either<_i5.Failure, int>>(
+                this,
+                Invocation.method(#deleteCompletedTodos, []),
+              ),
+            ),
+          )
+          as _i3.Future<_i4.Either<_i5.Failure, int>>);
 }

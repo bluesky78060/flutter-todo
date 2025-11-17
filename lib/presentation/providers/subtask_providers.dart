@@ -3,14 +3,14 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:todo_app/data/datasources/local/app_database.dart';
 import 'package:todo_app/data/repositories/subtask_repository_impl.dart';
 import 'package:todo_app/data/repositories/supabase_subtask_repository.dart';
-import 'package:todo_app/domain/entities/subtask.dart';
+import 'package:todo_app/domain/entities/subtask.dart' as entity;
 import 'package:todo_app/domain/repositories/subtask_repository.dart';
 import 'package:todo_app/presentation/providers/auth_providers.dart';
 import 'package:todo_app/presentation/providers/database_provider.dart';
 
 // Local Subtask Repository Provider
 final subtaskRepositoryProvider = Provider<SubtaskRepository>((ref) {
-  final database = ref.watch(databaseProvider);
+  final database = ref.watch(localDatabaseProvider);
   return SubtaskRepositoryImpl(database);
 });
 
@@ -22,7 +22,7 @@ final remoteSubtaskRepositoryProvider = Provider<SubtaskRepository>((ref) {
 
 // Subtask List Provider for specific Todo
 final subtaskListProvider =
-    FutureProvider.family<List<Subtask>, int>((ref, todoId) async {
+    FutureProvider.family<List<entity.Subtask>, int>((ref, todoId) async {
   // Check if user is authenticated
   final authState = ref.watch(authStateProvider);
 
@@ -70,7 +70,7 @@ class SubtaskActions {
 
   SubtaskActions(this._ref);
 
-  Future<void> createSubtask(Subtask subtask) async {
+  Future<void> createSubtask(entity.Subtask subtask) async {
     final authState = _ref.read(authStateProvider);
 
     await authState.when(
@@ -94,7 +94,7 @@ class SubtaskActions {
     );
   }
 
-  Future<void> updateSubtask(Subtask subtask) async {
+  Future<void> updateSubtask(entity.Subtask subtask) async {
     final authState = _ref.read(authStateProvider);
 
     await authState.when(
@@ -166,14 +166,14 @@ class SubtaskActions {
     );
   }
 
-  Future<void> reorderSubtasks(int todoId, List<Subtask> subtasks) async {
+  Future<void> reorderSubtasks(int todoId, List<entity.Subtask> subtasks) async {
     final authState = _ref.read(authStateProvider);
 
     await authState.when(
       data: (session) async {
         // Update positions for all subtasks
         for (var i = 0; i < subtasks.length; i++) {
-          final updatedSubtask = Subtask(
+          final updatedSubtask = entity.Subtask(
             id: subtasks[i].id,
             todoId: subtasks[i].todoId,
             userId: subtasks[i].userId,

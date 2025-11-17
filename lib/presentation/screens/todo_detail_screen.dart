@@ -8,7 +8,7 @@ import 'package:todo_app/presentation/widgets/todo_form_dialog.dart';
 import 'package:todo_app/core/utils/recurrence_utils.dart';
 import 'package:todo_app/presentation/widgets/reschedule_dialog.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:todo_app/domain/entities/subtask.dart';
+import 'package:todo_app/domain/entities/subtask.dart' as entity;
 import 'package:todo_app/presentation/providers/auth_providers.dart';
 
 class TodoDetailScreen extends ConsumerWidget {
@@ -165,7 +165,10 @@ class TodoDetailScreen extends ConsumerWidget {
 
               // Subtasks Section
               const SizedBox(height: 24),
-              _SubtasksSection(todoId: todoId, userId: todo.userId),
+              _SubtasksSection(
+                todoId: todoId,
+                userId: ref.read(authStateProvider).value?.user.id ?? '',
+              ),
 
               // Overdue warning and reschedule button
               if (todo.dueDate != null &&
@@ -514,26 +517,28 @@ class _SubtasksSectionState extends ConsumerState<_SubtasksSection> {
               }
 
               return Column(
-                children: subtasks.map((subtask) {
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
-                    child: _SubtaskItem(
-                      subtask: subtask,
-                      onToggle: () {
-                        ref.read(subtaskActionsProvider).toggleSubtaskCompletion(
-                              subtask.id,
-                              widget.todoId,
-                            );
-                      },
-                      onDelete: () {
-                        ref.read(subtaskActionsProvider).deleteSubtask(
-                              subtask.id,
-                              widget.todoId,
-                            );
-                      },
-                    ),
-                  );
-                }).toList(),
+                children: subtasks
+                    .map<Widget>((subtask) {
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: _SubtaskItem(
+                          subtask: subtask,
+                          onToggle: () {
+                            ref.read(subtaskActionsProvider).toggleSubtaskCompletion(
+                                  subtask.id,
+                                  widget.todoId,
+                                );
+                          },
+                          onDelete: () {
+                            ref.read(subtaskActionsProvider).deleteSubtask(
+                                  subtask.id,
+                                  widget.todoId,
+                                );
+                          },
+                        ),
+                      );
+                    })
+                    .toList(),
               );
             },
             loading: () => const Center(
@@ -596,7 +601,7 @@ class _SubtasksSectionState extends ConsumerState<_SubtasksSection> {
 }
 
 class _SubtaskItem extends StatelessWidget {
-  final Subtask subtask;
+  final entity.Subtask subtask;
   final VoidCallback onToggle;
   final VoidCallback onDelete;
 
