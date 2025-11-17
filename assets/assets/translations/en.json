@@ -322,6 +322,7 @@
   "snooze_for_3_hours": "In 3 hours",
   "snooze_custom": "Custom",
   "snooze_scheduled": "Notification rescheduled",
+  "snooze_failed": "Failed to snooze notification",
   "snooze_count": "Snoozed {count} times",
   "last_snoozed": "Last snoozed: {time}"
 }
