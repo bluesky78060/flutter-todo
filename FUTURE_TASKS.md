@@ -222,7 +222,7 @@ CREATE TABLE subtasks (
 ### 🟡 3.2 위치 기반 알림 🚧 **진행 중 (2025-11-17)**
 **설명**: 특정 장소 도착 시 알림
 
-**완료된 작업**:
+**Phase 1: Infrastructure (완료)**
 - [x] Dependencies 추가 (geolocator, geocoding, google_maps_flutter)
 - [x] Todo 엔티티에 위치 필드 추가 (latitude, longitude, name, radius)
 - [x] Drift 스키마 v6 → v7 마이그레이션
@@ -231,29 +231,49 @@ CREATE TABLE subtasks (
 - [x] LocationService 구현 (권한, 현재 위치, 주소 변환, geofence 체크)
 - [x] 한국어/영어 번역 추가 (14개 키)
 
-**수정된 파일**:
-- `pubspec.yaml` (geolocator, geocoding, google_maps_flutter 추가)
-- `lib/domain/entities/todo.dart` (위치 필드 4개 추가)
-- `lib/data/datasources/local/app_database.dart` (스키마 v7, 위치 컬럼)
-- `lib/data/repositories/todo_repository_impl.dart` (위치 필드 매핑)
-- `lib/data/datasources/remote/supabase_datasource.dart` (위치 필드 동기화)
-- `lib/core/services/location_service.dart` (신규, 위치 서비스)
-- `assets/translations/ko.json`, `en.json` (위치 관련 번역)
-- `supabase_location_migration.sql` (신규, DB 마이그레이션)
+**Phase 2: UI Integration (완료 - 2025-11-17)**
+- [x] LocationPickerDialog 구현 (Google Maps 통합)
+  - 현재 위치 버튼, 맵 탭으로 위치 선택
+  - 주소 역지오코딩, 위치 이름 입력
+  - Geofence 원형 표시 (50-1000m 슬라이더)
+- [x] Todo 폼에 위치 설정 기능 추가
+  - 위치 선택 버튼, 선택된 위치 표시
+  - 위치 삭제 기능
+- [x] Todo 상세 화면에 위치 정보 표시
+  - 위치 이름 또는 좌표 표시
+  - Geofence 반경 표시
+- [x] Android 권한 설정
+  - ACCESS_FINE_LOCATION, ACCESS_COARSE_LOCATION
+  - ACCESS_BACKGROUND_LOCATION
+  - Google Maps API 키 placeholder
 
-**실제 작업 시간**: 약 1.5시간
+**수정된 파일**:
+- `lib/presentation/widgets/location_picker_dialog.dart` (신규, 341 lines)
+- `lib/presentation/widgets/todo_form_dialog.dart` (위치 UI 및 상태)
+- `lib/presentation/screens/todo_detail_screen.dart` (위치 정보 표시)
+- `lib/presentation/providers/todo_providers.dart` (위치 파라미터)
+- `lib/domain/repositories/todo_repository.dart` (인터페이스 업데이트)
+- `lib/data/repositories/todo_repository_impl.dart` (로컬 저장소)
+- `lib/data/repositories/supabase_todo_repository.dart` (원격 저장소)
+- `lib/data/datasources/remote/supabase_datasource.dart` (동기화)
+- `android/app/src/main/AndroidManifest.xml` (권한 및 API 키)
+
+**실제 작업 시간**: 약 3.5시간 (Phase 1: 1.5h, Phase 2: 2h)
+
+**커밋 정보**:
+- f8eb164: feat: Add location-based notification infrastructure
+- 414c085: feat: Add location-based notification UI integration
 
 **남은 작업** (향후 구현 예정):
-- [ ] 위치 선택 UI (Google Maps 통합)
-- [ ] Todo 폼에 위치 설정 기능 추가
+- [ ] Google Maps API 키 실제 값 설정
+- [ ] Supabase 마이그레이션 실행 (사용자가 직접 실행 필요)
 - [ ] Geofencing 백그라운드 모니터링
 - [ ] 위치 도달 시 알림 트리거
-- [ ] Android/iOS 네이티브 권한 설정
+- [ ] iOS 권한 설정 (Info.plist)
 - [ ] 배터리 최적화
-- [ ] Supabase 마이그레이션 실행 (사용자가 직접 실행 필요)
 
 **예상 작업 시간 (남은 작업)**: 1-2일
-**기술 고려사항**: 배터리 소모 최적화 필요
+**기술 고려사항**: 배터리 소모 최적화, 백그라운드 위치 모니터링 구현 필요
 
 ---
 
