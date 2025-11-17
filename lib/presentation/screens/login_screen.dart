@@ -26,12 +26,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 
   Future<void> _signInWithGoogle() async {
+    logger.d('🚀 Google login button clicked');
     setState(() => _isLoading = true);
 
     try {
       // Supabase OAuth 플로우 사용 (웹에서 작동)
       final redirectUrl = oauthRedirectUrl();
       logger.d('🔗 Google OAuth redirectTo: $redirectUrl');
+      logger.d('🔑 Supabase client initialized: ${Supabase.instance.client.auth != null}');
 
       final response = redirectUrl == null
           ? await Supabase.instance.client.auth.signInWithOAuth(
@@ -42,12 +44,18 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               redirectTo: redirectUrl,
             );
 
+      logger.d('📱 OAuth response: $response');
+
       if (!response) {
+        logger.e('❌ OAuth returned false');
         throw 'Google 로그인 실패';
       }
 
+      logger.d('✅ OAuth redirect initiated successfully');
       // OAuth 플로우가 성공하면 자동으로 리디렉션됨
-    } catch (e) {
+    } catch (e, stackTrace) {
+      logger.e('❌ Google OAuth error: $e');
+      logger.e('Stack trace: $stackTrace');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Google 로그인 실패: ${e.toString()}')),
