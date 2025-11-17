@@ -44,9 +44,9 @@ class CategoryManagementScreen extends ConsumerWidget {
                     ),
                   ),
                   const SizedBox(width: 16),
-                  const Text(
-                    '카테고리 관리',
-                    style: TextStyle(
+                  Text(
+                    'category_management'.tr(),
+                    style: const TextStyle(
                       color: AppColors.textWhite,
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
@@ -86,7 +86,7 @@ class CategoryManagementScreen extends ConsumerWidget {
                           ),
                           const SizedBox(height: 16),
                           Text(
-                            '카테고리가 없습니다',
+                            'no_categories'.tr(),
                             style: TextStyle(
                               color: AppColors.getTextSecondary(isDarkMode),
                               fontSize: 16,
@@ -94,7 +94,7 @@ class CategoryManagementScreen extends ConsumerWidget {
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            '+ 버튼을 눌러 카테고리를 추가하세요',
+                            'add_category_hint'.tr(),
                             style: TextStyle(
                               color: AppColors.getTextSecondary(isDarkMode),
                               fontSize: 14,
@@ -122,7 +122,7 @@ class CategoryManagementScreen extends ConsumerWidget {
                 loading: () => const Center(child: CircularProgressIndicator()),
                 error: (error, _) => Center(
                   child: Text(
-                    '오류: $error',
+                    'error_prefix'.tr(namedArgs: {'error': error.toString()}),
                     style: const TextStyle(color: Colors.red),
                   ),
                 ),
@@ -266,7 +266,7 @@ class CategoryManagementScreen extends ConsumerWidget {
               ),
               const SizedBox(height: 16),
               const Text(
-                '카테고리 삭제',
+                'delete_category'.tr(),
                 style: TextStyle(
                   color: AppColors.textWhite,
                   fontSize: 20,
@@ -299,7 +299,7 @@ class CategoryManagementScreen extends ConsumerWidget {
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      child: const Text('취소'),
+                      child: Text('cancel'.tr()),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -313,8 +313,8 @@ class CategoryManagementScreen extends ConsumerWidget {
                           if (context.mounted) {
                             Navigator.pop(context);
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('카테고리가 삭제되었습니다'),
+                              SnackBar(
+                                content: Text('category_deleted'.tr()),
                                 backgroundColor: AppColors.successGreen,
                               ),
                             );
@@ -324,7 +324,7 @@ class CategoryManagementScreen extends ConsumerWidget {
                             Navigator.pop(context);
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
-                                content: Text('삭제 실패: $e'),
+                                content: Text('delete_failed'.tr(namedArgs: {'error': e.toString()})),
                                 backgroundColor: Colors.red,
                               ),
                             );
@@ -339,7 +339,7 @@ class CategoryManagementScreen extends ConsumerWidget {
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      child: const Text('삭제'),
+                      child: Text('delete'.tr()),
                     ),
                   ),
                 ],
@@ -467,7 +467,7 @@ class _CategoryDialogState extends ConsumerState<CategoryDialog> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                widget.category == null ? '새 카테고리' : '카테고리 수정',
+                widget.category == null ? 'new_category'.tr() : 'edit_category'.tr(),
                 style: const TextStyle(
                   color: AppColors.textWhite,
                   fontSize: 20,
@@ -478,7 +478,7 @@ class _CategoryDialogState extends ConsumerState<CategoryDialog> {
 
               // Name Input
               Text(
-                '이름',
+                'name'.tr(),
                 style: TextStyle(
                   color: AppColors.getTextSecondary(isDarkMode),
                   fontSize: 14,
@@ -492,7 +492,7 @@ class _CategoryDialogState extends ConsumerState<CategoryDialog> {
                   color: AppColors.getText(isDarkMode),
                 ),
                 decoration: InputDecoration(
-                  hintText: '카테고리 이름',
+                  hintText: 'category_name_hint'.tr(),
                   hintStyle: TextStyle(
                     color: AppColors.getTextSecondary(isDarkMode),
                   ),
@@ -508,7 +508,7 @@ class _CategoryDialogState extends ConsumerState<CategoryDialog> {
 
               // Color Picker
               Text(
-                '색상',
+                'color'.tr(),
                 style: TextStyle(
                   color: AppColors.getTextSecondary(isDarkMode),
                   fontSize: 14,
@@ -553,7 +553,7 @@ class _CategoryDialogState extends ConsumerState<CategoryDialog> {
 
               // Icon Picker
               Text(
-                '아이콘',
+                'icon'.tr(),
                 style: TextStyle(
                   color: AppColors.getTextSecondary(isDarkMode),
                   fontSize: 14,
@@ -613,7 +613,7 @@ class _CategoryDialogState extends ConsumerState<CategoryDialog> {
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      child: const Text('취소'),
+                      child: Text('cancel'.tr()),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -628,7 +628,7 @@ class _CategoryDialogState extends ConsumerState<CategoryDialog> {
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      child: Text(widget.category == null ? '추가' : '저장'),
+                      child: Text(widget.category == null ? 'add'.tr() : 'save'.tr()),
                     ),
                   ),
                 ],
@@ -644,8 +644,8 @@ class _CategoryDialogState extends ConsumerState<CategoryDialog> {
     if (_nameController.text.trim().isEmpty) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('카테고리 이름을 입력하세요'),
+        SnackBar(
+          content: Text('category_name_empty'.tr()),
           backgroundColor: Colors.red,
         ),
       );
@@ -655,7 +655,7 @@ class _CategoryDialogState extends ConsumerState<CategoryDialog> {
     try {
       final currentUser = await ref.read(currentUserProvider.future);
       if (currentUser == null) {
-        throw Exception('로그인이 필요합니다');
+        throw Exception('login_required'.tr());
       }
 
       if (widget.category == null) {
@@ -689,8 +689,8 @@ class _CategoryDialogState extends ConsumerState<CategoryDialog> {
           SnackBar(
             content: Text(
               widget.category == null
-                  ? '카테고리가 추가되었습니다'
-                  : '카테고리가 수정되었습니다',
+                  ? 'category_added'.tr()
+                  : 'category_updated'.tr(),
             ),
             backgroundColor: AppColors.successGreen,
           ),
@@ -701,7 +701,7 @@ class _CategoryDialogState extends ConsumerState<CategoryDialog> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('오류: $e'),
+          content: Text('error_prefix'.tr(namedArgs: {'error': e.toString()})),
           backgroundColor: Colors.red,
         ),
       );

@@ -111,25 +111,25 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> {
         context: context,
         builder: (context) => AlertDialog(
           backgroundColor: AppColors.darkCard,
-          title: const Text(
-            '알림 권한 요청',
-            style: TextStyle(color: AppColors.textWhite),
+          title: Text(
+            'permission_notification_title'.tr(),
+            style: const TextStyle(color: AppColors.textWhite),
           ),
-          content: const Text(
-            '할일 알림을 받으시겠습니까?\n알림을 허용하면 설정한 시간에 할일을 알려드립니다.',
-            style: TextStyle(color: AppColors.textGray),
+          content: Text(
+            'permission_notification_desc'.tr(),
+            style: const TextStyle(color: AppColors.textGray),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
-              child: const Text('나중에', style: TextStyle(color: AppColors.textGray)),
+              child: Text('deny'.tr(), style: const TextStyle(color: AppColors.textGray)),
             ),
             ElevatedButton(
               onPressed: () => Navigator.of(context).pop(true),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primaryBlue,
               ),
-              child: const Text('허용', style: TextStyle(color: Colors.white)),
+              child: Text('allow'.tr(), style: const TextStyle(color: Colors.white)),
             ),
           ],
         ),
@@ -152,31 +152,31 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.darkCard,
-        title: const Row(
+        title: Row(
           children: [
-            Icon(FluentIcons.info_24_regular, color: AppColors.primaryBlue),
-            SizedBox(width: 12),
+            const Icon(FluentIcons.info_24_regular, color: AppColors.primaryBlue),
+            const SizedBox(width: 12),
             Text(
-              '알림 설정 확인',
-              style: TextStyle(color: AppColors.textWhite),
+              'notification_settings'.tr(),
+              style: const TextStyle(color: AppColors.textWhite),
             ),
           ],
         ),
-        content: const Text(
-          '알림이 정상적으로 표시되려면 알림 중요도를 "높음" 또는 "긴급"으로 설정해야 합니다.\n\n설정 화면으로 이동하시겠습니까?',
-          style: TextStyle(color: AppColors.textGray),
+        content: Text(
+          'permission_notification_rationale'.tr(),
+          style: const TextStyle(color: AppColors.textGray),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('나중에', style: TextStyle(color: AppColors.textGray)),
+            child: Text('deny'.tr(), style: const TextStyle(color: AppColors.textGray)),
           ),
           ElevatedButton(
             onPressed: () => Navigator.of(context).pop(true),
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primaryBlue,
             ),
-            child: const Text('설정 열기', style: TextStyle(color: Colors.white)),
+            child: Text('settings_open'.tr(), style: const TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -197,25 +197,25 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> {
           context: context,
           builder: (context) => AlertDialog(
             backgroundColor: AppColors.darkCard,
-            title: const Text(
-              '배터리 최적화 제외',
-              style: TextStyle(color: AppColors.textWhite),
+            title: Text(
+              'permission_battery_title'.tr(),
+              style: const TextStyle(color: AppColors.textWhite),
             ),
-            content: const Text(
-              '정확한 시간에 알림을 받으려면 배터리 최적화를 제외해야 합니다.\n\n앱이 백그라운드에서 종료되지 않도록 설정하시겠습니까?',
-              style: TextStyle(color: AppColors.textGray),
+            content: Text(
+              'permission_battery_desc'.tr(),
+              style: const TextStyle(color: AppColors.textGray),
             ),
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(context).pop(false),
-                child: const Text('나중에', style: TextStyle(color: AppColors.textGray)),
+                child: Text('deny'.tr(), style: const TextStyle(color: AppColors.textGray)),
               ),
               ElevatedButton(
                 onPressed: () => Navigator.of(context).pop(true),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primaryBlue,
                 ),
-                child: const Text('설정하기', style: TextStyle(color: Colors.white)),
+                child: Text('settings_open'.tr(), style: const TextStyle(color: Colors.white)),
               ),
             ],
           ),
@@ -241,31 +241,31 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> {
           context: context,
           builder: (context) => AlertDialog(
             backgroundColor: AppColors.darkCard,
-            title: const Row(
+            title: Row(
               children: [
-                Icon(FluentIcons.alert_24_regular, color: AppColors.accentOrange),
-                SizedBox(width: 12),
+                const Icon(FluentIcons.alert_24_regular, color: AppColors.accentOrange),
+                const SizedBox(width: 12),
                 Text(
-                  '정확한 알람 권한',
-                  style: TextStyle(color: AppColors.textWhite),
+                  'permission_exact_alarm_title'.tr(),
+                  style: const TextStyle(color: AppColors.textWhite),
                 ),
               ],
             ),
-            content: const Text(
-              'Android 14 이상에서 정확한 시간에 알림을 받으려면 "정확한 알람" 권한이 필요합니다.\n\n이 권한을 허용하지 않으면 알림이 최대 15분까지 지연될 수 있습니다.\n\n권한을 허용하시겠습니까?',
-              style: TextStyle(color: AppColors.textGray, height: 1.5),
+            content: Text(
+              'permission_exact_alarm_desc'.tr(),
+              style: const TextStyle(color: AppColors.textGray, height: 1.5),
             ),
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(context).pop(false),
-                child: const Text('나중에', style: TextStyle(color: AppColors.textGray)),
+                child: Text('deny'.tr(), style: const TextStyle(color: AppColors.textGray)),
               ),
               ElevatedButton(
                 onPressed: () => Navigator.of(context).pop(true),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primaryBlue,
                 ),
-                child: const Text('허용하기', style: TextStyle(color: Colors.white)),
+                child: Text('allow'.tr(), style: const TextStyle(color: Colors.white)),
               ),
             ],
           ),
@@ -681,7 +681,7 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> {
                       Padding(
                         padding: const EdgeInsets.only(right: 8),
                         child: _CategoryChip(
-                          label: '전체',
+                          label: 'all'.tr(),
                           icon: null,
                           color: null,
                           isSelected: selectedCategoryId == null,
@@ -1256,7 +1256,10 @@ class _RecurringTodoGroupState extends State<_RecurringTodoGroup> {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            '반복 일정 · $completedCount/$totalCount 완료',
+                            'recurring_event_progress'.tr(namedArgs: {
+                              'completed': completedCount.toString(),
+                              'total': totalCount.toString(),
+                            }),
                             style: const TextStyle(
                               color: AppColors.textGray,
                               fontSize: 12,
