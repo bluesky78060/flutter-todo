@@ -53,6 +53,7 @@ app.*.map.json
 # Android signing keys (DO NOT COMMIT!)
 android/key.properties
 android/app/key.properties
+android/local.properties
 *.keystore
 *.jks
 *.pem

@@ -264,15 +264,34 @@ CREATE TABLE subtasks (
 - f8eb164: feat: Add location-based notification infrastructure
 - 414c085: feat: Add location-based notification UI integration
 
-**남은 작업** (향후 구현 예정):
-- [ ] Google Maps API 키 실제 값 설정
-- [ ] Supabase 마이그레이션 실행 (사용자가 직접 실행 필요)
-- [ ] Geofencing 백그라운드 모니터링
+**Phase 3: Google Maps API 및 Supabase 설정 (수동 작업 필요 - 2025-11-17)**
+- [x] Google Maps API 키 환경변수 인프라 구축
+  - build.gradle.kts에서 local.properties 읽기
+  - manifestPlaceholders를 통한 API 키 주입
+  - .gitignore에 local.properties 추가
+  - local.properties.example 템플릿 생성
+- [x] 상세 설정 가이드 문서 작성
+  - GOOGLE_MAPS_SETUP.md (API 키 발급, SHA-1, 제한 설정)
+  - LOCATION_SETUP_GUIDE.md (통합 설정 가이드)
+- [ ] **사용자 수동 작업 필요**:
+  - [ ] Google Cloud Console에서 API 키 발급
+  - [ ] android/local.properties 파일 생성 및 API 키 입력
+  - [ ] Supabase에서 location migration SQL 실행
+
+**새로 생성된 파일**:
+- `GOOGLE_MAPS_SETUP.md` - Google Maps API 상세 가이드
+- `LOCATION_SETUP_GUIDE.md` - 전체 설정 가이드 및 테스트 체크리스트
+- `android/local.properties.example` - 환경변수 템플릿
+- `.gitignore` 업데이트 (line 56: android/local.properties)
+- `android/app/build.gradle.kts` 업데이트 (API 키 주입 로직)
+
+**남은 작업** (Phase 4, 향후 구현 예정):
+- [ ] Geofencing 백그라운드 모니터링 (geofence_service_flutter)
 - [ ] 위치 도달 시 알림 트리거
 - [ ] iOS 권한 설정 (Info.plist)
-- [ ] 배터리 최적화
+- [ ] 배터리 최적화 (geofence 수 제한, 적응형 폴링)
 
-**예상 작업 시간 (남은 작업)**: 1-2일
+**예상 작업 시간 (Phase 4)**: 1-2일
 **기술 고려사항**: 배터리 소모 최적화, 백그라운드 위치 모니터링 구현 필요
 
 ---

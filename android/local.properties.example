@@ -1,0 +1,11 @@
+# local.properties 예시 파일
+# 이 파일을 복사하여 'local.properties'로 이름을 변경하고 실제 값을 입력하세요
+
+# Flutter SDK 경로 (자동 생성됨)
+sdk.dir=/Users/YOUR_USERNAME/development/flutter
+flutter.sdk=/opt/homebrew/share/flutter
+
+# Google Maps API Key
+# Google Cloud Console에서 발급받은 API 키를 입력하세요
+# https://console.cloud.google.com/
+MAPS_API_KEY=YOUR_GOOGLE_MAPS_API_KEY_HERE
