@@ -30,7 +30,7 @@ class Todos extends Table {
   DateTimeColumn get notificationTime => dateTime().nullable()();
   TextColumn get recurrenceRule => text().nullable()(); // RRULE format
   IntColumn get parentRecurringTodoId => integer().nullable()(); // Reference to parent recurring todo
-  IntColumn get snoozeCount => integer().nullable().withDefault(const Constant(0))(); // Number of times snoozed
+  IntColumn get snoozeCount => integer().withDefault(const Constant(0))(); // Number of times snoozed
   DateTimeColumn get lastSnoozeTime => dateTime().nullable()(); // Last time snoozed
 }
 

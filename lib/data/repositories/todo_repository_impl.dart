@@ -159,7 +159,7 @@ class TodoRepositoryImpl implements TodoRepository {
       notificationTime: todo.notificationTime,
       recurrenceRule: todo.recurrenceRule,
       parentRecurringTodoId: todo.parentRecurringTodoId,
-      snoozeCount: todo.snoozeCount,
+      snoozeCount: todo.snoozeCount ?? 0,
       lastSnoozeTime: todo.lastSnoozeTime,
     );
   }

@@ -10,7 +10,7 @@ class Todo {
   final DateTime? notificationTime;
   final String? recurrenceRule; // RRULE format (e.g., "FREQ=DAILY;INTERVAL=1")
   final int? parentRecurringTodoId; // Reference to parent recurring todo
-  final int? snoozeCount; // Number of times snoozed
+  final int snoozeCount; // Number of times snoozed
   final DateTime? lastSnoozeTime; // Last time the notification was snoozed
 
   const Todo({
@@ -25,7 +25,7 @@ class Todo {
     this.notificationTime,
     this.recurrenceRule,
     this.parentRecurringTodoId,
-    this.snoozeCount,
+    this.snoozeCount = 0,
     this.lastSnoozeTime,
   });
 

@@ -306,6 +306,24 @@ class MockNotificationService extends _i1.Mock
             returnValue: _i4.Future<bool>.value(false),
           )
           as _i4.Future<bool>);
+
+  @override
+  _i4.Future<bool> snoozeNotification({
+    required int? id,
+    required String? title,
+    required String? body,
+    required Duration? snoozeDuration,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(#snoozeNotification, [], {
+              #id: id,
+              #title: title,
+              #body: body,
+              #snoozeDuration: snoozeDuration,
+            }),
+            returnValue: _i4.Future<bool>.value(false),
+          )
+          as _i4.Future<bool>);
 }
 
 /// A class which mocks [RecurringTodoService].

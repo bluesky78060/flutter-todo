@@ -228,7 +228,7 @@ class SupabaseTodoDataSource {
           : null,
       recurrenceRule: json['recurrence_rule'] as String?,
       parentRecurringTodoId: json['parent_recurring_todo_id'] as int?,
-      snoozeCount: json['snooze_count'] as int?,
+      snoozeCount: json['snooze_count'] as int? ?? 0,
       lastSnoozeTime: json['last_snooze_time'] != null
           ? DateTime.parse(json['last_snooze_time'] as String)
           : null,
