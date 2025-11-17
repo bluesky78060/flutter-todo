@@ -212,5 +212,14 @@
   "thu": "목",
   "fri": "금",
   "sat": "토",
-  "sun": "일"
+  "sun": "일",
+
+  "subtasks": "서브태스크",
+  "add_subtask": "서브태스크 추가",
+  "subtask_title": "서브태스크 제목",
+  "subtask_title_hint": "할 일을 입력하세요",
+  "no_subtasks": "서브태스크가 없습니다",
+  "subtasks_completed": "{completed}/{total} 완료",
+  "delete_subtask": "서브태스크 삭제",
+  "confirm_delete_subtask": "이 서브태스크를 삭제하시겠습니까?"
 }

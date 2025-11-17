@@ -212,5 +212,14 @@
   "thu": "Thu",
   "fri": "Fri",
   "sat": "Sat",
-  "sun": "Sun"
+  "sun": "Sun",
+
+  "subtasks": "Subtasks",
+  "add_subtask": "Add Subtask",
+  "subtask_title": "Subtask Title",
+  "subtask_title_hint": "Enter task",
+  "no_subtasks": "No subtasks",
+  "subtasks_completed": "{completed}/{total} completed",
+  "delete_subtask": "Delete Subtask",
+  "confirm_delete_subtask": "Do you want to delete this subtask?"
 }
