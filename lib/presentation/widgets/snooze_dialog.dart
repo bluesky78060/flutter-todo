@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 
 class SnoozeDialog extends StatelessWidget {
-  final VoidCallback onDismiss;
+  final VoidCallback? onDismiss;
 
   const SnoozeDialog({
     super.key,
-    required this.onDismiss,
+    this.onDismiss,
   });
 
   @override
@@ -95,7 +95,7 @@ class SnoozeDialog extends StatelessWidget {
         TextButton(
           onPressed: () {
             Navigator.pop(context);
-            onDismiss();
+            onDismiss?.call();
           },
           child: Text('cancel'.tr()),
         ),

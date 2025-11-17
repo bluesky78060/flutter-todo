@@ -7,6 +7,8 @@ import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:todo_app/presentation/widgets/todo_form_dialog.dart';
 import 'package:todo_app/core/utils/recurrence_utils.dart';
 import 'package:todo_app/presentation/widgets/reschedule_dialog.dart';
+import 'package:todo_app/presentation/widgets/snooze_dialog.dart';
+import 'package:todo_app/core/services/notification_service.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:todo_app/domain/entities/subtask.dart' as entity;
 import 'package:todo_app/presentation/providers/auth_providers.dart';
@@ -122,6 +124,102 @@ class TodoDetailScreen extends ConsumerWidget {
                   color: AppColors.accentOrange,
                 ),
                 const SizedBox(height: 12),
+
+                // Snooze button and info
+                if (!todo.isCompleted && todo.notificationTime!.isAfter(DateTime.now())) ...[
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: () async {
+                            final snoozeDuration = await showDialog<Duration>(
+                              context: context,
+                              builder: (context) => const SnoozeDialog(),
+                            );
+
+                            if (snoozeDuration != null && context.mounted) {
+                              try {
+                                // Snooze the notification
+                                final notificationService = NotificationService();
+                                final success = await notificationService.snoozeNotification(
+                                  id: todo.id,
+                                  title: todo.title,
+                                  body: todo.description,
+                                  snoozeDuration: snoozeDuration,
+                                );
+
+                                if (success) {
+                                  // Update todo with new snooze data
+                                  final newNotificationTime = DateTime.now().add(snoozeDuration);
+                                  final updatedTodo = todo.copyWith(
+                                    notificationTime: newNotificationTime,
+                                    snoozeCount: todo.snoozeCount + 1,
+                                    lastSnoozeTime: DateTime.now(),
+                                  );
+
+                                  await ref.read(todoActionsProvider).updateTodo(updatedTodo);
+
+                                  if (context.mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text('snooze_scheduled'.tr()),
+                                        backgroundColor: Colors.green,
+                                      ),
+                                    );
+                                  }
+                                } else {
+                                  if (context.mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text('스누즈 설정에 실패했습니다'),
+                                        backgroundColor: Colors.red,
+                                      ),
+                                    );
+                                  }
+                                }
+                              } catch (e) {
+                                if (context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text('error_prefix'.tr(namedArgs: {'error': e.toString()})),
+                                      backgroundColor: Colors.red,
+                                    ),
+                                  );
+                                }
+                              }
+                            }
+                          },
+                          icon: const Icon(
+                            FluentIcons.snooze_24_regular,
+                            size: 18,
+                          ),
+                          label: Text('snooze_notification'.tr()),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: AppColors.accentOrange,
+                            side: BorderSide(color: AppColors.accentOrange.withValues(alpha: 0.5)),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  // Show snooze count if > 0
+                  if (todo.snoozeCount > 0) ...[
+                    const SizedBox(height: 8),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 8),
+                      child: Text(
+                        'snooze_count'.tr(namedArgs: {'count': todo.snoozeCount.toString()}),
+                        style: TextStyle(
+                          color: AppColors.textGray.withValues(alpha: 0.7),
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
+                  ],
+
+                  const SizedBox(height: 12),
+                ],
               ],
 
               // Recurrence
