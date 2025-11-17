@@ -37,9 +37,9 @@ class TodoDetailScreen extends ConsumerWidget {
       backgroundColor: AppColors.darkBackground,
       appBar: AppBar(
         backgroundColor: AppColors.darkCard,
-        title: const Text(
-          '할일 상세',
-          style: TextStyle(color: AppColors.textWhite),
+        title: Text(
+          'todo_details'.tr(),
+          style: const TextStyle(color: AppColors.textWhite),
         ),
         leading: IconButton(
           icon: const Icon(
@@ -97,7 +97,7 @@ class TodoDetailScreen extends ConsumerWidget {
               // Created date
               _InfoRow(
                 icon: FluentIcons.calendar_add_24_regular,
-                label: '생성일',
+                label: 'created'.tr(),
                 value: _formatDateTime(todo.createdAt),
               ),
               const SizedBox(height: 12),
@@ -106,7 +106,7 @@ class TodoDetailScreen extends ConsumerWidget {
               if (todo.dueDate != null) ...[
                 _InfoRow(
                   icon: FluentIcons.calendar_clock_24_regular,
-                  label: '마감일',
+                  label: 'due_date'.tr(),
                   value: _formatDateTime(todo.dueDate!),
                   color: AppColors.primaryBlue,
                 ),
@@ -117,7 +117,7 @@ class TodoDetailScreen extends ConsumerWidget {
               if (todo.notificationTime != null) ...[
                 _InfoRow(
                   icon: FluentIcons.alert_24_regular,
-                  label: '알림',
+                  label: 'notification'.tr(),
                   value: _formatDateTime(todo.notificationTime!),
                   color: AppColors.accentOrange,
                 ),
@@ -144,7 +144,7 @@ class TodoDetailScreen extends ConsumerWidget {
                     if (context.mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
-                          content: Text('오류: $e'),
+                          content: Text('error_prefix'.tr(namedArgs: {'error': e.toString()})),
                           backgroundColor: Colors.red,
                         ),
                       );
@@ -156,8 +156,8 @@ class TodoDetailScreen extends ConsumerWidget {
                   icon: todo.isCompleted
                       ? FluentIcons.checkmark_circle_24_filled
                       : FluentIcons.circle_24_regular,
-                  label: '상태',
-                  value: todo.isCompleted ? '완료' : '진행중',
+                  label: 'status'.tr(),
+                  value: todo.isCompleted ? 'completed'.tr() : 'in_progress'.tr(),
                   color: todo.isCompleted ? Colors.green : AppColors.textGray,
                   showTapHint: true,
                 ),
@@ -197,7 +197,7 @@ class TodoDetailScreen extends ConsumerWidget {
                           ),
                           const SizedBox(width: 8),
                           Text(
-                            '마감일이 지났습니다',
+                            'overdue'.tr(),
                             style: TextStyle(
                               color: AppColors.accentOrange,
                               fontSize: 14,
@@ -206,7 +206,9 @@ class TodoDetailScreen extends ConsumerWidget {
                           ),
                           const SizedBox(width: 8),
                           Text(
-                            '(${DateTime.now().difference(todo.dueDate!).inDays}일 지남)',
+                            'days_overdue'.tr(namedArgs: {
+                              'days': DateTime.now().difference(todo.dueDate!).inDays.toString()
+                            }),
                             style: TextStyle(
                               color: AppColors.textGray,
                               fontSize: 12,
@@ -266,8 +268,8 @@ class TodoDetailScreen extends ConsumerWidget {
                                       );
                                   if (context.mounted) {
                                     ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                        content: Text('일정이 이월되었습니다'),
+                                      SnackBar(
+                                        content: Text('rescheduled'.tr()),
                                         backgroundColor: Colors.green,
                                       ),
                                     );
@@ -276,7 +278,7 @@ class TodoDetailScreen extends ConsumerWidget {
                                   if (context.mounted) {
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(
-                                        content: Text('오류: $e'),
+                                        content: Text('error_prefix'.tr(namedArgs: {'error': e.toString()})),
                                         backgroundColor: Colors.red,
                                       ),
                                     );
@@ -289,7 +291,7 @@ class TodoDetailScreen extends ConsumerWidget {
                             FluentIcons.calendar_arrow_right_24_regular,
                             size: 18,
                           ),
-                          label: const Text('일정 이월하기'),
+                          label: Text('reschedule'.tr()),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColors.primaryBlue,
                             foregroundColor: AppColors.textWhite,
@@ -313,7 +315,7 @@ class TodoDetailScreen extends ConsumerWidget {
                 const SizedBox(height: 12),
                 _InfoRow(
                   icon: FluentIcons.checkmark_circle_24_filled,
-                  label: '완료일',
+                  label: 'completed_at'.tr(),
                   value: _formatDateTime(todo.completedAt!),
                   color: Colors.green,
                 ),
@@ -328,7 +330,7 @@ class TodoDetailScreen extends ConsumerWidget {
         ),
         error: (error, _) => Center(
           child: Text(
-            '오류: $error',
+            'error_prefix'.tr(namedArgs: {'error': error.toString()}),
             style: const TextStyle(color: Colors.red),
           ),
         ),

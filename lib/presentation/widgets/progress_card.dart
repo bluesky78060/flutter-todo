@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:todo_app/core/theme/app_colors.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 class ProgressCard extends StatelessWidget {
   final int completed;
@@ -34,9 +35,9 @@ class ProgressCard extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
-                '진행률',
-                style: TextStyle(
+              Text(
+                'progress'.tr(),
+                style: const TextStyle(
                   color: AppColors.textGray,
                   fontSize: 13,
                   fontWeight: FontWeight.w500,
@@ -56,7 +57,10 @@ class ProgressCard extends StatelessWidget {
                   ],
                 ),
                 child: Text(
-                  '$completed / $total 완료',
+                  'completed_count_format'.tr(namedArgs: {
+                    'completed': completed.toString(),
+                    'total': total.toString(),
+                  }),
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 11,

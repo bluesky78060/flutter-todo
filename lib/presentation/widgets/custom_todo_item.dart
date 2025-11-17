@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:todo_app/core/theme/app_colors.dart';
 import 'package:todo_app/domain/entities/todo.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 class CustomTodoItem extends StatefulWidget {
   final Todo todo;
@@ -172,7 +173,9 @@ class _CustomTodoItemState extends State<CustomTodoItem>
                                 ),
                                 const SizedBox(width: 6),
                                 Text(
-                                  '알림: ${_formatDueDate(widget.todo.notificationTime!)}',
+                                  'notification_prefix'.tr(namedArgs: {
+                                    'time': _formatDueDate(widget.todo.notificationTime!)
+                                  }),
                                   style: const TextStyle(
                                     color: AppColors.accentOrange,
                                     fontSize: 12,
@@ -193,7 +196,7 @@ class _CustomTodoItemState extends State<CustomTodoItem>
                                 ),
                                 const SizedBox(width: 6),
                                 Text(
-                                  '반복',
+                                  'recurring'.tr(),
                                   style: const TextStyle(
                                     color: AppColors.primaryBlue,
                                     fontSize: 12,
