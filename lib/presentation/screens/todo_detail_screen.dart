@@ -170,8 +170,8 @@ class TodoDetailScreen extends ConsumerWidget {
                                 } else {
                                   if (context.mounted) {
                                     ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                        content: Text('스누즈 설정에 실패했습니다'),
+                                      SnackBar(
+                                        content: Text('snooze_failed'.tr()),
                                         backgroundColor: Colors.red,
                                       ),
                                     );

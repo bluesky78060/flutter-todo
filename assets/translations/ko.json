@@ -322,6 +322,7 @@
   "snooze_for_3_hours": "3시간 후",
   "snooze_custom": "직접 설정",
   "snooze_scheduled": "알림이 다시 설정되었습니다",
+  "snooze_failed": "스누즈 설정에 실패했습니다",
   "snooze_count": "{count}번 다시 알림",
   "last_snoozed": "마지막 스누즈: {time}"
 }
