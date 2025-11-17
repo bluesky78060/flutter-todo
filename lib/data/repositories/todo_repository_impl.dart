@@ -53,6 +53,10 @@ class TodoRepositoryImpl implements TodoRepository {
     DateTime? notificationTime,
     String? recurrenceRule,
     int? parentRecurringTodoId,
+    double? locationLatitude,
+    double? locationLongitude,
+    String? locationName,
+    double? locationRadius,
   }) async {
     try {
       final id = await database.insertTodo(
@@ -66,6 +70,10 @@ class TodoRepositoryImpl implements TodoRepository {
           notificationTime: drift.Value(notificationTime),
           recurrenceRule: drift.Value(recurrenceRule),
           parentRecurringTodoId: drift.Value(parentRecurringTodoId),
+          locationLatitude: drift.Value(locationLatitude),
+          locationLongitude: drift.Value(locationLongitude),
+          locationName: drift.Value(locationName),
+          locationRadius: drift.Value(locationRadius),
         ),
       );
       return Right(id);

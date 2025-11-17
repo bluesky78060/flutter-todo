@@ -222,6 +222,30 @@ class TodoDetailScreen extends ConsumerWidget {
                 ],
               ],
 
+              // Location
+              if (todo.locationLatitude != null && todo.locationLongitude != null) ...[
+                _InfoRow(
+                  icon: FluentIcons.location_24_regular,
+                  label: 'location'.tr(),
+                  value: todo.locationName ?? '${todo.locationLatitude!.toStringAsFixed(6)}, ${todo.locationLongitude!.toStringAsFixed(6)}',
+                  color: AppColors.accentPurple,
+                ),
+                if (todo.locationRadius != null) ...[
+                  const SizedBox(height: 8),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 36),
+                    child: Text(
+                      '${'geofence_radius'.tr()}: ${todo.locationRadius!.toInt()}m',
+                      style: TextStyle(
+                        color: AppColors.textGray.withValues(alpha: 0.7),
+                        fontSize: 14,
+                      ),
+                    ),
+                  ),
+                ],
+                const SizedBox(height: 12),
+              ],
+
               // Recurrence
               if (todo.recurrenceRule != null && todo.recurrenceRule!.isNotEmpty) ...[
                 _InfoRow(

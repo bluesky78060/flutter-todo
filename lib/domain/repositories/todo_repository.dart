@@ -15,6 +15,10 @@ abstract class TodoRepository {
     DateTime? notificationTime,
     String? recurrenceRule,
     int? parentRecurringTodoId,
+    double? locationLatitude,
+    double? locationLongitude,
+    String? locationName,
+    double? locationRadius,
   });
   Future<Either<Failure, Unit>> updateTodo(Todo todo);
   Future<Either<Failure, Unit>> deleteTodo(int id);

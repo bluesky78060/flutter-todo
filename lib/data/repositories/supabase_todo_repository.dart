@@ -48,6 +48,10 @@ class SupabaseTodoRepository implements TodoRepository {
     DateTime? notificationTime,
     String? recurrenceRule,
     int? parentRecurringTodoId,
+    double? locationLatitude,
+    double? locationLongitude,
+    String? locationName,
+    double? locationRadius,
   }) async {
     try {
       final id = await dataSource.createTodo(
@@ -58,6 +62,10 @@ class SupabaseTodoRepository implements TodoRepository {
         notificationTime: notificationTime,
         recurrenceRule: recurrenceRule,
         parentRecurringTodoId: parentRecurringTodoId,
+        locationLatitude: locationLatitude,
+        locationLongitude: locationLongitude,
+        locationName: locationName,
+        locationRadius: locationRadius,
       );
       return Right(id); // Return actual ID from Supabase
     } catch (e) {

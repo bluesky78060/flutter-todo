@@ -120,6 +120,10 @@ class TodoActions {
     int? categoryId,
     DateTime? notificationTime,
     String? recurrenceRule,
+    double? locationLatitude,
+    double? locationLongitude,
+    String? locationName,
+    double? locationRadius,
   }) async {
     final repository = ref.read(todoRepositoryProvider);
     final result = await repository.createTodo(
@@ -129,6 +133,10 @@ class TodoActions {
       categoryId: categoryId,
       notificationTime: notificationTime,
       recurrenceRule: recurrenceRule,
+      locationLatitude: locationLatitude,
+      locationLongitude: locationLongitude,
+      locationName: locationName,
+      locationRadius: locationRadius,
     );
 
     await result.fold(

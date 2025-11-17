@@ -11,6 +11,7 @@ import 'package:todo_app/presentation/providers/todo_providers.dart';
 import 'package:todo_app/presentation/providers/category_providers.dart';
 import 'package:todo_app/presentation/widgets/recurrence_settings_dialog.dart';
 import 'package:todo_app/presentation/widgets/recurring_edit_dialog.dart';
+import 'package:todo_app/presentation/widgets/location_picker_dialog.dart';
 
 class TodoFormDialog extends ConsumerStatefulWidget {
   final Todo? existingTodo; // null = create mode, not null = edit mode
@@ -29,6 +30,12 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
   int? _selectedCategoryId;
   String? _recurrenceRule;
 
+  // Location fields
+  double? _locationLatitude;
+  double? _locationLongitude;
+  String? _locationName;
+  double? _locationRadius;
+
   bool get _isEditMode => widget.existingTodo != null;
 
   @override
@@ -46,6 +53,10 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
       _selectedNotificationTime = todo.notificationTime;
       _selectedCategoryId = todo.categoryId;
       _recurrenceRule = todo.recurrenceRule;
+      _locationLatitude = todo.locationLatitude;
+      _locationLongitude = todo.locationLongitude;
+      _locationName = todo.locationName;
+      _locationRadius = todo.locationRadius;
     }
   }
 
@@ -160,6 +171,29 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
 
   String _formatDueDate(DateTime date) {
     return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')} ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
+  }
+
+  Future<void> _selectLocation() async {
+    if (!mounted) return;
+
+    final result = await showDialog<LocationPickerResult>(
+      context: context,
+      builder: (context) => LocationPickerDialog(
+        initialLatitude: _locationLatitude,
+        initialLongitude: _locationLongitude,
+        initialName: _locationName,
+        initialRadius: _locationRadius,
+      ),
+    );
+
+    if (result != null && mounted) {
+      setState(() {
+        _locationLatitude = result.latitude;
+        _locationLongitude = result.longitude;
+        _locationName = result.name;
+        _locationRadius = result.radius;
+      });
+    }
   }
 
   Future<void> _selectRecurrence() async {
@@ -304,6 +338,10 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
             dueDate: _selectedDueDate,
             categoryId: _selectedCategoryId,
             notificationTime: _selectedNotificationTime,
+            locationLatitude: _locationLatitude,
+            locationLongitude: _locationLongitude,
+            locationName: _locationName,
+            locationRadius: _locationRadius,
           );
 
           await ref.read(todoActionsProvider).updateTodo(
@@ -319,6 +357,10 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
             categoryId: _selectedCategoryId,
             notificationTime: _selectedNotificationTime,
             recurrenceRule: _recurrenceRule,
+            locationLatitude: _locationLatitude,
+            locationLongitude: _locationLongitude,
+            locationName: _locationName,
+            locationRadius: _locationRadius,
           );
           await ref.read(todoActionsProvider).updateTodo(updatedTodo);
         }
@@ -331,6 +373,10 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
               categoryId: _selectedCategoryId,
               notificationTime: _selectedNotificationTime,
               recurrenceRule: _recurrenceRule,
+              locationLatitude: _locationLatitude,
+              locationLongitude: _locationLongitude,
+              locationName: _locationName,
+              locationRadius: _locationRadius,
             );
       }
       if (mounted) Navigator.of(context).pop();
@@ -770,6 +816,76 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
                             onPressed: () {
                               setState(() {
                                 _recurrenceRule = null;
+                              });
+                            },
+                            icon: const Icon(
+                              FluentIcons.dismiss_24_regular,
+                              color: AppColors.textGray,
+                              size: 18,
+                            ),
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(),
+                          ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+
+            // Location Selection
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  context.locale.languageCode == 'ko' ? '위치 기반 알림 (선택사항)' : 'Location-based Reminder (Optional)',
+                  style: const TextStyle(
+                    color: AppColors.textGray,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                InkWell(
+                  onTap: _selectLocation,
+                  borderRadius: BorderRadius.circular(12),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 14,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.darkInput,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(
+                          FluentIcons.location_24_regular,
+                          color: AppColors.textGray,
+                          size: 20,
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            _locationName ?? (context.locale.languageCode == 'ko' ? '위치 설정' : 'Set Location'),
+                            style: TextStyle(
+                              color: _locationName != null
+                                  ? AppColors.textWhite
+                                  : AppColors.textGray,
+                              fontSize: 16,
+                            ),
+                          ),
+                        ),
+                        if (_locationName != null)
+                          IconButton(
+                            onPressed: () {
+                              setState(() {
+                                _locationLatitude = null;
+                                _locationLongitude = null;
+                                _locationName = null;
+                                _locationRadius = null;
                               });
                             },
                             icon: const Icon(

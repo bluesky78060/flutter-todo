@@ -57,6 +57,10 @@ class SupabaseTodoDataSource {
     DateTime? notificationTime,
     String? recurrenceRule,
     int? parentRecurringTodoId,
+    double? locationLatitude,
+    double? locationLongitude,
+    String? locationName,
+    double? locationRadius,
   }) async {
     try {
       final userId = client.auth.currentUser?.id;
@@ -68,7 +72,8 @@ class SupabaseTodoDataSource {
         logger.d('Creating todo: userId=$userId, title=$title, '
             'categoryId=$categoryId, dueDate=${dueDate?.toIso8601String()}, '
             'notificationTime=${notificationTime?.toIso8601String()}, '
-            'recurrenceRule=$recurrenceRule, parentRecurringTodoId=$parentRecurringTodoId');
+            'recurrenceRule=$recurrenceRule, parentRecurringTodoId=$parentRecurringTodoId, '
+            'location=$locationLatitude,$locationLongitude');
       }
 
       final response = await client.from('todos').insert({
@@ -80,6 +85,10 @@ class SupabaseTodoDataSource {
         'notification_time': notificationTime?.toIso8601String(),
         'recurrence_rule': recurrenceRule,
         'parent_recurring_todo_id': parentRecurringTodoId,
+        'location_latitude': locationLatitude,
+        'location_longitude': locationLongitude,
+        'location_name': locationName,
+        'location_radius': locationRadius,
       }).select('id').single();
 
       if (kDebugMode) {
