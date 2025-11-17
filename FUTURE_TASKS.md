@@ -1,14 +1,21 @@
 # 향후 추가 기능 및 개선 사항
 
-현재 버전: **1.0.8+30**
-최종 업데이트: **2025-11-14**
+현재 버전: **1.0.11+35**
+최종 업데이트: **2025-11-17**
 
 ## 우선순위 분류
 - 🔴 **High**: 핵심 기능, 사용자 경험에 직접적 영향
 - 🟡 **Medium**: 편의성 향상, 부가 기능
 - 🟢 **Low**: Nice-to-have, 장기적 개선
 
-## 최근 완료 작업 (2025-11-13)
+## 최근 완료 작업
+
+### 2025-11-17
+- ✅ 서브태스크 기능 구현 완료
+- ✅ GitHub Actions 테스트 수정 (widget test 번역 의존성 제거)
+- ✅ Google Play 업로드 키 재설정 요청 (AAB 빌드 1.0.11+35)
+
+### 2025-11-13
 - ✅ CI/CD 파이프라인 구축 (GitHub Actions)
 - ✅ 통합 테스트 추가 (TodoActions CRUD)
 - ✅ 137개 테스트 작성 완료 (18-19% 커버리지)
@@ -694,4 +701,58 @@ CREATE TABLE subtasks (
 
 ---
 
-**문서 업데이트**: 2025-11-13
+---
+
+## 14. Google Play 배포 및 키 관리
+
+### 🔴 14.1 업로드 키 재설정 ⏳ **진행 중 (2025-11-17)**
+**문제**: 기존 AAB가 잘못된 키로 서명되어 Google Play 업로드 실패
+**해결 과정**:
+- [x] 연결된 모바일에서 원본 APK 추출 및 서명 정보 확인
+- [x] 원본 인증서 DN과 일치하는 새 업로드 키스토어 생성
+- [x] PEM 인증서 파일 생성 (upload_certificate.pem)
+- [x] Google Play Console에 업로드 키 재설정 요청 제출
+- [x] 새 키로 AAB 빌드 (app-release-1.0.11+35-FINAL.aab)
+- [x] 키스토어 파일 백업 (~/todo_app/keystore_backup/)
+- [ ] Google 승인 대기 (1-2일 예상)
+- [ ] 승인 후 AAB 업로드
+
+**키스토어 정보**:
+```
+파일: android/app/upload-keystore.jks
+SHA-1: AF:1F:9D:DA:7F:0E:66:9A:E8:11:C3:DB:25:27:7E:9C:E6:3E:C6:B1
+SHA-256: B0:8A:AA:B9:68:8E:F1:B6:CF:DD:86:F4:A9:B2:98:6F:8F:AC:62:05:75:03:AF:71:DA:07:C6:72:99:B0:7A:3F
+비밀번호: Dodo2025!@#
+DN: CN=이찬희, OU=개인개발자, O=이찬희, L=경상북도, ST=봉화군, C=KR
+```
+
+**백업 위치**: ~/todo_app/keystore_backup/
+- upload-keystore.jks
+- key.properties
+- upload_certificate.pem
+
+**다음 단계**: Google Play 승인 후 AAB 업로드
+
+---
+
+### 🔴 14.2 Widget 테스트 번역 의존성 제거 ✅ **완료됨 (2025-11-17)**
+**문제**: GitHub Actions에서 EasyLocalization이 번역 파일을 로드하지 못해 7개 테스트 실패
+**해결 방법**:
+- [x] 번역된 텍스트 대신 위젯 속성 직접 검증
+- [x] ProgressCard: 렌더링된 텍스트 → 위젯 데이터 확인
+- [x] CustomTodoItem: 한국어 텍스트 → 아이콘 존재 여부 확인
+- [x] FluentIcons 아이콘으로 notification/recurrence 검증
+
+**수정된 파일**:
+- `test/widget/progress_card_test.dart` (5개 테스트 수정)
+- `test/widget/custom_todo_item_test.dart` (2개 테스트 수정)
+
+**테스트 결과**:
+- 수정 전: 111 passed, 7 failed
+- 수정 후: 128 passed, 13 failed (13개는 integration test로 disabled)
+
+**커밋 정보**: e4ef413 - "fix: Remove hardcoded Korean text from widget tests"
+
+---
+
+**문서 업데이트**: 2025-11-17
