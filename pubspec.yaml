@@ -122,6 +122,7 @@ dev_dependencies:
 
   # Testing
   mockito: ^5.4.4
+  easy_localization_loader: ^2.0.1
 
   # Linting
   flutter_lints: ^5.0.0

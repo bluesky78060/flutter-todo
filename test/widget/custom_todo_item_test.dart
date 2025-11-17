@@ -317,6 +317,7 @@ void main() {
           supportedLocales: const [Locale('en'), Locale('ko')],
           path: 'assets/translations',
           fallbackLocale: const Locale('ko'),
+          assetLoader: const JsonAssetLoader(),
           child: MaterialApp(
             home: Scaffold(
               body: CustomTodoItem(
@@ -352,6 +353,7 @@ void main() {
           supportedLocales: const [Locale('en'), Locale('ko')],
           path: 'assets/translations',
           fallbackLocale: const Locale('ko'),
+          assetLoader: const JsonAssetLoader(),
           child: MaterialApp(
             home: Scaffold(
               body: CustomTodoItem(
