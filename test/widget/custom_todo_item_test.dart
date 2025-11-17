@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:todo_app/domain/entities/todo.dart';
 import 'package:todo_app/presentation/widgets/custom_todo_item.dart';
+import 'package:easy_localization/easy_localization.dart';
+import 'package:easy_localization_loader/easy_localization_loader.dart';
 
 void main() {
   group('CustomTodoItem Widget', () {
@@ -311,17 +313,23 @@ void main() {
 
       // Act
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: CustomTodoItem(
-              todo: testTodo,
-              onToggle: () {},
-              onDelete: () {},
-              onTap: () {},
+        EasyLocalization(
+          supportedLocales: const [Locale('en'), Locale('ko')],
+          path: 'assets/translations',
+          fallbackLocale: const Locale('ko'),
+          child: MaterialApp(
+            home: Scaffold(
+              body: CustomTodoItem(
+                todo: testTodo,
+                onToggle: () {},
+                onDelete: () {},
+                onTap: () {},
+              ),
             ),
           ),
         ),
       );
+      await tester.pumpAndSettle();
 
       // Assert
       expect(find.text('알림: 2026-06-15 13:00'), findsOneWidget);
@@ -340,17 +348,23 @@ void main() {
 
       // Act
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: CustomTodoItem(
-              todo: testTodo,
-              onToggle: () {},
-              onDelete: () {},
-              onTap: () {},
+        EasyLocalization(
+          supportedLocales: const [Locale('en'), Locale('ko')],
+          path: 'assets/translations',
+          fallbackLocale: const Locale('ko'),
+          child: MaterialApp(
+            home: Scaffold(
+              body: CustomTodoItem(
+                todo: testTodo,
+                onToggle: () {},
+                onDelete: () {},
+                onTap: () {},
+              ),
             ),
           ),
         ),
       );
+      await tester.pumpAndSettle();
 
       // Assert
       expect(find.text('반복'), findsOneWidget);

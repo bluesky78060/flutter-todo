@@ -1,21 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:todo_app/presentation/widgets/progress_card.dart';
+import 'package:easy_localization/easy_localization.dart';
+import 'package:easy_localization_loader/easy_localization_loader.dart';
 
 void main() {
   group('ProgressCard Widget', () {
     testWidgets('renders completed and total counts', (WidgetTester tester) async {
       // Arrange & Act
       await tester.pumpWidget(
-        const MaterialApp(
-          home: Scaffold(
-            body: ProgressCard(
-              completed: 5,
-              total: 10,
+        EasyLocalization(
+          supportedLocales: const [Locale('en'), Locale('ko')],
+          path: 'assets/translations',
+          fallbackLocale: const Locale('ko'),
+          child: const MaterialApp(
+            home: Scaffold(
+              body: ProgressCard(
+                completed: 5,
+                total: 10,
+              ),
             ),
           ),
         ),
       );
+      await tester.pumpAndSettle();
 
       // Assert
       expect(find.text('5 / 10 완료'), findsOneWidget);
@@ -24,15 +32,21 @@ void main() {
     testWidgets('renders progress label', (WidgetTester tester) async {
       // Arrange & Act
       await tester.pumpWidget(
-        const MaterialApp(
-          home: Scaffold(
-            body: ProgressCard(
-              completed: 3,
-              total: 7,
+        EasyLocalization(
+          supportedLocales: const [Locale('en'), Locale('ko')],
+          path: 'assets/translations',
+          fallbackLocale: const Locale('ko'),
+          child: const MaterialApp(
+            home: Scaffold(
+              body: ProgressCard(
+                completed: 3,
+                total: 7,
+              ),
             ),
           ),
         ),
       );
+      await tester.pumpAndSettle();
 
       // Assert
       expect(find.text('진행률'), findsOneWidget);
@@ -63,15 +77,21 @@ void main() {
     testWidgets('calculates 100% for full completion', (WidgetTester tester) async {
       // Arrange & Act
       await tester.pumpWidget(
-        const MaterialApp(
-          home: Scaffold(
-            body: ProgressCard(
-              completed: 10,
-              total: 10,
+        EasyLocalization(
+          supportedLocales: const [Locale('en'), Locale('ko')],
+          path: 'assets/translations',
+          fallbackLocale: const Locale('ko'),
+          child: const MaterialApp(
+            home: Scaffold(
+              body: ProgressCard(
+                completed: 10,
+                total: 10,
+              ),
             ),
           ),
         ),
       );
+      await tester.pumpAndSettle();
 
       // Assert
       final progressCard = tester.widget<ProgressCard>(find.byType(ProgressCard));
@@ -82,15 +102,21 @@ void main() {
     testWidgets('calculates 0% for no completion', (WidgetTester tester) async {
       // Arrange & Act
       await tester.pumpWidget(
-        const MaterialApp(
-          home: Scaffold(
-            body: ProgressCard(
-              completed: 0,
-              total: 15,
+        EasyLocalization(
+          supportedLocales: const [Locale('en'), Locale('ko')],
+          path: 'assets/translations',
+          fallbackLocale: const Locale('ko'),
+          child: const MaterialApp(
+            home: Scaffold(
+              body: ProgressCard(
+                completed: 0,
+                total: 15,
+              ),
             ),
           ),
         ),
       );
+      await tester.pumpAndSettle();
 
       // Assert
       final progressCard = tester.widget<ProgressCard>(find.byType(ProgressCard));
@@ -101,15 +127,21 @@ void main() {
     testWidgets('handles zero total correctly', (WidgetTester tester) async {
       // Arrange & Act
       await tester.pumpWidget(
-        const MaterialApp(
-          home: Scaffold(
-            body: ProgressCard(
-              completed: 0,
-              total: 0,
+        EasyLocalization(
+          supportedLocales: const [Locale('en'), Locale('ko')],
+          path: 'assets/translations',
+          fallbackLocale: const Locale('ko'),
+          child: const MaterialApp(
+            home: Scaffold(
+              body: ProgressCard(
+                completed: 0,
+                total: 0,
+              ),
             ),
           ),
         ),
       );
+      await tester.pumpAndSettle();
 
       // Assert
       final progressCard = tester.widget<ProgressCard>(find.byType(ProgressCard));
