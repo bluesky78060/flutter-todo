@@ -59,16 +59,34 @@
 
 ---
 
-### 🟡 1.4 서브태스크 (Subtasks)
+### 🟡 1.4 서브태스크 (Subtasks) ✅ **완료됨 (2025-11-17)**
 **설명**: Todo 내부에 체크리스트 형태의 하위 작업 추가
-**필요 작업**:
-- [ ] Subtask 엔티티 생성 (`parent_todo_id` 외래키)
-- [ ] Todo 상세 화면에 서브태스크 목록 표시
-- [ ] 서브태스크 CRUD 기능
-- [ ] 서브태스크 완료율 계산 및 표시
-- [ ] Supabase RLS 정책 추가
+**완료된 작업**:
+- [x] Subtask 엔티티 생성 (`todo_id` 외래키)
+- [x] Drift 데이터베이스에 Subtasks 테이블 추가
+- [x] SubtaskRepository 인터페이스 및 구현 (로컬 + Supabase)
+- [x] SubtaskProvider 및 SubtaskActions 구현
+- [x] Todo 상세 화면에 서브태스크 목록 표시
+- [x] 서브태스크 CRUD 기능 (추가, 토글, 삭제)
+- [x] 서브태스크 완료율 계산 및 표시
+- [x] Supabase 마이그레이션 SQL 스크립트 작성
+- [x] RLS 정책 추가 (사용자별 격리)
+- [x] 한글/영어 번역 추가
 
-**예상 작업 시간**: 1일
+**수정된 파일**:
+- `lib/domain/entities/subtask.dart` (신규)
+- `lib/domain/repositories/subtask_repository.dart` (신규)
+- `lib/data/repositories/subtask_repository_impl.dart` (신규)
+- `lib/data/repositories/supabase_subtask_repository.dart` (신규)
+- `lib/presentation/providers/subtask_providers.dart` (신규)
+- `lib/data/datasources/local/app_database.dart` (Subtasks 테이블 추가, 스키마 v5)
+- `lib/presentation/screens/todo_detail_screen.dart` (서브태스크 섹션 추가)
+- `assets/translations/ko.json` (서브태스크 관련 키 추가)
+- `assets/translations/en.json` (서브태스크 관련 키 추가)
+- `supabase_subtasks_migration.sql` (신규)
+
+**작업 시간**: 약 2시간
+
 **DB 스키마**:
 ```sql
 CREATE TABLE subtasks (
@@ -78,9 +96,15 @@ CREATE TABLE subtasks (
   title TEXT NOT NULL,
   is_completed BOOLEAN DEFAULT false,
   position INT NOT NULL,
-  created_at TIMESTAMPTZ DEFAULT NOW()
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  completed_at TIMESTAMPTZ
 );
 ```
+
+**다음 단계**:
+- Supabase 콘솔에서 마이그레이션 SQL 실행
+- 코드 생성 (`dart run build_runner build`) 실행
+- 테스트 작성
 
 ---
 

@@ -41,12 +41,24 @@ class Users extends Table {
   DateTimeColumn get createdAt => dateTime()();
 }
 
-@DriftDatabase(tables: [Categories, Todos, Users])
+// Subtasks Table
+class Subtasks extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  IntColumn get todoId => integer().references(Todos, #id, onDelete: KeyAction.cascade)();
+  TextColumn get userId => text()(); // Supabase user UUID
+  TextColumn get title => text().withLength(min: 1, max: 200)();
+  BoolColumn get isCompleted => boolean().withDefault(const Constant(false))();
+  IntColumn get position => integer()(); // For ordering subtasks
+  DateTimeColumn get createdAt => dateTime()();
+  DateTimeColumn get completedAt => dateTime().nullable()();
+}
+
+@DriftDatabase(tables: [Categories, Todos, Users, Subtasks])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
 
   @override
   MigrationStrategy get migration {
@@ -66,6 +78,10 @@ class AppDatabase extends _$AppDatabase {
           // Add recurrence fields for recurring todos
           await migrator.addColumn(todos, todos.recurrenceRule);
           await migrator.addColumn(todos, todos.parentRecurringTodoId);
+        }
+        if (from < 5) {
+          // Add subtasks table
+          await migrator.createTable(subtasks);
         }
       },
     );
@@ -179,6 +195,50 @@ class AppDatabase extends _$AppDatabase {
       );
     }
     return Future.value(false);
+  }
+
+  // Subtask methods
+  Future<List<Subtask>> getSubtasksByTodoId(int todoId) =>
+      (select(subtasks)
+            ..where((s) => s.todoId.equals(todoId))
+            ..orderBy([(s) => OrderingTerm(expression: s.position)]))
+          .get();
+
+  Future<Subtask?> getSubtaskById(int id) =>
+      (select(subtasks)..where((s) => s.id.equals(id))).getSingleOrNull();
+
+  Future<int> insertSubtask(SubtasksCompanion subtask) =>
+      into(subtasks).insert(subtask);
+
+  Future<bool> updateSubtask(Subtask subtask) =>
+      update(subtasks).replace(subtask);
+
+  Future<int> deleteSubtask(int id) =>
+      (delete(subtasks)..where((s) => s.id.equals(id))).go();
+
+  Future<bool> toggleSubtaskCompletion(int id) async {
+    final subtask = await getSubtaskById(id);
+    if (subtask == null) return false;
+
+    return update(subtasks).replace(
+      subtask.copyWith(
+        isCompleted: !subtask.isCompleted,
+        completedAt: Value(!subtask.isCompleted ? DateTime.now() : null),
+      ),
+    );
+  }
+
+  Future<int> deleteSubtasksByTodoId(int todoId) =>
+      (delete(subtasks)..where((s) => s.todoId.equals(todoId))).go();
+
+  // Get subtask completion statistics for a todo
+  Future<Map<String, int>> getSubtaskStats(int todoId) async {
+    final allSubtasks = await getSubtasksByTodoId(todoId);
+    final completedCount = allSubtasks.where((s) => s.isCompleted).length;
+    return {
+      'total': allSubtasks.length,
+      'completed': completedCount,
+    };
   }
 }
 
