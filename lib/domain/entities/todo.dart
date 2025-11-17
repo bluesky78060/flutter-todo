@@ -10,6 +10,8 @@ class Todo {
   final DateTime? notificationTime;
   final String? recurrenceRule; // RRULE format (e.g., "FREQ=DAILY;INTERVAL=1")
   final int? parentRecurringTodoId; // Reference to parent recurring todo
+  final int? snoozeCount; // Number of times snoozed
+  final DateTime? lastSnoozeTime; // Last time the notification was snoozed
 
   const Todo({
     required this.id,
@@ -23,6 +25,8 @@ class Todo {
     this.notificationTime,
     this.recurrenceRule,
     this.parentRecurringTodoId,
+    this.snoozeCount,
+    this.lastSnoozeTime,
   });
 
   Todo copyWith({
@@ -37,6 +41,8 @@ class Todo {
     DateTime? notificationTime,
     String? recurrenceRule,
     int? parentRecurringTodoId,
+    int? snoozeCount,
+    DateTime? lastSnoozeTime,
   }) {
     return Todo(
       id: id ?? this.id,
@@ -50,6 +56,8 @@ class Todo {
       notificationTime: notificationTime ?? this.notificationTime,
       recurrenceRule: recurrenceRule ?? this.recurrenceRule,
       parentRecurringTodoId: parentRecurringTodoId ?? this.parentRecurringTodoId,
+      snoozeCount: snoozeCount ?? this.snoozeCount,
+      lastSnoozeTime: lastSnoozeTime ?? this.lastSnoozeTime,
     );
   }
 }

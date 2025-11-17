@@ -89,6 +89,8 @@ class TodoRepositoryImpl implements TodoRepository {
         notificationTime: todo.notificationTime,
         recurrenceRule: todo.recurrenceRule,
         parentRecurringTodoId: todo.parentRecurringTodoId,
+        snoozeCount: todo.snoozeCount,
+        lastSnoozeTime: todo.lastSnoozeTime,
       );
       await database.updateTodo(dbTodo);
       return const Right(unit);
@@ -157,6 +159,8 @@ class TodoRepositoryImpl implements TodoRepository {
       notificationTime: todo.notificationTime,
       recurrenceRule: todo.recurrenceRule,
       parentRecurringTodoId: todo.parentRecurringTodoId,
+      snoozeCount: todo.snoozeCount,
+      lastSnoozeTime: todo.lastSnoozeTime,
     );
   }
 }

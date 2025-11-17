@@ -311,5 +311,17 @@
   "completed_count_format": "{completed} / {total} completed",
 
   "notification_prefix": "Notification: {time}",
-  "recurring": "Recurring"
+  "recurring": "Recurring",
+
+  "snooze": "Snooze",
+  "snooze_notification": "Snooze Notification",
+  "snooze_for_5_min": "In 5 minutes",
+  "snooze_for_10_min": "In 10 minutes",
+  "snooze_for_30_min": "In 30 minutes",
+  "snooze_for_1_hour": "In 1 hour",
+  "snooze_for_3_hours": "In 3 hours",
+  "snooze_custom": "Custom",
+  "snooze_scheduled": "Notification rescheduled",
+  "snooze_count": "Snoozed {count} times",
+  "last_snoozed": "Last snoozed: {time}"
 }

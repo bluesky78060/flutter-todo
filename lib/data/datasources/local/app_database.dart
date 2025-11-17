@@ -30,6 +30,8 @@ class Todos extends Table {
   DateTimeColumn get notificationTime => dateTime().nullable()();
   TextColumn get recurrenceRule => text().nullable()(); // RRULE format
   IntColumn get parentRecurringTodoId => integer().nullable()(); // Reference to parent recurring todo
+  IntColumn get snoozeCount => integer().nullable().withDefault(const Constant(0))(); // Number of times snoozed
+  DateTimeColumn get lastSnoozeTime => dateTime().nullable()(); // Last time snoozed
 }
 
 // Users Table (for Auth)
@@ -58,7 +60,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 5;
+  int get schemaVersion => 6;
 
   @override
   MigrationStrategy get migration {
@@ -82,6 +84,11 @@ class AppDatabase extends _$AppDatabase {
         if (from < 5) {
           // Add subtasks table
           await migrator.createTable(subtasks);
+        }
+        if (from < 6) {
+          // Add snooze fields for notification snoozing
+          await migrator.addColumn(todos, todos.snoozeCount);
+          await migrator.addColumn(todos, todos.lastSnoozeTime);
         }
       },
     );

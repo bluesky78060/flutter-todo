@@ -112,6 +112,8 @@ class SupabaseTodoDataSource {
       'notification_time': todo.notificationTime?.toIso8601String(),
       'recurrence_rule': todo.recurrenceRule,
       'parent_recurring_todo_id': todo.parentRecurringTodoId,
+      'snooze_count': todo.snoozeCount,
+      'last_snooze_time': todo.lastSnoozeTime?.toIso8601String(),
     }).eq('id', todo.id);
   }
 
@@ -226,6 +228,10 @@ class SupabaseTodoDataSource {
           : null,
       recurrenceRule: json['recurrence_rule'] as String?,
       parentRecurringTodoId: json['parent_recurring_todo_id'] as int?,
+      snoozeCount: json['snooze_count'] as int?,
+      lastSnoozeTime: json['last_snooze_time'] != null
+          ? DateTime.parse(json['last_snooze_time'] as String)
+          : null,
     );
   }
 }

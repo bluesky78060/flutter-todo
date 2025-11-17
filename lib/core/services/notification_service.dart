@@ -581,4 +581,41 @@ class NotificationService {
       return false;
     }
   }
+
+  /// Snooze a notification for a specific duration
+  /// Returns true if snooze was successful
+  Future<bool> snoozeNotification({
+    required int id,
+    required String title,
+    required String body,
+    required Duration snoozeDuration,
+  }) async {
+    try {
+      // Cancel existing notification
+      await cancelNotification(id);
+
+      // Calculate new notification time
+      final newNotificationTime = DateTime.now().add(snoozeDuration);
+
+      // Schedule new notification
+      await scheduleNotification(
+        id: id,
+        title: title,
+        body: body,
+        scheduledDate: newNotificationTime,
+      );
+
+      if (kDebugMode) {
+        print('🔔 Notification snoozed for ${snoozeDuration.inMinutes} minutes');
+        print('   New notification time: $newNotificationTime');
+      }
+
+      return true;
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ Error snoozing notification: $e');
+      }
+      return false;
+    }
+  }
 }
