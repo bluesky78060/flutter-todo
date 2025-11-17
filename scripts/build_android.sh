@@ -6,6 +6,9 @@
 
 set -e  # 오류 발생 시 스크립트 중단
 
+# Flutter 경로 설정
+export PATH="$PATH:/opt/homebrew/share/flutter/bin"
+
 # 색상 코드
 RED='\033[0;31m'
 GREEN='\033[0;32m'
