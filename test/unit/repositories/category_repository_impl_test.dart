@@ -389,6 +389,7 @@ void main() {
             notificationTime: null,
             recurrenceRule: null,
             parentRecurringTodoId: null,
+            snoozeCount: 0,
           ),
           Todo(
             id: 2,
@@ -402,6 +403,7 @@ void main() {
             notificationTime: null,
             recurrenceRule: null,
             parentRecurringTodoId: null,
+            snoozeCount: 0,
           ),
         ];
 

@@ -198,6 +198,8 @@ class AppDatabase extends _$AppDatabase {
           notificationTime: todo.notificationTime.present ? todo.notificationTime.value : null,
           recurrenceRule: todo.recurrenceRule.present ? todo.recurrenceRule.value : null,
           parentRecurringTodoId: todo.parentRecurringTodoId.present ? todo.parentRecurringTodoId.value : null,
+          snoozeCount: todo.snoozeCount.present ? todo.snoozeCount.value : 0,
+          lastSnoozeTime: todo.lastSnoozeTime.present ? todo.lastSnoozeTime.value : null,
         ),
       );
     }
