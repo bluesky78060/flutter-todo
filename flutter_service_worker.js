@@ -15,8 +15,8 @@ const RESOURCES = {"sql-wasm.wasm": "8f5029a1d3545424d4f25647673e5e32",
 "assets/shaders/ink_sparkle.frag": "ecc85a2e95f5e9f53123dcaf8cb9b6ce",
 "assets/AssetManifest.bin.json": "9bbc2d489bc567ef6a218935e4ec3923",
 "assets/assets/icon/app_icon.jpg": "3df857e7ed140a69a2caabaa1529de50",
-"assets/assets/translations/en.json": "d1fbe775f331c16a4d5c76d7b9d52214",
-"assets/assets/translations/ko.json": "e2867d5dec5aa69b811c421e90e3bc18",
+"assets/assets/translations/en.json": "6e6f14921cbe4f449466f2bac8e7b09e",
+"assets/assets/translations/ko.json": "ce22465e6b8bed3915cf679529b9c4bb",
 "assets/fonts/MaterialIcons-Regular.otf": "54a2c1d08c738836824273ac073f556f",
 "assets/NOTICES": "e5a8c62ecd546ce8dfd36832652257ff",
 "assets/packages/fluentui_system_icons/fonts/FluentSystemIcons-Filled.ttf": "96fc0d384dd4ffa2b4f31de1b03bc1dc",
@@ -40,9 +40,9 @@ const RESOURCES = {"sql-wasm.wasm": "8f5029a1d3545424d4f25647673e5e32",
 "sqlite3.wasm": "fa7637a49a0e434f2a98f9981856d118",
 "sql-wasm.js": "6bd05b179c947cce4eea15193868ef14",
 "404.html": "6f797132280938311cb25cfd924321da",
-"flutter_bootstrap.js": "9888f5fe57e67f4312a4f64cff83a7c8",
+"flutter_bootstrap.js": "313342eeb5fc47358c2f17cb10efbd2d",
 "version.json": "2ec1eab9e252d89d699d1af0fe30590a",
-"main.dart.js": "97037f264c2ab47469fd25c157d0215f"};
+"main.dart.js": "92f2acea91bbe5b156d1d67d07c7b995"};
 // The application shell files that are downloaded before a service worker can
 // start.
 const CORE = ["main.dart.js",
