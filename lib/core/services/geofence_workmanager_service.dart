@@ -71,6 +71,109 @@ class GeofenceWorkManagerService {
     // This is a placeholder - in production, store state in SharedPreferences
     return false;
   }
+
+  /// Check geofences immediately (for testing or immediate notification)
+  /// This runs the same logic as the background task but in the foreground
+  static Future<void> checkNow() async {
+    try {
+      AppLogger.info('🔍 Manual geofence check triggered');
+
+      final locationService = LocationService();
+      final notificationService = NotificationService();
+      await notificationService.initialize();
+
+      // Get location permission status
+      final permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied ||
+          permission == LocationPermission.deniedForever) {
+        AppLogger.warning('⚠️ Location permission denied, cannot check geofences');
+        return;
+      }
+
+      // Get current location
+      final currentPosition = await locationService.getCurrentLocation();
+      if (currentPosition == null) {
+        AppLogger.warning('⚠️ Unable to get current location');
+        return;
+      }
+
+      AppLogger.debug(
+        '📍 Current location: ${currentPosition.latitude}, ${currentPosition.longitude}',
+      );
+
+      // Get all todos with location settings from database
+      final database = AppDatabase();
+      final todos = await database.getTodosWithLocation();
+
+      if (todos.isEmpty) {
+        AppLogger.debug('ℹ️ No location-based todos found');
+        await database.close();
+        return;
+      }
+
+      AppLogger.info('📋 Checking ${todos.length} location-based todos');
+
+      // Check each todo's geofence
+      int triggeredCount = 0;
+      for (final todo in todos) {
+        // Skip if todo is already completed
+        if (todo.isCompleted) continue;
+
+        // Skip if no location is set
+        if (todo.locationLatitude == null || todo.locationLongitude == null) {
+          continue;
+        }
+
+        // Calculate distance to geofence
+        final distance = locationService.calculateDistance(
+          currentPosition.latitude,
+          currentPosition.longitude,
+          todo.locationLatitude!,
+          todo.locationLongitude!,
+        );
+
+        final radius = todo.locationRadius ?? 100.0; // Default 100m
+        final isWithin = distance <= radius;
+
+        if (isWithin) {
+          triggeredCount++;
+
+          // Trigger notification
+          await notificationService.showLocationNotification(
+            id: todo.id,
+            title: todo.title,
+            body: todo.description.isNotEmpty
+                ? todo.description
+                : 'You are near ${todo.locationName ?? "your destination"}',
+            distance: distance,
+          );
+
+          AppLogger.info(
+            '🔔 Triggered notification for "${todo.title}" (distance: ${distance.toStringAsFixed(0)}m)',
+          );
+        } else {
+          AppLogger.debug(
+            '📍 "${todo.title}": ${distance.toStringAsFixed(0)}m away (radius: ${radius}m)',
+          );
+        }
+      }
+
+      if (triggeredCount > 0) {
+        AppLogger.info('✅ Triggered $triggeredCount location notifications');
+      } else {
+        AppLogger.debug('ℹ️ No geofences triggered');
+      }
+
+      // Close database
+      await database.close();
+    } catch (e, stackTrace) {
+      AppLogger.error(
+        '❌ Error in manual geofence check',
+        error: e,
+        stackTrace: stackTrace,
+      );
+    }
+  }
 }
 
 /// Background callback for WorkManager

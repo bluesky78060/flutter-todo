@@ -1,4 +1,5 @@
 import 'package:easy_localization/easy_localization.dart' hide TextDirection;
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -12,6 +13,7 @@ import 'package:todo_app/presentation/providers/category_providers.dart';
 import 'package:todo_app/presentation/widgets/recurrence_settings_dialog.dart';
 import 'package:todo_app/presentation/widgets/recurring_edit_dialog.dart';
 import 'package:todo_app/presentation/widgets/location_picker_dialog.dart';
+import 'package:todo_app/core/services/geofence_workmanager_service.dart';
 
 class TodoFormDialog extends ConsumerStatefulWidget {
   final Todo? existingTodo; // null = create mode, not null = edit mode
@@ -379,6 +381,12 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
               locationRadius: _locationRadius,
             );
       }
+
+      // Check geofence immediately if location is set (non-web only)
+      if (!kIsWeb && _locationLatitude != null && _locationLongitude != null) {
+        GeofenceWorkManagerService.checkNow();
+      }
+
       if (mounted) Navigator.of(context).pop();
     } catch (e) {
       if (mounted) {
