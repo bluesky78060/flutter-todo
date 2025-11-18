@@ -15,7 +15,10 @@ class TodoRepositoryImpl implements TodoRepository {
     try {
       final todos = await database.getAllTodos();
       return Right(_mapTodosToEntities(todos));
-    } catch (e) {
+    } catch (e, stackTrace) {
+      // Log detailed error for debugging
+      print('❌ TodoRepositoryImpl.getTodos failed: $e');
+      print('📍 Stack trace: $stackTrace');
       return Left(DatabaseFailure(e.toString()));
     }
   }

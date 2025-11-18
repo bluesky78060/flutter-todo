@@ -11,35 +11,92 @@ class SupabaseTodoDataSource {
 
   // Get all todos for current user
   Future<List<Todo>> getTodos() async {
-    final response = await client
-        .from('todos')
-        .select()
-        .order('created_at', ascending: false);
+    try {
+      if (kDebugMode) {
+        logger.d('🔍 getTodos called');
+      }
 
-    return (response as List).map((json) => _todoFromJson(json)).toList();
+      final response = await client
+          .from('todos')
+          .select()
+          .order('created_at', ascending: false);
+
+      if (kDebugMode) {
+        logger.d('✅ getTodos succeeded, response count: ${(response as List).length}');
+      }
+
+      return (response as List).map((json) => _todoFromJson(json)).toList();
+    } catch (e, stackTrace) {
+      logger.e('❌ getTodos FAILED', error: e, stackTrace: stackTrace);
+
+      // Provide detailed error message
+      if (e.toString().contains('permission')) {
+        throw Exception('권한 오류: Supabase RLS 정책을 확인하세요 - $e');
+      } else if (e.toString().contains('network')) {
+        throw Exception('네트워크 오류: 인터넷 연결을 확인하세요 - $e');
+      } else if (e.toString().contains('column')) {
+        throw Exception('DB 스키마 오류: 컬럼이 존재하지 않습니다 - $e');
+      } else {
+        throw Exception('Supabase 쿼리 실패: ${e.toString()}');
+      }
+    }
   }
 
   // Get filtered todos
   Future<List<Todo>> getFilteredTodos(String filter) async {
-    var query = client.from('todos').select();
+    try {
+      if (kDebugMode) {
+        logger.d('🔍 getFilteredTodos called with filter: $filter');
+      }
 
-    if (filter == 'pending') {
-      query = query.eq('is_completed', false);
-    } else if (filter == 'completed') {
-      query = query.eq('is_completed', true);
+      var query = client.from('todos').select();
+
+      if (filter == 'pending') {
+        query = query.eq('is_completed', false);
+      } else if (filter == 'completed') {
+        query = query.eq('is_completed', true);
+      }
+
+      if (kDebugMode) {
+        logger.d('📡 Executing Supabase query...');
+      }
+
+      final response = await query.order('created_at', ascending: false);
+
+      if (kDebugMode) {
+        logger.d('✅ Supabase query succeeded, response count: ${(response as List).length}');
+      }
+
+      final todos = (response as List).map((json) => _todoFromJson(json)).toList();
+
+      // Filter out master recurring todos (those with recurrence_rule but no parent)
+      // Master todos are templates used only for generating instances
+      final filteredTodos = todos.where((todo) {
+        // Keep todos that are either:
+        // 1. Not recurring (no recurrence_rule), OR
+        // 2. Recurring instances (has parent_recurring_todo_id)
+        return todo.recurrenceRule == null || todo.parentRecurringTodoId != null;
+      }).toList();
+
+      if (kDebugMode) {
+        logger.d('✅ getFilteredTodos completed, returning ${filteredTodos.length} todos');
+      }
+
+      return filteredTodos;
+    } catch (e, stackTrace) {
+      logger.e('❌ getFilteredTodos FAILED', error: e, stackTrace: stackTrace);
+
+      // Provide detailed error message
+      if (e.toString().contains('permission')) {
+        throw Exception('권한 오류: Supabase RLS 정책을 확인하세요 - $e');
+      } else if (e.toString().contains('network')) {
+        throw Exception('네트워크 오류: 인터넷 연결을 확인하세요 - $e');
+      } else if (e.toString().contains('column')) {
+        throw Exception('DB 스키마 오류: 컬럼이 존재하지 않습니다 - $e');
+      } else {
+        throw Exception('Supabase 쿼리 실패: ${e.toString()}');
+      }
     }
-
-    final response = await query.order('created_at', ascending: false);
-    final todos = (response as List).map((json) => _todoFromJson(json)).toList();
-
-    // Filter out master recurring todos (those with recurrence_rule but no parent)
-    // Master todos are templates used only for generating instances
-    return todos.where((todo) {
-      // Keep todos that are either:
-      // 1. Not recurring (no recurrence_rule), OR
-      // 2. Recurring instances (has parent_recurring_todo_id)
-      return todo.recurrenceRule == null || todo.parentRecurringTodoId != null;
-    }).toList();
   }
 
   // Get single todo by ID
@@ -245,10 +302,10 @@ class SupabaseTodoDataSource {
       lastSnoozeTime: json['last_snooze_time'] != null
           ? DateTime.parse(json['last_snooze_time'] as String)
           : null,
-      locationLatitude: json['location_latitude'] as double?,
-      locationLongitude: json['location_longitude'] as double?,
+      locationLatitude: (json['location_latitude'] as num?)?.toDouble(),
+      locationLongitude: (json['location_longitude'] as num?)?.toDouble(),
       locationName: json['location_name'] as String?,
-      locationRadius: json['location_radius'] as double?,
+      locationRadius: (json['location_radius'] as num?)?.toDouble(),
     );
   }
 }

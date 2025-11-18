@@ -10,6 +10,7 @@ QueryExecutor openConnection() {
   return LazyDatabase(() async {
     final dbFolder = await getApplicationDocumentsDirectory();
     final file = File(p.join(dbFolder.path, 'app_database.sqlite'));
-    return NativeDatabase(file, logStatements: false);
+    // Enable logging to debug migration issues
+    return NativeDatabase(file, logStatements: true);
   });
 }
