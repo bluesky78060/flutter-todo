@@ -96,7 +96,9 @@ dependencies:
   # Location & Geofencing
   geolocator: ^13.0.2
   geocoding: ^3.0.0
-  google_maps_flutter: ^2.9.0
+  flutter_naver_map: ^1.2.3
+  http: ^1.2.0  # For Naver Geocoding API
+  geofence_service: ^6.0.0+1  # Background geofencing
 
   # Background Processing (using GitHub repo for Flutter 3.38 compatibility)
   workmanager:

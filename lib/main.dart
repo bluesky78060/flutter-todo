@@ -1,9 +1,10 @@
 import 'dart:async';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:flutter/foundation.dart' show kDebugMode, kIsWeb;
+import 'package:flutter/foundation.dart' show kDebugMode, kIsWeb, defaultTargetPlatform, TargetPlatform;
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:flutter_naver_map/flutter_naver_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 // import 'package:todo_app/core/services/workmanager_notification_service.dart'; // Temporarily disabled
 // import 'package:sentry_flutter/sentry_flutter.dart';  // Temporarily disabled due to Kotlin conflict
@@ -11,9 +12,11 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:todo_app/core/config/supabase_config.dart';
 import 'package:todo_app/core/router/app_router.dart';
+import 'package:todo_app/core/services/geofence_workmanager_service.dart';
 import 'package:todo_app/core/services/notification_service.dart';
 import 'package:todo_app/core/theme/app_colors.dart';
 import 'package:todo_app/presentation/providers/database_provider.dart';
+import 'package:todo_app/presentation/providers/auth_providers.dart';
 import 'package:todo_app/presentation/providers/theme_provider.dart';
 import 'package:todo_app/core/utils/app_logger.dart';
 
@@ -30,6 +33,20 @@ void notificationTapBackground(NotificationResponse notificationResponse) {
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await EasyLocalization.ensureInitialized();
+
+  // Initialize Naver Map SDK
+  // Android에서는 새로운 초기화 방법 사용
+  if (!kIsWeb) {
+    if (defaultTargetPlatform == TargetPlatform.android) {
+      // Android: 새로운 초기화 방법
+      await FlutterNaverMap().init(clientId: 'rzx12utf2x');
+      logger.d('✅ Naver Maps SDK initialized for Android with FlutterNaverMap().init()');
+    } else {
+      // iOS: 기존 방법 유지
+      await NaverMapSdk.instance.initialize(clientId: 'rzx12utf2x');
+      logger.d('✅ Naver Maps SDK initialized for iOS');
+    }
+  }
 
   // Load environment variables from .env file
   await dotenv.load(fileName: '.env');
@@ -111,6 +128,23 @@ Future<void> runAppWithErrorHandling() async {
     // await Sentry.captureException(e, stackTrace: stackTrace);
   }
 
+  // Initialize Geofence WorkManager Service for location-based notifications
+  // Only initialize on mobile platforms, not web
+  if (!kIsWeb) {
+    try {
+      await GeofenceWorkManagerService.initialize();
+      logger.d('✅ Main: Geofence WorkManager service initialized successfully');
+
+      // Start monitoring with 15-minute intervals (Android minimum)
+      await GeofenceWorkManagerService.startMonitoring(intervalMinutes: 15);
+      logger.d('✅ Main: Geofence monitoring started');
+    } catch (e, stackTrace) {
+      logger.e('❌ Main: Failed to initialize geofence service',
+          error: e, stackTrace: stackTrace);
+      // Don't fail the app if geofence service fails to initialize
+    }
+  }
+
   final prefs = await SharedPreferences.getInstance();
 
   runApp(
@@ -140,18 +174,23 @@ class _MyAppState extends ConsumerState<MyApp> {
   void initState() {
     super.initState();
 
-    // Generate recurring todo instances on app startup
+    // Generate recurring todo instances AFTER authentication
+    // We listen to auth state and trigger once when authenticated
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      try {
-        final recurringService = ref.read(recurringTodoServiceProvider);
-        logger.d('🔄 Main: Generating recurring todo instances on app startup');
-        await recurringService.generateUpcomingInstances(lookAheadDays: 30);
-        logger.d('✅ Main: Recurring instances generation completed');
-      } catch (e, stackTrace) {
-        logger.e('❌ Main: Failed to generate recurring instances on startup',
-          error: e, stackTrace: stackTrace);
-        // Don't throw - app should continue even if this fails
-      }
+      ref.listen<bool>(isAuthenticatedProvider, (prev, next) async {
+        // Trigger only on transition to authenticated
+        if (next == true && prev != true) {
+          try {
+            final recurringService = ref.read(recurringTodoServiceProvider);
+            logger.d('🔄 Main: Authenticated - generating recurring todo instances');
+            await recurringService.generateUpcomingInstances(lookAheadDays: 30);
+            logger.d('✅ Main: Recurring instances generation completed');
+          } catch (e, stackTrace) {
+            logger.e('❌ Main: Failed to generate recurring instances after auth',
+                error: e, stackTrace: stackTrace);
+          }
+        }
+      });
     });
   }
 

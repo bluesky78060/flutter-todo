@@ -102,6 +102,10 @@ class MockTodoRepository extends _i1.Mock implements _i2.TodoRepository {
     DateTime? notificationTime,
     String? recurrenceRule,
     int? parentRecurringTodoId,
+    double? locationLatitude,
+    double? locationLongitude,
+    String? locationName,
+    double? locationRadius,
   }) =>
       (super.noSuchMethod(
             Invocation.method(
@@ -112,6 +116,10 @@ class MockTodoRepository extends _i1.Mock implements _i2.TodoRepository {
                 #notificationTime: notificationTime,
                 #recurrenceRule: recurrenceRule,
                 #parentRecurringTodoId: parentRecurringTodoId,
+                #locationLatitude: locationLatitude,
+                #locationLongitude: locationLongitude,
+                #locationName: locationName,
+                #locationRadius: locationRadius,
               },
             ),
             returnValue: _i3.Future<_i4.Either<_i5.Failure, int>>.value(
@@ -125,6 +133,10 @@ class MockTodoRepository extends _i1.Mock implements _i2.TodoRepository {
                     #notificationTime: notificationTime,
                     #recurrenceRule: recurrenceRule,
                     #parentRecurringTodoId: parentRecurringTodoId,
+                    #locationLatitude: locationLatitude,
+                    #locationLongitude: locationLongitude,
+                    #locationName: locationName,
+                    #locationRadius: locationRadius,
                   },
                 ),
               ),

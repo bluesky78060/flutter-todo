@@ -163,6 +163,10 @@ class AppDatabase extends _$AppDatabase {
   Future<int> insertCategory(CategoriesCompanion category) =>
       into(categories).insert(category);
 
+  // Insert category with specific ID (for Supabase sync)
+  Future<void> insertCategoryWithId(CategoriesCompanion category) =>
+      into(categories).insert(category, mode: InsertMode.insertOrReplace);
+
   Future<bool> updateCategory(Category category) =>
       update(categories).replace(category);
 
@@ -188,6 +192,12 @@ class AppDatabase extends _$AppDatabase {
   // Get todos by category
   Future<List<Todo>> getTodosByCategory(int categoryId) =>
       (select(todos)..where((t) => t.categoryId.equals(categoryId))).get();
+
+  // Get all todos with location settings (for geofencing)
+  Future<List<Todo>> getTodosWithLocation() => (select(todos)
+        ..where((t) => t.locationLatitude.isNotNull())
+        ..where((t) => t.locationLongitude.isNotNull()))
+      .get();
 
   // Backup/Restore methods
   Future<int> deleteAllTodos() => delete(todos).go();

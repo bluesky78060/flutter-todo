@@ -21,6 +21,38 @@ class CategoryRepositoryImpl implements CategoryRepository {
   @override
   Future<Either<Failure, List<entity.Category>>> getCategories() async {
     try {
+      // Try to sync from Supabase first if available and user is authenticated
+      if (supabaseDataSource != null) {
+        try {
+          final supabaseCategories = await supabaseDataSource!.getCategories();
+
+          // Sync Supabase categories to local database
+          for (final categoryData in supabaseCategories) {
+            final id = categoryData['id'] as int;
+            final existingCategory = await database.getCategoryById(id);
+
+            if (existingCategory == null) {
+              // Category doesn't exist locally, insert it
+              await database.insertCategoryWithId(
+                CategoriesCompanion.insert(
+                  id: drift.Value(id),
+                  userId: categoryData['user_id'] as String,
+                  name: categoryData['name'] as String,
+                  color: categoryData['color'] as String,
+                  icon: drift.Value(categoryData['icon'] as String?),
+                  createdAt: DateTime.parse(categoryData['created_at'] as String),
+                ),
+              );
+              logger.d('✅ Synced category from Supabase: ${categoryData['name']} (ID: $id)');
+            }
+          }
+        } catch (e) {
+          logger.w('⚠️ Failed to sync categories from Supabase, using local data only', error: e);
+          // Continue with local data even if Supabase sync fails
+        }
+      }
+
+      // Return all categories from local database
       final categories = await database.getAllCategories();
       return Right(_mapCategoriesToEntities(categories));
     } catch (e) {

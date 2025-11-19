@@ -61,7 +61,12 @@
         <!-- Google Maps API Key -->
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="YOUR_GOOGLE_MAPS_API_KEY_HERE" />
+            android:value="${MAPS_API_KEY}" />
+
+        <!-- Naver Map SDK Client ID -->
+        <meta-data
+            android:name="com.naver.maps.map.NCP_KEY_ID"
+            android:value="${NAVER_CLIENT_ID}" />
 
         <!-- Notification receiver for boot completed -->
         <receiver

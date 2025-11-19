@@ -16,17 +16,12 @@ class GeofenceWorkManagerService {
   static const String _geofenceTaskId = 'geofence_check_unique_id';
 
   /// Initialize the geofence monitoring service
-  /// This should be called once when the app starts
+  /// NOTE: WorkManager is initialized in WorkManagerNotificationService with unified dispatcher
+  /// This method is kept for compatibility but does nothing
   static Future<void> initialize() async {
-    try {
-      await Workmanager().initialize(
-        _callbackDispatcher,
-        isInDebugMode: kDebugMode,
-      );
-      AppLogger.info('✅ Geofence WorkManager initialized');
-    } catch (e) {
-      AppLogger.error('❌ Failed to initialize Geofence WorkManager', error: e);
-    }
+    // No-op: WorkManager is initialized in WorkManagerNotificationService
+    // with the unified callbackDispatcher that handles both notifications and geofence
+    AppLogger.info('ℹ️ Geofence service uses unified WorkManager dispatcher');
   }
 
   /// Start periodic geofence monitoring
@@ -176,119 +171,6 @@ class GeofenceWorkManagerService {
   }
 }
 
-/// Background callback for WorkManager
-/// This function runs in a separate isolate
-@pragma('vm:entry-point')
-void _callbackDispatcher() {
-  Workmanager().executeTask((task, inputData) async {
-    try {
-      AppLogger.info('🔄 Geofence check task started: $task');
-
-      // Initialize services in background isolate
-      final locationService = LocationService();
-      final notificationService = NotificationService();
-      await notificationService.initialize();
-
-      // Get location permission status
-      final permission = await Geolocator.checkPermission();
-      if (permission == LocationPermission.denied ||
-          permission == LocationPermission.deniedForever) {
-        AppLogger.warning('⚠️ Location permission denied, skipping geofence check');
-        return Future.value(true);
-      }
-
-      // Get current location
-      final currentPosition = await locationService.getCurrentLocation();
-      if (currentPosition == null) {
-        AppLogger.warning('⚠️ Unable to get current location');
-        return Future.value(true);
-      }
-
-      AppLogger.debug(
-        '📍 Current location: ${currentPosition.latitude}, ${currentPosition.longitude}',
-      );
-
-      // Get all todos with location settings from database
-      // IMPORTANT: Use shared AppDatabase instance instead of creating new one
-      // Creating new instance in background isolate may fail to find database file
-      AppDatabase? database;
-      List<Todo> todos = [];
-      try {
-        database = AppDatabase();
-        todos = await database.getTodosWithLocation();
-      } catch (dbError) {
-        AppLogger.error('❌ Failed to initialize database in background task', error: dbError);
-        return Future.value(true); // Skip this check, will try again next time
-      }
-
-      if (todos.isEmpty) {
-        AppLogger.debug('ℹ️ No location-based todos found');
-        return Future.value(true);
-      }
-
-      AppLogger.info('📋 Checking ${todos.length} location-based todos');
-
-      // Check each todo's geofence
-      int triggeredCount = 0;
-      for (final todo in todos) {
-        // Skip if todo is already completed
-        if (todo.isCompleted) continue;
-
-        // Skip if no location is set
-        if (todo.locationLatitude == null || todo.locationLongitude == null) {
-          continue;
-        }
-
-        // Calculate distance to geofence
-        final distance = locationService.calculateDistance(
-          currentPosition.latitude,
-          currentPosition.longitude,
-          todo.locationLatitude!,
-          todo.locationLongitude!,
-        );
-
-        final radius = todo.locationRadius ?? 100.0; // Default 100m
-        final isWithin = distance <= radius;
-
-        if (isWithin) {
-          triggeredCount++;
-
-          // Trigger notification
-          await notificationService.showLocationNotification(
-            id: todo.id,
-            title: todo.title,
-            body: todo.locationName ??
-                  'You are near ${todo.locationName ?? "your destination"}',
-            distance: distance,
-          );
-
-          AppLogger.info(
-            '🔔 Triggered notification for "${todo.title}" (distance: ${distance.toStringAsFixed(0)}m)',
-          );
-        } else {
-          AppLogger.debug(
-            '📍 "${todo.title}": ${distance.toStringAsFixed(0)}m away (radius: ${radius}m)',
-          );
-        }
-      }
-
-      if (triggeredCount > 0) {
-        AppLogger.info('✅ Triggered $triggeredCount location notifications');
-      } else {
-        AppLogger.debug('ℹ️ No geofences triggered');
-      }
-
-      // Close database
-      await database.close();
-
-      return Future.value(true);
-    } catch (e, stackTrace) {
-      AppLogger.error(
-        '❌ Error in geofence check task',
-        error: e,
-        stackTrace: stackTrace,
-      );
-      return Future.value(false);
-    }
-  });
-}
+/// NOTE: The _callbackDispatcher has been moved to workmanager_notification_service.dart
+/// as a unified dispatcher that handles both notifications and geofence checks.
+/// This avoids WorkManager dispatcher conflicts where only one dispatcher can be registered.

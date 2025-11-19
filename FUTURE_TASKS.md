@@ -1,122 +1,110 @@
 # 향후 추가 기능 및 개선 사항
 
 현재 버전: **1.0.11+35**
-최종 업데이트: **2025-11-17**
+최종 업데이트: **2025-11-18**
 
 ## 우선순위 분류
 - 🔴 **High**: 핵심 기능, 사용자 경험에 직접적 영향
 - 🟡 **Medium**: 편의성 향상, 부가 기능
 - 🟢 **Low**: Nice-to-have, 장기적 개선
 
-## 최근 완료 작업
+---
+
+## ✅ 완료된 작업 (Completed)
+
+### 2025-11-18
+- ✅ **Naver Maps 통합 완료** (Google Maps → Naver Maps 마이그레이션)
+  - 지도 API 전환, 주소 역지오코딩, 위치 검색
+- ✅ **카테고리 Supabase 동기화 구현** (앱 재설치 후 데이터 복원)
+  - `getCategories()` 시 Supabase에서 자동 동기화
+  - 로컬 DB 없어도 클라우드에서 복원
 
 ### 2025-11-17
-- ✅ 서브태스크 기능 구현 완료
-- ✅ GitHub Actions 테스트 수정 (widget test 번역 의존성 제거)
-- ✅ Google Play 업로드 키 재설정 요청 (AAB 빌드 1.0.11+35)
-- ✅ **알림 스누즈 기능 완전 구현** (백엔드, UI, 테스트 모두 완료)
+- ✅ **서브태스크 기능 완전 구현** (1.4)
+  - Subtask 엔티티, Repository, Provider
+  - Todo 상세 화면에 서브태스크 CRUD
+  - Supabase 마이그레이션 SQL
+- ✅ **알림 스누즈 기능 완전 구현** (3.1)
+  - SnoozeDialog, NotificationService 통합
+  - 5분/10분/30분/1시간/3시간 + 커스텀
+- ✅ **GitHub Actions 테스트 수정**
+  - Widget test 번역 의존성 제거
+  - 128개 테스트 통과
+- ✅ **Google Play 업로드 키 재설정 요청** (14.1)
+  - AAB 빌드 1.0.11+35
 
 ### 2025-11-13
-- ✅ CI/CD 파이프라인 구축 (GitHub Actions)
-- ✅ 통합 테스트 추가 (TodoActions CRUD)
-- ✅ 137개 테스트 작성 완료 (18-19% 커버리지)
-- ✅ 핵심 비즈니스 로직 100% 검증
+- ✅ **CI/CD 파이프라인 구축** (12.1)
+  - GitHub Actions, Codecov 통합
+- ✅ **통합 테스트 추가** (9.2)
+  - TodoActions CRUD 통합 테스트 (9개)
+  - 총 137개 테스트, 18-19% 커버리지
+- ✅ **백업 및 복원 기능** (2.1)
+  - JSON 백업/복원, share_plus 통합
+- ✅ **검색 기능** (4.1)
+  - 실시간 검색, debounce 적용
+- ✅ **Apple 로그인** (7.1)
+  - iOS OAuth 연동
+- ✅ **에러 로깅** (8.1)
+  - ErrorHandler, Failure 클래스 계층 구조
+
+### 2025-11-10 이전
+- ✅ **Todo 편집 기능** (1.1)
+  - Todo 수정 다이얼로그, 로컬/Supabase 동시 업데이트
+- ✅ **반복 Todo (Recurring Tasks)** (1.3)
+  - RRULE 형식, 반복 설정 UI
+  - RecurringTodoService, RecurrenceSettingsDialog
 
 ---
 
-## 1. 핵심 기능 추가 (Core Features)
+## 🚧 진행 중 작업 (In Progress)
 
-### 🔴 1.1 Todo 편집 기능 ✅
-**현재 상태**: ~~Todo 생성, 삭제, 완료/미완료 토글만 가능~~ **완료됨 (2025-11-10)**
+### 🔴 3.2 위치 기반 알림 (Phase 3-4 남음)
+**현재 상태**: Phase 1-2 완료, Phase 3 수동 작업 필요
+
 **완료된 작업**:
-- [x] Todo 수정 다이얼로그 추가
-- [x] 기존 Todo 정보 폼에 자동 입력
-- [x] 제목, 설명, 마감일, 알림 시간, 카테고리 수정 가능
-- [x] 로컬 DB 및 Supabase 동시 업데이트
+- ✅ Phase 1: Infrastructure (DB, Repository, LocationService)
+- ✅ Phase 2: UI Integration (LocationPickerDialog, Todo Form)
+- ✅ Phase 3: Google Maps API 인프라 구축
 
-**예상 작업 시간**: 2-3시간
-**파일 수정**:
-- `lib/presentation/widgets/todo_form_dialog.dart` (수정 모드 추가)
-- `lib/presentation/providers/todo_providers.dart` (updateTodo 액션)
-- `lib/data/repositories/todo_repository_impl.dart`
+**남은 작업 (Phase 3 - 사용자 수동 작업 필요)**:
+- [ ] Google Cloud Console에서 API 키 발급
+- [ ] `android/local.properties` 파일 생성 및 API 키 입력
+- [ ] Supabase에서 location migration SQL 실행
+
+**남은 작업 (Phase 4 - 향후 구현)**:
+- [ ] Geofencing 백그라운드 모니터링 (geofence_service_flutter)
+- [ ] 위치 도달 시 알림 트리거
+- [ ] iOS 권한 설정 (Info.plist)
+- [ ] 배터리 최적화
+
+**참고 문서**:
+- `GOOGLE_MAPS_SETUP.md` - Google Maps API 상세 가이드
+- `LOCATION_SETUP_GUIDE.md` - 전체 설정 가이드
 
 ---
 
+### 🔴 14.1 업로드 키 재설정 (Google Play)
+**현재 상태**: 요청 제출 완료, 승인 대기 중
 
-### 🔴 1.3 반복 Todo (Recurring Tasks) ✅ **완료됨 (2025-11-13)**
-**설명**: 매일, 매주, 매월 반복되는 할 일 설정
 **완료된 작업**:
-- [x] Todo 엔티티에 `recurrenceRule` 필드 추가 (RRULE 형식)
-- [x] 반복 설정 UI (주기, 요일, 종료일 선택)
-- [x] 반복 Todo 자동 생성 로직 (백그라운드 작업)
-- [x] 반복 시리즈 관리 (개별 인스턴스 vs 전체 시리즈 수정/삭제)
-- [x] rrule 패키지 통합 (^0.2.16)
-- [x] RecurringTodoService 구현
-- [x] RecurrenceSettingsDialog 위젯 추가
-- [x] RecurringEditDialog, RecurringDeleteDialog 추가
-
-**수정된 파일**:
-- `lib/domain/entities/todo.dart` (recurrenceRule, seriesId 추가)
-- `lib/core/services/recurring_todo_service.dart` (신규)
-- `lib/presentation/widgets/recurrence_settings_dialog.dart` (신규)
-- `lib/presentation/widgets/recurring_edit_dialog.dart` (신규)
-- `lib/presentation/widgets/recurring_delete_dialog.dart` (신규)
-- `lib/core/utils/recurrence_utils.dart` (신규)
-
-**커밋 정보**: ecf73ca, ba231c9, ebae2dd, 78def8f, 5cfd6be
-
----
-
-### 🟡 1.4 서브태스크 (Subtasks) ✅ **완료됨 (2025-11-17)**
-**설명**: Todo 내부에 체크리스트 형태의 하위 작업 추가
-**완료된 작업**:
-- [x] Subtask 엔티티 생성 (`todo_id` 외래키)
-- [x] Drift 데이터베이스에 Subtasks 테이블 추가
-- [x] SubtaskRepository 인터페이스 및 구현 (로컬 + Supabase)
-- [x] SubtaskProvider 및 SubtaskActions 구현
-- [x] Todo 상세 화면에 서브태스크 목록 표시
-- [x] 서브태스크 CRUD 기능 (추가, 토글, 삭제)
-- [x] 서브태스크 완료율 계산 및 표시
-- [x] Supabase 마이그레이션 SQL 스크립트 작성
-- [x] RLS 정책 추가 (사용자별 격리)
-- [x] 한글/영어 번역 추가
-
-**수정된 파일**:
-- `lib/domain/entities/subtask.dart` (신규)
-- `lib/domain/repositories/subtask_repository.dart` (신규)
-- `lib/data/repositories/subtask_repository_impl.dart` (신규)
-- `lib/data/repositories/supabase_subtask_repository.dart` (신규)
-- `lib/presentation/providers/subtask_providers.dart` (신규)
-- `lib/data/datasources/local/app_database.dart` (Subtasks 테이블 추가, 스키마 v5)
-- `lib/presentation/screens/todo_detail_screen.dart` (서브태스크 섹션 추가)
-- `assets/translations/ko.json` (서브태스크 관련 키 추가)
-- `assets/translations/en.json` (서브태스크 관련 키 추가)
-- `supabase_subtasks_migration.sql` (신규)
-
-**작업 시간**: 약 2시간
-
-**DB 스키마**:
-```sql
-CREATE TABLE subtasks (
-  id BIGSERIAL PRIMARY KEY,
-  todo_id BIGINT REFERENCES todos(id) ON DELETE CASCADE,
-  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
-  title TEXT NOT NULL,
-  is_completed BOOLEAN DEFAULT false,
-  position INT NOT NULL,
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  completed_at TIMESTAMPTZ
-);
-```
+- ✅ 원본 APK 추출 및 서명 정보 확인
+- ✅ 새 업로드 키스토어 생성
+- ✅ PEM 인증서 파일 생성
+- ✅ Google Play Console에 재설정 요청 제출
+- ✅ 새 키로 AAB 빌드 (1.0.11+35-FINAL.aab)
 
 **다음 단계**:
-- Supabase 콘솔에서 마이그레이션 SQL 실행
-- 코드 생성 (`dart run build_runner build`) 실행
-- 테스트 작성
+- [ ] Google 승인 대기 (1-2일 예상)
+- [ ] 승인 후 AAB 업로드
 
 ---
 
-### 🟡 1.5 첨부파일 지원
+## 📋 향후 작업 (Upcoming Tasks)
+
+### 1. 핵심 기능 추가 (Core Features)
+
+#### 🟡 1.5 첨부파일 지원
 **설명**: Todo에 이미지, 문서 파일 첨부
 **필요 작업**:
 - [ ] Supabase Storage 버킷 생성 및 RLS 설정
@@ -126,32 +114,12 @@ CREATE TABLE subtasks (
 - [ ] 파일 삭제 및 용량 제한 관리
 
 **예상 작업 시간**: 1-2일
-**기술 스택**: `image_picker`, `file_picker`, Supabase Storage
 
 ---
 
-## 2. 데이터 관리 및 동기화
+### 2. 데이터 관리 및 동기화
 
-### 🔴 2.1 백업 및 복원 기능 구현 ✅ **완료됨 (2025-11-13)**
-**설명**: 모든 데이터를 JSON으로 백업하고 복원하는 기능
-**완료된 작업**:
-- [x] JSON 형식으로 모든 데이터 내보내기 (todos, categories)
-- [x] 파일 시스템에 저장 (share_plus 통합)
-- [x] JSON 파일에서 데이터 복원 (file_picker 통합)
-- [x] 기존 데이터와 충돌 처리 로직 (병합 방식)
-- [x] 백업/복원 UI (설정 화면)
-- [x] 에러 핸들링 및 사용자 피드백
-
-**수정된 파일**:
-- `lib/presentation/screens/settings_screen.dart` (백업/복원 UI 추가)
-- `lib/core/services/backup_service.dart` (신규)
-- `pubspec.yaml` (file_picker, share_plus 추가)
-
-**커밋 정보**: 최근 커밋에 포함
-
----
-
-### 🟡 2.2 오프라인 모드 개선
+#### 🟡 2.2 오프라인 모드 개선
 **현재 상태**: Drift로 로컬 저장, 온라인 시 Supabase 동기화
 **개선 사항**:
 - [ ] 오프라인 상태 감지 UI 표시
@@ -163,7 +131,7 @@ CREATE TABLE subtasks (
 
 ---
 
-### 🟢 2.3 데이터 내보내기 (CSV, PDF)
+#### 🟢 2.3 데이터 내보내기 (CSV, PDF)
 **설명**: Todo 목록을 CSV 또는 PDF로 내보내기
 **필요 작업**:
 - [ ] CSV 생성 로직 (`csv` 패키지)
@@ -175,128 +143,9 @@ CREATE TABLE subtasks (
 
 ---
 
-## 3. 알림 및 스케줄링
+### 3. 알림 및 스케줄링
 
-### 🔴 3.1 스누즈 기능 ✅ **완료됨 (2025-11-17)**
-**설명**: 알림을 특정 시간만큼 미루기
-
-**완료된 작업**:
-- [x] Todo 엔티티에 snoozeCount, lastSnoozeTime 필드 추가
-- [x] Drift 데이터베이스 스키마 업데이트 (v5 → v6)
-- [x] Supabase 마이그레이션 SQL 작성
-- [x] Repository 레이어 업데이트
-- [x] NotificationService에 snoozeNotification() 메서드 추가
-- [x] SnoozeDialog 위젯 생성 (5분, 10분, 30분, 1시간, 3시간 + 커스텀)
-- [x] Todo 상세 화면에 스누즈 버튼 통합
-- [x] 스누즈 횟수 표시 기능
-- [x] 한국어/영어 번역 추가
-- [x] 모든 테스트 통과 (128개)
-
-**실제 작업 시간**: 약 2시간
-**수정된 파일**:
-- `lib/domain/entities/todo.dart`
-- `lib/data/datasources/local/app_database.dart`
-- `lib/data/datasources/remote/supabase_datasource.dart`
-- `lib/data/repositories/todo_repository_impl.dart`
-- `lib/core/services/notification_service.dart`
-- `lib/presentation/widgets/snooze_dialog.dart` (신규)
-- `lib/presentation/screens/todo_detail_screen.dart`
-- `assets/translations/ko.json`, `en.json`
-- `test/unit/repositories/todo_repository_impl_test.dart`
-- `test/unit/repositories/category_repository_impl_test.dart`
-
-**커밋**:
-- 97bf933: feat: Add snooze functionality for notifications
-- 80fe1c0: fix: Make snoozeCount non-nullable with default value 0
-- 434cb88: test: Add snoozeCount parameter to test fixtures
-- 64d9e73: feat: Integrate snooze functionality in Todo detail screen
-- 288f753: docs: Update FUTURE_TASKS.md with completed snooze feature
-- d2e5b28: i18n: Replace hardcoded Korean text in snooze UI
-
-**완료 상태**: 100% (모든 기능 구현 및 테스트 완료)
-**남은 작업**:
-- [ ] Supabase 마이그레이션 실행 (사용자가 직접 실행 필요)
-
----
-
-### 🟡 3.2 위치 기반 알림 🚧 **진행 중 (2025-11-17)**
-**설명**: 특정 장소 도착 시 알림
-
-**Phase 1: Infrastructure (완료)**
-- [x] Dependencies 추가 (geolocator, geocoding, google_maps_flutter)
-- [x] Todo 엔티티에 위치 필드 추가 (latitude, longitude, name, radius)
-- [x] Drift 스키마 v6 → v7 마이그레이션
-- [x] Supabase 마이그레이션 SQL 작성 (supabase_location_migration.sql)
-- [x] Repository/DataSource 업데이트 (위치 필드 매핑)
-- [x] LocationService 구현 (권한, 현재 위치, 주소 변환, geofence 체크)
-- [x] 한국어/영어 번역 추가 (14개 키)
-
-**Phase 2: UI Integration (완료 - 2025-11-17)**
-- [x] LocationPickerDialog 구현 (Google Maps 통합)
-  - 현재 위치 버튼, 맵 탭으로 위치 선택
-  - 주소 역지오코딩, 위치 이름 입력
-  - Geofence 원형 표시 (50-1000m 슬라이더)
-- [x] Todo 폼에 위치 설정 기능 추가
-  - 위치 선택 버튼, 선택된 위치 표시
-  - 위치 삭제 기능
-- [x] Todo 상세 화면에 위치 정보 표시
-  - 위치 이름 또는 좌표 표시
-  - Geofence 반경 표시
-- [x] Android 권한 설정
-  - ACCESS_FINE_LOCATION, ACCESS_COARSE_LOCATION
-  - ACCESS_BACKGROUND_LOCATION
-  - Google Maps API 키 placeholder
-
-**수정된 파일**:
-- `lib/presentation/widgets/location_picker_dialog.dart` (신규, 341 lines)
-- `lib/presentation/widgets/todo_form_dialog.dart` (위치 UI 및 상태)
-- `lib/presentation/screens/todo_detail_screen.dart` (위치 정보 표시)
-- `lib/presentation/providers/todo_providers.dart` (위치 파라미터)
-- `lib/domain/repositories/todo_repository.dart` (인터페이스 업데이트)
-- `lib/data/repositories/todo_repository_impl.dart` (로컬 저장소)
-- `lib/data/repositories/supabase_todo_repository.dart` (원격 저장소)
-- `lib/data/datasources/remote/supabase_datasource.dart` (동기화)
-- `android/app/src/main/AndroidManifest.xml` (권한 및 API 키)
-
-**실제 작업 시간**: 약 3.5시간 (Phase 1: 1.5h, Phase 2: 2h)
-
-**커밋 정보**:
-- f8eb164: feat: Add location-based notification infrastructure
-- 414c085: feat: Add location-based notification UI integration
-
-**Phase 3: Google Maps API 및 Supabase 설정 (수동 작업 필요 - 2025-11-17)**
-- [x] Google Maps API 키 환경변수 인프라 구축
-  - build.gradle.kts에서 local.properties 읽기
-  - manifestPlaceholders를 통한 API 키 주입
-  - .gitignore에 local.properties 추가
-  - local.properties.example 템플릿 생성
-- [x] 상세 설정 가이드 문서 작성
-  - GOOGLE_MAPS_SETUP.md (API 키 발급, SHA-1, 제한 설정)
-  - LOCATION_SETUP_GUIDE.md (통합 설정 가이드)
-- [ ] **사용자 수동 작업 필요**:
-  - [ ] Google Cloud Console에서 API 키 발급
-  - [ ] android/local.properties 파일 생성 및 API 키 입력
-  - [ ] Supabase에서 location migration SQL 실행
-
-**새로 생성된 파일**:
-- `GOOGLE_MAPS_SETUP.md` - Google Maps API 상세 가이드
-- `LOCATION_SETUP_GUIDE.md` - 전체 설정 가이드 및 테스트 체크리스트
-- `android/local.properties.example` - 환경변수 템플릿
-- `.gitignore` 업데이트 (line 56: android/local.properties)
-- `android/app/build.gradle.kts` 업데이트 (API 키 주입 로직)
-
-**남은 작업** (Phase 4, 향후 구현 예정):
-- [ ] Geofencing 백그라운드 모니터링 (geofence_service_flutter)
-- [ ] 위치 도달 시 알림 트리거
-- [ ] iOS 권한 설정 (Info.plist)
-- [ ] 배터리 최적화 (geofence 수 제한, 적응형 폴링)
-
-**예상 작업 시간 (Phase 4)**: 1-2일
-**기술 고려사항**: 배터리 소모 최적화, 백그라운드 위치 모니터링 구현 필요
-
----
-
-### 🟢 3.3 알림 우선순위 설정
+#### 🟢 3.3 알림 우선순위 설정
 **설명**: Todo 중요도에 따라 알림 방식 차별화
 **필요 작업**:
 - [ ] Todo에 `priority` 필드 추가 (High, Medium, Low)
@@ -307,29 +156,9 @@ CREATE TABLE subtasks (
 
 ---
 
-## 4. 사용자 경험 개선
+### 4. 사용자 경험 개선
 
-### 🔴 4.1 검색 기능 ✅ **완료됨 (2025-11-13)**
-**설명**: 제목, 설명, 카테고리로 Todo 검색
-**완료된 작업**:
-- [x] 검색 바 UI 추가 (Todo 목록 상단)
-- [x] 실시간 검색 기능 (debounce 적용)
-- [x] 제목/설명 기반 검색
-- [x] 검색 결과 필터링
-
-**수정된 파일**:
-- `lib/presentation/screens/todo_list_screen.dart` (검색 바 추가)
-- `lib/presentation/providers/todo_providers.dart` (검색 로직)
-
-**향후 개선**:
-- [ ] 검색 히스토리 저장 및 자동완성
-- [ ] 고급 검색 (날짜 범위, 완료 여부, 카테고리 필터)
-
-**커밋 정보**: 최근 커밋에 포함
-
----
-
-### 🟡 4.2 드래그 앤 드롭 정렬
+#### 🟡 4.2 드래그 앤 드롭 정렬
 **설명**: Todo 순서를 드래그로 변경
 **필요 작업**:
 - [ ] `ReorderableListView` 사용
@@ -341,7 +170,7 @@ CREATE TABLE subtasks (
 
 ---
 
-### 🟡 4.3 테마 커스터마이징
+#### 🟡 4.3 테마 커스터마이징
 **현재 상태**: 다크/라이트 모드만 지원
 **개선 사항**:
 - [ ] 커스텀 색상 테마 선택 (블루, 그린, 퍼플 등)
@@ -350,13 +179,10 @@ CREATE TABLE subtasks (
 - [ ] 설정 화면에 테마 미리보기
 
 **예상 작업 시간**: 6-8시간
-**파일 수정**:
-- `lib/core/theme/app_colors.dart`
-- `lib/presentation/providers/theme_provider.dart`
 
 ---
 
-### 🟢 4.4 위젯 (홈 화면 위젯)
+#### 🟢 4.4 위젯 (홈 화면 위젯)
 **설명**: 앱 실행 없이 홈 화면에서 Todo 확인
 **필요 작업**:
 - [ ] Android 위젯 구현 (`home_widget`)
@@ -365,13 +191,12 @@ CREATE TABLE subtasks (
 - [ ] 위젯 사이즈 옵션 (small, medium, large)
 
 **예상 작업 시간**: 3-5일
-**기술 스택**: `home_widget` 패키지
 
 ---
 
-## 5. 협업 및 공유
+### 5. 협업 및 공유
 
-### 🟡 5.1 Todo 공유
+#### 🟡 5.1 Todo 공유
 **설명**: 특정 Todo를 다른 사용자와 공유
 **필요 작업**:
 - [ ] 공유 링크 생성 (딥링크)
@@ -380,27 +205,25 @@ CREATE TABLE subtasks (
 - [ ] Supabase RLS 정책 수정
 
 **예상 작업 시간**: 1-2일
-**기술 스택**: `uni_links` 또는 `app_links`
 
 ---
 
-### 🟢 5.2 팀 협업 기능
+#### 🟢 5.2 팀 협업 기능
 **설명**: 여러 사용자가 같은 Todo 목록 공동 작업
 **필요 작업**:
 - [ ] 워크스페이스 개념 도입
 - [ ] 사용자 초대 시스템
 - [ ] 실시간 협업 (Supabase Realtime)
 - [ ] 역할 기반 권한 (Owner, Editor, Viewer)
-- [ ] 활동 로그 (누가 언제 무엇을 변경했는지)
+- [ ] 활동 로그
 
 **예상 작업 시간**: 1-2주
-**DB 스키마**: `workspaces`, `workspace_members`, `permissions` 테이블 추가
 
 ---
 
-## 6. 통계 및 분석
+### 6. 통계 및 분석
 
-### 🟡 6.1 통계 화면 개선
+#### 🟡 6.1 통계 화면 개선
 **현재 상태**: 기본적인 통계만 표시
 **개선 사항**:
 - [ ] 주간/월간/연간 완료율 추이 그래프
@@ -413,42 +236,21 @@ CREATE TABLE subtasks (
 
 ---
 
-### 🟢 6.2 타임 트래킹
+#### 🟢 6.2 타임 트래킹
 **설명**: Todo별 작업 시간 측정
 **필요 작업**:
 - [ ] 타이머 기능 (시작/일시정지/종료)
-- [ ] 타임 엔트리 저장 (시작 시간, 종료 시간, 소요 시간)
+- [ ] 타임 엔트리 저장
 - [ ] Todo별 총 작업 시간 표시
 - [ ] 일일/주간 작업 시간 리포트
 
 **예상 작업 시간**: 1-2일
-**DB 스키마**: `time_entries` 테이블 추가
 
 ---
 
-## 7. 인증 및 계정 관리
+### 7. 인증 및 계정 관리
 
-### 🔴 7.1 Apple 로그인 추가 ✅ **완료됨 (2025-11-13)**
-**설명**: iOS 앱 스토어 요구사항 충족
-**완료된 작업**:
-- [x] Supabase Apple OAuth 연동
-- [x] sign_in_with_apple 패키지 통합 (^6.1.0)
-- [x] 로그인 화면에 Apple 로그인 버튼 추가
-- [x] iOS 플랫폼 감지 및 조건부 버튼 표시
-- [x] 한국어/영어 번역 추가 (apple_login, apple_login_failed)
-- [x] 에러 핸들링 및 로깅
-
-**수정된 파일**:
-- `lib/presentation/screens/stylish_login_screen.dart` (Apple 로그인 버튼 및 로직 추가)
-- `assets/translations/ko.json` (apple_login 키 추가)
-- `assets/translations/en.json` (apple_login 키 추가)
-- `pubspec.yaml` (sign_in_with_apple: ^6.1.0 추가)
-
-**커밋 정보**: v1.0.8 릴리스에 포함
-
----
-
-### 🟡 7.2 프로필 관리
+#### 🟡 7.2 프로필 관리
 **설명**: 사용자 프로필 사진, 이름 변경
 **필요 작업**:
 - [ ] 프로필 편집 화면 추가
@@ -457,49 +259,26 @@ CREATE TABLE subtasks (
 - [ ] Supabase Auth 메타데이터 업데이트
 
 **예상 작업 시간**: 4-6시간
-**파일 추가**: `lib/presentation/screens/profile_edit_screen.dart`
 
 ---
 
-### 🟢 7.3 계정 삭제
+#### 🟢 7.3 계정 삭제
 **설명**: 사용자가 계정 및 모든 데이터 삭제
 **필요 작업**:
 - [ ] 계정 삭제 UI (설정 화면)
 - [ ] 확인 다이얼로그 (비밀번호 재입력)
-- [ ] Supabase Auth 계정 삭제 (CASCADE로 todos, categories 자동 삭제)
+- [ ] Supabase Auth 계정 삭제
 - [ ] 로컬 DB 초기화
 
 **예상 작업 시간**: 3-4시간
 
 ---
 
-## 8. 성능 및 안정성
+### 8. 성능 및 안정성
 
-### 🔴 8.1 에러 로깅 및 크래시 리포팅 ✅ **부분 완료 (2025-11-13)**
-**완료된 작업**:
-- [x] ErrorHandler 유틸리티 클래스 구현
-- [x] Failure 클래스 계층 구조 완성 (DatabaseFailure, NetworkFailure, ServerFailure, CacheFailure, ValidationFailure, AuthenticationFailure)
-- [x] 전역 에러 핸들링 인프라 구축
-- [x] 로거 통합 (logger 패키지)
-- [x] 에러 메시지 다국어화 지원
-
-**수정된 파일**:
-- `lib/core/errors/error_handler.dart` (신규)
-- `lib/core/errors/failures.dart` (4개 Failure 클래스 추가)
-- `lib/core/utils/app_logger.dart` (로거 설정)
-
-**향후 작업**:
-- [ ] Sentry 통합 (현재 Kotlin 버전 충돌로 비활성화)
-- [ ] 네트워크 에러 재시도 로직
-
-**커밋 정보**: v1.0.8 릴리스에 포함
-
----
-
-### 🟡 8.2 성능 최적화
+#### 🟡 8.2 성능 최적화
 **필요 작업**:
 - [ ] 이미지 캐싱 (`cached_network_image`)
-- [ ] 리스트 가상화 (이미 `ListView.builder` 사용 중)
 - [ ] Riverpod provider 최적화 (불필요한 rebuild 방지)
 - [ ] Bundle 크기 최적화
 
@@ -507,21 +286,21 @@ CREATE TABLE subtasks (
 
 ---
 
-### 🟡 8.3 테스트 커버리지 증가
-**현재 상태**: 기본 위젯 테스트만 존재
+#### 🟡 8.3 테스트 커버리지 증가
+**현재 상태**: 18-19% 커버리지 (137개 테스트)
 **필요 작업**:
 - [ ] 유닛 테스트 작성 (repositories, providers)
 - [ ] 위젯 테스트 확대 (모든 주요 화면)
-- [ ] 통합 테스트 작성
-- [ ] CI/CD에 자동 테스트 통합
+- [ ] 통합 테스트 추가
+- [ ] E2E 테스트 (integration_test)
 
 **예상 작업 시간**: 지속적
 
 ---
 
-## 9. 접근성 및 국제화
+### 9. 접근성 및 국제화
 
-### 🟡 9.1 접근성 개선
+#### 🟡 9.1 접근성 개선
 **필요 작업**:
 - [ ] 스크린 리더 지원 (Semantics 위젯)
 - [ ] 키보드 내비게이션
@@ -532,23 +311,21 @@ CREATE TABLE subtasks (
 
 ---
 
-### 🟡 9.2 추가 언어 지원
+#### 🟡 9.2 추가 언어 지원
 **현재 상태**: 한국어, 영어만 지원
 **추가 언어**: 일본어, 중국어(간체/번체), 스페인어 등
 **필요 작업**:
 - [ ] 번역 파일 추가 (`assets/translations/`)
-- [ ] 번역 크라우드소싱 또는 전문 번역
 - [ ] 언어 선택 UI (설정 화면)
 
 **예상 작업 시간**: 언어당 4-6시간
 
 ---
 
-## 10. 마케팅 및 수익화
+### 10. 마케팅 및 수익화
 
-### 🟢 10.1 프리미엄 기능 (In-App Purchase)
+#### 🟢 10.1 프리미엄 기능 (In-App Purchase)
 **설명**: 무료 + 프리미엄 모델
-**무료 기능**: 기본 Todo, 알림, 카테고리
 **프리미엄 기능**:
 - 무제한 첨부파일
 - 고급 통계
@@ -559,41 +336,38 @@ CREATE TABLE subtasks (
 **필요 작업**:
 - [ ] `in_app_purchase` 패키지 통합
 - [ ] App Store / Play Store 인앱 상품 설정
-- [ ] 프리미엄 상태 관리 (Supabase 또는 로컬)
 - [ ] 페이월 UI
 
 **예상 작업 시간**: 1-2주
 
 ---
 
-### 🟢 10.2 광고 통합 (AdMob)
+#### 🟢 10.2 광고 통합 (AdMob)
 **필요 작업**:
 - [ ] `google_mobile_ads` 패키지 통합
-- [ ] 배너 광고 (Todo 목록 하단)
-- [ ] 전면 광고 (특정 액션 후)
-- [ ] 프리미엄 사용자는 광고 제거
+- [ ] 배너 광고, 전면 광고
+- [ ] 프리미엄 사용자 광고 제거
 
 **예상 작업 시간**: 4-6시간
 
 ---
 
-## 11. 플랫폼별 최적화
+### 11. 플랫폼별 최적화
 
-### 🟡 11.1 iPad / 태블릿 레이아웃
+#### 🟡 11.1 iPad / 태블릿 레이아웃
 **필요 작업**:
 - [ ] 반응형 레이아웃 (split view)
-- [ ] 태블릿 전용 내비게이션 (drawer vs bottom nav)
+- [ ] 태블릿 전용 내비게이션
 - [ ] 멀티 윈도우 지원
 
 **예상 작업 시간**: 1-2일
 
 ---
 
-### 🟢 11.2 웹 앱 최적화
-**현재 상태**: 모바일 우선 디자인
+#### 🟢 11.2 웹 앱 최적화
 **필요 작업**:
 - [ ] 데스크톱 레이아웃 개선
-- [ ] 키보드 단축키 (Ctrl+N: 새 Todo, etc.)
+- [ ] 키보드 단축키
 - [ ] PWA 매니페스트 최적화
 - [ ] SEO 메타 태그
 
@@ -601,32 +375,9 @@ CREATE TABLE subtasks (
 
 ---
 
-## 12. 개발자 경험 개선
+### 12. 개발자 경험 개선
 
-### 🔴 12.1 CI/CD 파이프라인 ✅ **완료됨 (2025-11-13)**
-**설명**: GitHub Actions를 통한 자동화된 빌드 및 테스트 파이프라인
-**완료된 작업**:
-- [x] GitHub Actions 워크플로우 설정
-- [x] 자동 빌드 및 테스트 (push/PR 시)
-- [x] 커버리지 리포트 생성 (lcov + HTML)
-- [x] Codecov 통합
-- [x] PR 커버리지 코멘트 자동 추가
-- [x] 커버리지 임계값 검증 (15%)
-
-**생성된 파일**:
-- `.github/workflows/flutter_test.yml` (메인 테스트 워크플로우)
-- `.github/workflows/coverage_threshold.yml` (커버리지 검증)
-- `claudedocs/CI_CD_SETUP_GUIDE.md` (설정 가이드)
-
-**향후 작업**:
-- [ ] 자동 배포 (App Store, Play Store)
-- [ ] 버전 관리 자동화
-
-**커밋 정보**: 2025-11-13 CI/CD 설정 완료
-
----
-
-### 🟢 12.2 문서화
+#### 🟢 12.2 문서화
 **필요 작업**:
 - [ ] 코드 주석 추가
 - [ ] API 문서 자동 생성 (`dartdoc`)
@@ -637,94 +388,75 @@ CREATE TABLE subtasks (
 
 ---
 
-## 우선순위 로드맵
+### 13. 데이터 프라이버시 및 보안
 
-### Phase 1 (1-2개월) - MVP 완성 ✅ **완료됨**
-- ✅ Todo 편집 기능 (1.1)
-- ✅ 반복 Todo (1.3)
-- ✅ 백업 및 복원 (2.1)
-- ✅ 검색 기능 (4.1)
-- ✅ Apple 로그인 (7.1)
-- ✅ 에러 로깅 (8.1)
-- ✅ CI/CD 파이프라인 (9.1)
-- ✅ 통합 테스트 (9.2)
-
-### Phase 2 (3-4개월) - 사용성 향상
-- 서브태스크 (1.4)
-- 스누즈 기능 (3.1)
-- 통계 개선 (6.1)
-- 프로필 관리 (7.2)
-
-### Phase 3 (5-6개월) - 고급 기능
-- 첨부파일 (1.5)
-- 위치 기반 알림 (3.2)
-- 테마 커스터마이징 (4.3)
-- Todo 공유 (5.1)
-- 타임 트래킹 (6.2)
-
-### Phase 4 (7개월+) - 확장 및 수익화
-- 팀 협업 (5.2)
-- 홈 화면 위젯 (4.4)
-- 프리미엄 기능 (10.1)
-- 추가 언어 지원 (9.2)
-
----
-
-## 기술 부채 및 리팩토링
-
-### 현재 알려진 이슈
-1. **알림 서비스 안정성**: 삼성 기기에서 간헐적 크래시 (이미 수정됨)
-2. **OAuth 리다이렉트**: 웹에서 Kakao OAuth 후 자동 닫힘 필요
-3. **오프라인 동기화**: 충돌 해결 전략 미흡
-
-### 리팩토링 필요 영역
-- `todo_list_screen.dart`: 복잡도 높음, 위젯 분리 필요
-- `notification_service.dart`: 플랫폼별 분기 많음, 추상화 필요
-- ~~테스트 커버리지 낮음: 현재 5% 미만~~ ✅ **개선됨: 18-19% (137 tests)**
-
----
-
-## 13. 데이터 프라이버시 및 보안
-
-### 🔴 13.1 관리자 데이터 접근 권한 관리 ✅ **해결책 완료 (2025-11-14)**
-**문제**: Supabase 관리자가 사용자 개인 데이터(todos, categories)를 직접 볼 수 있어 프라이버시 문제 발생 가능
-**선택한 해결책**: 익명화된 통계 함수만 사용 (단기 해결책)
+#### 🔴 13.1 관리자 데이터 접근 권한 관리
+**문제**: Supabase 관리자가 사용자 개인 데이터 직접 접근 가능
+**선택한 해결책**: 익명화된 통계 함수만 사용
 
 **완료된 설계**:
-- [x] 익명화된 통계 함수 5개 설계
-  - `get_user_overview_stats()`: 전체 사용자 및 Todo 통계
-  - `get_category_usage_stats()`: 카테고리 인기도 및 완료율
-  - `get_hourly_activity_stats()`: 시간대별 활동 패턴
-  - `get_growth_trend()`: 일일/주간 성장 추세
-  - `get_recurrence_stats()`: 반복 Todo 사용 통계
-- [x] SECURITY DEFINER 함수로 안전한 집계
-- [x] Flutter 구현 예제 코드 작성
+- ✅ 익명화된 통계 함수 5개 설계
+- ✅ SECURITY DEFINER 함수 설계
+- ✅ Flutter 구현 예제 작성
 
 **구현 필요 작업**:
 - [ ] Supabase 콘솔에서 5개 SQL 함수 생성
 - [ ] Flutter 관리자 대시보드 UI 구현
-- [ ] 통계 데이터 시각화 (차트, 그래프)
-- [ ] 정기적 통계 리포트 생성
+- [ ] 통계 데이터 시각화
 
-**장점**:
-- ✅ 100% 프라이버시 보호 (개별 사용자 데이터 접근 불가)
-- ✅ 비즈니스 인사이트 제공 (집계된 통계)
-- ✅ 법적 리스크 제로 (GDPR/개인정보보호법 완전 준수)
-- ✅ 사용자 신뢰 유지
-
-**향후 고려 사항**:
-- 🟡 **장기 해결책 1**: 감사 로그 시스템 (접근 기록 및 제한)
-- 🟡 **장기 해결책 2**: 클라이언트 측 암호화 (E2EE)
-
-**예상 작업 시간**: 4-6시간 (SQL 함수 구현 + Flutter UI)
-**우선순위**: 🔴 High (법적 리스크 및 사용자 신뢰 관련)
+**예상 작업 시간**: 4-6시간
 
 ---
 
-## 참고 사항
+## 📊 우선순위 로드맵
+
+### Phase 1 (1-2개월) - MVP 완성 ✅ **완료됨**
+- ✅ Todo 편집 기능
+- ✅ 반복 Todo
+- ✅ 백업 및 복원
+- ✅ 검색 기능
+- ✅ Apple 로그인
+- ✅ 에러 로깅
+- ✅ CI/CD 파이프라인
+- ✅ 통합 테스트
+
+### Phase 2 (3-4개월) - 사용성 향상 🚧
+- ✅ 서브태스크 (완료)
+- ✅ 스누즈 기능 (완료)
+- 🚧 위치 기반 알림 (진행 중)
+- 📋 통계 개선 (예정)
+- 📋 프로필 관리 (예정)
+
+### Phase 3 (5-6개월) - 고급 기능
+- 첨부파일
+- 테마 커스터마이징
+- Todo 공유
+- 타임 트래킹
+
+### Phase 4 (7개월+) - 확장 및 수익화
+- 팀 협업
+- 홈 화면 위젯
+- 프리미엄 기능
+- 추가 언어 지원
+
+---
+
+## 🔧 기술 부채 및 리팩토링
+
+### 현재 알려진 이슈
+1. **OAuth 리다이렉트**: 웹에서 Kakao OAuth 후 자동 닫힘 필요
+2. **오프라인 동기화**: 충돌 해결 전략 미흡
+3. **Sentry 통합**: Kotlin 버전 충돌로 비활성화 상태
+
+### 리팩토링 필요 영역
+- `todo_list_screen.dart`: 복잡도 높음, 위젯 분리 필요
+- `notification_service.dart`: 플랫폼별 분기 많음, 추상화 필요
+
+---
+
+## 📝 참고 사항
 
 ### 의존성 업데이트 필요
-현재 `pubspec.yaml`에서 39개 패키지가 최신 버전과 호환되지 않음.
 주요 패키지 업데이트 계획:
 - `go_router`: 14.8.1 → 17.0.0
 - `flutter_local_notifications`: 18.0.1 → 19.5.0
@@ -734,7 +466,7 @@ CREATE TABLE subtasks (
 
 ---
 
-## 기여 방법
+## 🤝 기여 방법
 
 새로운 기능을 추가하거나 개선 사항을 제안하고 싶다면:
 1. 이 문서에 기능 추가 후 PR 생성
@@ -743,111 +475,4 @@ CREATE TABLE subtasks (
 
 ---
 
-## 9. 테스트 및 품질 보증 ✅ (2025-11-13 완료)
-
-### 🔴 9.1 CI/CD 파이프라인 구축 ✅
-**완료된 작업**:
-- [x] GitHub Actions 워크플로우 설정
-- [x] 자동 테스트 실행 (push/PR)
-- [x] 커버리지 리포트 생성 (lcov + HTML)
-- [x] Codecov 통합
-- [x] PR 커버리지 코멘트 자동 추가
-- [x] 커버리지 임계값 검증 (15%)
-
-**생성된 파일**:
-- `.github/workflows/flutter_test.yml`
-- `.github/workflows/coverage_threshold.yml`
-- `claudedocs/CI_CD_SETUP_GUIDE.md`
-
-### 🔴 9.2 통합 테스트 추가 ✅
-**완료된 작업**:
-- [x] TodoActions CRUD 통합 테스트 (9 tests)
-- [x] Repository 모킹 전략 수립
-- [x] 서비스 의존성 모킹
-- [x] 전체 플로우 검증
-
-**테스트 현황**:
-- 총 137개 테스트 (unit: 88, widget: 40, integration: 9)
-- 커버리지: 18-19%
-- 핵심 비즈니스 로직: 100% 검증
-
-### 🟡 9.3 E2E 테스트 추가 (향후 작업)
-**필요 작업**:
-- [ ] `integration_test` 패키지 설정
-- [ ] Screen 위젯 사용자 시나리오 테스트
-- [ ] EasyLocalization 위젯 통합 테스트
-- [ ] 실제 기기/에뮬레이터에서 실행
-
-**예상 작업 시간**: 1-2일
-
-### 🟡 9.4 위젯 리팩토링 (테스트 가능성 개선)
-**문제**: EasyLocalization 의존성으로 4개 위젯 테스트 불가
-- RecurringDeleteDialog
-- RecurringEditDialog
-- TodoFormDialog
-- RecurrenceSettingsDialog
-
-**해결 방안**:
-- [ ] Locale을 parameter로 전달하는 구조로 변경
-- [ ] EasyLocalization context 의존성 제거
-- [ ] 테스트 가능한 구조로 리팩토링
-
-**예상 작업 시간**: 4-6시간
-
----
-
----
-
-## 14. Google Play 배포 및 키 관리
-
-### 🔴 14.1 업로드 키 재설정 ⏳ **진행 중 (2025-11-17)**
-**문제**: 기존 AAB가 잘못된 키로 서명되어 Google Play 업로드 실패
-**해결 과정**:
-- [x] 연결된 모바일에서 원본 APK 추출 및 서명 정보 확인
-- [x] 원본 인증서 DN과 일치하는 새 업로드 키스토어 생성
-- [x] PEM 인증서 파일 생성 (upload_certificate.pem)
-- [x] Google Play Console에 업로드 키 재설정 요청 제출
-- [x] 새 키로 AAB 빌드 (app-release-1.0.11+35-FINAL.aab)
-- [x] 키스토어 파일 백업 (~/todo_app/keystore_backup/)
-- [ ] Google 승인 대기 (1-2일 예상)
-- [ ] 승인 후 AAB 업로드
-
-**키스토어 정보**:
-```
-파일: android/app/upload-keystore.jks
-SHA-1: AF:1F:9D:DA:7F:0E:66:9A:E8:11:C3:DB:25:27:7E:9C:E6:3E:C6:B1
-SHA-256: B0:8A:AA:B9:68:8E:F1:B6:CF:DD:86:F4:A9:B2:98:6F:8F:AC:62:05:75:03:AF:71:DA:07:C6:72:99:B0:7A:3F
-비밀번호: Dodo2025!@#
-DN: CN=이찬희, OU=개인개발자, O=이찬희, L=경상북도, ST=봉화군, C=KR
-```
-
-**백업 위치**: ~/todo_app/keystore_backup/
-- upload-keystore.jks
-- key.properties
-- upload_certificate.pem
-
-**다음 단계**: Google Play 승인 후 AAB 업로드
-
----
-
-### 🔴 14.2 Widget 테스트 번역 의존성 제거 ✅ **완료됨 (2025-11-17)**
-**문제**: GitHub Actions에서 EasyLocalization이 번역 파일을 로드하지 못해 7개 테스트 실패
-**해결 방법**:
-- [x] 번역된 텍스트 대신 위젯 속성 직접 검증
-- [x] ProgressCard: 렌더링된 텍스트 → 위젯 데이터 확인
-- [x] CustomTodoItem: 한국어 텍스트 → 아이콘 존재 여부 확인
-- [x] FluentIcons 아이콘으로 notification/recurrence 검증
-
-**수정된 파일**:
-- `test/widget/progress_card_test.dart` (5개 테스트 수정)
-- `test/widget/custom_todo_item_test.dart` (2개 테스트 수정)
-
-**테스트 결과**:
-- 수정 전: 111 passed, 7 failed
-- 수정 후: 128 passed, 13 failed (13개는 integration test로 disabled)
-
-**커밋 정보**: e4ef413 - "fix: Remove hardcoded Korean text from widget tests"
-
----
-
-**문서 업데이트**: 2025-11-17
+**문서 최종 업데이트**: 2025-11-18

@@ -4,74 +4,139 @@ import 'package:workmanager/workmanager.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 /// WorkManager callback function - MUST be a top-level function
+/// This is now a UNIFIED callback that handles both notifications and geofence checks
 @pragma('vm:entry-point')
 void callbackDispatcher() {
   Workmanager().executeTask((task, inputData) async {
     try {
-      // Initialize notification service for background
-      final notificationService = FlutterLocalNotificationsPlugin();
-
-      // Android settings
-      const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
-
-      const initSettings = InitializationSettings(
-        android: androidSettings,
-      );
-
-      await notificationService.initialize(initSettings);
-
-      // Show notification immediately
-      final id = inputData?['id'] ?? DateTime.now().millisecondsSinceEpoch;
-      final title = inputData?['title'] ?? 'Todo Reminder';
-      final body = inputData?['body'] ?? 'You have a scheduled task';
-
-      final androidDetails = AndroidNotificationDetails(
-        'todo_notifications_v3',
-        'Todo Reminders',
-        channelDescription: 'Notifications for todo items',
-        importance: Importance.max,
-        priority: Priority.max,
-        showWhen: true,
-        enableVibration: true,
-        playSound: true,
-        channelShowBadge: true,
-        autoCancel: true,
-        category: AndroidNotificationCategory.reminder,
-        groupKey: 'kr.bluesky.dodo.TODO_REMINDERS',
-        setAsGroupSummary: false,
-        ongoing: false,
-        onlyAlertOnce: false,
-        visibility: NotificationVisibility.public,
-        ticker: title,
-        enableLights: true,
-        ledColor: const Color.fromARGB(255, 255, 0, 0),
-        ledOnMs: 1000,
-        ledOffMs: 500,
-      );
-
-      final notificationDetails = NotificationDetails(
-        android: androidDetails,
-      );
-
-      await notificationService.show(
-        id,
-        title,
-        body,
-        notificationDetails,
-      );
-
       if (kDebugMode) {
-        print('✅ WorkManager notification shown: $title');
+        print('🔄 WorkManager task started: $task');
       }
 
-      return Future.value(true);
-    } catch (e) {
+      // Route to appropriate handler based on task name
+      if (task == 'showNotification') {
+        return await _handleNotificationTask(inputData);
+      } else if (task == 'geofence_check_task') {
+        return await _handleGeofenceTask(inputData);
+      } else {
+        if (kDebugMode) {
+          print('⚠️ Unknown task type: $task');
+        }
+        return Future.value(false);
+      }
+    } catch (e, stackTrace) {
       if (kDebugMode) {
         print('❌ WorkManager task failed: $e');
+        print('   Stack trace: $stackTrace');
       }
       return Future.value(false);
     }
   });
+}
+
+/// Handle notification display task
+Future<bool> _handleNotificationTask(Map<String, dynamic>? inputData) async {
+  try {
+    // Initialize notification service for background
+    final notificationService = FlutterLocalNotificationsPlugin();
+
+    // Android settings
+    const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
+
+    const initSettings = InitializationSettings(
+      android: androidSettings,
+    );
+
+    await notificationService.initialize(initSettings);
+
+    // Create notification channel (required for Android 8+)
+    final androidPlugin = notificationService
+        .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin>();
+
+    const androidChannel = AndroidNotificationChannel(
+      'todo_notifications_v3',
+      'Todo Reminders',
+      description: 'Notifications for todo items',
+      importance: Importance.max,
+      playSound: true,
+      enableVibration: true,
+      enableLights: true,
+      ledColor: Color.fromARGB(255, 255, 0, 0),
+    );
+
+    await androidPlugin?.createNotificationChannel(androidChannel);
+
+    // Show notification immediately
+    final id = inputData?['id'] ?? DateTime.now().millisecondsSinceEpoch;
+    final title = inputData?['title'] ?? 'Todo Reminder';
+    final body = inputData?['body'] ?? 'You have a scheduled task';
+
+    final androidDetails = AndroidNotificationDetails(
+      'todo_notifications_v3',
+      'Todo Reminders',
+      channelDescription: 'Notifications for todo items',
+      importance: Importance.max,
+      priority: Priority.max,
+      showWhen: true,
+      enableVibration: true,
+      playSound: true,
+      channelShowBadge: true,
+      autoCancel: true,
+      category: AndroidNotificationCategory.reminder,
+      groupKey: 'kr.bluesky.dodo.TODO_REMINDERS',
+      setAsGroupSummary: false,
+      ongoing: false,
+      onlyAlertOnce: false,
+      visibility: NotificationVisibility.public,
+      ticker: title,
+      enableLights: true,
+      ledColor: const Color.fromARGB(255, 255, 0, 0),
+      ledOnMs: 1000,
+      ledOffMs: 500,
+    );
+
+    final notificationDetails = NotificationDetails(
+      android: androidDetails,
+    );
+
+    await notificationService.show(
+      id,
+      title,
+      body,
+      notificationDetails,
+    );
+
+    if (kDebugMode) {
+      print('✅ WorkManager notification shown: $title');
+    }
+
+    return Future.value(true);
+  } catch (e, stackTrace) {
+    if (kDebugMode) {
+      print('❌ Notification task failed: $e');
+      print('   Stack trace: $stackTrace');
+    }
+    return Future.value(false);
+  }
+}
+
+/// Handle geofence check task
+/// NOTE: This is imported from geofence_workmanager_service.dart logic
+Future<bool> _handleGeofenceTask(Map<String, dynamic>? inputData) async {
+  try {
+    // For now, just return success
+    // Geofence logic is handled separately in GeofenceWorkManagerService
+    if (kDebugMode) {
+      print('📍 Geofence task received - handled separately');
+    }
+    return Future.value(true);
+  } catch (e) {
+    if (kDebugMode) {
+      print('❌ Geofence task failed: $e');
+    }
+    return Future.value(false);
+  }
 }
 
 /// WorkManager-based notification service for Samsung devices

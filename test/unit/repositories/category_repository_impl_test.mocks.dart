@@ -441,6 +441,15 @@ class MockAppDatabase extends _i1.Mock implements _i3.AppDatabase {
           as _i5.Future<int>);
 
   @override
+  _i5.Future<void> insertCategoryWithId(_i3.CategoriesCompanion? category) =>
+      (super.noSuchMethod(
+            Invocation.method(#insertCategoryWithId, [category]),
+            returnValue: _i5.Future<void>.value(),
+            returnValueForMissingStub: _i5.Future<void>.value(),
+          )
+          as _i5.Future<void>);
+
+  @override
   _i5.Future<bool> updateCategory(_i3.Category? category) =>
       (super.noSuchMethod(
             Invocation.method(#updateCategory, [category]),
@@ -470,6 +479,14 @@ class MockAppDatabase extends _i1.Mock implements _i3.AppDatabase {
   _i5.Future<List<_i3.Todo>> getTodosByCategory(int? categoryId) =>
       (super.noSuchMethod(
             Invocation.method(#getTodosByCategory, [categoryId]),
+            returnValue: _i5.Future<List<_i3.Todo>>.value(<_i3.Todo>[]),
+          )
+          as _i5.Future<List<_i3.Todo>>);
+
+  @override
+  _i5.Future<List<_i3.Todo>> getTodosWithLocation() =>
+      (super.noSuchMethod(
+            Invocation.method(#getTodosWithLocation, []),
             returnValue: _i5.Future<List<_i3.Todo>>.value(<_i3.Todo>[]),
           )
           as _i5.Future<List<_i3.Todo>>);

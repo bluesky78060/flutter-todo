@@ -618,4 +618,104 @@ class NotificationService {
       return false;
     }
   }
+
+  /// Show location-based notification immediately
+  /// Used when user enters a geofence radius
+  Future<void> showLocationNotification({
+    required int id,
+    required String title,
+    required String body,
+    required double distance,
+  }) async {
+    try {
+      if (!_initialized) {
+        await initialize();
+      }
+
+      // For web platform, use WebNotificationService
+      if (kIsWeb) {
+        // Web doesn't have immediate notifications, would need to schedule for "now"
+        if (kDebugMode) {
+          print('🌐 Location notifications not supported on web');
+        }
+        return;
+      }
+
+      // Format distance message
+      final distanceText = distance < 1000
+          ? '${distance.toStringAsFixed(0)}m 이내'
+          : '${(distance / 1000).toStringAsFixed(1)}km 이내';
+
+      final androidDetails = AndroidNotificationDetails(
+        'todo_notifications_v3',
+        'Todo Reminders',
+        channelDescription: 'Notifications for todo items',
+        importance: Importance.max,
+        priority: Priority.max,
+        showWhen: true,
+        enableVibration: true,
+        playSound: true,
+        channelShowBadge: true,
+        autoCancel: true,
+        fullScreenIntent: false,
+        category: AndroidNotificationCategory.reminder,
+        groupKey: 'kr.bluesky.dodo.TODO_REMINDERS',
+        setAsGroupSummary: false,
+        styleInformation: BigTextStyleInformation(
+          '$body\n\n📍 $distanceText',
+          contentTitle: '📍 $title',
+          summaryText: '위치 알림',
+        ),
+        ongoing: false,
+        onlyAlertOnce: false,
+        visibility: NotificationVisibility.public,
+        ticker: '📍 $title - $distanceText',
+        enableLights: true,
+        ledColor: const Color.fromARGB(255, 33, 150, 243), // Blue for location
+        ledOnMs: 1000,
+        ledOffMs: 500,
+        usesChronometer: false,
+        timeoutAfter: null,
+        when: DateTime.now().millisecondsSinceEpoch,
+        showProgress: false,
+      );
+
+      const iosDetails = DarwinNotificationDetails(
+        presentAlert: true,
+        presentBadge: true,
+        presentSound: true,
+        interruptionLevel: InterruptionLevel.timeSensitive,
+      );
+
+      final notificationDetails = NotificationDetails(
+        android: androidDetails,
+        iOS: iosDetails,
+      );
+
+      if (kDebugMode) {
+        print('📍 Showing location notification:');
+        print('   ID: $id');
+        print('   Title: $title');
+        print('   Body: $body');
+        print('   Distance: $distanceText');
+      }
+
+      await _notificationsPlugin.show(
+        id,
+        '📍 $title',
+        '$body\n\n📍 $distanceText',
+        notificationDetails,
+      );
+
+      if (kDebugMode) {
+        print('✅ Location notification shown successfully');
+      }
+    } catch (e, stackTrace) {
+      if (kDebugMode) {
+        print('❌ Error showing location notification: $e');
+        print('   Stack trace: $stackTrace');
+      }
+      rethrow;
+    }
+  }
 }

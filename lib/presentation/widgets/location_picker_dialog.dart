@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:flutter_naver_map/flutter_naver_map.dart';
 import 'package:todo_app/core/services/location_service.dart';
 import 'package:todo_app/core/theme/app_colors.dart';
 
@@ -41,12 +41,17 @@ class LocationPickerDialog extends StatefulWidget {
 class _LocationPickerDialogState extends State<LocationPickerDialog> {
   final LocationService _locationService = LocationService();
   final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _searchController = TextEditingController();
 
-  GoogleMapController? _mapController;
-  LatLng? _selectedLocation;
+  NaverMapController? _mapController;
+  NLatLng? _selectedLocation;
   double _radius = 100.0; // Default radius in meters
   bool _isLoadingLocation = false;
+  bool _isSearching = false;
   String? _addressText;
+  final Set<NMarker> _markers = {};
+  final Set<NCircleOverlay> _circles = {};
+  List<PlaceSearchResult> _searchResults = [];
 
   @override
   void initState() {
@@ -54,7 +59,7 @@ class _LocationPickerDialogState extends State<LocationPickerDialog> {
 
     // Initialize with existing values if provided
     if (widget.initialLatitude != null && widget.initialLongitude != null) {
-      _selectedLocation = LatLng(widget.initialLatitude!, widget.initialLongitude!);
+      _selectedLocation = NLatLng(widget.initialLatitude!, widget.initialLongitude!);
     }
 
     if (widget.initialName != null) {
@@ -69,8 +74,92 @@ class _LocationPickerDialogState extends State<LocationPickerDialog> {
   @override
   void dispose() {
     _nameController.dispose();
-    _mapController?.dispose();
+    _searchController.dispose();
     super.dispose();
+  }
+
+  /// Search for places
+  Future<void> _searchPlaces(String query) async {
+    if (query.trim().isEmpty) {
+      setState(() {
+        _searchResults = [];
+      });
+      return;
+    }
+
+    setState(() {
+      _isSearching = true;
+    });
+
+    try {
+      // Show loading toast
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('검색 중: "$query"'),
+            duration: const Duration(seconds: 1),
+            backgroundColor: Colors.blue,
+          ),
+        );
+      }
+
+      final results = await _locationService.searchPlaces(query);
+
+      if (mounted) {
+        setState(() {
+          _searchResults = results;
+          _isSearching = false;
+        });
+
+        // Show result count
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${results.length}개 장소 찾음'),
+            duration: const Duration(seconds: 2),
+            backgroundColor: results.isEmpty ? Colors.orange : Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isSearching = false;
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('검색 실패: $e'),
+            duration: const Duration(seconds: 3),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  /// Select a place from search results
+  void _selectSearchResult(PlaceSearchResult result) {
+    if (result.latitude == null || result.longitude == null) return;
+
+    final location = NLatLng(result.latitude!, result.longitude!);
+
+    setState(() {
+      _selectedLocation = location;
+      _addressText = result.address;
+      _nameController.text = result.name;
+      _searchResults = [];
+      _searchController.clear();
+    });
+
+    // Move camera to selected location
+    final cameraUpdate = NCameraUpdate.scrollAndZoomTo(
+      target: location,
+      zoom: 16.0,
+    );
+    _mapController?.updateCamera(cameraUpdate);
+
+    // Update marker and circle
+    _updateMapOverlays();
   }
 
   /// Get current location and move map
@@ -83,16 +172,21 @@ class _LocationPickerDialogState extends State<LocationPickerDialog> {
       final position = await _locationService.getCurrentLocation();
 
       if (position != null) {
-        final location = LatLng(position.latitude, position.longitude);
+        final location = NLatLng(position.latitude, position.longitude);
 
         setState(() {
           _selectedLocation = location;
         });
 
         // Move camera to current location
-        _mapController?.animateCamera(
-          CameraUpdate.newLatLngZoom(location, 15.0),
+        final cameraUpdate = NCameraUpdate.scrollAndZoomTo(
+          target: location,
+          zoom: 15.0,
         );
+        _mapController?.updateCamera(cameraUpdate);
+
+        // Update marker and circle
+        await _updateMapOverlays();
 
         // Get address for current location
         await _updateAddress(position.latitude, position.longitude);
@@ -136,14 +230,49 @@ class _LocationPickerDialogState extends State<LocationPickerDialog> {
     }
   }
 
+  /// Update marker and circle overlays on the map
+  Future<void> _updateMapOverlays() async {
+    if (_selectedLocation == null || _mapController == null) return;
+
+    // Clear existing overlays
+    _markers.clear();
+    _circles.clear();
+
+    // Create new marker
+    final marker = NMarker(
+      id: 'selected',
+      position: _selectedLocation!,
+    );
+    _markers.add(marker);
+
+    // Create new circle
+    final circle = NCircleOverlay(
+      id: 'radius',
+      center: _selectedLocation!,
+      radius: _radius,
+      color: AppColors.primaryBlue.withOpacity(0.2),
+      outlineColor: AppColors.primaryBlue,
+      outlineWidth: 2,
+    );
+    _circles.add(circle);
+
+    // Add overlays to map
+    await _mapController!.clearOverlays();
+    await _mapController!.addOverlayAll(_markers);
+    await _mapController!.addOverlayAll(_circles);
+  }
+
   /// Handle map tap to select location
-  void _onMapTap(LatLng position) {
+  void _onMapTap(NPoint point, NLatLng latLng) {
     setState(() {
-      _selectedLocation = position;
+      _selectedLocation = latLng;
     });
 
+    // Update overlays
+    _updateMapOverlays();
+
     // Update address
-    _updateAddress(position.latitude, position.longitude);
+    _updateAddress(latLng.latitude, latLng.longitude);
   }
 
   /// Save selected location
@@ -172,12 +301,16 @@ class _LocationPickerDialogState extends State<LocationPickerDialog> {
   Widget build(BuildContext context) {
     // Default location (Seoul, South Korea)
     final initialPosition = _selectedLocation ??
-                           const LatLng(37.5665, 126.9780);
+                           const NLatLng(37.5665, 126.9780);
+
+    final screenHeight = MediaQuery.of(context).size.height;
 
     return Dialog(
       insetPadding: const EdgeInsets.all(16),
       child: Container(
-        constraints: const BoxConstraints(maxHeight: 700),
+        constraints: BoxConstraints(
+          maxHeight: screenHeight * 0.85, // 85% of screen height
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -202,43 +335,102 @@ class _LocationPickerDialogState extends State<LocationPickerDialog> {
               ),
             ),
 
+            // Search bar
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: TextField(
+                controller: _searchController,
+                decoration: InputDecoration(
+                  hintText: 'search_location'.tr(),
+                  prefixIcon: IconButton(
+                    icon: const Icon(Icons.search),
+                    onPressed: () {
+                      if (_searchController.text.isNotEmpty) {
+                        _searchPlaces(_searchController.text);
+                      }
+                    },
+                  ),
+                  suffixIcon: _isSearching
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: Padding(
+                            padding: EdgeInsets.all(12.0),
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          ),
+                        )
+                      : _searchController.text.isNotEmpty
+                          ? IconButton(
+                              icon: const Icon(Icons.clear),
+                              onPressed: () {
+                                _searchController.clear();
+                                setState(() {
+                                  _searchResults = [];
+                                });
+                              },
+                            )
+                          : null,
+                  border: const OutlineInputBorder(),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                ),
+                onSubmitted: _searchPlaces,
+                textInputAction: TextInputAction.search,
+              ),
+            ),
+
+            const SizedBox(height: 8),
+
+            // Search results
+            if (_searchResults.isNotEmpty)
+              Container(
+                constraints: const BoxConstraints(maxHeight: 200),
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: _searchResults.length,
+                  itemBuilder: (context, index) {
+                    final result = _searchResults[index];
+                    return ListTile(
+                      leading: const Icon(Icons.place, color: AppColors.primaryBlue),
+                      title: Text(
+                        result.name,
+                        style: const TextStyle(fontWeight: FontWeight.w500),
+                      ),
+                      subtitle: Text(
+                        result.address,
+                        style: const TextStyle(fontSize: 12, color: AppColors.textGray),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      onTap: () => _selectSearchResult(result),
+                    );
+                  },
+                ),
+              ),
+
             // Map
             SizedBox(
-              height: 300,
+              height: 250,
               child: Stack(
                 children: [
-                  GoogleMap(
-                    initialCameraPosition: CameraPosition(
-                      target: initialPosition,
-                      zoom: 15.0,
+                  NaverMap(
+                    options: NaverMapViewOptions(
+                      initialCameraPosition: NCameraPosition(
+                        target: initialPosition,
+                        zoom: 15.0,
+                      ),
+                      locationButtonEnable: false,
+                      indoorEnable: true,
+                      consumeSymbolTapEvents: false,
                     ),
-                    onMapCreated: (controller) {
+                    onMapReady: (controller) async {
                       _mapController = controller;
+
+                      // Add initial marker and circle if location is set
+                      if (_selectedLocation != null) {
+                        await _updateMapOverlays();
+                      }
                     },
-                    onTap: _onMapTap,
-                    markers: _selectedLocation != null
-                        ? {
-                            Marker(
-                              markerId: const MarkerId('selected'),
-                              position: _selectedLocation!,
-                            ),
-                          }
-                        : {},
-                    circles: _selectedLocation != null
-                        ? {
-                            Circle(
-                              circleId: const CircleId('radius'),
-                              center: _selectedLocation!,
-                              radius: _radius,
-                              fillColor: AppColors.primaryBlue.withOpacity(0.2),
-                              strokeColor: AppColors.primaryBlue,
-                              strokeWidth: 2,
-                            ),
-                          }
-                        : {},
-                    myLocationEnabled: true,
-                    myLocationButtonEnabled: false,
-                    zoomControlsEnabled: false,
+                    onMapTapped: _onMapTap,
                   ),
 
                   // Current location button
@@ -261,57 +453,61 @@ class _LocationPickerDialogState extends State<LocationPickerDialog> {
               ),
             ),
 
-            // Location info
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Address
-                  if (_addressText != null) ...[
-                    Text(
-                      _addressText!,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        color: AppColors.textGray,
+            // Location info - make scrollable
+            Flexible(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Address
+                    if (_addressText != null) ...[
+                      Text(
+                        _addressText!,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: AppColors.textGray,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                    ],
+
+                    // Location name input
+                    TextField(
+                      controller: _nameController,
+                      decoration: InputDecoration(
+                        labelText: 'location_name'.tr(),
+                        hintText: 'location_name'.tr(),
+                        border: const OutlineInputBorder(),
+                        prefixIcon: const Icon(Icons.label),
                       ),
                     ),
                     const SizedBox(height: 16),
+
+                    // Radius slider
+                    Text(
+                      '${'geofence_radius'.tr()}: ${_radius.toInt()}m',
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    Slider(
+                      value: _radius,
+                      min: 50,
+                      max: 1000,
+                      divisions: 19,
+                      label: '${_radius.toInt()}m',
+                      onChanged: (value) {
+                        setState(() {
+                          _radius = value;
+                        });
+                        // Update circle radius
+                        _updateMapOverlays();
+                      },
+                    ),
                   ],
-
-                  // Location name input
-                  TextField(
-                    controller: _nameController,
-                    decoration: InputDecoration(
-                      labelText: 'location_name'.tr(),
-                      hintText: 'location_name'.tr(),
-                      border: const OutlineInputBorder(),
-                      prefixIcon: const Icon(Icons.label),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-
-                  // Radius slider
-                  Text(
-                    '${'geofence_radius'.tr()}: ${_radius.toInt()}m',
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  Slider(
-                    value: _radius,
-                    min: 50,
-                    max: 1000,
-                    divisions: 19,
-                    label: '${_radius.toInt()}m',
-                    onChanged: (value) {
-                      setState(() {
-                        _radius = value;
-                      });
-                    },
-                  ),
-                ],
+                ),
               ),
             ),
 

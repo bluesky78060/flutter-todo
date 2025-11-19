@@ -118,6 +118,10 @@ class MockTodoRepository extends _i1.Mock implements _i2.TodoRepository {
     DateTime? notificationTime,
     String? recurrenceRule,
     int? parentRecurringTodoId,
+    double? locationLatitude,
+    double? locationLongitude,
+    String? locationName,
+    double? locationRadius,
   }) =>
       (super.noSuchMethod(
             Invocation.method(
@@ -128,6 +132,10 @@ class MockTodoRepository extends _i1.Mock implements _i2.TodoRepository {
                 #notificationTime: notificationTime,
                 #recurrenceRule: recurrenceRule,
                 #parentRecurringTodoId: parentRecurringTodoId,
+                #locationLatitude: locationLatitude,
+                #locationLongitude: locationLongitude,
+                #locationName: locationName,
+                #locationRadius: locationRadius,
               },
             ),
             returnValue: _i4.Future<_i5.Either<_i6.Failure, int>>.value(
@@ -141,6 +149,10 @@ class MockTodoRepository extends _i1.Mock implements _i2.TodoRepository {
                     #notificationTime: notificationTime,
                     #recurrenceRule: recurrenceRule,
                     #parentRecurringTodoId: parentRecurringTodoId,
+                    #locationLatitude: locationLatitude,
+                    #locationLongitude: locationLongitude,
+                    #locationName: locationName,
+                    #locationRadius: locationRadius,
                   },
                 ),
               ),
@@ -324,6 +336,25 @@ class MockNotificationService extends _i1.Mock
             returnValue: _i4.Future<bool>.value(false),
           )
           as _i4.Future<bool>);
+
+  @override
+  _i4.Future<void> showLocationNotification({
+    required int? id,
+    required String? title,
+    required String? body,
+    required double? distance,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(#showLocationNotification, [], {
+              #id: id,
+              #title: title,
+              #body: body,
+              #distance: distance,
+            }),
+            returnValue: _i4.Future<void>.value(),
+            returnValueForMissingStub: _i4.Future<void>.value(),
+          )
+          as _i4.Future<void>);
 }
 
 /// A class which mocks [RecurringTodoService].

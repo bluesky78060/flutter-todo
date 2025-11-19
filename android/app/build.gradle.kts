@@ -49,6 +49,10 @@ android {
         // Google Maps API Key from local.properties
         val mapsApiKey = localProperties.getProperty("MAPS_API_KEY") ?: "YOUR_GOOGLE_MAPS_API_KEY_HERE"
         manifestPlaceholders["MAPS_API_KEY"] = mapsApiKey
+
+        // Naver Maps Client ID from local.properties
+        val naverClientId = localProperties.getProperty("NAVER_CLIENT_ID") ?: ""
+        manifestPlaceholders["NAVER_CLIENT_ID"] = naverClientId
     }
 
     signingConfigs {
