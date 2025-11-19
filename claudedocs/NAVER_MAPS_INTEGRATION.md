@@ -133,6 +133,18 @@ final response = await http.get(
 - ✅ Google Geocoding 폴백 지원
 - ✅ 주소 자동 완성
 
+### 주소 검색 (2025-11-19 추가)
+- ✅ **5단계 검색 전략 구현**:
+  1. Naver Local Search - 일반 키워드 검색 (장소명, 업체명)
+  2. Naver Local Search - 주소 형식 검색 (지번, 도로명 주소)
+  3. Naver Local Search - 유사 주소 검색 (공백 제거)
+  4. **Google Geocoding** - 주소 → 좌표 변환 (일반 주소)
+  5. Naver Reverse Geocoding - 좌표 → 한국어 주소 변환
+- ✅ **Naver Geocoding API 401 에러 해결**:
+  - 원인: Naver Geocoding API는 서버 사이드 전용
+  - 해결: Google Geocoding API (`geocoding` 패키지) 사용으로 전환
+  - 장점: 모바일 앱에서 직접 호출 가능, API 키 불필요
+
 ## 📊 테스트 결과
 - ✅ Android 디바이스 정상 작동 확인 (Samsung Galaxy A31)
 - ✅ 401 에러 해결
@@ -172,15 +184,33 @@ final response = await http.get(
 
 ## 📈 트러블슈팅 타임라인
 
+### Phase 1: Naver Maps 통합 (2024-11-18)
 1. **초기 문제 발견**: 401 Unauthorized 에러
 2. **첫 번째 시도**: meta-data 이름 수정 → 실패
 3. **두 번째 시도**: API 서비스 변경 (Geocoding → Reverse Geocoding) → 부분 해결
 4. **세 번째 시도**: 디버그 패키지명 추가 → 여전히 실패
 5. **최종 해결**: 커뮤니티 포럼에서 Android 초기화 방법 변경 발견 → **성공!** ✅
 
+### Phase 2: 주소 검색 API 전환 (2025-11-19)
+1. **문제 발견**: Naver Local Search가 주소 검색 미지원 (0 results)
+2. **첫 번째 시도**: Naver Geocoding API 추가 (Strategy 5) → 401 에러
+3. **원인 분석**:
+   - Naver Geocoding API는 서버 사이드 전용
+   - API 키와 패키지명 등록이 정확해도 모바일 앱에서 직접 호출 불가
+4. **최종 해결**:
+   - Google Geocoding (`geocoding` 패키지) 사용으로 전환
+   - Naver Reverse Geocoding 추가로 한국어 주소 확보
+   - 5단계 폴백 전략 완성 → **성공!** ✅
+5. **테스트 검증**: 에뮬레이터 및 실제 디바이스 (SM A315N) 정상 작동 확인
+
 ---
 
-**작업 완료일**: 2024년 11월 18일
+**작업 완료일**:
+- Phase 1 (Naver Maps): 2024년 11월 18일
+- Phase 2 (주소 검색): 2025년 11월 19일
+
 **작업자**: Claude & 이찬희
 **상태**: ✅ 완료
-**핵심 해결책 출처**: [NCloud Forums Topic 468](https://www.ncloud-forums.com/topic/468/)
+**핵심 해결책 출처**:
+- Phase 1: [NCloud Forums Topic 468](https://www.ncloud-forums.com/topic/468/)
+- Phase 2: Google Geocoding API 전환 (`geocoding` 패키지)
