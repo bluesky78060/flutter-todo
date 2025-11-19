@@ -332,6 +332,7 @@
   "location_name": "Location Name",
   "current_location": "Current Location",
   "select_location": "Select Location",
+  "search_location": "Search place or address",
   "location_permission_required": "Location permission required",
   "location_permission_denied": "Location permission denied",
   "location_service_disabled": "Location service is disabled",

@@ -332,6 +332,7 @@
   "location_name": "위치 이름",
   "current_location": "현재 위치",
   "select_location": "위치 선택",
+  "search_location": "장소 또는 주소 검색",
   "location_permission_required": "위치 권한이 필요합니다",
   "location_permission_denied": "위치 권한이 거부되었습니다",
   "location_service_disabled": "위치 서비스가 비활성화되어 있습니다",
