@@ -340,5 +340,45 @@
   "location_set": "Location has been set",
   "location_cleared": "Location has been cleared",
   "getting_location": "Getting location...",
-  "location_error": "Unable to get location"
+  "location_error": "Unable to get location",
+
+  "address_category": "Address",
+  "todo_notifications": "Todo Notifications",
+  "location_notifications": "Location Notifications",
+  "within_distance": "within {distance}m",
+  "within_distance_km": "within {distance}km",
+
+  "error_user_not_found": "User not found",
+  "error_password_mismatch": "Password does not match",
+  "error_email_already_exists": "Email already registered",
+  "error_permission": "Permission error: Check Supabase RLS policy",
+  "error_network_connection": "Network error: Check internet connection",
+  "error_schema": "DB schema error: Column does not exist",
+  "error_query_failed": "Supabase query failed",
+  "error_login_required": "Login required. Please log in again.",
+  "error_save_failed": "DB save failed",
+  "error_not_found": "Item not found",
+  "error_delete_failed": "DB delete failed",
+
+  "all_fields_required": "Please fill in all fields",
+  "account_created": "Account created! You can now log in.",
+  "register": "Register",
+  "name_label": "Name",
+  "email_label": "Email",
+  "password_label": "Password",
+  "sign_up_button": "Sign Up",
+  "already_have_account_login": "Already have an account? Login",
+
+  "calendar": "Calendar",
+  "year_month_day": "{month}/{day}/{year}",
+  "count_items": "{count} items",
+  "select_date_message": "Select a date",
+  "no_todos_for_date": "No todos for this date",
+
+  "searching": "Searching: \"{query}\"",
+  "places_found": "{count} places found",
+  "search_failed": "Search failed",
+
+  "web_notification_test": "Test Notification",
+  "web_notification_test_message": "Web notifications are working properly!"
 }

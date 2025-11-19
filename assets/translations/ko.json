@@ -340,5 +340,45 @@
   "location_set": "위치가 설정되었습니다",
   "location_cleared": "위치가 제거되었습니다",
   "getting_location": "위치 가져오는 중...",
-  "location_error": "위치를 가져올 수 없습니다"
+  "location_error": "위치를 가져올 수 없습니다",
+
+  "address_category": "주소",
+  "todo_notifications": "할일 알림",
+  "location_notifications": "위치 알림",
+  "within_distance": "{distance}m 이내",
+  "within_distance_km": "{distance}km 이내",
+
+  "error_user_not_found": "사용자를 찾을 수 없습니다",
+  "error_password_mismatch": "비밀번호가 일치하지 않습니다",
+  "error_email_already_exists": "이미 등록된 이메일입니다",
+  "error_permission": "권한 오류: Supabase RLS 정책을 확인하세요",
+  "error_network_connection": "네트워크 오류: 인터넷 연결을 확인하세요",
+  "error_schema": "DB 스키마 오류: 컬럼이 존재하지 않습니다",
+  "error_query_failed": "Supabase 쿼리 실패",
+  "error_login_required": "로그인이 필요합니다. 다시 로그인해주세요.",
+  "error_save_failed": "DB 저장 실패",
+  "error_not_found": "항목을 찾을 수 없습니다",
+  "error_delete_failed": "DB 삭제 실패",
+
+  "all_fields_required": "모든 필드를 입력해주세요",
+  "account_created": "계정이 생성되었습니다! 로그인해주세요.",
+  "register": "회원가입",
+  "name_label": "이름",
+  "email_label": "이메일",
+  "password_label": "비밀번호",
+  "sign_up_button": "가입하기",
+  "already_have_account_login": "이미 계정이 있으신가요? 로그인",
+
+  "calendar": "캘린더",
+  "year_month_day": "{year}년 {month}월 {day}일",
+  "count_items": "{count}개",
+  "select_date_message": "날짜를 선택하세요",
+  "no_todos_for_date": "이 날짜에 할일이 없습니다",
+
+  "searching": "검색 중: \"{query}\"",
+  "places_found": "{count}개 장소 찾음",
+  "search_failed": "검색 실패",
+
+  "web_notification_test": "테스트 알림",
+  "web_notification_test_message": "웹 알림이 정상적으로 작동합니다!"
 }
