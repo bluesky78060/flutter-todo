@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_naver_map/flutter_naver_map.dart';
@@ -407,51 +408,106 @@ class _LocationPickerDialogState extends State<LocationPickerDialog> {
                 ),
               ),
 
-            // Map
-            SizedBox(
-              height: 250,
-              child: Stack(
-                children: [
-                  NaverMap(
-                    options: NaverMapViewOptions(
-                      initialCameraPosition: NCameraPosition(
-                        target: initialPosition,
-                        zoom: 15.0,
+            // Map (only on mobile) or info message (on web)
+            if (kIsWeb)
+              // Web: Show info message instead of map
+              Container(
+                height: 250,
+                padding: const EdgeInsets.all(24),
+                margin: const EdgeInsets.symmetric(horizontal: 16),
+                decoration: BoxDecoration(
+                  color: AppColors.primaryBlue.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: AppColors.primaryBlue.withOpacity(0.3),
+                    width: 2,
+                  ),
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(
+                      Icons.info_outline,
+                      size: 48,
+                      color: AppColors.primaryBlue,
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      '웹 버전에서는 주소 검색으로 위치를 지정할 수 있습니다.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: AppColors.textGray,
+                        fontWeight: FontWeight.w500,
                       ),
-                      locationButtonEnable: false,
-                      indoorEnable: true,
-                      consumeSymbolTapEvents: false,
                     ),
-                    onMapReady: (controller) async {
-                      _mapController = controller;
-
-                      // Add initial marker and circle if location is set
-                      if (_selectedLocation != null) {
-                        await _updateMapOverlays();
-                      }
-                    },
-                    onMapTapped: _onMapTap,
-                  ),
-
-                  // Current location button
-                  Positioned(
-                    bottom: 16,
-                    right: 16,
-                    child: FloatingActionButton(
-                      mini: true,
-                      onPressed: _isLoadingLocation ? null : _getCurrentLocation,
-                      child: _isLoadingLocation
-                          ? const SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
-                          : const Icon(Icons.my_location),
+                    const SizedBox(height: 8),
+                    Text(
+                      '위 검색창에서 장소 또는 주소를 검색하세요.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: AppColors.textGray.withOpacity(0.8),
+                      ),
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 16),
+                    Text(
+                      '지도 기능과 위치 추적은 모바일 앱에서만 사용 가능합니다.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: AppColors.textGray.withOpacity(0.6),
+                      ),
+                    ),
+                  ],
+                ),
+              )
+            else
+              // Mobile: Show map
+              SizedBox(
+                height: 250,
+                child: Stack(
+                  children: [
+                    NaverMap(
+                      options: NaverMapViewOptions(
+                        initialCameraPosition: NCameraPosition(
+                          target: initialPosition,
+                          zoom: 15.0,
+                        ),
+                        locationButtonEnable: false,
+                        indoorEnable: true,
+                        consumeSymbolTapEvents: false,
+                      ),
+                      onMapReady: (controller) async {
+                        _mapController = controller;
+
+                        // Add initial marker and circle if location is set
+                        if (_selectedLocation != null) {
+                          await _updateMapOverlays();
+                        }
+                      },
+                      onMapTapped: _onMapTap,
+                    ),
+
+                    // Current location button
+                    Positioned(
+                      bottom: 16,
+                      right: 16,
+                      child: FloatingActionButton(
+                        mini: true,
+                        onPressed: _isLoadingLocation ? null : _getCurrentLocation,
+                        child: _isLoadingLocation
+                            ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(strokeWidth: 2),
+                              )
+                            : const Icon(Icons.my_location),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
 
             // Location info - make scrollable
             Flexible(

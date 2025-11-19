@@ -35,8 +35,12 @@ void main() async {
   await EasyLocalization.ensureInitialized();
 
   // Initialize Naver Map SDK
-  // Android에서는 새로운 초기화 방법 사용
-  if (!kIsWeb) {
+  if (kIsWeb) {
+    // Web: SDK는 index.html의 JavaScript에서 로드됨
+    // Flutter 측에서는 별도 초기화 불필요
+    logger.d('✅ Naver Maps SDK for Web loaded via index.html script tag');
+  } else {
+    // Mobile platforms
     if (defaultTargetPlatform == TargetPlatform.android) {
       // Android: 새로운 초기화 방법
       await FlutterNaverMap().init(clientId: 'rzx12utf2x');
