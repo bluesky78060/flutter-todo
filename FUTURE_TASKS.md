@@ -18,6 +18,17 @@
   - Google Geocoding (geocoding 패키지) 사용으로 전환
   - Naver Reverse Geocoding 추가 (좌표 → 한국어 주소)
   - 5단계 검색 전략 구현 (fallback 패턴)
+  - 실제 디바이스 및 에뮬레이터에서 정상 작동 확인
+- ✅ **위치 기반 Todo 주소 검색 완전 작동**
+  - 주소 검색 ("문단길15" 등) 정상 작동 확인
+  - 5단계 검색 전략:
+    1. Naver Local Search - 일반 키워드 검색 (장소명, 업체명)
+    2. Naver Local Search - 주소 형식 검색 (지번, 도로명 주소)
+    3. Naver Local Search - 유사 주소 검색 (공백 제거)
+    4. Google Geocoding - 주소 → 좌표 변환 (일반 주소)
+    5. Naver Reverse Geocoding - 좌표 → 한국어 주소 변환
+  - 에러 핸들링 및 로깅 완비
+  - API 인증 문제 완전 해결
 - ✅ **국제화(i18n) 번역 키 추가**
   - 하드코딩된 한글 텍스트용 번역 키 추가 (40개 이상)
   - 에러 메시지, UI 레이블, 알림 텍스트 등
