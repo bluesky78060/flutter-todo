@@ -12,6 +12,17 @@
 
 ## ✅ 완료된 작업 (Completed)
 
+### 2025-11-19
+- ✅ **주소 검색 API 전환** (Naver Geocoding → Google Geocoding)
+  - Naver Geocoding API 모바일 앱 401 에러 해결
+  - Google Geocoding (geocoding 패키지) 사용으로 전환
+  - Naver Reverse Geocoding 추가 (좌표 → 한국어 주소)
+  - 5단계 검색 전략 구현 (fallback 패턴)
+- ✅ **국제화(i18n) 번역 키 추가**
+  - 하드코딩된 한글 텍스트용 번역 키 추가 (40개 이상)
+  - 에러 메시지, UI 레이블, 알림 텍스트 등
+  - 향후 완전한 다국어 지원을 위한 준비 작업
+
 ### 2025-11-18
 - ✅ **Naver Maps 통합 완료** (Google Maps → Naver Maps 마이그레이션)
   - 지도 API 전환, 주소 역지오코딩, 위치 검색
@@ -311,12 +322,28 @@
 
 ---
 
-#### 🟡 9.2 추가 언어 지원
+#### 🟡 9.2 하드코딩 한글 제거 (번역 키 사용)
+**현재 상태**: 번역 키 40개 추가 완료 (2025-11-19)
+**남은 작업**:
+- [ ] `notification_service.dart` 수정 (알림 텍스트)
+- [ ] `auth_repository_impl.dart` 수정 (에러 메시지)
+- [ ] `supabase_datasource.dart` 수정 (에러 메시지)
+- [ ] `register_screen.dart` 수정 (UI 레이블)
+- [ ] `calendar_screen.dart` 수정 (UI 텍스트)
+- [ ] `location_picker_dialog.dart` 수정 (검색 메시지)
+- [ ] `web_notification_service.dart` 수정 (테스트 알림)
+
+**예상 작업 시간**: 2-3시간
+
+---
+
+#### 🟡 9.3 추가 언어 지원
 **현재 상태**: 한국어, 영어만 지원
 **추가 언어**: 일본어, 중국어(간체/번체), 스페인어 등
 **필요 작업**:
 - [ ] 번역 파일 추가 (`assets/translations/`)
 - [ ] 언어 선택 UI (설정 화면)
+- [ ] 하드코딩 한글 제거 (9.2) 선행 필요
 
 **예상 작업 시간**: 언어당 4-6시간
 
