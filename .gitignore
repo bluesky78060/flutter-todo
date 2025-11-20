@@ -66,3 +66,6 @@ keystore_backup/
 *.aab
 app-release*.apk
 app-release*.aab
+
+# Web build artifacts with secrets
+web/index.html
