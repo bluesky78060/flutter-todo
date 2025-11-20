@@ -5,8 +5,12 @@ import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:http/http.dart' as http;
-import 'dart:js_interop' as js;
-import 'dart:js_interop_unsafe';
+
+// Conditional import for web-only JS interop
+import 'dart:js_interop' as js
+    if (dart.library.io) 'location_service_web_stub.dart' as js;
+import 'dart:js_interop_unsafe' show globalContext
+    if (dart.library.io) 'location_service_web_stub.dart' show globalContext;
 
 /// LocationService handles all location-related operations
 /// including permissions, location fetching, and geofencing
@@ -507,7 +511,7 @@ class LocationService {
   Future<List<PlaceSearchResult>> _searchGeocodingWeb(String query) async {
     try {
       // Call JavaScript Google Maps Geocoder (returns Promise)
-      final jsPromise = js.globalContext.callMethod(
+      final jsPromise = globalContext.callMethod(
         'callGoogleGeocoder'.toJS,
         query.toJS,
       ) as js.JSPromise;
