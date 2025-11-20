@@ -4,6 +4,9 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_naver_map/flutter_naver_map.dart';
 import 'package:todo_app/core/services/location_service.dart';
 import 'package:todo_app/core/theme/app_colors.dart';
+// Conditional import for web vs mobile
+import 'package:todo_app/presentation/widgets/naver_map_platform.dart'
+    if (dart.library.html) 'package:todo_app/presentation/widgets/naver_map_platform.web.dart';
 
 /// Result returned when location is selected
 class LocationPickerResult {
@@ -45,6 +48,7 @@ class _LocationPickerDialogState extends State<LocationPickerDialog> {
   final TextEditingController _searchController = TextEditingController();
 
   NaverMapController? _mapController;
+  dynamic _webMapState; // For web map (NaverMapWeb state)
   NLatLng? _selectedLocation;
   double _radius = 100.0; // Default radius in meters
   bool _isLoadingLocation = false;
@@ -104,6 +108,8 @@ class _LocationPickerDialogState extends State<LocationPickerDialog> {
         );
       }
 
+      // Both web and mobile use LocationService now
+      // LocationService has web-specific implementation via naver_map_bridge.js
       final results = await _locationService.searchPlaces(query);
 
       if (mounted) {
@@ -152,15 +158,18 @@ class _LocationPickerDialogState extends State<LocationPickerDialog> {
       _searchController.clear();
     });
 
-    // Move camera to selected location
-    final cameraUpdate = NCameraUpdate.scrollAndZoomTo(
-      target: location,
-      zoom: 16.0,
-    );
-    _mapController?.updateCamera(cameraUpdate);
-
-    // Update marker and circle
-    _updateMapOverlays();
+    // Move camera and update overlays (platform-specific)
+    if (kIsWeb) {
+      _webMapState?.moveCamera(location);
+      _updateWebMapOverlays();
+    } else {
+      final cameraUpdate = NCameraUpdate.scrollAndZoomTo(
+        target: location,
+        zoom: 16.0,
+      );
+      _mapController?.updateCamera(cameraUpdate);
+      _updateMapOverlays();
+    }
   }
 
   /// Get current location and move map
@@ -179,15 +188,18 @@ class _LocationPickerDialogState extends State<LocationPickerDialog> {
           _selectedLocation = location;
         });
 
-        // Move camera to current location
-        final cameraUpdate = NCameraUpdate.scrollAndZoomTo(
-          target: location,
-          zoom: 15.0,
-        );
-        _mapController?.updateCamera(cameraUpdate);
-
-        // Update marker and circle
-        await _updateMapOverlays();
+        // Move camera and update overlays (platform-specific)
+        if (kIsWeb) {
+          _webMapState?.moveCamera(location);
+          _updateWebMapOverlays();
+        } else {
+          final cameraUpdate = NCameraUpdate.scrollAndZoomTo(
+            target: location,
+            zoom: 15.0,
+          );
+          _mapController?.updateCamera(cameraUpdate);
+          await _updateMapOverlays();
+        }
 
         // Get address for current location
         await _updateAddress(position.latitude, position.longitude);
@@ -231,7 +243,7 @@ class _LocationPickerDialogState extends State<LocationPickerDialog> {
     }
   }
 
-  /// Update marker and circle overlays on the map
+  /// Update marker and circle overlays on the map (mobile)
   Future<void> _updateMapOverlays() async {
     if (_selectedLocation == null || _mapController == null) return;
 
@@ -261,6 +273,14 @@ class _LocationPickerDialogState extends State<LocationPickerDialog> {
     await _mapController!.clearOverlays();
     await _mapController!.addOverlayAll(_markers);
     await _mapController!.addOverlayAll(_circles);
+  }
+
+  /// Update marker and circle overlays on web map
+  void _updateWebMapOverlays() {
+    if (_selectedLocation == null || _webMapState == null) return;
+
+    // Call web map's updateOverlays method
+    _webMapState.updateOverlays(_selectedLocation!, _radius);
   }
 
   /// Handle map tap to select location
@@ -336,7 +356,7 @@ class _LocationPickerDialogState extends State<LocationPickerDialog> {
               ),
             ),
 
-            // Search bar
+            // Search bar (uses proxy server on web to bypass CORS)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: TextField(
@@ -363,21 +383,21 @@ class _LocationPickerDialogState extends State<LocationPickerDialog> {
                       : _searchController.text.isNotEmpty
                           ? IconButton(
                               icon: const Icon(Icons.clear),
-                              onPressed: () {
-                                _searchController.clear();
-                                setState(() {
-                                  _searchResults = [];
-                                });
-                              },
-                            )
-                          : null,
-                  border: const OutlineInputBorder(),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                ),
-                onSubmitted: _searchPlaces,
-                textInputAction: TextInputAction.search,
+                            onPressed: () {
+                              _searchController.clear();
+                              setState(() {
+                                _searchResults = [];
+                              });
+                            },
+                          )
+                        : null,
+                border: const OutlineInputBorder(),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               ),
+              onSubmitted: _searchPlaces,
+              textInputAction: TextInputAction.search,
             ),
+          ),
 
             const SizedBox(height: 8),
 
@@ -408,66 +428,32 @@ class _LocationPickerDialogState extends State<LocationPickerDialog> {
                 ),
               ),
 
-            // Map (only on mobile) or info message (on web)
-            if (kIsWeb)
-              // Web: Show info message instead of map
-              Container(
-                height: 250,
-                padding: const EdgeInsets.all(24),
-                margin: const EdgeInsets.symmetric(horizontal: 16),
-                decoration: BoxDecoration(
-                  color: AppColors.primaryBlue.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: AppColors.primaryBlue.withOpacity(0.3),
-                    width: 2,
-                  ),
-                ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(
-                      Icons.info_outline,
-                      size: 48,
-                      color: AppColors.primaryBlue,
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      '웹 버전에서는 주소 검색으로 위치를 지정할 수 있습니다.',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: AppColors.textGray,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      '위 검색창에서 장소 또는 주소를 검색하세요.',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: AppColors.textGray.withOpacity(0.8),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      '지도 기능과 위치 추적은 모바일 앱에서만 사용 가능합니다.',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: AppColors.textGray.withOpacity(0.6),
-                      ),
-                    ),
-                  ],
-                ),
-              )
-            else
-              // Mobile: Show map
-              SizedBox(
-                height: 250,
-                child: Stack(
-                  children: [
+            // Map - Platform-specific implementation
+            SizedBox(
+              height: 250,
+              child: Stack(
+                children: [
+                  // Web: Use NaverMapWeb (JavaScript SDK)
+                  // Mobile: Use NaverMap (Flutter SDK)
+                  if (kIsWeb)
+                    NaverMapWeb(
+                      initialCenter: initialPosition,
+                      initialZoom: 15.0,
+                      onMapTap: (latLng) {
+                        setState(() {
+                          _selectedLocation = latLng;
+                        });
+                        _updateAddress(latLng.latitude, latLng.longitude);
+                      },
+                      onMapReady: (webMapState) {
+                        // Store web map state reference for updates
+                        _webMapState = webMapState;
+                        if (_selectedLocation != null) {
+                          _updateWebMapOverlays();
+                        }
+                      },
+                    )
+                  else
                     NaverMap(
                       options: NaverMapViewOptions(
                         initialCameraPosition: NCameraPosition(
@@ -489,25 +475,25 @@ class _LocationPickerDialogState extends State<LocationPickerDialog> {
                       onMapTapped: _onMapTap,
                     ),
 
-                    // Current location button
-                    Positioned(
-                      bottom: 16,
-                      right: 16,
-                      child: FloatingActionButton(
-                        mini: true,
-                        onPressed: _isLoadingLocation ? null : _getCurrentLocation,
-                        child: _isLoadingLocation
-                            ? const SizedBox(
-                                width: 20,
-                                height: 20,
-                                child: CircularProgressIndicator(strokeWidth: 2),
-                              )
-                            : const Icon(Icons.my_location),
-                      ),
+                  // Current location button
+                  Positioned(
+                    bottom: 16,
+                    right: 16,
+                    child: FloatingActionButton(
+                      mini: true,
+                      onPressed: _isLoadingLocation ? null : _getCurrentLocation,
+                      child: _isLoadingLocation
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Icon(Icons.my_location),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
+            ),
 
             // Location info - make scrollable
             Flexible(
@@ -558,8 +544,12 @@ class _LocationPickerDialogState extends State<LocationPickerDialog> {
                         setState(() {
                           _radius = value;
                         });
-                        // Update circle radius
-                        _updateMapOverlays();
+                        // Update circle radius (platform-specific)
+                        if (kIsWeb) {
+                          _updateWebMapOverlays();
+                        } else {
+                          _updateMapOverlays();
+                        }
                       },
                     ),
                   ],

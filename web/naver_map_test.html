@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Naver Maps Test</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: Arial, sans-serif;
+    }
+    #map {
+      width: 100%;
+      height: 500px;
+      border: 2px solid #ccc;
+      margin-top: 20px;
+    }
+    .info {
+      background: #f0f0f0;
+      padding: 15px;
+      border-radius: 5px;
+      margin-bottom: 20px;
+    }
+    .success {
+      color: green;
+      font-weight: bold;
+    }
+    .error {
+      color: red;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="info">
+    <h2>Naver Maps Web SDK Test</h2>
+    <p><strong>Client ID:</strong> rzx12utf2x</p>
+    <p><strong>Current URL:</strong> <span id="current-url"></span></p>
+    <p><strong>Status:</strong> <span id="status">Loading...</span></p>
+  </div>
+
+  <div id="map"></div>
+
+  <!-- Naver Maps SDK -->
+  <script src="https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=rzx12utf2x&submodules=geocoder"></script>
+
+  <script>
+    // Display current URL
+    document.getElementById('current-url').textContent = window.location.href;
+
+    // Check if SDK loaded
+    if (window.naver && window.naver.maps) {
+      console.log('✅ Naver Maps SDK loaded successfully');
+      document.getElementById('status').innerHTML = '<span class="success">✅ SDK Loaded</span>';
+
+      try {
+        // Initialize map at Seoul City Hall
+        const map = new naver.maps.Map('map', {
+          center: new naver.maps.LatLng(37.5666805, 126.9784147),
+          zoom: 15
+        });
+
+        console.log('✅ Map created successfully');
+
+        // Add marker
+        const marker = new naver.maps.Marker({
+          position: new naver.maps.LatLng(37.5666805, 126.9784147),
+          map: map,
+          title: 'Seoul City Hall'
+        });
+
+        document.getElementById('status').innerHTML = '<span class="success">✅ Map Initialized Successfully</span>';
+
+        // Test geocoder
+        if (window.naver.maps.Service) {
+          console.log('✅ Geocoder service available');
+
+          naver.maps.Service.geocode({
+            query: '서울시청'
+          }, function(status, response) {
+            if (status === naver.maps.Service.Status.OK) {
+              console.log('✅ Geocoder test successful:', response);
+            } else {
+              console.error('❌ Geocoder test failed');
+            }
+          });
+        } else {
+          console.warn('⚠️ Geocoder service not available');
+        }
+
+      } catch (error) {
+        console.error('❌ Error creating map:', error);
+        document.getElementById('status').innerHTML = '<span class="error">❌ Error: ' + error.message + '</span>';
+      }
+
+    } else {
+      console.error('❌ Naver Maps SDK not loaded');
+      document.getElementById('status').innerHTML = '<span class="error">❌ SDK Not Loaded - Check Client ID and Web Service URL registration</span>';
+
+      alert('❌ Naver Maps SDK 로드 실패!\n\nClient ID: quSL_7O8Nb5bh6hK4Kj2\n현재 URL: ' + window.location.href + '\n\n네이버 클라우드 플랫폼 콘솔에서 다음을 확인하세요:\n1. Dynamic Map 서비스가 활성화되어 있는지\n2. Web 서비스 URL이 등록되어 있는지\n3. http://localhost (포트 번호 없이)\n4. http://127.0.0.1 (포트 번호 없이)');
+    }
+  </script>
+</body>
+</html>

@@ -35,12 +35,8 @@ void main() async {
   await EasyLocalization.ensureInitialized();
 
   // Initialize Naver Map SDK
-  if (kIsWeb) {
-    // Web: SDK는 index.html의 JavaScript에서 로드됨
-    // Flutter 측에서는 별도 초기화 불필요
-    logger.d('✅ Naver Maps SDK for Web loaded via index.html script tag');
-  } else {
-    // Mobile platforms
+  if (!kIsWeb) {
+    // Mobile platforms only - Web uses JavaScript SDK loaded in index.html
     if (defaultTargetPlatform == TargetPlatform.android) {
       // Android: 새로운 초기화 방법
       await FlutterNaverMap().init(clientId: 'rzx12utf2x');
@@ -50,6 +46,9 @@ void main() async {
       await NaverMapSdk.instance.initialize(clientId: 'rzx12utf2x');
       logger.d('✅ Naver Maps SDK initialized for iOS');
     }
+  } else {
+    // Web: SDK는 index.html의 JavaScript에서 로드됨
+    logger.d('✅ Naver Maps SDK for Web loaded via index.html script tag');
   }
 
   // Load environment variables from .env file
@@ -175,31 +174,24 @@ class MyApp extends ConsumerStatefulWidget {
 
 class _MyAppState extends ConsumerState<MyApp> {
   @override
-  void initState() {
-    super.initState();
-
-    // Generate recurring todo instances AFTER authentication
-    // We listen to auth state and trigger once when authenticated
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      ref.listen<bool>(isAuthenticatedProvider, (prev, next) async {
-        // Trigger only on transition to authenticated
-        if (next == true && prev != true) {
-          try {
-            final recurringService = ref.read(recurringTodoServiceProvider);
-            logger.d('🔄 Main: Authenticated - generating recurring todo instances');
-            await recurringService.generateUpcomingInstances(lookAheadDays: 30);
-            logger.d('✅ Main: Recurring instances generation completed');
-          } catch (e, stackTrace) {
-            logger.e('❌ Main: Failed to generate recurring instances after auth',
-                error: e, stackTrace: stackTrace);
-          }
-        }
-      });
-    });
-  }
-
-  @override
   Widget build(BuildContext context) {
+    // Generate recurring todo instances AFTER authentication
+    // Listen to auth state and trigger once when authenticated
+    ref.listen<bool>(isAuthenticatedProvider, (prev, next) async {
+      // Trigger only on transition to authenticated
+      if (next == true && prev != true) {
+        try {
+          final recurringService = ref.read(recurringTodoServiceProvider);
+          logger.d('🔄 Main: Authenticated - generating recurring todo instances');
+          await recurringService.generateUpcomingInstances(lookAheadDays: 30);
+          logger.d('✅ Main: Recurring instances generation completed');
+        } catch (e, stackTrace) {
+          logger.e('❌ Main: Failed to generate recurring instances after auth',
+              error: e, stackTrace: stackTrace);
+        }
+      }
+    });
+
     final router = ref.watch(goRouterProvider);
     final themeMode = ref.watch(themeProvider);
 

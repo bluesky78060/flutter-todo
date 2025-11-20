@@ -8,14 +8,48 @@ import 'package:todo_app/core/utils/app_logger.dart';
 /// OAuth callback landing screen
 /// This screen is shown briefly after OAuth authentication completes
 /// It checks auth state and redirects appropriately
-class OAuthCallbackScreen extends ConsumerWidget {
+class OAuthCallbackScreen extends ConsumerStatefulWidget {
   const OAuthCallbackScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    logger.d('🔗 OAuthCallbackScreen: Building');
+  ConsumerState<OAuthCallbackScreen> createState() => _OAuthCallbackScreenState();
+}
 
-    // Handle auth state changes and redirect appropriately
+class _OAuthCallbackScreenState extends ConsumerState<OAuthCallbackScreen> {
+  @override
+  void initState() {
+    super.initState();
+
+    // Supabase should handle OAuth callback automatically on web
+    // Just wait a moment and then check auth state
+    logger.d('🔗 OAuthCallbackScreen: Initializing');
+
+    Future.delayed(const Duration(seconds: 2), () {
+      if (mounted) {
+        _checkAuthAndRedirect();
+      }
+    });
+  }
+
+  void _checkAuthAndRedirect() {
+    final authState = ref.read(currentUserProvider);
+
+    logger.d('🔗 OAuthCallbackScreen: Checking auth state');
+
+    if (authState.value != null) {
+      // User is authenticated, navigate to todos
+      logger.d('✅ OAuthCallbackScreen: User authenticated, navigating to todos');
+      context.go(AppConstants.todosRoute);
+    } else {
+      // Not authenticated, go to login
+      logger.d('❌ OAuthCallbackScreen: Not authenticated, navigating to login');
+      context.go(AppConstants.loginRoute);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // Also listen for real-time auth changes
     ref.listen<AsyncValue<dynamic>>(
       currentUserProvider,
       (previous, next) {
@@ -23,18 +57,10 @@ class OAuthCallbackScreen extends ConsumerWidget {
 
         if (next.value != null) {
           // User is authenticated, navigate to todos
-          logger.d('✅ OAuthCallbackScreen: User authenticated, navigating to todos');
+          logger.d('✅ OAuthCallbackScreen: User authenticated (listener), navigating to todos');
           Future.microtask(() {
             if (context.mounted) {
               context.go(AppConstants.todosRoute);
-            }
-          });
-        } else if (!next.isLoading) {
-          // No user and not loading, go to login
-          logger.d('❌ OAuthCallbackScreen: Not authenticated, navigating to login');
-          Future.microtask(() {
-            if (context.mounted) {
-              context.go(AppConstants.loginRoute);
             }
           });
         }
