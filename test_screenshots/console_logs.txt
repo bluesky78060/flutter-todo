@@ -1,0 +1,8 @@
+[debug] Installing/Activating first service worker.
+[debug] Activated new service worker.
+[debug] Injecting <script> tag. Using callback.
+[debug] TrustedTypes available. Creating policy: gis-dart
+[verbose] [DOM] Input elements should have autocomplete attributes (suggested: "current-password"): (More info: https://goo.gl/9p2vKq) %o
+[log] %c%s color: red; background: yellow; font-size: 24px; 경고!
+[log] %c%s font-size: 18px; 이 콘솔을 사용하면 공격자가 Self-XSS라는 공격을 통해 내 신원을 도용하여 내 정보를 빼낼 수 있습니다.
+알지 못하는 코드를 입력하거나 붙여넣지 마세요.

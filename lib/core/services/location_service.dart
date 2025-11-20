@@ -7,10 +7,12 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:http/http.dart' as http;
 
 // Conditional import for web-only JS interop
-import 'dart:js_interop' as js
-    if (dart.library.io) 'location_service_web_stub.dart' as js;
-import 'dart:js_interop_unsafe' show globalContext
-    if (dart.library.io) 'location_service_web_stub.dart' show globalContext;
+// On web: use real dart:js_interop
+// On non-web: use stub
+import 'location_service_web_stub.dart' as js
+    if (dart.library.js_interop) 'dart:js_interop' as js;
+import 'location_service_web_stub.dart' show globalContext
+    if (dart.library.js_interop_unsafe) 'dart:js_interop_unsafe' show globalContext;
 
 /// LocationService handles all location-related operations
 /// including permissions, location fetching, and geofencing
