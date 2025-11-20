@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Naver Maps Diagnostic Tool</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: #f5f5f5;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    h1 {
+      color: #333;
+      border-bottom: 3px solid #03c75a;
+      padding-bottom: 10px;
+    }
+    .section {
+      margin: 20px 0;
+      padding: 15px;
+      background: #fafafa;
+      border-left: 4px solid #03c75a;
+    }
+    .section h2 {
+      margin-top: 0;
+      color: #03c75a;
+    }
+    .status {
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 4px;
+      font-weight: bold;
+    }
+    .success {
+      background: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+    .error {
+      background: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+    .warning {
+      background: #fff3cd;
+      color: #856404;
+      border: 1px solid #ffeeba;
+    }
+    .info {
+      background: #d1ecf1;
+      color: #0c5460;
+      border: 1px solid #bee5eb;
+    }
+    #map {
+      width: 100%;
+      height: 400px;
+      margin-top: 20px;
+      border: 2px solid #ddd;
+      background: #e0e0e0;
+    }
+    .code {
+      background: #2d2d2d;
+      color: #f8f8f2;
+      padding: 15px;
+      border-radius: 4px;
+      overflow-x: auto;
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+      margin: 10px 0;
+    }
+    .checklist {
+      list-style: none;
+      padding: 0;
+    }
+    .checklist li {
+      padding: 8px 0;
+      border-bottom: 1px solid #eee;
+    }
+    .checklist li:before {
+      content: "❌ ";
+      margin-right: 10px;
+    }
+    .checklist li.checked:before {
+      content: "✅ ";
+    }
+    button {
+      background: #03c75a;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      margin: 5px;
+    }
+    button:hover {
+      background: #02b350;
+    }
+    button:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🗺️ Naver Maps API 진단 도구</h1>
+
+    <div class="section">
+      <h2>📋 기본 정보</h2>
+      <div class="info">
+        <strong>Client ID:</strong> rzx12utf2x<br>
+        <strong>현재 URL:</strong> <span id="current-url"></span><br>
+        <strong>시간:</strong> <span id="current-time"></span>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>🔍 진단 결과</h2>
+      <div id="diagnostic-results">
+        <div class="warning">진단 시작 중...</div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>📡 네트워크 요청</h2>
+      <div id="network-info">
+        <div class="info">네트워크 요청 정보가 여기에 표시됩니다.</div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>🗺️ 지도 테스트</h2>
+      <button onclick="testMapCreation()">지도 생성 테스트</button>
+      <button onclick="testGeocoder()">Geocoder 테스트</button>
+      <button onclick="clearMap()">지도 초기화</button>
+      <div id="map"></div>
+      <div id="map-status" style="margin-top: 10px;"></div>
+    </div>
+
+    <div class="section">
+      <h2>💡 해결 방법</h2>
+      <div id="solutions"></div>
+    </div>
+
+    <div class="section">
+      <h2>📝 콘솔 로그</h2>
+      <div class="code" id="console-log"></div>
+    </div>
+  </div>
+
+  <!-- Naver Maps SDK -->
+  <script src="https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=rzx12utf2x&submodules=geocoder"></script>
+
+  <script>
+    let map = null;
+    let marker = null;
+    const logs = [];
+
+    function log(message, type = 'info') {
+      const timestamp = new Date().toISOString().split('T')[1].split('.')[0];
+      const logEntry = `[${timestamp}] [${type.toUpperCase()}] ${message}`;
+      logs.push(logEntry);
+      console.log(logEntry);
+      updateConsoleLog();
+    }
+
+    function updateConsoleLog() {
+      document.getElementById('console-log').textContent = logs.join('\n');
+    }
+
+    function updateStatus(elementId, html) {
+      document.getElementById(elementId).innerHTML = html;
+    }
+
+    function runDiagnostics() {
+      log('진단 시작', 'info');
+
+      const results = [];
+      const checks = [];
+
+      // Check 1: SDK 로드 확인
+      log('SDK 로드 확인', 'check');
+      if (window.naver && window.naver.maps) {
+        results.push('<div class="success">✅ Naver Maps SDK가 성공적으로 로드되었습니다.</div>');
+        checks.push({text: 'SDK 로드', checked: true});
+        log('SDK 로드 성공', 'success');
+      } else {
+        results.push('<div class="error">❌ Naver Maps SDK 로드 실패<br>원인: Client ID가 잘못되었거나, Web 서비스 URL이 등록되지 않았습니다.</div>');
+        checks.push({text: 'SDK 로드', checked: false});
+        log('SDK 로드 실패 - API 인증 문제', 'error');
+      }
+
+      // Check 2: naver.maps.Map 확인
+      if (window.naver && window.naver.maps && window.naver.maps.Map) {
+        results.push('<div class="success">✅ naver.maps.Map 클래스 사용 가능</div>');
+        checks.push({text: 'Map 클래스', checked: true});
+        log('Map 클래스 사용 가능', 'success');
+      } else {
+        results.push('<div class="error">❌ naver.maps.Map 클래스 없음</div>');
+        checks.push({text: 'Map 클래스', checked: false});
+        log('Map 클래스 없음', 'error');
+      }
+
+      // Check 3: Geocoder 서비스 확인
+      if (window.naver && window.naver.maps && window.naver.maps.Service) {
+        results.push('<div class="success">✅ Geocoder 서비스 사용 가능</div>');
+        checks.push({text: 'Geocoder 서비스', checked: true});
+        log('Geocoder 서비스 사용 가능', 'success');
+      } else {
+        results.push('<div class="warning">⚠️ Geocoder 서비스 없음 (submodules 파라미터 확인 필요)</div>');
+        checks.push({text: 'Geocoder 서비스', checked: false});
+        log('Geocoder 서비스 없음', 'warning');
+      }
+
+      // Check 4: 네트워크 요청 (간접 확인)
+      if (window.naver && window.naver.maps) {
+        results.push('<div class="success">✅ API 서버 통신 성공 (SDK가 로드됨)</div>');
+        checks.push({text: 'API 서버 통신', checked: true});
+        log('API 서버 통신 성공', 'success');
+      } else {
+        results.push('<div class="error">❌ API 서버 통신 실패<br>가능한 원인:<br>1. Client ID 오류<br>2. Web 서비스 URL 미등록<br>3. Dynamic Map 서비스 비활성화</div>');
+        checks.push({text: 'API 서버 통신', checked: false});
+        log('API 서버 통신 실패', 'error');
+      }
+
+      updateStatus('diagnostic-results', results.join(''));
+
+      // 해결 방법 표시
+      showSolutions(checks);
+
+      // 네트워크 정보 업데이트
+      updateNetworkInfo();
+    }
+
+    function showSolutions(checks) {
+      const allPassed = checks.every(check => check.checked);
+
+      if (allPassed) {
+        updateStatus('solutions', '<div class="success">🎉 모든 진단 항목을 통과했습니다! 지도를 사용할 수 있습니다.</div>');
+        return;
+      }
+
+      let solutions = '<ul class="checklist">';
+
+      if (!checks.find(c => c.text === 'SDK 로드')?.checked) {
+        solutions += `
+          <li><strong>1. 네이버 클라우드 플랫폼 콘솔 확인</strong></li>
+          <li class="checked">콘솔 접속: <a href="https://console.ncloud.com/maps/application" target="_blank">https://console.ncloud.com/maps/application</a></li>
+          <li>Client ID가 <code>quSL_7O8Nb5bh6hK4Kj2</code>인 Application을 찾으세요</li>
+          <li>Application 수정 화면에서:</li>
+          <li>&nbsp;&nbsp;- [✓] <strong>Dynamic Map</strong> 체크박스가 선택되어 있는지 확인</li>
+          <li>&nbsp;&nbsp;- [✓] Web 서비스 URL에 <code>http://localhost</code> 등록 (포트 번호 없이!)</li>
+          <li>&nbsp;&nbsp;- [✓] Web 서비스 URL에 <code>http://127.0.0.1</code> 등록</li>
+          <li>&nbsp;&nbsp;- 잘못된 형식 (http://localhost:8888) 있으면 삭제</li>
+          <li>저장 후 5-10분 대기</li>
+          <li>브라우저 캐시 삭제 (Shift + Cmd + Delete)</li>
+          <li>페이지 새로고침 (Cmd + R 또는 F5)</li>
+        `;
+      }
+
+      if (!checks.find(c => c.text === 'Geocoder 서비스')?.checked) {
+        solutions += `
+          <li><strong>2. Geocoding 서비스 활성화</strong></li>
+          <li>콘솔에서 Application 수정 화면</li>
+          <li>[✓] <strong>Geocoding</strong> 체크박스 선택</li>
+          <li>저장 후 페이지 새로고침</li>
+        `;
+      }
+
+      solutions += '</ul>';
+      updateStatus('solutions', solutions);
+    }
+
+    function updateNetworkInfo() {
+      const sdkUrl = 'https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=quSL_7O8Nb5bh6hK4Kj2&submodules=geocoder';
+
+      let info = `
+        <div class="info">
+          <strong>SDK URL:</strong><br>
+          <code style="word-break: break-all;">${sdkUrl}</code><br><br>
+          <strong>참고:</strong> 브라우저 개발자 도구 (F12) > Network 탭에서 "validatev3" 요청을 확인하세요.<br>
+          - <strong>Status 200:</strong> 인증 성공 ✅<br>
+          - <strong>Status 403:</strong> 인증 실패 (Client ID 또는 URL 문제) ❌<br>
+          - <strong>Status 404:</strong> Client ID가 존재하지 않음 ❌
+        </div>
+      `;
+
+      updateStatus('network-info', info);
+    }
+
+    function testMapCreation() {
+      log('지도 생성 시도', 'test');
+
+      if (!window.naver || !window.naver.maps) {
+        updateStatus('map-status', '<div class="error">❌ SDK가 로드되지 않아 지도를 생성할 수 없습니다.</div>');
+        log('지도 생성 실패 - SDK 없음', 'error');
+        return;
+      }
+
+      try {
+        map = new naver.maps.Map('map', {
+          center: new naver.maps.LatLng(37.5666805, 126.9784147),
+          zoom: 15,
+          zoomControl: true,
+          zoomControlOptions: {
+            position: naver.maps.Position.TOP_RIGHT
+          }
+        });
+
+        marker = new naver.maps.Marker({
+          position: new naver.maps.LatLng(37.5666805, 126.9784147),
+          map: map,
+          title: '서울시청'
+        });
+
+        updateStatus('map-status', '<div class="success">✅ 지도가 성공적으로 생성되었습니다! (중심: 서울시청)</div>');
+        log('지도 생성 성공 - 서울시청', 'success');
+
+        // 클릭 이벤트 추가
+        naver.maps.Event.addListener(map, 'click', function(e) {
+          log(`지도 클릭: ${e.coord.y.toFixed(6)}, ${e.coord.x.toFixed(6)}`, 'event');
+        });
+
+      } catch (error) {
+        updateStatus('map-status', `<div class="error">❌ 지도 생성 실패: ${error.message}</div>`);
+        log(`지도 생성 오류: ${error.message}`, 'error');
+      }
+    }
+
+    function testGeocoder() {
+      log('Geocoder 테스트 시작', 'test');
+
+      if (!window.naver || !window.naver.maps || !window.naver.maps.Service) {
+        updateStatus('map-status', '<div class="error">❌ Geocoder 서비스를 사용할 수 없습니다.</div>');
+        log('Geocoder 테스트 실패 - 서비스 없음', 'error');
+        return;
+      }
+
+      updateStatus('map-status', '<div class="info">🔍 Geocoding 테스트 중...</div>');
+
+      naver.maps.Service.geocode({
+        query: '서울시청'
+      }, function(status, response) {
+        if (status === naver.maps.Service.Status.OK) {
+          if (!response.v2 || !response.v2.addresses || response.v2.addresses.length === 0) {
+            updateStatus('map-status', '<div class="error">❌ Geocoding 응답이 비어있습니다<br>Geocoding API가 활성화되지 않았거나 Client ID에 권한이 없습니다</div>');
+            log('Geocoding 응답 없음 - API 비활성화 또는 권한 없음', 'error');
+            return;
+          }
+
+          const result = response.v2.addresses[0];
+          const lat = parseFloat(result.y);
+          const lng = parseFloat(result.x);
+
+          updateStatus('map-status', `<div class="success">✅ Geocoding 성공!<br>주소: ${result.roadAddress}<br>좌표: ${lat}, ${lng}</div>`);
+          log(`Geocoding 성공: ${result.roadAddress} (${lat}, ${lng})`, 'success');
+
+          if (map) {
+            map.setCenter(new naver.maps.LatLng(lat, lng));
+            if (marker) marker.setPosition(new naver.maps.LatLng(lat, lng));
+          }
+        } else {
+          updateStatus('map-status', '<div class="error">❌ Geocoding 실패</div>');
+          log('Geocoding 실패', 'error');
+        }
+      });
+    }
+
+    function clearMap() {
+      log('지도 초기화', 'action');
+
+      if (marker) {
+        marker.setMap(null);
+        marker = null;
+      }
+      if (map) {
+        map.destroy();
+        map = null;
+      }
+      document.getElementById('map').innerHTML = '';
+      updateStatus('map-status', '<div class="info">지도가 초기화되었습니다.</div>');
+      log('지도 초기화 완료', 'info');
+    }
+
+    // 페이지 로드 시 실행
+    window.addEventListener('load', function() {
+      document.getElementById('current-url').textContent = window.location.href;
+      document.getElementById('current-time').textContent = new Date().toLocaleString('ko-KR');
+
+      log('진단 도구 초기화', 'info');
+
+      // 짧은 지연 후 진단 실행 (SDK 로딩 대기)
+      setTimeout(runDiagnostics, 1000);
+    });
+
+    // 전역 에러 핸들러
+    window.addEventListener('error', function(event) {
+      log(`전역 오류: ${event.message}`, 'error');
+    });
+  </script>
+</body>
+</html>

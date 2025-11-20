@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    If you are serving your web app in a path other than the root, change the
+    href value below to reflect the base path you are serving from.
+
+    The path provided below has to start and end with a slash "/" in order for
+    it to work correctly.
+
+    For more details:
+    * https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
+
+    This is a placeholder for base href that will be replaced by the value of
+    the `--base-href` argument provided to `flutter build`.
+  -->
+  <base href="$FLUTTER_BASE_HREF">
+
+  <meta charset="UTF-8">
+  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+  <meta name="description" content="DoDo - A simple and elegant todo app with cloud sync">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+  <!-- iOS meta tags & icons -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="DoDo">
+  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="favicon.png"/>
+
+  <title>DoDo - Todo App</title>
+  <link rel="manifest" href="manifest.json">
+
+  <!-- SQL.js for Drift -->
+  <script src="https://cdn.jsdelivr.net/npm/sql.js@1.10.3/dist/sql-wasm.js"></script>
+
+  <!-- Naver Maps SDK (use Web JS Client ID) -->
+  <!-- NOTE: Using Dynamic Map API Client ID with ncpKeyId parameter (not ncpClientId!) -->
+  <script src="https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId={{NAVER_MAPS_CLIENT_ID}}&submodules=geocoder"></script>
+
+  <!-- Google Maps SDK with Places Library -->
+  <script src="https://maps.googleapis.com/maps/api/js?key={{GOOGLE_MAPS_API_KEY}}&libraries=places&language=ko&region=KR"></script>
+
+  <!-- Naver Maps Bridge -->
+  <script src="naver_map_bridge.js"></script>
+
+  <!-- Google Geocoder Bridge for Flutter -->
+  <script>
+    // Call Google Geocoder and return results as JSON string
+    async function callGoogleGeocoder(query) {
+      return new Promise((resolve) => {
+        try {
+          if (!window.google || !window.google.maps || !window.google.maps.Geocoder) {
+            console.log('Google Maps Geocoder not loaded');
+            resolve('[]');
+            return;
+          }
+
+          const geocoder = new google.maps.Geocoder();
+
+          geocoder.geocode({
+            address: query,
+            language: 'ko',
+            region: 'KR'
+          }, (results, status) => {
+            if (status === 'OK' && results) {
+              const places = results.map(result => ({
+                formatted_address: result.formatted_address,
+                lat: result.geometry.location.lat(),
+                lng: result.geometry.location.lng()
+              }));
+              resolve(JSON.stringify(places));
+            } else {
+              console.log('Geocoding failed:', status);
+              resolve('[]');
+            }
+          });
+        } catch (error) {
+          console.error('Geocoding error:', error);
+          resolve('[]');
+        }
+      });
+    }
+  </script>
+</head>
+<body>
+  <script src="flutter_bootstrap.js" async></script>
+</body>
+</html>
