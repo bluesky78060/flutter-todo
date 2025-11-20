@@ -5,6 +5,8 @@ import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:http/http.dart' as http;
+import 'dart:js_interop' as js;
+import 'dart:js_interop_unsafe';
 
 /// LocationService handles all location-related operations
 /// including permissions, location fetching, and geofencing
@@ -124,7 +126,39 @@ class LocationService {
     double longitude,
   ) async {
     try {
-      // Naver Reverse Geocoding API
+      // On web, skip Naver API due to CORS restrictions
+      // Use Google Geocoding directly
+      if (kIsWeb) {
+        if (kDebugMode) {
+          print('🌐 Web platform: Using Google Geocoding (Naver blocked by CORS)');
+        }
+        final placemarks = await placemarkFromCoordinates(latitude, longitude);
+
+        if (placemarks.isEmpty) {
+          return null;
+        }
+
+        final place = placemarks.first;
+        final addressParts = <String>[];
+
+        if (place.name != null && place.name!.isNotEmpty) {
+          addressParts.add(place.name!);
+        }
+        if (place.locality != null && place.locality!.isNotEmpty) {
+          addressParts.add(place.locality!);
+        }
+        if (place.administrativeArea != null &&
+            place.administrativeArea!.isNotEmpty) {
+          addressParts.add(place.administrativeArea!);
+        }
+        if (place.country != null && place.country!.isNotEmpty) {
+          addressParts.add(place.country!);
+        }
+
+        return addressParts.join(', ');
+      }
+
+      // On mobile, use Naver Reverse Geocoding API
       final url = Uri.parse(
         'https://naveropenapi.apigw.ntruss.com/map-reversegeocode/v2/gc'
         '?coords=$longitude,$latitude'
@@ -316,62 +350,23 @@ class LocationService {
         return results;
       }
 
-      // Strategy 2: Try with region prefixes for addresses
-      // Common Korean regions
-      final regions = [
-        '서울', '부산', '대구', '인천', '광주', '대전', '울산', '세종',
-        '경기', '강원', '충북', '충남', '전북', '전남', '경북', '경남', '제주'
-      ];
-
-      // Check if query looks like an address (contains 로, 길, 가, etc.)
-      if (query.contains('로') || query.contains('길') || query.contains('가')) {
-        for (final region in regions) {
-          final searchQuery = '$region $query';
-          print('🔍 Strategy 2: "$searchQuery"');
-          results = await _searchLocalAPI(searchQuery);
-          if (results.isNotEmpty) {
-            print('✅ Found ${results.length} results');
-            return results;
-          }
-        }
-      }
-
-      // Strategy 3: Try with detailed region combinations
-      // For addresses like "문단길15", try "봉화 문단길", "봉화군 문단길" etc.
-      final detailedRegions = [
-        '봉화', '봉화군', '경북 봉화', '경상북도 봉화',
-        '진천', '진천군', '충북 진천', '충청북도 진천',
-      ];
-
-      if (query.contains('문단길')) {
-        for (final region in detailedRegions) {
-          final searchQuery = '$region ${query.replaceAll(RegExp(r'\d+'), '')}';
-          print('🔍 Strategy 3: "$searchQuery"');
-          results = await _searchLocalAPI(searchQuery);
-          if (results.isNotEmpty) {
-            print('✅ Found ${results.length} results');
-            return results;
-          }
-        }
-      }
-
-      // Strategy 4: Try removing numbers and searching
-      final queryWithoutNumbers = query.replaceAll(RegExp(r'\d+'), '').trim();
-      if (queryWithoutNumbers != query && queryWithoutNumbers.isNotEmpty) {
-        print('🔍 Strategy 4: Without numbers "$queryWithoutNumbers"');
-        results = await _searchLocalAPI(queryWithoutNumbers);
-        if (results.isNotEmpty) {
-          print('✅ Found ${results.length} results');
-          return results;
-        }
-      }
-
-      // Strategy 5: Try Geocoding API for address search
-      print('🔍 Strategy 5: Geocoding API "$query"');
+      // Strategy 2: Try Google Geocoding for address search
+      print('🔍 Strategy 2: Google Geocoding "$query"');
       results = await _searchGeocodingAPI(query);
       if (results.isNotEmpty) {
         print('✅ Found ${results.length} results with Geocoding');
         return results;
+      }
+
+      // Strategy 3: Try with first word only (matches HTML test)
+      final firstWord = query.split(RegExp(r'\s+')).first;
+      if (firstWord != query && firstWord.isNotEmpty) {
+        print('🔍 Strategy 3: First word only "$firstWord"');
+        results = await _searchLocalAPI(firstWord);
+        if (results.isNotEmpty) {
+          print('✅ Found ${results.length} results');
+          return results;
+        }
       }
 
       print('⚠️ No results found for: $query');
@@ -387,21 +382,36 @@ class LocationService {
   /// Search using Naver Local Search API (for businesses/places)
   Future<List<PlaceSearchResult>> _searchLocalAPI(String query) async {
     try {
-      final url = Uri.parse(
-        'https://openapi.naver.com/v1/search/local.json'
-        '?query=${Uri.encodeComponent(query)}'
-        '&display=10'
-        '&start=1'
-        '&sort=random',
-      );
+      final http.Response response;
 
-      final response = await http.get(
-        url,
-        headers: {
-          'X-Naver-Client-Id': 'quSL_7O8Nb5bh6hK4Kj2',
-          'X-Naver-Client-Secret': 'raJroLJaYw',
-        },
-      );
+      if (kIsWeb) {
+        // On web, use proxy server with POST method (matches HTML test)
+        final url = Uri.parse('http://localhost:3000/search');
+        response = await http.post(
+          url,
+          headers: {'Content-Type': 'application/json'},
+          body: json.encode({
+            'query': query,
+            'display': 10,
+          }),
+        );
+      } else {
+        // On mobile, call Naver API directly with GET
+        final url = Uri.parse(
+          'https://openapi.naver.com/v1/search/local.json'
+          '?query=${Uri.encodeComponent(query)}'
+          '&display=10'
+          '&start=1'
+          '&sort=random',
+        );
+        response = await http.get(
+          url,
+          headers: {
+            'X-Naver-Client-Id': 'quSL_7O8Nb5bh6hK4Kj2',
+            'X-Naver-Client-Secret': 'raJroLJaYw',
+          },
+        );
+      }
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -471,13 +481,85 @@ class LocationService {
   }
 
 
-  /// Search using Google Geocoding (via geocoding package)
+  /// Search using Google Geocoding (via geocoding package on mobile, direct API on web)
   Future<List<PlaceSearchResult>> _searchGeocodingAPI(String query) async {
     try {
       if (kDebugMode) {
         print('🗺️ Using Google Geocoding for: "$query"');
       }
 
+      if (kIsWeb) {
+        // On web, use Google Maps JavaScript API directly
+        return await _searchGeocodingWeb(query);
+      } else {
+        // On mobile, use geocoding package
+        return await _searchGeocodingMobile(query);
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ Geocoding exception: $e');
+      }
+      return [];
+    }
+  }
+
+  /// Web implementation using Google Maps JavaScript API
+  Future<List<PlaceSearchResult>> _searchGeocodingWeb(String query) async {
+    try {
+      // Call JavaScript Google Maps Geocoder (returns Promise)
+      final jsPromise = js.globalContext.callMethod(
+        'callGoogleGeocoder'.toJS,
+        query.toJS,
+      ) as js.JSPromise;
+
+      // Convert JSPromise to Dart Future
+      final jsResult = await jsPromise.toDart;
+
+      if (jsResult == null) {
+        return [];
+      }
+
+      // Parse JavaScript result
+      final resultString = (jsResult as js.JSAny).dartify() as String?;
+      if (resultString == null || resultString.isEmpty) {
+        return [];
+      }
+
+      final List<dynamic> geocodeResults = json.decode(resultString);
+      final results = <PlaceSearchResult>[];
+
+      for (final item in geocodeResults) {
+        final name = item['formatted_address'] as String? ?? query;
+        final lat = item['lat'] as double?;
+        final lng = item['lng'] as double?;
+
+        if (lat != null && lng != null) {
+          if (kDebugMode) {
+            print('   📍 $name at ($lat, $lng)');
+          }
+
+          results.add(PlaceSearchResult(
+            name: name,
+            address: name,
+            latitude: lat,
+            longitude: lng,
+            category: '주소',
+          ));
+        }
+      }
+
+      return results;
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ Web geocoding error: $e');
+      }
+      return [];
+    }
+  }
+
+  /// Mobile implementation using geocoding package
+  Future<List<PlaceSearchResult>> _searchGeocodingMobile(String query) async {
+    try {
       // Use geocoding package (Google Geocoding)
       final locations = await locationFromAddress(query);
 
@@ -544,7 +626,7 @@ class LocationService {
       return [];
     } catch (e) {
       if (kDebugMode) {
-        print('❌ Geocoding exception: $e');
+        print('❌ Mobile geocoding error: $e');
       }
       return [];
     }
