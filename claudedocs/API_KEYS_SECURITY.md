@@ -283,9 +283,25 @@ jobs:
       run: flutter build web --release
 ```
 
-**GitHub Secrets 설정**:
-1. Repository Settings → Secrets → Actions
-2. 각 API 키를 Secret으로 추가
+**GitHub Secrets 설정 (필수!)**:
+
+GitHub 저장소에서 다음 Secrets을 설정해야 합니다:
+
+1. **GitHub 저장소 접속**: https://github.com/bluesky78060/flutter-todo
+2. **Settings → Secrets and variables → Actions 이동**
+3. **"New repository secret" 클릭하여 각 Secret 추가**:
+
+| Secret 이름 | 값 | 설명 |
+|------------|-----|------|
+| `GOOGLE_MAPS_API_KEY` | 새로 발급받은 Google Maps API 키 | Google Geocoding용 |
+| `NAVER_MAPS_CLIENT_ID` | `rzx12utf2x` | Naver Maps Web Dynamic Map |
+| `NAVER_LOCAL_SEARCH_CLIENT_ID` | `quSL_7O8Nb5bh6hK4Kj2` | Naver Local Search ID |
+| `NAVER_LOCAL_SEARCH_CLIENT_SECRET` | `raJroLJaYw` | Naver Local Search Secret |
+| `SUPABASE_URL` | Supabase 프로젝트 URL | (기존 Secret 확인) |
+| `SUPABASE_ANON_KEY` | Supabase Anon Key | (기존 Secret 확인) |
+| `SENTRY_DSN` | Sentry DSN (선택) | 에러 트래킹용 |
+
+**중요**: Secrets 설정 후 GitHub Actions 워크플로우가 정상적으로 빌드 및 배포됩니다.
 
 ## 보안 체크리스트
 
