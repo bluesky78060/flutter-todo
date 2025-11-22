@@ -10,8 +10,8 @@ import 'package:http/http.dart' as http;
 // On web: use real dart:js_interop
 // On non-web: use stub
 import 'location_service_web_stub.dart' as js
-    if (dart.library.html) 'dart:js_interop' as js;
-import 'location_service_web_stub.dart' show globalContext
+    if (dart.library.html) 'dart:js_interop';
+import 'location_service_web_stub.dart'
     if (dart.library.html) 'dart:js_interop_unsafe' show globalContext;
 
 /// LocationService handles all location-related operations
