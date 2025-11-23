@@ -11,8 +11,8 @@ import 'package:http/http.dart' as http;
 // On non-web: use stub
 import 'location_service_web_stub.dart' as js
     if (dart.library.html) 'dart:js_interop';
-import 'location_service_web_stub.dart'
-    if (dart.library.html) 'dart:js_interop_unsafe' show globalContext;
+import 'location_service_web_stub.dart' show globalContext
+    if (dart.library.html) 'dart:js_interop_unsafe';
 
 /// LocationService handles all location-related operations
 /// including permissions, location fetching, and geofencing
