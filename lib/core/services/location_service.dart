@@ -6,13 +6,9 @@ import 'package:geocoding/geocoding.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:http/http.dart' as http;
 
-// Conditional import for web-only JS interop
-// On web: use real dart:js_interop
-// On non-web: use stub
-import 'location_service_web_stub.dart' as js
-    if (dart.library.html) 'dart:js_interop';
-import 'location_service_web_stub.dart' show globalContext
-    if (dart.library.html) 'dart:js_interop_unsafe';
+// Conditional import for web platform detection
+import 'location_service_web_stub.dart'
+    if (dart.library.html) 'dart:html' as web;
 
 /// LocationService handles all location-related operations
 /// including permissions, location fetching, and geofencing
@@ -394,8 +390,11 @@ class LocationService {
         // On web, use Supabase Edge Function to bypass CORS
         String supabaseUrl = '';
         try {
-          final env = js.globalContext['ENV'];
-          supabaseUrl = (env['SUPABASE_URL'] as String?) ?? '';
+          // Access window.ENV from dart:html
+          final env = web.window['ENV'];
+          if (env != null) {
+            supabaseUrl = env['SUPABASE_URL'] ?? '';
+          }
         } catch (e) {
           if (kDebugMode) {
             print('❌ Failed to get SUPABASE_URL from window.ENV: $e');
@@ -547,20 +546,25 @@ class LocationService {
   /// Web implementation using Google Maps JavaScript API
   Future<List<PlaceSearchResult>> _searchGeocodingWeb(String query) async {
     try {
-      // Call JavaScript Google Maps Geocoder (returns Promise)
+      // TODO: Implement Google Geocoding using dart:html window.callGoogleGeocoder
+      // For now, return empty results as we're using Naver API primarily
+      if (kDebugMode) {
+        print('⚠️ Google Geocoding not implemented for web, using Naver API only');
+      }
+      return [];
+
+      // Original implementation commented out - requires dart:js_interop
+      /*
       final jsPromise = globalContext.callMethod(
         'callGoogleGeocoder'.toJS,
         query.toJS,
       ) as js.JSPromise;
 
-      // Convert JSPromise to Dart Future
       final jsResult = await jsPromise.toDart;
-
       if (jsResult == null) {
         return [];
       }
 
-      // Parse JavaScript result
       final resultString = (jsResult as js.JSAny).dartify() as String?;
       if (resultString == null || resultString.isEmpty) {
         return [];
@@ -590,6 +594,7 @@ class LocationService {
       }
 
       return results;
+      */
     } catch (e) {
       if (kDebugMode) {
         print('❌ Web geocoding error: $e');
