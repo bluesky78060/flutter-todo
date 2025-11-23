@@ -15,7 +15,9 @@ String? oauthRedirectUrl() {
     // Extract base path (e.g., /flutter-todo from /flutter-todo/ or /flutter-todo/login)
     final pathParts = pathname.split('/').where((p) => p.isNotEmpty).toList();
     final basePath = pathParts.isNotEmpty ? '/${pathParts.first}' : '';
-    final redirectUrl = '$origin$basePath/oauth-callback';
+
+    // Use hash routing for Flutter web (#/oauth-callback)
+    final redirectUrl = '$origin$basePath/#/oauth-callback';
 
     logger.d('🔗 OAuth Redirect URL (Web): $redirectUrl');
     return redirectUrl;
