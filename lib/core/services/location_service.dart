@@ -391,21 +391,23 @@ class LocationService {
       if (kIsWeb) {
         // On web, use Supabase Edge Function to bypass CORS
         String supabaseUrl = '';
+        String supabaseAnonKey = '';
         try {
           // Access window.ENV using dart:js_util
           final env = js_util.getProperty(window, 'ENV');
           if (env != null) {
             supabaseUrl = js_util.getProperty(env, 'SUPABASE_URL') ?? '';
+            supabaseAnonKey = js_util.getProperty(env, 'SUPABASE_ANON_KEY') ?? '';
           }
         } catch (e) {
           if (kDebugMode) {
-            print('❌ Failed to get SUPABASE_URL from window.ENV: $e');
+            print('❌ Failed to get credentials from window.ENV: $e');
           }
         }
 
-        if (supabaseUrl.isEmpty) {
+        if (supabaseUrl.isEmpty || supabaseAnonKey.isEmpty) {
           if (kDebugMode) {
-            print('❌ SUPABASE_URL not configured');
+            print('❌ Supabase credentials not configured');
           }
           return [];
         }
@@ -420,6 +422,7 @@ class LocationService {
           url,
           headers: {
             'Content-Type': 'application/json',
+            'Authorization': 'Bearer $supabaseAnonKey',
           },
           body: json.encode({
             'query': query,

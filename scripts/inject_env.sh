@@ -59,6 +59,7 @@ sed -e "s|{{GOOGLE_MAPS_API_KEY}}|${GOOGLE_MAPS_API_KEY}|g" \
     -e "s|{{NAVER_LOCAL_SEARCH_CLIENT_ID}}|${NAVER_LOCAL_SEARCH_CLIENT_ID}|g" \
     -e "s|{{NAVER_LOCAL_SEARCH_CLIENT_SECRET}}|${NAVER_LOCAL_SEARCH_CLIENT_SECRET}|g" \
     -e "s|{{SUPABASE_URL}}|${SUPABASE_URL}|g" \
+    -e "s|{{SUPABASE_ANON_KEY}}|${SUPABASE_ANON_KEY}|g" \
     web/index.template.html > web/index.html
 
 echo -e "${GREEN}✅ Environment variables injected successfully!${NC}"
