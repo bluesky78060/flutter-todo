@@ -388,66 +388,52 @@ class LocationService {
   /// Search using Naver Local Search API (for businesses/places)
   Future<List<PlaceSearchResult>> _searchLocalAPI(String query) async {
     try {
-      final http.Response response;
+      // Get credentials from environment (web or mobile)
+      String clientId = '';
+      String clientSecret = '';
 
       if (kIsWeb) {
-        // On web, use proxy server with POST method (matches HTML test)
-        final url = Uri.parse('http://localhost:3000/search');
-        response = await http.post(
-          url,
-          headers: {'Content-Type': 'application/json'},
-          body: json.encode({
-            'query': query,
-            'display': 10,
-          }),
-        );
-      } else {
-        // On mobile, call Naver API directly with GET
-        final url = Uri.parse(
-          'https://openapi.naver.com/v1/search/local.json'
-          '?query=${Uri.encodeComponent(query)}'
-          '&display=10'
-          '&start=1'
-          '&sort=random',
-        );
-        // Get credentials from environment
-        String clientId = '';
-        String clientSecret = '';
-
-        if (kIsWeb) {
-          // On web, get from window.ENV injected by index.html
-          try {
-            final env = js.globalContext['ENV'];
-            clientId = (env['NAVER_LOCAL_SEARCH_CLIENT_ID'] as String?) ?? '';
-            clientSecret = (env['NAVER_LOCAL_SEARCH_CLIENT_SECRET'] as String?) ?? '';
-          } catch (e) {
-            if (kDebugMode) {
-              print('❌ Failed to get web ENV: $e');
-            }
-          }
-        } else {
-          // On mobile, get from dotenv
-          clientId = dotenv.env['NAVER_LOCAL_SEARCH_CLIENT_ID'] ?? '';
-          clientSecret = dotenv.env['NAVER_LOCAL_SEARCH_CLIENT_SECRET'] ?? '';
-        }
-
-        if (clientId.isEmpty || clientSecret.isEmpty) {
+        // On web, get from window.ENV injected by index.html
+        try {
+          final env = js.globalContext['ENV'];
+          clientId = (env['NAVER_LOCAL_SEARCH_CLIENT_ID'] as String?) ?? '';
+          clientSecret = (env['NAVER_LOCAL_SEARCH_CLIENT_SECRET'] as String?) ?? '';
+        } catch (e) {
           if (kDebugMode) {
-            print('❌ Naver Local Search credentials not configured');
-            print('   Client ID: ${clientId.isEmpty ? "empty" : "set"}');
-            print('   Client Secret: ${clientSecret.isEmpty ? "empty" : "set"}');
+            print('❌ Failed to get web ENV: $e');
           }
-          return [];
         }
-
-        response = await http.get(
-          url,
-          headers: {
-            'X-Naver-Client-Id': clientId,
-            'X-Naver-Client-Secret': clientSecret,
-          },
-        );
+      } else {
+        // On mobile, get from dotenv
+        clientId = dotenv.env['NAVER_LOCAL_SEARCH_CLIENT_ID'] ?? '';
+        clientSecret = dotenv.env['NAVER_LOCAL_SEARCH_CLIENT_SECRET'] ?? '';
       }
+
+      if (clientId.isEmpty || clientSecret.isEmpty) {
+        if (kDebugMode) {
+          print('❌ Naver Local Search credentials not configured');
+          print('   Client ID: ${clientId.isEmpty ? "empty" : "set"}');
+          print('   Client Secret: ${clientSecret.isEmpty ? "empty" : "set"}');
+        }
+        return [];
+      }
+
+      // Call Naver API directly (both web and mobile)
+      final url = Uri.parse(
+        'https://openapi.naver.com/v1/search/local.json'
+        '?query=${Uri.encodeComponent(query)}'
+        '&display=10'
+        '&start=1'
+        '&sort=random',
+      );
+
+      final response = await http.get(
+        url,
+        headers: {
+          'X-Naver-Client-Id': clientId,
+          'X-Naver-Client-Secret': clientSecret,
+        },
+      );
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
