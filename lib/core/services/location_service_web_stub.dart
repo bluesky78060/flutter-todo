@@ -15,6 +15,11 @@ class _GlobalContextStub {
   JSPromise callMethod(dynamic method, dynamic arg) {
     throw UnsupportedError('Web-only feature not available on this platform');
   }
+
+  // Support indexing for accessing properties like globalContext['ENV']
+  dynamic operator [](String key) {
+    throw UnsupportedError('Web-only feature not available on this platform');
+  }
 }
 
 final globalContext = _GlobalContextStub();
