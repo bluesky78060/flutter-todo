@@ -83,6 +83,12 @@
         }
       });
     }
+
+    // Environment variables for Flutter web
+    window.ENV = {
+      NAVER_LOCAL_SEARCH_CLIENT_ID: '{{NAVER_LOCAL_SEARCH_CLIENT_ID}}',
+      NAVER_LOCAL_SEARCH_CLIENT_SECRET: '{{NAVER_LOCAL_SEARCH_CLIENT_SECRET}}'
+    };
   </script>
 </head>
 <body>

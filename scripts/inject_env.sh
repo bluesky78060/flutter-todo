@@ -42,10 +42,22 @@ if [ -z "$NAVER_MAPS_CLIENT_ID" ]; then
     exit 1
 fi
 
+if [ -z "$NAVER_LOCAL_SEARCH_CLIENT_ID" ]; then
+    echo -e "${RED}❌ Error: NAVER_LOCAL_SEARCH_CLIENT_ID not set in .env${NC}"
+    exit 1
+fi
+
+if [ -z "$NAVER_LOCAL_SEARCH_CLIENT_SECRET" ]; then
+    echo -e "${RED}❌ Error: NAVER_LOCAL_SEARCH_CLIENT_SECRET not set in .env${NC}"
+    exit 1
+fi
+
 # Replace placeholders in template
 echo -e "${YELLOW}📝 Replacing placeholders...${NC}"
 sed -e "s|{{GOOGLE_MAPS_API_KEY}}|${GOOGLE_MAPS_API_KEY}|g" \
     -e "s|{{NAVER_MAPS_CLIENT_ID}}|${NAVER_MAPS_CLIENT_ID}|g" \
+    -e "s|{{NAVER_LOCAL_SEARCH_CLIENT_ID}}|${NAVER_LOCAL_SEARCH_CLIENT_ID}|g" \
+    -e "s|{{NAVER_LOCAL_SEARCH_CLIENT_SECRET}}|${NAVER_LOCAL_SEARCH_CLIENT_SECRET}|g" \
     web/index.template.html > web/index.html
 
 echo -e "${GREEN}✅ Environment variables injected successfully!${NC}"

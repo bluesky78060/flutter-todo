@@ -410,11 +410,41 @@ class LocationService {
           '&start=1'
           '&sort=random',
         );
+        // Get credentials from environment
+        String clientId = '';
+        String clientSecret = '';
+
+        if (kIsWeb) {
+          // On web, get from window.ENV injected by index.html
+          try {
+            final env = js.globalContext['ENV'];
+            clientId = (env['NAVER_LOCAL_SEARCH_CLIENT_ID'] as String?) ?? '';
+            clientSecret = (env['NAVER_LOCAL_SEARCH_CLIENT_SECRET'] as String?) ?? '';
+          } catch (e) {
+            if (kDebugMode) {
+              print('❌ Failed to get web ENV: $e');
+            }
+          }
+        } else {
+          // On mobile, get from dotenv
+          clientId = dotenv.env['NAVER_LOCAL_SEARCH_CLIENT_ID'] ?? '';
+          clientSecret = dotenv.env['NAVER_LOCAL_SEARCH_CLIENT_SECRET'] ?? '';
+        }
+
+        if (clientId.isEmpty || clientSecret.isEmpty) {
+          if (kDebugMode) {
+            print('❌ Naver Local Search credentials not configured');
+            print('   Client ID: ${clientId.isEmpty ? "empty" : "set"}');
+            print('   Client Secret: ${clientSecret.isEmpty ? "empty" : "set"}');
+          }
+          return [];
+        }
+
         response = await http.get(
           url,
           headers: {
-            'X-Naver-Client-Id': 'quSL_7O8Nb5bh6hK4Kj2',
-            'X-Naver-Client-Secret': 'raJroLJaYw',
+            'X-Naver-Client-Id': clientId,
+            'X-Naver-Client-Secret': clientSecret,
           },
         );
       }
