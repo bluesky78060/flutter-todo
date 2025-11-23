@@ -3,8 +3,9 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 
-const NAVER_CLIENT_ID = 'quSL_7O8Nb5bh6hK4Kj2'
-const NAVER_CLIENT_SECRET = 'raJroLJaYw'
+// Get credentials from environment variables (set in Supabase dashboard)
+const NAVER_CLIENT_ID = Deno.env.get('NAVER_LOCAL_SEARCH_CLIENT_ID') || ''
+const NAVER_CLIENT_SECRET = Deno.env.get('NAVER_LOCAL_SEARCH_CLIENT_SECRET') || ''
 
 interface SearchRequest {
   query: string
@@ -24,6 +25,18 @@ serve(async (req) => {
   }
 
   try {
+    // Check if credentials are configured
+    if (!NAVER_CLIENT_ID || !NAVER_CLIENT_SECRET) {
+      console.error('❌ Naver API credentials not configured')
+      return new Response(
+        JSON.stringify({ error: 'API credentials not configured', items: [] }),
+        {
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      )
+    }
+
     // Parse request body
     const { query, display = 10 }: SearchRequest = await req.json()
 
