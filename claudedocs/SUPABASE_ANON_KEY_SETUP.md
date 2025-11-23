@@ -45,10 +45,12 @@ SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsI
 
 **GitHub Repository → Settings → Secrets and variables → Actions**에서 다음 secrets 추가:
 
-1. `SUPABASE_URL`
+**⚠️ 중요**: GitHub Secrets 이름은 `SUPABASE_` 접두사를 사용할 수 없습니다. `APP_` 접두사를 사용하세요.
+
+1. `APP_SUPABASE_URL`
    - Value: `https://bulwfcsyqgsvmbadhlye.supabase.co`
 
-2. `SUPABASE_ANON_KEY`
+2. `APP_SUPABASE_ANON_KEY`
    - Value: `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ1bHdmY3N5cWdzdm1iYWRobHllIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzA2MTczMTQsImV4cCI6MjA0NjE5MzMxNH0.y0C_KthWJNLVe-i_olxrOAV5lBHY_YoR9oOPVXjWKpA`
 
 ### 3. GitHub Actions 워크플로우 확인
@@ -56,23 +58,20 @@ SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsI
 `.github/workflows/deploy.yml` 파일에서 환경 변수 주입 부분 확인:
 
 ```yaml
-- name: Inject environment variables
-  env:
-    GOOGLE_MAPS_API_KEY: ${{ secrets.GOOGLE_MAPS_API_KEY }}
-    NAVER_MAPS_CLIENT_ID: ${{ secrets.NAVER_MAPS_CLIENT_ID }}
-    NAVER_LOCAL_SEARCH_CLIENT_ID: ${{ secrets.NAVER_LOCAL_SEARCH_CLIENT_ID }}
-    NAVER_LOCAL_SEARCH_CLIENT_SECRET: ${{ secrets.NAVER_LOCAL_SEARCH_CLIENT_SECRET }}
-    SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-    SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+- name: Create .env file
   run: |
-    sed -e "s|{{GOOGLE_MAPS_API_KEY}}|${GOOGLE_MAPS_API_KEY}|g" \
-        -e "s|{{NAVER_MAPS_CLIENT_ID}}|${NAVER_MAPS_CLIENT_ID}|g" \
-        -e "s|{{NAVER_LOCAL_SEARCH_CLIENT_ID}}|${NAVER_LOCAL_SEARCH_CLIENT_ID}|g" \
-        -e "s|{{NAVER_LOCAL_SEARCH_CLIENT_SECRET}}|${NAVER_LOCAL_SEARCH_CLIENT_SECRET}|g" \
-        -e "s|{{SUPABASE_URL}}|${SUPABASE_URL}|g" \
-        -e "s|{{SUPABASE_ANON_KEY}}|${SUPABASE_ANON_KEY}|g" \
-        web/index.template.html > web/index.html
+    echo "GOOGLE_MAPS_API_KEY=${{ secrets.GOOGLE_MAPS_API_KEY }}" > .env
+    echo "NAVER_MAPS_CLIENT_ID=${{ secrets.NAVER_MAPS_CLIENT_ID }}" >> .env
+    echo "NAVER_LOCAL_SEARCH_CLIENT_ID=${{ secrets.NAVER_LOCAL_SEARCH_CLIENT_ID }}" >> .env
+    echo "NAVER_LOCAL_SEARCH_CLIENT_SECRET=${{ secrets.NAVER_LOCAL_SEARCH_CLIENT_SECRET }}" >> .env
+    echo "SUPABASE_URL=${{ secrets.APP_SUPABASE_URL }}" >> .env
+    echo "SUPABASE_ANON_KEY=${{ secrets.APP_SUPABASE_ANON_KEY }}" >> .env
+
+- name: Inject environment variables
+  run: chmod +x ./scripts/inject_env.sh && ./scripts/inject_env.sh
 ```
+
+**참고**: GitHub Secrets는 `APP_SUPABASE_URL`, `APP_SUPABASE_ANON_KEY`로 저장하지만, .env 파일에는 `SUPABASE_URL`, `SUPABASE_ANON_KEY`로 작성됩니다.
 
 ---
 
@@ -185,7 +184,8 @@ GitHub Actions가 배포 완료 후:
 - [x] `.env`에 SUPABASE_URL, SUPABASE_ANON_KEY 추가
 - [x] `.env.example` 업데이트
 - [x] 로컬에서 환경변수 주입 및 빌드
-- [ ] **GitHub Secrets에 SUPABASE_URL, SUPABASE_ANON_KEY 추가** ← 필수!
+- [x] GitHub Actions 워크플로우 수정 (APP_ 접두사 사용)
+- [ ] **GitHub Secrets에 APP_SUPABASE_URL, APP_SUPABASE_ANON_KEY 추가** ← 필수!
 - [ ] **GitHub Actions 재실행으로 배포**
 - [ ] **배포된 웹에서 주소 검색 테스트**
 
