@@ -548,58 +548,95 @@ class LocationService {
     }
   }
 
-  /// Web implementation using Google Maps JavaScript API
+  /// Web implementation using Naver Geocoding API via Supabase Edge Function
   Future<List<PlaceSearchResult>> _searchGeocodingWeb(String query) async {
     try {
-      // TODO: Implement Google Geocoding using dart:html window.callGoogleGeocoder
-      // For now, return empty results as we're using Naver API primarily
-      if (kDebugMode) {
-        print('⚠️ Google Geocoding not implemented for web, using Naver API only');
-      }
-      return [];
-
-      // Original implementation commented out - requires dart:js_interop
-      /*
-      final jsPromise = globalContext.callMethod(
-        'callGoogleGeocoder'.toJS,
-        query.toJS,
-      ) as js.JSPromise;
-
-      final jsResult = await jsPromise.toDart;
-      if (jsResult == null) {
-        return [];
-      }
-
-      final resultString = (jsResult as js.JSAny).dartify() as String?;
-      if (resultString == null || resultString.isEmpty) {
-        return [];
-      }
-
-      final List<dynamic> geocodeResults = json.decode(resultString);
-      final results = <PlaceSearchResult>[];
-
-      for (final item in geocodeResults) {
-        final name = item['formatted_address'] as String? ?? query;
-        final lat = item['lat'] as double?;
-        final lng = item['lng'] as double?;
-
-        if (lat != null && lng != null) {
-          if (kDebugMode) {
-            print('   📍 $name at ($lat, $lng)');
-          }
-
-          results.add(PlaceSearchResult(
-            name: name,
-            address: name,
-            latitude: lat,
-            longitude: lng,
-            category: '주소',
-          ));
+      // Get Supabase credentials from window.ENV
+      String supabaseUrl = '';
+      String supabaseAnonKey = '';
+      try {
+        final env = js_util.getProperty(window, 'ENV');
+        if (env != null) {
+          supabaseUrl = js_util.getProperty(env, 'SUPABASE_URL') ?? '';
+          supabaseAnonKey = js_util.getProperty(env, 'SUPABASE_ANON_KEY') ?? '';
+        }
+      } catch (e) {
+        if (kDebugMode) {
+          print('❌ Failed to get credentials from window.ENV: $e');
         }
       }
 
-      return results;
-      */
+      if (supabaseUrl.isEmpty || supabaseAnonKey.isEmpty) {
+        if (kDebugMode) {
+          print('❌ Supabase credentials not configured');
+        }
+        return [];
+      }
+
+      final url = Uri.parse('$supabaseUrl/functions/v1/naver-geocode');
+
+      if (kDebugMode) {
+        print('🗺️ Calling Naver Geocode Edge Function for address: "$query"');
+      }
+
+      final response = await http.post(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $supabaseAnonKey',
+        },
+        body: json.encode({
+          'query': query,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        final addresses = data['addresses'] as List?;
+
+        if (kDebugMode) {
+          print('🗺️ Naver Geocode API Response:');
+          print('   Status: 200');
+          print('   Addresses count: ${addresses?.length ?? 0}');
+        }
+
+        if (addresses != null && addresses.isNotEmpty) {
+          final results = <PlaceSearchResult>[];
+
+          for (final item in addresses) {
+            final roadAddress = item['roadAddress'] as String? ?? '';
+            final jibunAddress = item['jibunAddress'] as String? ?? '';
+            final address = roadAddress.isNotEmpty ? roadAddress : jibunAddress;
+
+            // Extract coordinates (Naver Geocoding uses WGS84, same as Google Maps)
+            final x = double.tryParse(item['x']?.toString() ?? '');
+            final y = double.tryParse(item['y']?.toString() ?? '');
+
+            if (x != null && y != null && address.isNotEmpty) {
+              if (kDebugMode) {
+                print('   📍 $address at ($y, $x)');
+              }
+
+              results.add(PlaceSearchResult(
+                name: address,
+                address: address,
+                latitude: y,  // Naver Geocoding: y = latitude
+                longitude: x, // Naver Geocoding: x = longitude
+                category: '주소',
+              ));
+            }
+          }
+
+          return results;
+        }
+      } else {
+        if (kDebugMode) {
+          print('❌ Geocoding API error: ${response.statusCode}');
+          print('   Response: ${response.body}');
+        }
+      }
+
+      return [];
     } catch (e) {
       if (kDebugMode) {
         print('❌ Web geocoding error: $e');
