@@ -8,7 +8,9 @@ import 'package:http/http.dart' as http;
 
 // Conditional import for web platform detection
 import 'location_service_web_stub.dart'
-    if (dart.library.html) 'dart:html' as web;
+    if (dart.library.js_util) 'dart:js_util' as js_util;
+import 'location_service_web_stub.dart'
+    if (dart.library.html) 'dart:html' show window;
 
 /// LocationService handles all location-related operations
 /// including permissions, location fetching, and geofencing
@@ -390,10 +392,10 @@ class LocationService {
         // On web, use Supabase Edge Function to bypass CORS
         String supabaseUrl = '';
         try {
-          // Access window.ENV from dart:html
-          final env = web.window['ENV'];
+          // Access window.ENV using dart:js_util
+          final env = js_util.getProperty(window, 'ENV');
           if (env != null) {
-            supabaseUrl = env['SUPABASE_URL'] ?? '';
+            supabaseUrl = js_util.getProperty(env, 'SUPABASE_URL') ?? '';
           }
         } catch (e) {
           if (kDebugMode) {
