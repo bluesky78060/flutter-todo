@@ -30,8 +30,8 @@ jobs:
           echo "NAVER_MAPS_CLIENT_ID=${{ secrets.NAVER_MAPS_CLIENT_ID }}" >> .env
           echo "NAVER_LOCAL_SEARCH_CLIENT_ID=${{ secrets.NAVER_LOCAL_SEARCH_CLIENT_ID }}" >> .env
           echo "NAVER_LOCAL_SEARCH_CLIENT_SECRET=${{ secrets.NAVER_LOCAL_SEARCH_CLIENT_SECRET }}" >> .env
-          echo "SUPABASE_URL=${{ secrets.SUPABASE_URL }}" >> .env
-          echo "SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}" >> .env
+          echo "SUPABASE_URL=${{ secrets.APP_SUPABASE_URL }}" >> .env
+          echo "SUPABASE_ANON_KEY=${{ secrets.APP_SUPABASE_ANON_KEY }}" >> .env
           echo "SENTRY_DSN=${{ secrets.SENTRY_DSN }}" >> .env
 
       - name: Install dependencies
