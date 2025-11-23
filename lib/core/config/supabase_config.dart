@@ -1,7 +1,9 @@
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'dart:js_util' as js_util;
-import 'dart:html' as html;
+
+// Conditional import for web/non-web platforms
+import 'supabase_config_stub.dart'
+    if (dart.library.html) 'supabase_config_web.dart';
 
 /// Supabase configuration loaded from environment variables
 ///
@@ -14,16 +16,9 @@ class SupabaseConfig {
   static String get url {
     if (kIsWeb) {
       // Web: Read from window.ENV
-      try {
-        final env = js_util.getProperty(html.window, 'ENV');
-        if (env != null) {
-          final url = js_util.getProperty(env, 'SUPABASE_URL');
-          if (url != null && url.toString().isNotEmpty) {
-            return url.toString();
-          }
-        }
-      } catch (e) {
-        // Fall through to dotenv for local development
+      final webUrl = getEnvFromWindow('SUPABASE_URL');
+      if (webUrl != null && webUrl.isNotEmpty) {
+        return webUrl;
       }
     }
 
@@ -43,16 +38,9 @@ class SupabaseConfig {
   static String get anonKey {
     if (kIsWeb) {
       // Web: Read from window.ENV
-      try {
-        final env = js_util.getProperty(html.window, 'ENV');
-        if (env != null) {
-          final key = js_util.getProperty(env, 'SUPABASE_ANON_KEY');
-          if (key != null && key.toString().isNotEmpty) {
-            return key.toString();
-          }
-        }
-      } catch (e) {
-        // Fall through to dotenv for local development
+      final webKey = getEnvFromWindow('SUPABASE_ANON_KEY');
+      if (webKey != null && webKey.isNotEmpty) {
+        return webKey;
       }
     }
 
