@@ -573,10 +573,10 @@ class LocationService {
         return [];
       }
 
-      final url = Uri.parse('$supabaseUrl/functions/v1/naver-geocode');
+      final url = Uri.parse('$supabaseUrl/functions/v1/google-geocode');
 
       if (kDebugMode) {
-        print('🗺️ Calling Naver Geocode Edge Function for address: "$query"');
+        print('🗺️ Calling Google Geocode Edge Function for address: "$query"');
       }
 
       final response = await http.post(
@@ -592,42 +592,42 @@ class LocationService {
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        final addresses = data['addresses'] as List?;
+        final results = data['results'] as List?;
 
         if (kDebugMode) {
-          print('🗺️ Naver Geocode API Response:');
+          print('🗺️ Google Geocode API Response:');
           print('   Status: 200');
-          print('   Addresses count: ${addresses?.length ?? 0}');
+          print('   Results count: ${results?.length ?? 0}');
         }
 
-        if (addresses != null && addresses.isNotEmpty) {
-          final results = <PlaceSearchResult>[];
+        if (results != null && results.isNotEmpty) {
+          final searchResults = <PlaceSearchResult>[];
 
-          for (final item in addresses) {
-            final roadAddress = item['roadAddress'] as String? ?? '';
-            final jibunAddress = item['jibunAddress'] as String? ?? '';
-            final address = roadAddress.isNotEmpty ? roadAddress : jibunAddress;
+          for (final item in results) {
+            final formattedAddress = item['formatted_address'] as String? ?? '';
+            final geometry = item['geometry'] as Map<String, dynamic>?;
+            final location = geometry?['location'] as Map<String, dynamic>?;
 
-            // Extract coordinates (Naver Geocoding uses WGS84, same as Google Maps)
-            final x = double.tryParse(item['x']?.toString() ?? '');
-            final y = double.tryParse(item['y']?.toString() ?? '');
+            // Extract coordinates from Google Geocoding response
+            final lat = location?['lat'] as double?;
+            final lng = location?['lng'] as double?;
 
-            if (x != null && y != null && address.isNotEmpty) {
+            if (lat != null && lng != null && formattedAddress.isNotEmpty) {
               if (kDebugMode) {
-                print('   📍 $address at ($y, $x)');
+                print('   📍 $formattedAddress at ($lat, $lng)');
               }
 
-              results.add(PlaceSearchResult(
-                name: address,
-                address: address,
-                latitude: y,  // Naver Geocoding: y = latitude
-                longitude: x, // Naver Geocoding: x = longitude
+              searchResults.add(PlaceSearchResult(
+                name: formattedAddress,
+                address: formattedAddress,
+                latitude: lat,
+                longitude: lng,
                 category: '주소',
               ));
             }
           }
 
-          return results;
+          return searchResults;
         }
       } else {
         if (kDebugMode) {
