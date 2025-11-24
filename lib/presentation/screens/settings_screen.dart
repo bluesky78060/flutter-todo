@@ -1542,6 +1542,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             // 왼쪽 아이콘
             Container(
