@@ -108,8 +108,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   const SizedBox(width: 16),
                   Text(
                     'settings'.tr(),
-                    style: const TextStyle(
-                      color: AppColors.textWhite,
+                    style: TextStyle(
+                      color: AppColors.getText(isDarkMode),
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
                     ),
@@ -207,7 +207,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           if (user == null) {
             return Text(
               'login_required'.tr(),
-              style: const TextStyle(color: AppColors.textGray),
+              style: TextStyle(color: AppColors.getTextSecondary(isDarkMode)),
             );
           }
           return Column(
@@ -325,16 +325,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ),
             title: Text(
               'backup'.tr(),
-              style: const TextStyle(
-                color: AppColors.textWhite,
+              style: TextStyle(
+                color: AppColors.getText(isDarkMode),
                 fontSize: 16,
                 fontWeight: FontWeight.w500,
               ),
             ),
             subtitle: Text(
               'backup_desc'.tr(),
-              style: const TextStyle(
-                color: AppColors.textGray,
+              style: TextStyle(
+                color: AppColors.getTextSecondary(isDarkMode),
                 fontSize: 14,
               ),
             ),
@@ -367,16 +367,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ),
             title: Text(
               'restore'.tr(),
-              style: const TextStyle(
-                color: AppColors.textWhite,
+              style: TextStyle(
+                color: AppColors.getText(isDarkMode),
                 fontSize: 16,
                 fontWeight: FontWeight.w500,
               ),
             ),
             subtitle: Text(
               'restore_desc'.tr(),
-              style: const TextStyle(
-                color: AppColors.textGray,
+              style: TextStyle(
+                color: AppColors.getTextSecondary(isDarkMode),
                 fontSize: 14,
               ),
             ),
@@ -425,15 +425,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ),
             title: Text(
               'samsung_device_detected'.tr(),
-              style: const TextStyle(
-                color: AppColors.textWhite,
+              style: TextStyle(
+                color: AppColors.getText(isDarkMode),
                 fontSize: 16,
                 fontWeight: FontWeight.w500,
               ),
             ),
             subtitle: Text(
               'One UI ${_oneUIVersion ?? 'model_checking'.tr()}',
-              style: const TextStyle(
+              style: TextStyle(
                 color: AppColors.successGreen,
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
@@ -463,8 +463,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ),
             title: Text(
               'battery_optimization_status'.tr(),
-              style: const TextStyle(
-                color: AppColors.textWhite,
+              style: TextStyle(
+                color: AppColors.getText(isDarkMode),
                 fontSize: 16,
                 fontWeight: FontWeight.w500,
               ),
@@ -514,16 +514,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ),
             title: Text(
               'notification_optimization_status'.tr(),
-              style: const TextStyle(
-                color: AppColors.textWhite,
+              style: TextStyle(
+                color: AppColors.getText(isDarkMode),
                 fontSize: 16,
                 fontWeight: FontWeight.w500,
               ),
             ),
             subtitle: Text(
               'samsung_workaround_applied'.tr(),
-              style: const TextStyle(
-                color: AppColors.textGray,
+              style: TextStyle(
+                color: AppColors.getTextSecondary(isDarkMode),
                 fontSize: 14,
               ),
             ),
@@ -575,8 +575,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     children: [
                       Text(
                         'foldable_device_detected'.tr(),
-                        style: const TextStyle(
-                          color: AppColors.textWhite,
+                        style: TextStyle(
+                          color: AppColors.getText(isDarkMode),
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
                         ),
@@ -584,7 +584,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       const SizedBox(height: 4),
                       Text(
                         _deviceModel ?? 'model_checking'.tr(),
-                        style: const TextStyle(
+                        style: TextStyle(
                           color: AppColors.successGreen,
                           fontSize: 14,
                           fontWeight: FontWeight.w500,
@@ -649,8 +649,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             // Guidance Title
             Text(
               'cover_screen_notification_guide'.tr(),
-              style: const TextStyle(
-                color: AppColors.textWhite,
+              style: TextStyle(
+                color: AppColors.getText(isDarkMode),
                 fontSize: 15,
                 fontWeight: FontWeight.w600,
               ),
@@ -690,8 +690,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               const Divider(height: 32),
               Text(
                 'oneui_7_additional_settings'.tr(),
-                style: const TextStyle(
-                  color: AppColors.textWhite,
+                style: TextStyle(
+                  color: AppColors.getText(isDarkMode),
                   fontSize: 15,
                   fontWeight: FontWeight.w600,
                 ),
@@ -869,16 +869,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         ),
         title: Text(
           'category_management'.tr(),
-          style: const TextStyle(
-            color: AppColors.textWhite,
+          style: TextStyle(
+            color: AppColors.getText(isDarkMode),
             fontSize: 16,
             fontWeight: FontWeight.w500,
           ),
         ),
         subtitle: Text(
           'category_management_desc'.tr(),
-          style: const TextStyle(
-            color: AppColors.textGray,
+          style: TextStyle(
+            color: AppColors.getTextSecondary(isDarkMode),
             fontSize: 14,
           ),
         ),
@@ -925,16 +925,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ),
             title: Text(
               'version_info'.tr(),
-              style: const TextStyle(
-                color: AppColors.textWhite,
+              style: TextStyle(
+                color: AppColors.getText(isDarkMode),
                 fontSize: 16,
                 fontWeight: FontWeight.w500,
               ),
             ),
             subtitle: Text(
               _version.isNotEmpty ? 'v$_version ($_buildNumber)' : 'loading'.tr(),
-              style: const TextStyle(
-                color: AppColors.textGray,
+              style: TextStyle(
+                color: AppColors.getTextSecondary(isDarkMode),
                 fontSize: 14,
               ),
             ),
@@ -960,8 +960,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ),
             title: Text(
               'open_source_licenses'.tr(),
-              style: const TextStyle(
-                color: AppColors.textWhite,
+              style: TextStyle(
+                color: AppColors.getText(isDarkMode),
                 fontSize: 16,
                 fontWeight: FontWeight.w500,
               ),
@@ -993,18 +993,18 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 color: AppColors.primaryBlue,
               ),
             ),
-            title: const Text(
+            title: Text(
               '테마 미리보기',
               style: TextStyle(
-                color: AppColors.textWhite,
+                color: AppColors.getText(isDarkMode),
                 fontSize: 16,
                 fontWeight: FontWeight.w500,
               ),
             ),
-            subtitle: const Text(
+            subtitle: Text(
               '라이트/다크 모드 UI 확인',
               style: TextStyle(
-                color: AppColors.textGray,
+                color: AppColors.getTextSecondary(isDarkMode),
                 fontSize: 14,
               ),
             ),
@@ -1042,8 +1042,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ),
             title: Text(
               'send_feedback'.tr(),
-              style: const TextStyle(
-                color: AppColors.textWhite,
+              style: TextStyle(
+                color: AppColors.getText(isDarkMode),
                 fontSize: 16,
                 fontWeight: FontWeight.w500,
               ),
@@ -1085,8 +1085,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               const SizedBox(height: 16),
               Text(
                 'logout'.tr(),
-                style: const TextStyle(
-                  color: AppColors.textWhite,
+                style: TextStyle(
+                  color: AppColors.getText(isDarkMode),
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
                 ),
@@ -1094,8 +1094,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               const SizedBox(height: 8),
               Text(
                 'logout_confirm'.tr(),
-                style: const TextStyle(
-                  color: AppColors.textGray,
+                style: TextStyle(
+                  color: AppColors.getTextSecondary(isDarkMode),
                   fontSize: 16,
                 ),
                 textAlign: TextAlign.center,
@@ -1170,7 +1170,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('coming_soon'.tr(namedArgs: {'feature': feature})),
-        backgroundColor: AppColors.darkCard,
+        backgroundColor: AppColors.getCard(ref.read(isDarkModeProvider)),
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
@@ -1234,8 +1234,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               const SizedBox(height: 16),
               Text(
                 'backup_complete'.tr(),
-                style: const TextStyle(
-                  color: AppColors.textWhite,
+                style: TextStyle(
+                  color: AppColors.getText(isDarkMode),
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
                 ),
@@ -1243,8 +1243,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               const SizedBox(height: 8),
               Text(
                 'backup_file_saved'.tr(),
-                style: const TextStyle(
-                  color: AppColors.textGray,
+                style: TextStyle(
+                  color: AppColors.getTextSecondary(isDarkMode),
                   fontSize: 16,
                 ),
                 textAlign: TextAlign.center,
@@ -1252,7 +1252,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               const SizedBox(height: 4),
               Text(
                 filePath.split('/').last,
-                style: const TextStyle(
+                style: TextStyle(
                   color: AppColors.primaryBlue,
                   fontSize: 14,
                 ),
@@ -1372,8 +1372,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               const SizedBox(height: 16),
               Text(
                 'restore_method_select'.tr(),
-                style: const TextStyle(
-                  color: AppColors.textWhite,
+                style: TextStyle(
+                  color: AppColors.getText(isDarkMode),
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
                 ),
@@ -1381,8 +1381,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               const SizedBox(height: 8),
               Text(
                 'restore_data_handling'.tr(),
-                style: const TextStyle(
-                  color: AppColors.textGray,
+                style: TextStyle(
+                  color: AppColors.getTextSecondary(isDarkMode),
                   fontSize: 16,
                 ),
                 textAlign: TextAlign.center,

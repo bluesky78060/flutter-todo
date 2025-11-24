@@ -23,8 +23,8 @@ class AppColors {
   // Text Colors
   static const Color textWhite = Color(0xFFFFFFFF);
   static const Color textGray = Color(0xFF92ADC9);
-  static const Color textDark = Color(0xFF1A202C);
-  static const Color textGrayDark = Color(0xFF4A5568);
+  static const Color textDark = Color(0xFF0F1419); // Much darker for better readability in light mode
+  static const Color textGrayDark = Color(0xFF1A202C); // Darker secondary text for light mode
 
   // Gradients
   static const LinearGradient primaryGradient = LinearGradient(

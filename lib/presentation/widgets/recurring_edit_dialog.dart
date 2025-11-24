@@ -1,6 +1,8 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:todo_app/core/theme/app_colors.dart';
+import 'package:todo_app/presentation/providers/theme_provider.dart';
 
 /// Dialog to ask user how to edit a recurring todo instance
 ///
@@ -8,13 +10,15 @@ import 'package:todo_app/core/theme/app_colors.dart';
 /// - Edit only this instance
 /// - Edit this and future instances
 /// - Cancel
-class RecurringEditDialog extends StatelessWidget {
+class RecurringEditDialog extends ConsumerWidget {
   const RecurringEditDialog({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isDarkMode = ref.watch(isDarkModeProvider);
+
     return Dialog(
-      backgroundColor: AppColors.darkCard,
+      backgroundColor: AppColors.getCard(isDarkMode),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
       ),
@@ -28,19 +32,19 @@ class RecurringEditDialog extends StatelessWidget {
             // Title
             Text(
               'edit_recurring_event'.tr(),
-              style: const TextStyle(
-                color: AppColors.textWhite,
+              style: TextStyle(
+                color: AppColors.getText(isDarkMode),
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
               ),
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: 8),
 
             // Description
             Text(
               'edit_recurring_message'.tr(),
-              style: const TextStyle(
-                color: AppColors.textGray,
+              style: TextStyle(
+                color: AppColors.getTextSecondary(isDarkMode),
                 fontSize: 14,
               ),
             ),
@@ -49,15 +53,17 @@ class RecurringEditDialog extends StatelessWidget {
             // Option 1: Edit only this instance
             _buildOption(
               context,
+              isDarkMode: isDarkMode,
               title: 'edit_only_this'.tr(),
               description: 'edit_only_this_desc'.tr(),
               onTap: () => Navigator.of(context).pop(RecurringEditMode.thisOnly),
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: 12),
 
             // Option 2: Edit this and future instances
             _buildOption(
               context,
+              isDarkMode: isDarkMode,
               title: 'edit_this_and_future'.tr(),
               description: 'edit_this_and_future_desc'.tr(),
               onTap: () => Navigator.of(context).pop(RecurringEditMode.thisAndFuture),
@@ -70,19 +76,19 @@ class RecurringEditDialog extends StatelessWidget {
               child: OutlinedButton(
                 onPressed: () => Navigator.of(context).pop(),
                 style: OutlinedButton.styleFrom(
-                  foregroundColor: AppColors.textGray,
-                  side: const BorderSide(
-                    color: AppColors.darkBorder,
+                  foregroundColor: AppColors.getTextSecondary(isDarkMode),
+                  side: BorderSide(
+                    color: AppColors.getBorder(isDarkMode),
                     width: 1.5,
                   ),
-                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  padding: EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
                 child: Text(
                   'cancel'.tr(),
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
                   ),
@@ -97,6 +103,7 @@ class RecurringEditDialog extends StatelessWidget {
 
   Widget _buildOption(
     BuildContext context, {
+    required bool isDarkMode,
     required String title,
     required String description,
     required VoidCallback onTap,
@@ -105,12 +112,12 @@ class RecurringEditDialog extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(12),
       child: Container(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: AppColors.darkInput,
+          color: AppColors.getInput(isDarkMode),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: AppColors.darkBorder,
+            color: AppColors.getBorder(isDarkMode),
             width: 1,
           ),
         ),
@@ -119,17 +126,17 @@ class RecurringEditDialog extends StatelessWidget {
           children: [
             Text(
               title,
-              style: const TextStyle(
-                color: AppColors.textWhite,
+              style: TextStyle(
+                color: AppColors.getText(isDarkMode),
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
               ),
             ),
-            const SizedBox(height: 4),
+            SizedBox(height: 4),
             Text(
               description,
-              style: const TextStyle(
-                color: AppColors.textGray,
+              style: TextStyle(
+                color: AppColors.getTextSecondary(isDarkMode),
                 fontSize: 14,
               ),
             ),

@@ -9,12 +9,12 @@ class ThemeNotifier extends Notifier<ThemeMode> {
   @override
   ThemeMode build() {
     _loadTheme();
-    return ThemeMode.dark; // Default theme
+    return ThemeMode.light; // Default theme
   }
 
   Future<void> _loadTheme() async {
     final prefs = await SharedPreferences.getInstance();
-    final themeIndex = prefs.getInt(_themeKey) ?? 2; // Default: dark (index 2)
+    final themeIndex = prefs.getInt(_themeKey) ?? 1; // Default: light (index 1)
     state = ThemeMode.values[themeIndex];
   }
 

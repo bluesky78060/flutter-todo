@@ -1,6 +1,8 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:todo_app/core/theme/app_colors.dart';
+import 'package:todo_app/presentation/providers/theme_provider.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 
 enum RescheduleOption {
@@ -9,13 +11,15 @@ enum RescheduleOption {
   custom,
 }
 
-class RescheduleDialog extends StatelessWidget {
+class RescheduleDialog extends ConsumerWidget {
   const RescheduleDialog({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isDarkMode = ref.watch(isDarkModeProvider);
+
     return Dialog(
-      backgroundColor: AppColors.darkCard,
+      backgroundColor: AppColors.getCard(isDarkMode),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
       ),
@@ -28,16 +32,16 @@ class RescheduleDialog extends StatelessWidget {
             // Title
             Row(
               children: [
-                const Icon(
+                Icon(
                   FluentIcons.calendar_arrow_right_24_regular,
                   color: AppColors.primaryBlue,
                   size: 24,
                 ),
-                const SizedBox(width: 12),
+                SizedBox(width: 12),
                 Text(
                   'reschedule_title'.tr(),
-                  style: const TextStyle(
-                    color: AppColors.textWhite,
+                  style: TextStyle(
+                    color: AppColors.getText(isDarkMode),
                     fontSize: 20,
                     fontWeight: FontWeight.w600,
                   ),
@@ -70,12 +74,12 @@ class RescheduleDialog extends StatelessWidget {
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
               style: TextButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 12),
+                padding: EdgeInsets.symmetric(vertical: 12),
               ),
               child: Text(
                 'cancel'.tr(),
-                style: const TextStyle(
-                  color: AppColors.textGray,
+                style: TextStyle(
+                  color: AppColors.getTextSecondary(isDarkMode),
                   fontSize: 16,
                 ),
               ),
@@ -87,7 +91,7 @@ class RescheduleDialog extends StatelessWidget {
   }
 }
 
-class _RescheduleOption extends StatelessWidget {
+class _RescheduleOption extends ConsumerWidget {
   final IconData icon;
   final String label;
   final VoidCallback onTap;
@@ -99,17 +103,19 @@ class _RescheduleOption extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isDarkMode = ref.watch(isDarkModeProvider);
+
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(12),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         decoration: BoxDecoration(
-          color: AppColors.darkBackground,
+          color: AppColors.getBackground(isDarkMode),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: AppColors.textGray.withValues(alpha: 0.2),
+            color: AppColors.getTextSecondary(isDarkMode).withValues(alpha: 0.2),
             width: 1,
           ),
         ),
@@ -120,19 +126,19 @@ class _RescheduleOption extends StatelessWidget {
               color: AppColors.primaryBlue,
               size: 24,
             ),
-            const SizedBox(width: 12),
+            SizedBox(width: 12),
             Text(
               label,
-              style: const TextStyle(
-                color: AppColors.textWhite,
+              style: TextStyle(
+                color: AppColors.getText(isDarkMode),
                 fontSize: 16,
                 fontWeight: FontWeight.w500,
               ),
             ),
-            const Spacer(),
-            const Icon(
+            Spacer(),
+            Icon(
               FluentIcons.chevron_right_24_regular,
-              color: AppColors.textGray,
+              color: AppColors.getTextSecondary(isDarkMode),
               size: 20,
             ),
           ],

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:todo_app/core/theme/app_colors.dart';
+import 'package:todo_app/presentation/providers/theme_provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 
-class ProgressCard extends StatelessWidget {
+class ProgressCard extends ConsumerWidget {
   final int completed;
   final int total;
 
@@ -15,17 +17,19 @@ class ProgressCard extends StatelessWidget {
   double get percentage => total > 0 ? (completed / total) : 0;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isDarkMode = ref.watch(isDarkModeProvider);
+
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: AppColors.darkCard,
+        color: AppColors.getCard(isDarkMode),
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.3),
             blurRadius: 6,
-            offset: const Offset(0, 4),
+            offset: Offset(0, 4),
           ),
         ],
       ),
@@ -37,14 +41,14 @@ class ProgressCard extends StatelessWidget {
             children: [
               Text(
                 'progress'.tr(),
-                style: const TextStyle(
-                  color: AppColors.textGray,
+                style: TextStyle(
+                  color: AppColors.getTextSecondary(isDarkMode),
                   fontSize: 13,
                   fontWeight: FontWeight.w500,
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                padding: EdgeInsets.symmetric(horizontal: 10, vertical: 3),
                 decoration: BoxDecoration(
                   gradient: AppColors.primaryGradient,
                   borderRadius: BorderRadius.circular(20),
@@ -52,7 +56,7 @@ class ProgressCard extends StatelessWidget {
                     BoxShadow(
                       color: AppColors.primaryBlue.withValues(alpha: 0.3),
                       blurRadius: 8,
-                      offset: const Offset(0, 2),
+                      offset: Offset(0, 2),
                     ),
                   ],
                 ),
@@ -61,7 +65,7 @@ class ProgressCard extends StatelessWidget {
                     'completed': completed.toString(),
                     'total': total.toString(),
                   }),
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: Colors.white,
                     fontSize: 11,
                     fontWeight: FontWeight.w600,
@@ -70,7 +74,7 @@ class ProgressCard extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8),
           ClipRRect(
             borderRadius: BorderRadius.circular(10),
             child: SizedBox(
@@ -79,12 +83,12 @@ class ProgressCard extends StatelessWidget {
                 children: [
                   Container(
                     width: double.infinity,
-                    color: AppColors.darkInput,
+                    color: AppColors.getInput(isDarkMode),
                   ),
                   FractionallySizedBox(
                     widthFactor: percentage,
                     child: Container(
-                      decoration: const BoxDecoration(
+                      decoration: BoxDecoration(
                         gradient: LinearGradient(
                           colors: [AppColors.primaryBlue, AppColors.primaryBlueDark],
                         ),

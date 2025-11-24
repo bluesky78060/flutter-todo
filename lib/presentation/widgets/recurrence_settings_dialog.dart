@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:todo_app/core/theme/app_colors.dart';
 import 'package:todo_app/core/utils/recurrence_utils.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:todo_app/presentation/providers/theme_provider.dart';
 
 /// Dialog for configuring recurrence settings
-class RecurrenceSettingsDialog extends StatefulWidget {
+class RecurrenceSettingsDialog extends ConsumerStatefulWidget {
   final String? initialRRule;
   final Function(String? rrule) onSave;
 
@@ -16,10 +18,10 @@ class RecurrenceSettingsDialog extends StatefulWidget {
   });
 
   @override
-  State<RecurrenceSettingsDialog> createState() => _RecurrenceSettingsDialogState();
+  ConsumerState<RecurrenceSettingsDialog> createState() => _RecurrenceSettingsDialogState();
 }
 
-class _RecurrenceSettingsDialogState extends State<RecurrenceSettingsDialog> {
+class _RecurrenceSettingsDialogState extends ConsumerState<RecurrenceSettingsDialog> {
   RecurrenceFrequency _frequency = RecurrenceFrequency.daily;
   int _interval = 1;
   DateTime? _untilDate;
@@ -112,8 +114,10 @@ class _RecurrenceSettingsDialogState extends State<RecurrenceSettingsDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = ref.watch(isDarkModeProvider);
+
     return Dialog(
-      backgroundColor: AppColors.darkCard,
+      backgroundColor: AppColors.getCard(isDarkMode),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
       ),
@@ -136,17 +140,17 @@ class _RecurrenceSettingsDialogState extends State<RecurrenceSettingsDialog> {
                 const SizedBox(width: 12),
                 Text(
                   'recurrence_settings'.tr(),
-                  style: const TextStyle(
-                    color: AppColors.textWhite,
+                  style: TextStyle(
+                    color: AppColors.getText(isDarkMode),
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 const Spacer(),
                 IconButton(
-                  icon: const Icon(
+                  icon: Icon(
                     FluentIcons.dismiss_24_regular,
-                    color: AppColors.textGray,
+                    color: AppColors.getTextSecondary(isDarkMode),
                   ),
                   onPressed: () => Navigator.pop(context),
                 ),
@@ -155,25 +159,25 @@ class _RecurrenceSettingsDialogState extends State<RecurrenceSettingsDialog> {
             const SizedBox(height: 24),
 
             // Frequency Selector
-            _buildFrequencySelector(),
+            _buildFrequencySelector(isDarkMode),
             const SizedBox(height: 20),
 
             // Interval Selector
-            _buildIntervalSelector(),
+            _buildIntervalSelector(isDarkMode),
             const SizedBox(height: 20),
 
             // Week Days (only for weekly)
             if (_frequency == RecurrenceFrequency.weekly) ...[
-              _buildWeekDaySelector(),
+              _buildWeekDaySelector(isDarkMode),
               const SizedBox(height: 20),
             ],
 
             // End Date Options
-            _buildEndDateOptions(),
+            _buildEndDateOptions(isDarkMode),
             const SizedBox(height: 24),
 
             // Preview
-            _buildPreview(),
+            _buildPreview(isDarkMode),
             const SizedBox(height: 24),
 
             // Action Buttons
@@ -187,7 +191,7 @@ class _RecurrenceSettingsDialogState extends State<RecurrenceSettingsDialog> {
                     Navigator.pop(context);
                   },
                   style: TextButton.styleFrom(
-                    foregroundColor: AppColors.textGray,
+                    foregroundColor: AppColors.getTextSecondary(isDarkMode),
                   ),
                   child: Text('no_recurrence'.tr()),
                 ),
@@ -196,7 +200,7 @@ class _RecurrenceSettingsDialogState extends State<RecurrenceSettingsDialog> {
                 TextButton(
                   onPressed: () => Navigator.pop(context),
                   style: TextButton.styleFrom(
-                    foregroundColor: AppColors.textGray,
+                    foregroundColor: AppColors.getTextSecondary(isDarkMode),
                   ),
                   child: Text('cancel'.tr()),
                 ),
@@ -227,14 +231,14 @@ class _RecurrenceSettingsDialogState extends State<RecurrenceSettingsDialog> {
     );
   }
 
-  Widget _buildFrequencySelector() {
+  Widget _buildFrequencySelector(bool isDarkMode) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           'recurrence_frequency'.tr(),
-          style: const TextStyle(
-            color: AppColors.textGray,
+          style: TextStyle(
+            color: AppColors.getTextSecondary(isDarkMode),
             fontSize: 14,
           ),
         ),
@@ -242,17 +246,17 @@ class _RecurrenceSettingsDialogState extends State<RecurrenceSettingsDialog> {
         Wrap(
           spacing: 8,
           children: [
-            _buildFrequencyChip('daily'.tr(), RecurrenceFrequency.daily),
-            _buildFrequencyChip('weekly'.tr(), RecurrenceFrequency.weekly),
-            _buildFrequencyChip('monthly'.tr(), RecurrenceFrequency.monthly),
-            _buildFrequencyChip('yearly'.tr(), RecurrenceFrequency.yearly),
+            _buildFrequencyChip('daily'.tr(), RecurrenceFrequency.daily, isDarkMode),
+            _buildFrequencyChip('weekly'.tr(), RecurrenceFrequency.weekly, isDarkMode),
+            _buildFrequencyChip('monthly'.tr(), RecurrenceFrequency.monthly, isDarkMode),
+            _buildFrequencyChip('yearly'.tr(), RecurrenceFrequency.yearly, isDarkMode),
           ],
         ),
       ],
     );
   }
 
-  Widget _buildFrequencyChip(String label, RecurrenceFrequency frequency) {
+  Widget _buildFrequencyChip(String label, RecurrenceFrequency frequency, bool isDarkMode) {
     final isSelected = _frequency == frequency;
     return FilterChip(
       label: Text(label),
@@ -262,18 +266,18 @@ class _RecurrenceSettingsDialogState extends State<RecurrenceSettingsDialog> {
           _frequency = frequency;
         });
       },
-      backgroundColor: AppColors.darkBackground,
+      backgroundColor: AppColors.getBackground(isDarkMode),
       selectedColor: AppColors.primaryBlue.withOpacity(0.2),
       labelStyle: TextStyle(
-        color: isSelected ? AppColors.primaryBlue : AppColors.textGray,
+        color: isSelected ? AppColors.primaryBlue : AppColors.getTextSecondary(isDarkMode),
       ),
       side: BorderSide(
-        color: isSelected ? AppColors.primaryBlue : AppColors.textGray.withOpacity(0.3),
+        color: isSelected ? AppColors.primaryBlue : AppColors.getTextSecondary(isDarkMode).withOpacity(0.3),
       ),
     );
   }
 
-  Widget _buildIntervalSelector() {
+  Widget _buildIntervalSelector(bool isDarkMode) {
     String unit;
     switch (_frequency) {
       case RecurrenceFrequency.daily:
@@ -295,8 +299,8 @@ class _RecurrenceSettingsDialogState extends State<RecurrenceSettingsDialog> {
       children: [
         Text(
           'recurrence_interval'.tr(),
-          style: const TextStyle(
-            color: AppColors.textGray,
+          style: TextStyle(
+            color: AppColors.getTextSecondary(isDarkMode),
             fontSize: 14,
           ),
         ),
@@ -313,16 +317,16 @@ class _RecurrenceSettingsDialogState extends State<RecurrenceSettingsDialog> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               decoration: BoxDecoration(
-                color: AppColors.darkBackground,
+                color: AppColors.getBackground(isDarkMode),
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(
-                  color: AppColors.textGray.withOpacity(0.3),
+                  color: AppColors.getTextSecondary(isDarkMode).withOpacity(0.3),
                 ),
               ),
               child: Text(
                 '$_interval $unit ${'every_unit'.tr()}',
-                style: const TextStyle(
-                  color: AppColors.textWhite,
+                style: TextStyle(
+                  color: AppColors.getText(isDarkMode),
                   fontSize: 16,
                 ),
               ),
@@ -340,7 +344,7 @@ class _RecurrenceSettingsDialogState extends State<RecurrenceSettingsDialog> {
     );
   }
 
-  Widget _buildWeekDaySelector() {
+  Widget _buildWeekDaySelector(bool isDarkMode) {
     final weekDays = ['mon'.tr(), 'tue'.tr(), 'wed'.tr(), 'thu'.tr(), 'fri'.tr(), 'sat'.tr(), 'sun'.tr()];
 
     return Column(
@@ -348,8 +352,8 @@ class _RecurrenceSettingsDialogState extends State<RecurrenceSettingsDialog> {
       children: [
         Text(
           'recurrence_days'.tr(),
-          style: const TextStyle(
-            color: AppColors.textGray,
+          style: TextStyle(
+            color: AppColors.getTextSecondary(isDarkMode),
             fontSize: 14,
           ),
         ),
@@ -370,13 +374,13 @@ class _RecurrenceSettingsDialogState extends State<RecurrenceSettingsDialog> {
                   }
                 });
               },
-              backgroundColor: AppColors.darkBackground,
+              backgroundColor: AppColors.getBackground(isDarkMode),
               selectedColor: AppColors.primaryBlue.withOpacity(0.2),
               labelStyle: TextStyle(
-                color: isSelected ? AppColors.primaryBlue : AppColors.textGray,
+                color: isSelected ? AppColors.primaryBlue : AppColors.getTextSecondary(isDarkMode),
               ),
               side: BorderSide(
-                color: isSelected ? AppColors.primaryBlue : AppColors.textGray.withOpacity(0.3),
+                color: isSelected ? AppColors.primaryBlue : AppColors.getTextSecondary(isDarkMode).withOpacity(0.3),
               ),
             );
           }),
@@ -385,14 +389,14 @@ class _RecurrenceSettingsDialogState extends State<RecurrenceSettingsDialog> {
     );
   }
 
-  Widget _buildEndDateOptions() {
+  Widget _buildEndDateOptions(bool isDarkMode) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           'end_condition'.tr(),
-          style: const TextStyle(
-            color: AppColors.textGray,
+          style: TextStyle(
+            color: AppColors.getTextSecondary(isDarkMode),
             fontSize: 14,
           ),
         ),
@@ -402,7 +406,7 @@ class _RecurrenceSettingsDialogState extends State<RecurrenceSettingsDialog> {
         RadioListTile<String>(
           title: Text(
             'no_end'.tr(),
-            style: const TextStyle(color: AppColors.textWhite),
+            style: TextStyle(color: AppColors.getText(isDarkMode)),
           ),
           value: 'never',
           groupValue: !_hasEndDate && !_useCount ? 'never' : (_hasEndDate ? 'until' : 'count'),
@@ -423,7 +427,7 @@ class _RecurrenceSettingsDialogState extends State<RecurrenceSettingsDialog> {
             children: [
               Text(
                 'repeat_count'.tr(),
-                style: const TextStyle(color: AppColors.textWhite),
+                style: TextStyle(color: AppColors.getText(isDarkMode)),
               ),
               const SizedBox(width: 12),
               SizedBox(
@@ -431,14 +435,14 @@ class _RecurrenceSettingsDialogState extends State<RecurrenceSettingsDialog> {
                 child: TextField(
                   enabled: _useCount,
                   keyboardType: TextInputType.number,
-                  style: const TextStyle(color: AppColors.textWhite),
+                  style: TextStyle(color: AppColors.getText(isDarkMode)),
                   decoration: InputDecoration(
                     hintText: '10',
-                    hintStyle: TextStyle(color: AppColors.textGray.withOpacity(0.5)),
+                    hintStyle: TextStyle(color: AppColors.getTextSecondary(isDarkMode).withOpacity(0.5)),
                     contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
-                      borderSide: BorderSide(color: AppColors.textGray.withOpacity(0.3)),
+                      borderSide: BorderSide(color: AppColors.getTextSecondary(isDarkMode).withOpacity(0.3)),
                     ),
                   ),
                   onChanged: (value) {
@@ -451,7 +455,7 @@ class _RecurrenceSettingsDialogState extends State<RecurrenceSettingsDialog> {
               const SizedBox(width: 4),
               Text(
                 'times_unit'.tr(),
-                style: const TextStyle(color: AppColors.textWhite),
+                style: TextStyle(color: AppColors.getText(isDarkMode)),
               ),
             ],
           ),
@@ -474,7 +478,7 @@ class _RecurrenceSettingsDialogState extends State<RecurrenceSettingsDialog> {
             children: [
               Text(
                 'end_date'.tr(),
-                style: const TextStyle(color: AppColors.textWhite),
+                style: TextStyle(color: AppColors.getText(isDarkMode)),
               ),
               const SizedBox(width: 12),
               TextButton(
@@ -496,7 +500,7 @@ class _RecurrenceSettingsDialogState extends State<RecurrenceSettingsDialog> {
                       ? '${_untilDate!.year}.${_untilDate!.month}.${_untilDate!.day}'
                       : 'select_date'.tr(),
                   style: TextStyle(
-                    color: _hasEndDate ? AppColors.primaryBlue : AppColors.textGray,
+                    color: _hasEndDate ? AppColors.primaryBlue : AppColors.getTextSecondary(isDarkMode),
                   ),
                 ),
               ),
@@ -520,14 +524,14 @@ class _RecurrenceSettingsDialogState extends State<RecurrenceSettingsDialog> {
     );
   }
 
-  Widget _buildPreview() {
+  Widget _buildPreview(bool isDarkMode) {
     final rrule = _buildRRule();
     final description = RecurrenceUtils.getDescription(rrule);
 
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.darkBackground,
+        color: AppColors.getBackground(isDarkMode),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: AppColors.primaryBlue.withOpacity(0.3),
@@ -547,16 +551,16 @@ class _RecurrenceSettingsDialogState extends State<RecurrenceSettingsDialog> {
               children: [
                 Text(
                   'preview'.tr(),
-                  style: const TextStyle(
-                    color: AppColors.textGray,
+                  style: TextStyle(
+                    color: AppColors.getTextSecondary(isDarkMode),
                     fontSize: 12,
                   ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   description,
-                  style: const TextStyle(
-                    color: AppColors.textWhite,
+                  style: TextStyle(
+                    color: AppColors.getText(isDarkMode),
                     fontSize: 14,
                   ),
                 ),

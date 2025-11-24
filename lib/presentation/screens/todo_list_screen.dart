@@ -12,6 +12,7 @@ import 'package:todo_app/domain/entities/todo.dart';
 import 'package:todo_app/presentation/providers/todo_providers.dart';
 import 'package:todo_app/presentation/providers/category_providers.dart';
 import 'package:todo_app/presentation/providers/database_provider.dart';
+import 'package:todo_app/presentation/providers/theme_provider.dart';
 import 'package:todo_app/presentation/screens/settings_screen.dart';
 import 'package:todo_app/presentation/screens/statistics_screen.dart';
 import 'package:todo_app/presentation/widgets/custom_todo_item.dart';
@@ -107,10 +108,11 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> {
     final isEnabled = await notificationService.areNotificationsEnabled();
 
     if (!isEnabled && mounted) {
+      final isDark = ref.read(isDarkModeProvider);
       final shouldRequest = await showDialog<bool>(
         context: context,
         builder: (context) => AlertDialog(
-          backgroundColor: AppColors.darkCard,
+          backgroundColor: AppColors.getCard(isDark),
           title: Text(
             'permission_notification_title'.tr(),
             style: const TextStyle(color: AppColors.textWhite),
@@ -148,10 +150,11 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> {
   }
 
   Future<void> _showNotificationSettingsGuide() async {
+    final isDark = ref.read(isDarkModeProvider);
     final shouldOpen = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppColors.darkCard,
+        backgroundColor: AppColors.getCard(isDark),
         title: Row(
           children: [
             const Icon(FluentIcons.info_24_regular, color: AppColors.primaryBlue),
@@ -193,10 +196,11 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> {
       final isIgnoring = await BatteryOptimizationService.isIgnoringBatteryOptimizations();
 
       if (!isIgnoring && mounted) {
+        final isDark = ref.read(isDarkModeProvider);
         final shouldRequest = await showDialog<bool>(
           context: context,
           builder: (context) => AlertDialog(
-            backgroundColor: AppColors.darkCard,
+            backgroundColor: AppColors.getCard(isDark),
             title: Text(
               'permission_battery_title'.tr(),
               style: const TextStyle(color: AppColors.textWhite),
@@ -237,10 +241,11 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> {
       final canSchedule = await notificationService.canScheduleExactAlarms();
 
       if (!canSchedule && mounted) {
+        final isDark = ref.read(isDarkModeProvider);
         final shouldRequest = await showDialog<bool>(
           context: context,
           builder: (context) => AlertDialog(
-            backgroundColor: AppColors.darkCard,
+            backgroundColor: AppColors.getCard(isDark),
             title: Row(
               children: [
                 const Icon(FluentIcons.alert_24_regular, color: AppColors.accentOrange),
@@ -321,10 +326,11 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> {
 
   /// Handle clearing all completed todos
   Future<void> _handleClearCompleted() async {
+    final isDark = ref.read(isDarkModeProvider);
     final shouldClear = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppColors.darkCard,
+        backgroundColor: AppColors.getCard(isDark),
         title: Row(
           children: [
             const Icon(FluentIcons.delete_24_regular, color: AppColors.accentOrange),
@@ -384,18 +390,19 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = ref.watch(isDarkModeProvider);
     final todosAsync = ref.watch(todosProvider);
     final currentFilter = ref.watch(todoFilterProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.darkBackground,
+      backgroundColor: AppColors.getBackground(isDarkMode),
       body: SafeArea(
         child: Column(
           children: [
             // Header with gradient
             Container(
               decoration: BoxDecoration(
-                gradient: AppColors.darkHeaderGradient,
+                gradient: AppColors.getHeaderGradient(isDarkMode),
               ),
               padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
               child: Column(
@@ -410,8 +417,8 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> {
                         children: [
                           Text(
                             'todo_list'.tr(),
-                            style: const TextStyle(
-                              color: AppColors.textWhite,
+                            style: TextStyle(
+                              color: AppColors.getText(isDarkMode),
                               fontSize: 24,
                               fontWeight: FontWeight.bold,
                             ),
@@ -419,8 +426,8 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> {
                           const SizedBox(height: 4),
                           Text(
                             'keep_it_up'.tr(),
-                            style: const TextStyle(
-                              color: AppColors.textGray,
+                            style: TextStyle(
+                              color: AppColors.getTextSecondary(isDarkMode),
                               fontSize: 14,
                             ),
                           ),
@@ -431,10 +438,10 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> {
                           // Refresh Button
                           Container(
                             decoration: BoxDecoration(
-                              color: AppColors.darkCard,
+                              color: AppColors.getCard(isDarkMode),
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(
-                                color: AppColors.darkBorder.withValues(alpha: 0.5),
+                                color: AppColors.getBorder(isDarkMode).withValues(alpha: 0.5),
                                 width: 1,
                               ),
                             ),
@@ -448,9 +455,9 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> {
                                 child: SizedBox(
                                   width: 48,
                                   height: 48,
-                                  child: const Icon(
+                                  child: Icon(
                                     FluentIcons.arrow_clockwise_24_regular,
-                                    color: AppColors.textGray,
+                                    color: AppColors.getTextSecondary(isDarkMode),
                                     size: 22,
                                   ),
                                 ),
@@ -461,10 +468,10 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> {
                           // Clear Completed Button
                           Container(
                             decoration: BoxDecoration(
-                              color: AppColors.darkCard,
+                              color: AppColors.getCard(isDarkMode),
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(
-                                color: AppColors.darkBorder.withValues(alpha: 0.5),
+                                color: AppColors.getBorder(isDarkMode).withValues(alpha: 0.5),
                                 width: 1,
                               ),
                             ),
@@ -476,9 +483,9 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> {
                                 child: SizedBox(
                                   width: 48,
                                   height: 48,
-                                  child: const Icon(
+                                  child: Icon(
                                     FluentIcons.delete_24_regular,
-                                    color: AppColors.textGray,
+                                    color: AppColors.getTextSecondary(isDarkMode),
                                     size: 22,
                                   ),
                                 ),
@@ -489,10 +496,10 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> {
                           // Calendar Button
                           Container(
                             decoration: BoxDecoration(
-                              color: AppColors.darkCard,
+                              color: AppColors.getCard(isDarkMode),
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(
-                                color: AppColors.darkBorder.withValues(alpha: 0.5),
+                                color: AppColors.getBorder(isDarkMode).withValues(alpha: 0.5),
                                 width: 1,
                               ),
                             ),
@@ -506,9 +513,9 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> {
                                 child: SizedBox(
                                   width: 48,
                                   height: 48,
-                                  child: const Icon(
+                                  child: Icon(
                                     FluentIcons.calendar_24_regular,
-                                    color: AppColors.textGray,
+                                    color: AppColors.getTextSecondary(isDarkMode),
                                     size: 22,
                                   ),
                                 ),
@@ -609,10 +616,10 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> {
                   // Search Bar
                   Container(
                     decoration: BoxDecoration(
-                      color: AppColors.darkInput,
+                      color: AppColors.getInput(isDarkMode),
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
-                        color: AppColors.darkBorder.withValues(alpha: 0.5),
+                        color: AppColors.getBorder(isDarkMode).withValues(alpha: 0.5),
                         width: 1,
                       ),
                     ),
@@ -621,26 +628,26 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> {
                       builder: (context, value, child) {
                         return TextField(
                           controller: _searchController,
-                          style: const TextStyle(
-                            color: AppColors.textWhite,
+                          style: TextStyle(
+                            color: AppColors.getText(isDarkMode),
                             fontSize: 14,
                           ),
                           decoration: InputDecoration(
                             hintText: 'search_todos'.tr(),
-                            hintStyle: const TextStyle(
-                              color: AppColors.textGray,
+                            hintStyle: TextStyle(
+                              color: AppColors.getTextSecondary(isDarkMode),
                               fontSize: 14,
                             ),
-                            prefixIcon: const Icon(
+                            prefixIcon: Icon(
                               FluentIcons.search_24_regular,
-                              color: AppColors.textGray,
+                              color: AppColors.getTextSecondary(isDarkMode),
                               size: 20,
                             ),
                             suffixIcon: value.text.isNotEmpty
                                 ? IconButton(
-                                    icon: const Icon(
+                                    icon: Icon(
                                       FluentIcons.dismiss_circle_24_filled,
-                                      color: AppColors.textGray,
+                                      color: AppColors.getTextSecondary(isDarkMode),
                                       size: 20,
                                     ),
                                     onPressed: () {
@@ -718,24 +725,24 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> {
               padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
               child: Container(
                 decoration: BoxDecoration(
-                  color: AppColors.darkInput,
+                  color: AppColors.getInput(isDarkMode),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: TextField(
                   controller: _inputController,
                   onSubmitted: (_) => _addTodoFromInput(),
-                  style: const TextStyle(
-                    color: AppColors.textWhite,
+                  style: TextStyle(
+                    color: AppColors.getText(isDarkMode),
                     fontSize: 16,
                   ),
                   decoration: InputDecoration(
                     hintText: 'title_hint'.tr(),
-                    hintStyle: const TextStyle(
-                      color: AppColors.textGray,
+                    hintStyle: TextStyle(
+                      color: AppColors.getTextSecondary(isDarkMode),
                     ),
-                    prefixIcon: const Icon(
+                    prefixIcon: Icon(
                       FluentIcons.add_24_regular,
-                      color: AppColors.textGray,
+                      color: AppColors.getTextSecondary(isDarkMode),
                       size: 20,
                     ),
                     border: InputBorder.none,
@@ -760,7 +767,7 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> {
                           Icon(
                             FluentIcons.task_list_square_ltr_24_regular,
                             size: 64,
-                            color: AppColors.textGray.withValues(alpha: 0.5),
+                            color: AppColors.getTextSecondary(isDarkMode).withValues(alpha: 0.5),
                           ),
                           const SizedBox(height: 16),
                           Text(
@@ -769,8 +776,8 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> {
                                 : currentFilter == TodoFilter.pending
                                     ? 'no_pending_todos'.tr()
                                     : 'no_completed_todos'.tr(),
-                            style: const TextStyle(
-                              color: AppColors.textGray,
+                            style: TextStyle(
+                              color: AppColors.getTextSecondary(isDarkMode),
                               fontSize: 16,
                             ),
                           ),
@@ -845,10 +852,10 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> {
             // Bottom Navigation
             Container(
               decoration: BoxDecoration(
-                color: AppColors.darkCard,
+                color: AppColors.getCard(isDarkMode),
                 border: Border(
                   top: BorderSide(
-                    color: AppColors.darkBorder.withValues(alpha: 0.3),
+                    color: AppColors.getBorder(isDarkMode).withValues(alpha: 0.3),
                     width: 1,
                   ),
                 ),
@@ -974,7 +981,7 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> {
   }
 }
 
-class _FilterChip extends StatelessWidget {
+class _FilterChip extends ConsumerWidget {
   final String label;
   final int count;
   final bool isSelected;
@@ -988,14 +995,15 @@ class _FilterChip extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isDarkMode = ref.watch(isDarkModeProvider);
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(8),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: AppColors.darkInput,
+          color: AppColors.getInput(isDarkMode),
           borderRadius: BorderRadius.circular(8),
         ),
         child: Row(
@@ -1004,8 +1012,8 @@ class _FilterChip extends StatelessWidget {
             Flexible(
               child: Text(
                 label,
-                style: TextStyle(
-                  color: isSelected ? AppColors.textWhite : AppColors.textGray,
+                style: const TextStyle(
+                  color: AppColors.textWhite,
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
                 ),
@@ -1027,7 +1035,7 @@ class _FilterChip extends StatelessWidget {
   }
 }
 
-class _NavItem extends StatelessWidget {
+class _NavItem extends ConsumerWidget {
   final IconData icon;
   final String label;
   final bool isActive;
@@ -1041,7 +1049,8 @@ class _NavItem extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isDarkMode = ref.watch(isDarkModeProvider);
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -1072,13 +1081,17 @@ class _NavItem extends StatelessWidget {
               Icon(
                 icon,
                 size: 24,
-                color: isActive ? AppColors.textWhite : AppColors.textGray,
+                color: isActive
+                    ? AppColors.primaryBlue
+                    : AppColors.getTextSecondary(isDarkMode),
               ),
               const SizedBox(height: 4),
               Text(
                 label,
                 style: TextStyle(
-                  color: isActive ? AppColors.textWhite : AppColors.textGray,
+                  color: isActive
+                      ? AppColors.primaryBlue
+                      : AppColors.getTextSecondary(isDarkMode),
                   fontSize: 12,
                   fontWeight: FontWeight.w500,
                 ),
@@ -1092,7 +1105,7 @@ class _NavItem extends StatelessWidget {
 }
 
 // Category Chip Widget
-class _CategoryChip extends StatelessWidget {
+class _CategoryChip extends ConsumerWidget {
   final String label;
   final String? icon;
   final Color? color;
@@ -1108,7 +1121,8 @@ class _CategoryChip extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isDarkMode = ref.watch(isDarkModeProvider);
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -1119,12 +1133,12 @@ class _CategoryChip extends StatelessWidget {
           decoration: BoxDecoration(
             color: isSelected
                 ? (color ?? AppColors.primaryBlue).withOpacity(0.2)
-                : AppColors.darkCard,
+                : AppColors.getCard(isDarkMode),
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
               color: isSelected
                   ? (color ?? AppColors.primaryBlue)
-                  : AppColors.darkBorder,
+                  : AppColors.getBorder(isDarkMode),
               width: 1.5,
             ),
           ),
@@ -1151,8 +1165,8 @@ class _CategoryChip extends StatelessWidget {
               ],
               Text(
                 label,
-                style: TextStyle(
-                  color: isSelected ? AppColors.textWhite : AppColors.textGray,
+                style: const TextStyle(
+                  color: AppColors.textWhite,
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
                 ),
@@ -1166,7 +1180,7 @@ class _CategoryChip extends StatelessWidget {
 }
 
 /// Widget for displaying a group of recurring todos
-class _RecurringTodoGroup extends StatefulWidget {
+class _RecurringTodoGroup extends ConsumerStatefulWidget {
   final List<Todo> todos;
   final Function(Todo) onToggle;
   final Function(Todo) onDelete;
@@ -1181,14 +1195,15 @@ class _RecurringTodoGroup extends StatefulWidget {
   });
 
   @override
-  State<_RecurringTodoGroup> createState() => _RecurringTodoGroupState();
+  ConsumerState<_RecurringTodoGroup> createState() => _RecurringTodoGroupState();
 }
 
-class _RecurringTodoGroupState extends State<_RecurringTodoGroup> {
+class _RecurringTodoGroupState extends ConsumerState<_RecurringTodoGroup> {
   bool _isExpanded = false;
 
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = ref.watch(isDarkModeProvider);
     if (widget.todos.isEmpty) return const SizedBox.shrink();
 
     final firstTodo = widget.todos.first;
@@ -1201,7 +1216,7 @@ class _RecurringTodoGroupState extends State<_RecurringTodoGroup> {
         Container(
           margin: const EdgeInsets.only(bottom: 8),
           decoration: BoxDecoration(
-            color: AppColors.darkCard,
+            color: AppColors.getCard(isDarkMode),
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
               color: AppColors.primaryBlue.withValues(alpha: 0.3),

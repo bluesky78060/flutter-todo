@@ -10,6 +10,7 @@ import 'package:todo_app/core/utils/color_utils.dart';
 import 'package:todo_app/domain/entities/todo.dart';
 import 'package:todo_app/presentation/providers/todo_providers.dart';
 import 'package:todo_app/presentation/providers/category_providers.dart';
+import 'package:todo_app/presentation/providers/theme_provider.dart';
 import 'package:todo_app/presentation/widgets/recurrence_settings_dialog.dart';
 import 'package:todo_app/presentation/widgets/recurring_edit_dialog.dart';
 import 'package:todo_app/presentation/widgets/location_picker_dialog.dart';
@@ -72,6 +73,8 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
   Future<void> _selectDate() async {
     if (!mounted) return;
 
+    final isDarkMode = ref.read(isDarkModeProvider);
+
     // Step 1: Select date using Material Design calendar
     final pickedDate = await showDatePicker(
       context: context,
@@ -81,11 +84,11 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
       builder: (context, child) {
         return Theme(
           data: Theme.of(context).copyWith(
-            colorScheme: const ColorScheme.dark(
+            colorScheme: ColorScheme.dark(
               primary: AppColors.primaryBlue,
-              onPrimary: AppColors.textWhite,
-              surface: AppColors.darkCard,
-              onSurface: AppColors.textWhite,
+              onPrimary: AppColors.getText(isDarkMode),
+              surface: AppColors.getCard(isDarkMode),
+              onSurface: AppColors.getText(isDarkMode),
             ),
           ),
           child: child!,
@@ -101,7 +104,7 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
 
     await showModalBottomSheet(
       context: context,
-      backgroundColor: AppColors.darkCard,
+      backgroundColor: AppColors.getCard(isDarkMode),
       builder: (BuildContext context) {
         DateTime tempTime = DateTime(
           pickedDate.year,
@@ -123,13 +126,13 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
                     onPressed: () => Navigator.pop(context),
                     child: Text(
                       'cancel'.tr(),
-                      style: const TextStyle(color: AppColors.textGray),
+                      style: TextStyle(color: AppColors.getTextSecondary(isDarkMode)),
                     ),
                   ),
                   Text(
                     'select_notification_time'.tr(),
-                    style: const TextStyle(
-                      color: AppColors.textWhite,
+                    style: TextStyle(
+                      color: AppColors.getText(isDarkMode),
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
                     ),
@@ -217,6 +220,8 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
   Future<void> _selectNotificationTime() async {
     if (!mounted) return;
 
+    final isDarkMode = ref.read(isDarkModeProvider);
+
     // Step 1: Select date using Material Design calendar
     final pickedDate = await showDatePicker(
       context: context,
@@ -226,11 +231,11 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
       builder: (context, child) {
         return Theme(
           data: Theme.of(context).copyWith(
-            colorScheme: const ColorScheme.dark(
+            colorScheme: ColorScheme.dark(
               primary: AppColors.primaryBlue,
-              onPrimary: AppColors.textWhite,
-              surface: AppColors.darkCard,
-              onSurface: AppColors.textWhite,
+              onPrimary: AppColors.getText(isDarkMode),
+              surface: AppColors.getCard(isDarkMode),
+              onSurface: AppColors.getText(isDarkMode),
             ),
           ),
           child: child!,
@@ -246,7 +251,7 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
 
     await showModalBottomSheet(
       context: context,
-      backgroundColor: AppColors.darkCard,
+      backgroundColor: AppColors.getCard(isDarkMode),
       builder: (BuildContext context) {
         DateTime tempTime = DateTime(
           pickedDate.year,
@@ -268,13 +273,13 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
                     onPressed: () => Navigator.pop(context),
                     child: Text(
                       'cancel'.tr(),
-                      style: const TextStyle(color: AppColors.textGray),
+                      style: TextStyle(color: AppColors.getTextSecondary(isDarkMode)),
                     ),
                   ),
                   Text(
                     'select_notification_time'.tr(),
-                    style: const TextStyle(
-                      color: AppColors.textWhite,
+                    style: TextStyle(
+                      color: AppColors.getText(isDarkMode),
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
                     ),
@@ -403,8 +408,10 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = ref.watch(isDarkModeProvider);
+
     return Dialog(
-      backgroundColor: AppColors.darkCard,
+      backgroundColor: AppColors.getCard(isDarkMode),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
       ),
@@ -425,17 +432,17 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
               children: [
                 Text(
                   _isEditMode ? 'edit_todo'.tr() : 'new_todo'.tr(),
-                  style: const TextStyle(
-                    color: AppColors.textWhite,
+                  style: TextStyle(
+                    color: AppColors.getText(isDarkMode),
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 IconButton(
                   onPressed: () => Navigator.pop(context),
-                  icon: const Icon(
+                  icon: Icon(
                     FluentIcons.dismiss_24_regular,
-                    color: AppColors.textGray,
+                    color: AppColors.getTextSecondary(isDarkMode),
                   ),
                   padding: EdgeInsets.zero,
                   constraints: const BoxConstraints(),
@@ -450,8 +457,8 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
               children: [
                 Text(
                   'title'.tr(),
-                  style: const TextStyle(
-                    color: AppColors.textGray,
+                  style: TextStyle(
+                    color: AppColors.getTextSecondary(isDarkMode),
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
                   ),
@@ -459,20 +466,20 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
                 const SizedBox(height: 8),
                 Container(
                   decoration: BoxDecoration(
-                    color: AppColors.darkInput,
+                    color: AppColors.getInput(isDarkMode),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: TextField(
                     controller: _titleController,
                     autofocus: !_isEditMode,
-                    style: const TextStyle(
-                      color: AppColors.textWhite,
+                    style: TextStyle(
+                      color: AppColors.getText(isDarkMode),
                       fontSize: 16,
                     ),
                     decoration: InputDecoration(
                       hintText: 'title_hint'.tr(),
-                      hintStyle: const TextStyle(
-                        color: AppColors.textGray,
+                      hintStyle: TextStyle(
+                        color: AppColors.getTextSecondary(isDarkMode),
                       ),
                       border: InputBorder.none,
                       contentPadding: const EdgeInsets.symmetric(
@@ -492,8 +499,8 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
               children: [
                 Text(
                   'description_optional'.tr(),
-                  style: const TextStyle(
-                    color: AppColors.textGray,
+                  style: TextStyle(
+                    color: AppColors.getTextSecondary(isDarkMode),
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
                   ),
@@ -501,20 +508,20 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
                 const SizedBox(height: 8),
                 Container(
                   decoration: BoxDecoration(
-                    color: AppColors.darkInput,
+                    color: AppColors.getInput(isDarkMode),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: TextField(
                     controller: _descriptionController,
                     maxLines: 4,
-                    style: const TextStyle(
-                      color: AppColors.textWhite,
+                    style: TextStyle(
+                      color: AppColors.getText(isDarkMode),
                       fontSize: 16,
                     ),
                     decoration: InputDecoration(
                       hintText: 'description_hint'.tr(),
-                      hintStyle: const TextStyle(
-                        color: AppColors.textGray,
+                      hintStyle: TextStyle(
+                        color: AppColors.getTextSecondary(isDarkMode),
                       ),
                       border: InputBorder.none,
                       contentPadding: const EdgeInsets.symmetric(
@@ -534,8 +541,8 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
               children: [
                 Text(
                   'category_optional'.tr(),
-                  style: const TextStyle(
-                    color: AppColors.textGray,
+                  style: TextStyle(
+                    color: AppColors.getTextSecondary(isDarkMode),
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
                   ),
@@ -545,18 +552,18 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
                   data: (categories) {
                     return Container(
                       decoration: BoxDecoration(
-                        color: AppColors.darkInput,
+                        color: AppColors.getInput(isDarkMode),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: DropdownButtonHideUnderline(
                         child: DropdownButton<int?>(
                           value: _selectedCategoryId,
                           isExpanded: true,
-                          dropdownColor: AppColors.darkCard,
+                          dropdownColor: AppColors.getCard(isDarkMode),
                           menuMaxHeight: 300,
-                          icon: const Icon(
+                          icon: Icon(
                             FluentIcons.chevron_down_24_regular,
-                            color: AppColors.textGray,
+                            color: AppColors.getTextSecondary(isDarkMode),
                             size: 20,
                           ),
                           padding: const EdgeInsets.symmetric(
@@ -565,8 +572,8 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
                           ),
                           hint: Text(
                             'select_category'.tr(),
-                            style: const TextStyle(
-                              color: AppColors.textGray,
+                            style: TextStyle(
+                              color: AppColors.getTextSecondary(isDarkMode),
                               fontSize: 16,
                             ),
                           ),
@@ -575,8 +582,8 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
                               value: null,
                               child: Text(
                                 'no_category'.tr(),
-                                style: const TextStyle(
-                                  color: AppColors.textGray,
+                                style: TextStyle(
+                                  color: AppColors.getTextSecondary(isDarkMode),
                                   fontSize: 16,
                                 ),
                               ),
@@ -606,8 +613,8 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
                                     Flexible(
                                       child: Text(
                                         category.name,
-                                        style: const TextStyle(
-                                          color: AppColors.textWhite,
+                                        style: TextStyle(
+                                          color: AppColors.getText(isDarkMode),
                                           fontSize: 16,
                                         ),
                                         overflow: TextOverflow.ellipsis,
@@ -643,8 +650,8 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
               children: [
                 Text(
                   'due_date_optional'.tr(),
-                  style: const TextStyle(
-                    color: AppColors.textGray,
+                  style: TextStyle(
+                    color: AppColors.getTextSecondary(isDarkMode),
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
                   ),
@@ -659,14 +666,14 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
                       vertical: 14,
                     ),
                     decoration: BoxDecoration(
-                      color: AppColors.darkInput,
+                      color: AppColors.getInput(isDarkMode),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Row(
                       children: [
-                        const Icon(
+                        Icon(
                           FluentIcons.calendar_24_regular,
-                          color: AppColors.textGray,
+                          color: AppColors.getTextSecondary(isDarkMode),
                           size: 20,
                         ),
                         const SizedBox(width: 12),
@@ -676,8 +683,8 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
                               : 'select_due_date'.tr(),
                           style: TextStyle(
                             color: _selectedDueDate != null
-                                ? AppColors.textWhite
-                                : AppColors.textGray,
+                                ? AppColors.getText(isDarkMode)
+                                : AppColors.getTextSecondary(isDarkMode),
                             fontSize: 16,
                           ),
                         ),
@@ -689,9 +696,9 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
                                 _selectedDueDate = null;
                               });
                             },
-                            icon: const Icon(
+                            icon: Icon(
                               FluentIcons.dismiss_24_regular,
-                              color: AppColors.textGray,
+                              color: AppColors.getTextSecondary(isDarkMode),
                               size: 18,
                             ),
                             padding: EdgeInsets.zero,
@@ -711,8 +718,8 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
               children: [
                 Text(
                   'notification_time_optional'.tr(),
-                  style: const TextStyle(
-                    color: AppColors.textGray,
+                  style: TextStyle(
+                    color: AppColors.getTextSecondary(isDarkMode),
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
                   ),
@@ -727,14 +734,14 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
                       vertical: 14,
                     ),
                     decoration: BoxDecoration(
-                      color: AppColors.darkInput,
+                      color: AppColors.getInput(isDarkMode),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Row(
                       children: [
-                        const Icon(
+                        Icon(
                           FluentIcons.alert_24_regular,
-                          color: AppColors.textGray,
+                          color: AppColors.getTextSecondary(isDarkMode),
                           size: 20,
                         ),
                         const SizedBox(width: 12),
@@ -744,8 +751,8 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
                               : 'select_notification_time'.tr(),
                           style: TextStyle(
                             color: _selectedNotificationTime != null
-                                ? AppColors.textWhite
-                                : AppColors.textGray,
+                                ? AppColors.getText(isDarkMode)
+                                : AppColors.getTextSecondary(isDarkMode),
                             fontSize: 16,
                           ),
                         ),
@@ -757,9 +764,9 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
                                 _selectedNotificationTime = null;
                               });
                             },
-                            icon: const Icon(
+                            icon: Icon(
                               FluentIcons.dismiss_24_regular,
-                              color: AppColors.textGray,
+                              color: AppColors.getTextSecondary(isDarkMode),
                               size: 18,
                             ),
                             padding: EdgeInsets.zero,
@@ -779,8 +786,8 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
               children: [
                 Text(
                   context.locale.languageCode == 'ko' ? '반복 설정 (선택사항)' : 'Recurrence (Optional)',
-                  style: const TextStyle(
-                    color: AppColors.textGray,
+                  style: TextStyle(
+                    color: AppColors.getTextSecondary(isDarkMode),
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
                   ),
@@ -795,14 +802,14 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
                       vertical: 14,
                     ),
                     decoration: BoxDecoration(
-                      color: AppColors.darkInput,
+                      color: AppColors.getInput(isDarkMode),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Row(
                       children: [
-                        const Icon(
+                        Icon(
                           FluentIcons.arrow_repeat_all_24_regular,
-                          color: AppColors.textGray,
+                          color: AppColors.getTextSecondary(isDarkMode),
                           size: 20,
                         ),
                         const SizedBox(width: 12),
@@ -813,8 +820,8 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
                                 : 'no_recurrence'.tr(),
                             style: TextStyle(
                               color: _recurrenceRule != null
-                                  ? AppColors.textWhite
-                                  : AppColors.textGray,
+                                  ? AppColors.getText(isDarkMode)
+                                  : AppColors.getTextSecondary(isDarkMode),
                               fontSize: 16,
                             ),
                           ),
@@ -826,9 +833,9 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
                                 _recurrenceRule = null;
                               });
                             },
-                            icon: const Icon(
+                            icon: Icon(
                               FluentIcons.dismiss_24_regular,
-                              color: AppColors.textGray,
+                              color: AppColors.getTextSecondary(isDarkMode),
                               size: 18,
                             ),
                             padding: EdgeInsets.zero,
@@ -848,8 +855,8 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
               children: [
                 Text(
                   context.locale.languageCode == 'ko' ? '위치 기반 알림 (선택사항)' : 'Location-based Reminder (Optional)',
-                  style: const TextStyle(
-                    color: AppColors.textGray,
+                  style: TextStyle(
+                    color: AppColors.getTextSecondary(isDarkMode),
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
                   ),
@@ -864,14 +871,14 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
                       vertical: 14,
                     ),
                     decoration: BoxDecoration(
-                      color: AppColors.darkInput,
+                      color: AppColors.getInput(isDarkMode),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Row(
                       children: [
-                        const Icon(
+                        Icon(
                           FluentIcons.location_24_regular,
-                          color: AppColors.textGray,
+                          color: AppColors.getTextSecondary(isDarkMode),
                           size: 20,
                         ),
                         const SizedBox(width: 12),
@@ -880,8 +887,8 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
                             _locationName ?? (context.locale.languageCode == 'ko' ? '위치 설정' : 'Set Location'),
                             style: TextStyle(
                               color: _locationName != null
-                                  ? AppColors.textWhite
-                                  : AppColors.textGray,
+                                  ? AppColors.getText(isDarkMode)
+                                  : AppColors.getTextSecondary(isDarkMode),
                               fontSize: 16,
                             ),
                           ),
@@ -896,9 +903,9 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
                                 _locationRadius = null;
                               });
                             },
-                            icon: const Icon(
+                            icon: Icon(
                               FluentIcons.dismiss_24_regular,
-                              color: AppColors.textGray,
+                              color: AppColors.getTextSecondary(isDarkMode),
                               size: 18,
                             ),
                             padding: EdgeInsets.zero,
@@ -919,9 +926,9 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
                   child: OutlinedButton(
                     onPressed: () => Navigator.pop(context),
                     style: OutlinedButton.styleFrom(
-                      foregroundColor: AppColors.textGray,
-                      side: const BorderSide(
-                        color: AppColors.darkBorder,
+                      foregroundColor: AppColors.getTextSecondary(isDarkMode),
+                      side: BorderSide(
+                        color: AppColors.getBorder(isDarkMode),
                         width: 1.5,
                       ),
                       padding: const EdgeInsets.symmetric(vertical: 14),

@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:todo_app/core/theme/app_colors.dart';
+import 'package:todo_app/presentation/providers/theme_provider.dart';
 import 'package:todo_app/domain/entities/todo.dart';
 import 'package:easy_localization/easy_localization.dart';
 
-class CustomTodoItem extends StatefulWidget {
+class CustomTodoItem extends ConsumerStatefulWidget {
   final Todo todo;
   final VoidCallback onToggle;
   final VoidCallback onDelete;
@@ -19,10 +21,10 @@ class CustomTodoItem extends StatefulWidget {
   });
 
   @override
-  State<CustomTodoItem> createState() => _CustomTodoItemState();
+  ConsumerState<CustomTodoItem> createState() => _CustomTodoItemState();
 }
 
-class _CustomTodoItemState extends State<CustomTodoItem>
+class _CustomTodoItemState extends ConsumerState<CustomTodoItem>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _scaleAnimation;
@@ -53,15 +55,17 @@ class _CustomTodoItemState extends State<CustomTodoItem>
 
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = ref.watch(isDarkModeProvider);
+
     return ScaleTransition(
       scale: _scaleAnimation,
       child: MouseRegion(
         onEnter: (_) => setState(() => _isHovered = true),
         onExit: (_) => setState(() => _isHovered = false),
         child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
+          duration: Duration(milliseconds: 200),
           curve: Curves.easeOut,
-          margin: const EdgeInsets.only(bottom: 8),
+          margin: EdgeInsets.only(bottom: 8),
           transform: Matrix4.translationValues(_isHovered ? 4 : 0, 0, 0),
           child: Material(
             color: Colors.transparent,
@@ -69,9 +73,11 @@ class _CustomTodoItemState extends State<CustomTodoItem>
               onTap: widget.onTap,
               borderRadius: BorderRadius.circular(12),
               child: Container(
-                padding: const EdgeInsets.all(16),
+                padding: EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: _isHovered ? const Color(0xFF1A2936) : AppColors.darkBackground,
+                  color: _isHovered ?
+                    (isDarkMode ? Color(0xFF1A2936) : Color(0xFFF0F4F8)) :
+                    AppColors.getBackground(isDarkMode),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Row(
@@ -80,7 +86,7 @@ class _CustomTodoItemState extends State<CustomTodoItem>
                     GestureDetector(
                       onTap: widget.onToggle,
                       child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 200),
+                        duration: Duration(milliseconds: 200),
                         width: 22,
                         height: 22,
                         decoration: BoxDecoration(
@@ -93,13 +99,13 @@ class _CustomTodoItemState extends State<CustomTodoItem>
                           border: Border.all(
                             color: widget.todo.isCompleted
                                 ? AppColors.primaryBlue
-                                : AppColors.darkBorder,
+                                : AppColors.getBorder(isDarkMode),
                             width: 2.5,
                           ),
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: widget.todo.isCompleted
-                            ? const Icon(
+                            ? Icon(
                                 Icons.check,
                                 size: 16,
                                 color: Colors.white,
@@ -107,7 +113,7 @@ class _CustomTodoItemState extends State<CustomTodoItem>
                             : null,
                       ),
                     ),
-                    const SizedBox(width: 16),
+                    SizedBox(width: 16),
                     // Todo Text
                     Expanded(
                       child: Column(
@@ -116,44 +122,44 @@ class _CustomTodoItemState extends State<CustomTodoItem>
                           Text(
                             widget.todo.title,
                             style: TextStyle(
-                              color: AppColors.textWhite,
+                              color: AppColors.getText(isDarkMode),
                               fontSize: 16,
                               fontWeight: FontWeight.normal,
                               decoration: widget.todo.isCompleted
                                   ? TextDecoration.lineThrough
                                   : null,
-                              decorationColor: AppColors.textGray,
+                              decorationColor: AppColors.getTextSecondary(isDarkMode),
                             ),
                           ),
                           if (widget.todo.description.isNotEmpty) ...[
-                            const SizedBox(height: 4),
+                            SizedBox(height: 4),
                             Text(
                               widget.todo.description,
                               style: TextStyle(
-                                color: AppColors.textGray,
+                                color: AppColors.getTextSecondary(isDarkMode),
                                 fontSize: 14,
                                 decoration: widget.todo.isCompleted
                                     ? TextDecoration.lineThrough
                                     : null,
-                                decorationColor: AppColors.textGray,
+                                decorationColor: AppColors.getTextSecondary(isDarkMode),
                               ),
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
                             ),
                           ],
                           if (widget.todo.dueDate != null) ...[
-                            const SizedBox(height: 6),
+                            SizedBox(height: 6),
                             Row(
                               children: [
-                                const Icon(
+                                Icon(
                                   FluentIcons.calendar_clock_24_regular,
                                   color: AppColors.primaryBlue,
                                   size: 14,
                                 ),
-                                const SizedBox(width: 6),
+                                SizedBox(width: 6),
                                 Text(
                                   _formatDueDate(widget.todo.dueDate!),
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     color: AppColors.primaryBlue,
                                     fontSize: 12,
                                     fontWeight: FontWeight.w500,
@@ -163,20 +169,20 @@ class _CustomTodoItemState extends State<CustomTodoItem>
                             ),
                           ],
                           if (widget.todo.notificationTime != null) ...[
-                            const SizedBox(height: 6),
+                            SizedBox(height: 6),
                             Row(
                               children: [
-                                const Icon(
+                                Icon(
                                   FluentIcons.alert_24_regular,
                                   color: AppColors.accentOrange,
                                   size: 14,
                                 ),
-                                const SizedBox(width: 6),
+                                SizedBox(width: 6),
                                 Text(
                                   'notification_prefix'.tr(namedArgs: {
                                     'time': _formatDueDate(widget.todo.notificationTime!)
                                   }),
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     color: AppColors.accentOrange,
                                     fontSize: 12,
                                     fontWeight: FontWeight.w500,
@@ -186,18 +192,18 @@ class _CustomTodoItemState extends State<CustomTodoItem>
                             ),
                           ],
                           if (widget.todo.recurrenceRule != null && widget.todo.recurrenceRule!.isNotEmpty) ...[
-                            const SizedBox(height: 6),
+                            SizedBox(height: 6),
                             Row(
                               children: [
-                                const Icon(
+                                Icon(
                                   FluentIcons.arrow_repeat_all_24_regular,
                                   color: AppColors.primaryBlue,
                                   size: 14,
                                 ),
-                                const SizedBox(width: 6),
+                                SizedBox(width: 6),
                                 Text(
                                   'recurring'.tr(),
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     color: AppColors.primaryBlue,
                                     fontSize: 12,
                                     fontWeight: FontWeight.w500,
@@ -211,14 +217,14 @@ class _CustomTodoItemState extends State<CustomTodoItem>
                     ),
                     // Delete Button (always visible)
                     IconButton(
-                      icon: const Icon(
+                      icon: Icon(
                         Icons.delete_outline,
-                        color: AppColors.textGray,
+                        color: AppColors.getTextSecondary(isDarkMode),
                         size: 20,
                       ),
                       onPressed: widget.onDelete,
                       padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(),
+                      constraints: BoxConstraints(),
                     ),
                   ],
                 ),

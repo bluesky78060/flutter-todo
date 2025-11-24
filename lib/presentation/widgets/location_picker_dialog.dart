@@ -1,9 +1,11 @@
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_naver_map/flutter_naver_map.dart';
 import 'package:todo_app/core/services/location_service.dart';
 import 'package:todo_app/core/theme/app_colors.dart';
+import 'package:todo_app/presentation/providers/theme_provider.dart';
 // Conditional import for web vs mobile
 import 'package:todo_app/presentation/widgets/naver_map_platform.dart'
     if (dart.library.html) 'package:todo_app/presentation/widgets/naver_map_platform.web.dart';
@@ -24,7 +26,7 @@ class LocationPickerResult {
 }
 
 /// Dialog for picking a location on a map
-class LocationPickerDialog extends StatefulWidget {
+class LocationPickerDialog extends ConsumerStatefulWidget {
   final double? initialLatitude;
   final double? initialLongitude;
   final String? initialName;
@@ -39,10 +41,10 @@ class LocationPickerDialog extends StatefulWidget {
   });
 
   @override
-  State<LocationPickerDialog> createState() => _LocationPickerDialogState();
+  ConsumerState<LocationPickerDialog> createState() => _LocationPickerDialogState();
 }
 
-class _LocationPickerDialogState extends State<LocationPickerDialog> {
+class _LocationPickerDialogState extends ConsumerState<LocationPickerDialog> {
   final LocationService _locationService = LocationService();
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _searchController = TextEditingController();
@@ -320,6 +322,8 @@ class _LocationPickerDialogState extends State<LocationPickerDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = ref.watch(isDarkModeProvider);
+
     // Default location (Seoul, South Korea)
     final initialPosition = _selectedLocation ??
                            const NLatLng(37.5665, 126.9780);
@@ -411,14 +415,14 @@ class _LocationPickerDialogState extends State<LocationPickerDialog> {
                   itemBuilder: (context, index) {
                     final result = _searchResults[index];
                     return ListTile(
-                      leading: const Icon(Icons.place, color: AppColors.primaryBlue),
+                      leading: Icon(Icons.place, color: AppColors.primaryBlue),
                       title: Text(
                         result.name,
-                        style: const TextStyle(fontWeight: FontWeight.w500),
+                        style: TextStyle(fontWeight: FontWeight.w500),
                       ),
                       subtitle: Text(
                         result.address,
-                        style: const TextStyle(fontSize: 12, color: AppColors.textGray),
+                        style: TextStyle(fontSize: 12, color: AppColors.getTextSecondary(isDarkMode)),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -506,12 +510,12 @@ class _LocationPickerDialogState extends State<LocationPickerDialog> {
                     if (_addressText != null) ...[
                       Text(
                         _addressText!,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 14,
-                          color: AppColors.textGray,
+                          color: AppColors.getTextSecondary(isDarkMode),
                         ),
                       ),
-                      const SizedBox(height: 16),
+                      SizedBox(height: 16),
                     ],
 
                     // Location name input
@@ -529,7 +533,7 @@ class _LocationPickerDialogState extends State<LocationPickerDialog> {
                     // Radius slider
                     Text(
                       '${'geofence_radius'.tr()}: ${_radius.toInt()}m',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
                       ),

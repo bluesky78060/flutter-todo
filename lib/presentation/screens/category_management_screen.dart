@@ -46,8 +46,8 @@ class CategoryManagementScreen extends ConsumerWidget {
                   const SizedBox(width: 16),
                   Text(
                     'category_management'.tr(),
-                    style: const TextStyle(
-                      color: AppColors.textWhite,
+                    style: TextStyle(
+                      color: AppColors.getText(isDarkMode),
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
                     ),
@@ -267,8 +267,8 @@ class CategoryManagementScreen extends ConsumerWidget {
               const SizedBox(height: 16),
               Text(
                 'delete_category'.tr(),
-                style: const TextStyle(
-                  color: AppColors.textWhite,
+                style: TextStyle(
+                  color: AppColors.getText(isDarkMode),
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
                 ),
@@ -276,8 +276,8 @@ class CategoryManagementScreen extends ConsumerWidget {
               const SizedBox(height: 8),
               Text(
                 'confirm_delete_category_name'.tr(namedArgs: {'name': category.name}),
-                style: const TextStyle(
-                  color: AppColors.textGray,
+                style: TextStyle(
+                  color: AppColors.getTextSecondary(isDarkMode),
                   fontSize: 16,
                 ),
                 textAlign: TextAlign.center,
@@ -468,8 +468,8 @@ class _CategoryDialogState extends ConsumerState<CategoryDialog> {
             children: [
               Text(
                 widget.category == null ? 'new_category'.tr() : 'edit_category'.tr(),
-                style: const TextStyle(
-                  color: AppColors.textWhite,
+                style: TextStyle(
+                  color: AppColors.getText(isDarkMode),
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
                 ),

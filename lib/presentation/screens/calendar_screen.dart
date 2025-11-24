@@ -5,6 +5,7 @@ import 'package:table_calendar/table_calendar.dart';
 import 'package:todo_app/core/theme/app_colors.dart';
 import 'package:todo_app/domain/entities/todo.dart';
 import 'package:todo_app/presentation/providers/todo_providers.dart';
+import 'package:todo_app/presentation/providers/theme_provider.dart';
 import 'package:todo_app/presentation/widgets/custom_todo_item.dart';
 import 'package:todo_app/presentation/widgets/recurring_delete_dialog.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
@@ -50,20 +51,21 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = ref.watch(isDarkModeProvider);
     final todosAsync = ref.watch(todosProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.darkBackground,
+      backgroundColor: AppColors.getBackground(isDarkMode),
       appBar: AppBar(
-        backgroundColor: AppColors.darkCard,
-        title: const Text(
+        backgroundColor: AppColors.getCard(isDarkMode),
+        title: Text(
           '캘린더',
-          style: TextStyle(color: AppColors.textWhite),
+          style: TextStyle(color: AppColors.getText(isDarkMode)),
         ),
         leading: IconButton(
-          icon: const Icon(
+          icon: Icon(
             FluentIcons.arrow_left_24_regular,
-            color: AppColors.textWhite,
+            color: AppColors.getText(isDarkMode),
           ),
           onPressed: () => context.go('/todos'),
         ),
@@ -75,7 +77,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
             Container(
               margin: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: AppColors.darkCard,
+                color: AppColors.getCard(isDarkMode),
                 borderRadius: BorderRadius.circular(16),
               ),
               child: TableCalendar(
@@ -99,8 +101,8 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                     color: AppColors.primaryBlue.withValues(alpha: 0.3),
                     shape: BoxShape.circle,
                   ),
-                  todayTextStyle: const TextStyle(
-                    color: AppColors.textWhite,
+                  todayTextStyle: TextStyle(
+                    color: AppColors.getText(isDarkMode),
                     fontWeight: FontWeight.bold,
                   ),
                   // Selected day
@@ -108,8 +110,8 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                     color: AppColors.primaryBlue,
                     shape: BoxShape.circle,
                   ),
-                  selectedTextStyle: const TextStyle(
-                    color: AppColors.textWhite,
+                  selectedTextStyle: TextStyle(
+                    color: AppColors.getText(isDarkMode),
                     fontWeight: FontWeight.bold,
                   ),
                   // Default days
@@ -134,18 +136,18 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                 headerStyle: HeaderStyle(
                   formatButtonVisible: false,
                   titleCentered: true,
-                  titleTextStyle: const TextStyle(
-                    color: AppColors.textWhite,
+                  titleTextStyle: TextStyle(
+                    color: AppColors.getText(isDarkMode),
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
                   ),
-                  leftChevronIcon: const Icon(
+                  leftChevronIcon: Icon(
                     FluentIcons.chevron_left_24_regular,
-                    color: AppColors.textWhite,
+                    color: AppColors.getText(isDarkMode),
                   ),
-                  rightChevronIcon: const Icon(
+                  rightChevronIcon: Icon(
                     FluentIcons.chevron_right_24_regular,
-                    color: AppColors.textWhite,
+                    color: AppColors.getText(isDarkMode),
                   ),
                 ),
                 daysOfWeekStyle: DaysOfWeekStyle(
@@ -175,8 +177,8 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                     const SizedBox(width: 8),
                     Text(
                       '${_selectedDay!.year}년 ${_selectedDay!.month}월 ${_selectedDay!.day}일',
-                      style: const TextStyle(
-                        color: AppColors.textWhite,
+                      style: TextStyle(
+                        color: AppColors.getText(isDarkMode),
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
                       ),

@@ -12,6 +12,7 @@ import 'package:todo_app/core/services/notification_service.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:todo_app/domain/entities/subtask.dart' as entity;
 import 'package:todo_app/presentation/providers/auth_providers.dart';
+import 'package:todo_app/presentation/providers/theme_provider.dart';
 
 class TodoDetailScreen extends ConsumerWidget {
   final int todoId;
@@ -24,6 +25,7 @@ class TodoDetailScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final isDarkMode = ref.watch(isDarkModeProvider);
     final todoAsync = ref.watch(todoDetailProvider(todoId));
 
     // Debug logging
@@ -36,26 +38,26 @@ class TodoDetailScreen extends ConsumerWidget {
     });
 
     return Scaffold(
-      backgroundColor: AppColors.darkBackground,
+      backgroundColor: AppColors.getBackground(isDarkMode),
       appBar: AppBar(
-        backgroundColor: AppColors.darkCard,
+        backgroundColor: AppColors.getCard(isDarkMode),
         title: Text(
           'todo_details'.tr(),
-          style: const TextStyle(color: AppColors.textWhite),
+          style: TextStyle(color: AppColors.getText(isDarkMode)),
         ),
         leading: IconButton(
-          icon: const Icon(
+          icon: Icon(
             FluentIcons.arrow_left_24_regular,
-            color: AppColors.textWhite,
+            color: AppColors.getText(isDarkMode),
           ),
           onPressed: () => Navigator.of(context).pop(),
         ),
         actions: [
           todoAsync.whenOrNull(
             data: (todo) => IconButton(
-              icon: const Icon(
+              icon: Icon(
                 FluentIcons.edit_24_regular,
-                color: AppColors.textWhite,
+                color: AppColors.getText(isDarkMode),
               ),
               onPressed: () {
                 showDialog(
@@ -76,8 +78,8 @@ class TodoDetailScreen extends ConsumerWidget {
               // Title
               Text(
                 todo.title,
-                style: const TextStyle(
-                  color: AppColors.textWhite,
+                style: TextStyle(
+                  color: AppColors.getText(isDarkMode),
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
                 ),
@@ -88,8 +90,8 @@ class TodoDetailScreen extends ConsumerWidget {
               if (todo.description.isNotEmpty) ...[
                 Text(
                   todo.description,
-                  style: const TextStyle(
-                    color: AppColors.textGray,
+                  style: TextStyle(
+                    color: AppColors.getTextSecondary(isDarkMode),
                     fontSize: 16,
                   ),
                 ),
@@ -101,6 +103,7 @@ class TodoDetailScreen extends ConsumerWidget {
                 icon: FluentIcons.calendar_add_24_regular,
                 label: 'created'.tr(),
                 value: _formatDateTime(todo.createdAt),
+                isDarkMode: isDarkMode,
               ),
               const SizedBox(height: 12),
 
@@ -111,6 +114,7 @@ class TodoDetailScreen extends ConsumerWidget {
                   label: 'due_date'.tr(),
                   value: _formatDateTime(todo.dueDate!),
                   color: AppColors.primaryBlue,
+                  isDarkMode: isDarkMode,
                 ),
                 const SizedBox(height: 12),
               ],
@@ -122,6 +126,7 @@ class TodoDetailScreen extends ConsumerWidget {
                   label: 'notification'.tr(),
                   value: _formatDateTime(todo.notificationTime!),
                   color: AppColors.accentOrange,
+                  isDarkMode: isDarkMode,
                 ),
                 const SizedBox(height: 12),
 
@@ -211,7 +216,7 @@ class TodoDetailScreen extends ConsumerWidget {
                       child: Text(
                         'snooze_count'.tr(namedArgs: {'count': todo.snoozeCount.toString()}),
                         style: TextStyle(
-                          color: AppColors.textGray.withValues(alpha: 0.7),
+                          color: AppColors.getTextSecondary(isDarkMode).withValues(alpha: 0.7),
                           fontSize: 12,
                         ),
                       ),
@@ -229,6 +234,7 @@ class TodoDetailScreen extends ConsumerWidget {
                   label: 'location'.tr(),
                   value: todo.locationName ?? '${todo.locationLatitude!.toStringAsFixed(6)}, ${todo.locationLongitude!.toStringAsFixed(6)}',
                   color: AppColors.primaryBlue,
+                  isDarkMode: isDarkMode,
                 ),
                 if (todo.locationRadius != null) ...[
                   const SizedBox(height: 8),
@@ -237,7 +243,7 @@ class TodoDetailScreen extends ConsumerWidget {
                     child: Text(
                       '${'geofence_radius'.tr()}: ${todo.locationRadius!.toInt()}m',
                       style: TextStyle(
-                        color: AppColors.textGray.withValues(alpha: 0.7),
+                        color: AppColors.getTextSecondary(isDarkMode).withValues(alpha: 0.7),
                         fontSize: 14,
                       ),
                     ),
@@ -253,6 +259,7 @@ class TodoDetailScreen extends ConsumerWidget {
                   label: 'recurrence_settings'.tr(),
                   value: RecurrenceUtils.getDescription(todo.recurrenceRule),
                   color: AppColors.primaryBlue,
+                  isDarkMode: isDarkMode,
                 ),
                 const SizedBox(height: 12),
               ],
@@ -280,8 +287,9 @@ class TodoDetailScreen extends ConsumerWidget {
                       : FluentIcons.circle_24_regular,
                   label: 'status'.tr(),
                   value: todo.isCompleted ? 'completed'.tr() : 'in_progress'.tr(),
-                  color: todo.isCompleted ? Colors.green : AppColors.textGray,
+                  color: todo.isCompleted ? Colors.green : AppColors.getTextSecondary(isDarkMode),
                   showTapHint: true,
+                  isDarkMode: isDarkMode,
                 ),
               ),
 
@@ -290,6 +298,7 @@ class TodoDetailScreen extends ConsumerWidget {
               _SubtasksSection(
                 todoId: todoId,
                 userId: ref.read(currentUserProvider).value?.uuid ?? '',
+                isDarkMode: isDarkMode,
               ),
 
               // Overdue warning and reschedule button
@@ -332,7 +341,7 @@ class TodoDetailScreen extends ConsumerWidget {
                               'days': DateTime.now().difference(todo.dueDate!).inDays.toString()
                             }),
                             style: TextStyle(
-                              color: AppColors.textGray,
+                              color: AppColors.getTextSecondary(isDarkMode),
                               fontSize: 12,
                             ),
                           ),
@@ -367,9 +376,9 @@ class TodoDetailScreen extends ConsumerWidget {
                                     builder: (context, child) {
                                       return Theme(
                                         data: ThemeData.dark().copyWith(
-                                          colorScheme: const ColorScheme.dark(
+                                          colorScheme: ColorScheme.dark(
                                             primary: AppColors.primaryBlue,
-                                            surface: AppColors.darkCard,
+                                            surface: AppColors.getCard(isDarkMode),
                                           ),
                                         ),
                                         child: child!,
@@ -409,14 +418,14 @@ class TodoDetailScreen extends ConsumerWidget {
                               }
                             }
                           },
-                          icon: const Icon(
+                          icon: Icon(
                             FluentIcons.calendar_arrow_right_24_regular,
                             size: 18,
                           ),
                           label: Text('reschedule'.tr()),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColors.primaryBlue,
-                            foregroundColor: AppColors.textWhite,
+                            foregroundColor: AppColors.getText(isDarkMode),
                             padding: const EdgeInsets.symmetric(
                               horizontal: 16,
                               vertical: 12,
@@ -440,6 +449,7 @@ class TodoDetailScreen extends ConsumerWidget {
                   label: 'completed_at'.tr(),
                   value: _formatDateTime(todo.completedAt!),
                   color: Colors.green,
+                  isDarkMode: isDarkMode,
                 ),
               ],
             ],
@@ -467,23 +477,25 @@ class _InfoRow extends StatelessWidget {
   final String value;
   final Color? color;
   final bool showTapHint;
+  final bool isDarkMode;
 
   const _InfoRow({
     required this.icon,
     required this.label,
     required this.value,
+    required this.isDarkMode,
     this.color,
     this.showTapHint = false,
   });
 
   @override
   Widget build(BuildContext context) {
-    final effectiveColor = color ?? AppColors.textGray;
+    final effectiveColor = color ?? AppColors.getTextSecondary(isDarkMode);
 
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.darkCard,
+        color: AppColors.getCard(isDarkMode),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
@@ -500,8 +512,8 @@ class _InfoRow extends StatelessWidget {
               children: [
                 Text(
                   label,
-                  style: const TextStyle(
-                    color: AppColors.textGray,
+                  style: TextStyle(
+                    color: AppColors.getTextSecondary(isDarkMode),
                     fontSize: 12,
                   ),
                 ),
@@ -520,7 +532,7 @@ class _InfoRow extends StatelessWidget {
           if (showTapHint)
             Icon(
               FluentIcons.chevron_right_24_regular,
-              color: AppColors.textGray,
+              color: AppColors.getTextSecondary(isDarkMode),
               size: 20,
             ),
         ],
@@ -532,10 +544,12 @@ class _InfoRow extends StatelessWidget {
 class _SubtasksSection extends ConsumerStatefulWidget {
   final int todoId;
   final String userId;
+  final bool isDarkMode;
 
   const _SubtasksSection({
     required this.todoId,
     required this.userId,
+    required this.isDarkMode,
   });
 
   @override
@@ -580,7 +594,7 @@ class _SubtasksSectionState extends ConsumerState<_SubtasksSection> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.darkCard,
+        color: AppColors.getCard(widget.isDarkMode),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
@@ -597,8 +611,8 @@ class _SubtasksSectionState extends ConsumerState<_SubtasksSection> {
               const SizedBox(width: 12),
               Text(
                 'subtasks'.tr(),
-                style: const TextStyle(
-                  color: AppColors.textWhite,
+                style: TextStyle(
+                  color: AppColors.getText(widget.isDarkMode),
                   fontSize: 18,
                   fontWeight: FontWeight.w600,
                 ),
@@ -610,8 +624,8 @@ class _SubtasksSectionState extends ConsumerState<_SubtasksSection> {
                     'completed': '${stats['completed']}',
                     'total': '${stats['total']}',
                   }),
-                  style: const TextStyle(
-                    color: AppColors.textGray,
+                  style: TextStyle(
+                    color: AppColors.getTextSecondary(widget.isDarkMode),
                     fontSize: 12,
                   ),
                 ),
@@ -631,8 +645,8 @@ class _SubtasksSectionState extends ConsumerState<_SubtasksSection> {
                   child: Center(
                     child: Text(
                       'no_subtasks'.tr(),
-                      style: const TextStyle(
-                        color: AppColors.textGray,
+                      style: TextStyle(
+                        color: AppColors.getTextSecondary(widget.isDarkMode),
                         fontSize: 14,
                       ),
                     ),
@@ -647,6 +661,7 @@ class _SubtasksSectionState extends ConsumerState<_SubtasksSection> {
                         padding: const EdgeInsets.only(bottom: 8),
                         child: _SubtaskItem(
                           subtask: subtask,
+                          isDarkMode: widget.isDarkMode,
                           onToggle: () {
                             ref.read(subtaskActionsProvider).toggleSubtaskCompletion(
                                   subtask.id,
@@ -690,12 +705,12 @@ class _SubtasksSectionState extends ConsumerState<_SubtasksSection> {
               Expanded(
                 child: TextField(
                   controller: _titleController,
-                  style: const TextStyle(color: AppColors.textWhite),
+                  style: TextStyle(color: AppColors.getText(widget.isDarkMode)),
                   decoration: InputDecoration(
                     hintText: 'subtask_title_hint'.tr(),
-                    hintStyle: const TextStyle(color: AppColors.textGray),
+                    hintStyle: TextStyle(color: AppColors.getTextSecondary(widget.isDarkMode)),
                     filled: true,
-                    fillColor: AppColors.darkBackground,
+                    fillColor: AppColors.getBackground(widget.isDarkMode),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
                       borderSide: BorderSide.none,
@@ -726,11 +741,13 @@ class _SubtasksSectionState extends ConsumerState<_SubtasksSection> {
 
 class _SubtaskItem extends StatelessWidget {
   final entity.Subtask subtask;
+  final bool isDarkMode;
   final VoidCallback onToggle;
   final VoidCallback onDelete;
 
   const _SubtaskItem({
     required this.subtask,
+    required this.isDarkMode,
     required this.onToggle,
     required this.onDelete,
   });
@@ -739,7 +756,7 @@ class _SubtaskItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.darkBackground,
+        color: AppColors.getBackground(isDarkMode),
         borderRadius: BorderRadius.circular(8),
       ),
       child: ListTile(
@@ -749,7 +766,7 @@ class _SubtaskItem extends StatelessWidget {
             subtask.isCompleted
                 ? FluentIcons.checkbox_checked_24_filled
                 : FluentIcons.checkbox_unchecked_24_regular,
-            color: subtask.isCompleted ? Colors.green : AppColors.textGray,
+            color: subtask.isCompleted ? Colors.green : AppColors.getTextSecondary(isDarkMode),
           ),
           onPressed: onToggle,
         ),
@@ -757,14 +774,14 @@ class _SubtaskItem extends StatelessWidget {
           subtask.title,
           style: TextStyle(
             color: subtask.isCompleted
-                ? AppColors.textGray
-                : AppColors.textWhite,
+                ? AppColors.getTextSecondary(isDarkMode)
+                : AppColors.getText(isDarkMode),
             decoration:
                 subtask.isCompleted ? TextDecoration.lineThrough : null,
           ),
         ),
         trailing: IconButton(
-          icon: const Icon(
+          icon: Icon(
             FluentIcons.delete_24_regular,
             color: Colors.red,
             size: 20,
@@ -773,21 +790,21 @@ class _SubtaskItem extends StatelessWidget {
             final confirmed = await showDialog<bool>(
               context: context,
               builder: (context) => AlertDialog(
-                backgroundColor: AppColors.darkCard,
+                backgroundColor: AppColors.getCard(isDarkMode),
                 title: Text(
                   'delete_subtask'.tr(),
-                  style: const TextStyle(color: AppColors.textWhite),
+                  style: TextStyle(color: AppColors.getText(isDarkMode)),
                 ),
                 content: Text(
                   'confirm_delete_subtask'.tr(),
-                  style: const TextStyle(color: AppColors.textGray),
+                  style: TextStyle(color: AppColors.getTextSecondary(isDarkMode)),
                 ),
                 actions: [
                   TextButton(
                     onPressed: () => Navigator.of(context).pop(false),
                     child: Text(
                       'cancel'.tr(),
-                      style: const TextStyle(color: AppColors.textGray),
+                      style: TextStyle(color: AppColors.getTextSecondary(isDarkMode)),
                     ),
                   ),
                   TextButton(

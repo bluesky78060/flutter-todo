@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:todo_app/core/config/oauth_redirect.dart';
+import 'package:todo_app/core/theme/app_colors.dart';
 import 'package:todo_app/core/utils/app_logger.dart';
+import 'package:todo_app/presentation/providers/theme_provider.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -180,9 +182,29 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = ref.watch(isDarkModeProvider);
+
     return Scaffold(
+      backgroundColor: AppColors.getBackground(isDarkMode),
       appBar: AppBar(
-        title: Text('login'.tr()),
+        backgroundColor: AppColors.getCard(isDarkMode),
+        title: Text(
+          'login'.tr(),
+          style: TextStyle(color: AppColors.getText(isDarkMode)),
+        ),
+        actions: [
+          // Theme toggle button
+          IconButton(
+            icon: Icon(
+              isDarkMode ? Icons.light_mode : Icons.dark_mode,
+              color: AppColors.getText(isDarkMode),
+            ),
+            onPressed: () {
+              ref.read(themeProvider.notifier).toggleTheme();
+            },
+            tooltip: isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode',
+          ),
+        ],
       ),
       body: Center(
         child: Padding(
@@ -192,27 +214,28 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               // 앱 로고 또는 타이틀
-              const Icon(
+              Icon(
                 Icons.check_circle_outline,
                 size: 80,
-                color: Colors.blue,
+                color: AppColors.primaryBlue,
               ),
               const SizedBox(height: 16),
-              const Text(
+              Text(
                 'Todo App',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 32,
                   fontWeight: FontWeight.bold,
+                  color: AppColors.getText(isDarkMode),
                 ),
               ),
               const SizedBox(height: 8),
               Text(
                 'login_subtitle'.tr(),
                 textAlign: TextAlign.center,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 14,
-                  color: Colors.grey,
+                  color: AppColors.getTextSecondary(isDarkMode),
                 ),
               ),
               const SizedBox(height: 32),
@@ -220,11 +243,27 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               // 이메일 로그인 폼 (항상 표시)
               TextField(
                 controller: _emailController,
+                style: TextStyle(color: AppColors.getText(isDarkMode)),
                 decoration: InputDecoration(
                   labelText: 'email'.tr(),
+                  labelStyle: TextStyle(color: AppColors.getTextSecondary(isDarkMode)),
                   hintText: 'example@email.com',
-                  border: const OutlineInputBorder(),
-                  prefixIcon: const Icon(Icons.email_outlined),
+                  hintStyle: TextStyle(color: AppColors.getTextSecondary(isDarkMode)),
+                  border: OutlineInputBorder(
+                    borderSide: BorderSide(color: AppColors.getBorder(isDarkMode)),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: AppColors.getBorder(isDarkMode)),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: AppColors.primaryBlue, width: 2),
+                  ),
+                  filled: true,
+                  fillColor: AppColors.getInput(isDarkMode),
+                  prefixIcon: Icon(
+                    Icons.email_outlined,
+                    color: AppColors.getTextSecondary(isDarkMode),
+                  ),
                 ),
                 keyboardType: TextInputType.emailAddress,
                 enabled: !_isLoading,
@@ -232,11 +271,27 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               const SizedBox(height: 16),
               TextField(
                 controller: _passwordController,
+                style: TextStyle(color: AppColors.getText(isDarkMode)),
                 decoration: InputDecoration(
                   labelText: 'password'.tr(),
+                  labelStyle: TextStyle(color: AppColors.getTextSecondary(isDarkMode)),
                   hintText: '최소 6자 이상',
-                  border: const OutlineInputBorder(),
-                  prefixIcon: const Icon(Icons.lock_outline),
+                  hintStyle: TextStyle(color: AppColors.getTextSecondary(isDarkMode)),
+                  border: OutlineInputBorder(
+                    borderSide: BorderSide(color: AppColors.getBorder(isDarkMode)),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: AppColors.getBorder(isDarkMode)),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: AppColors.primaryBlue, width: 2),
+                  ),
+                  filled: true,
+                  fillColor: AppColors.getInput(isDarkMode),
+                  prefixIcon: Icon(
+                    Icons.lock_outline,
+                    color: AppColors.getTextSecondary(isDarkMode),
+                  ),
                 ),
                 obscureText: true,
                 enabled: !_isLoading,
@@ -282,7 +337,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     _isSignUpMode
                         ? 'already_have_account'.tr()
                         : 'dont_have_account'.tr(),
-                    style: const TextStyle(color: Colors.grey),
+                    style: TextStyle(color: AppColors.getTextSecondary(isDarkMode)),
                   ),
                   TextButton(
                     onPressed: _isLoading
@@ -293,7 +348,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           },
                     child: Text(
                       _isSignUpMode ? 'login'.tr() : 'sign_up'.tr(),
-                      style: const TextStyle(fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.primaryBlue,
+                      ),
                     ),
                   ),
                 ],
@@ -302,44 +360,44 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               const SizedBox(height: 12),
               Row(
                 children: [
-                  const Expanded(child: Divider()),
+                  Expanded(child: Divider(color: AppColors.getBorder(isDarkMode))),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: Text(
                       'or'.tr(),
-                      style: const TextStyle(color: Colors.grey),
+                      style: TextStyle(color: AppColors.getTextSecondary(isDarkMode)),
                     ),
                   ),
-                  const Expanded(child: Divider()),
+                  Expanded(child: Divider(color: AppColors.getBorder(isDarkMode))),
                 ],
               ),
               const SizedBox(height: 12),
 
               // SNS 로그인 버튼
-                // Google 로그인 버튼
-                ElevatedButton.icon(
+              // Google 로그인 버튼
+              ElevatedButton.icon(
                 onPressed: _isLoading ? null : _signInWithGoogle,
                 icon: Image.network(
                   'https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg',
                   height: 24,
                   width: 24,
                   errorBuilder: (context, error, stackTrace) =>
-                      const Icon(Icons.g_mobiledata, size: 24),
+                      Icon(Icons.g_mobiledata, size: 24, color: AppColors.getText(isDarkMode)),
                 ),
                 label: Text(
                   'google_login'.tr(),
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w500,
+                    color: AppColors.getText(isDarkMode),
                   ),
                 ),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.white,
-                  foregroundColor: Colors.black87,
+                  backgroundColor: isDarkMode ? AppColors.darkCard : Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
-                    side: const BorderSide(color: Colors.grey),
+                    side: BorderSide(color: AppColors.getBorder(isDarkMode)),
                   ),
                 ),
               ),
@@ -348,17 +406,17 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               // Kakao 로그인 버튼
               ElevatedButton.icon(
                 onPressed: _isLoading ? null : _signInWithKakao,
-                icon: const Icon(Icons.chat_bubble, size: 24),
+                icon: const Icon(Icons.chat_bubble, size: 24, color: Colors.black87),
                 label: Text(
                   'kakao_login'.tr(),
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w500,
+                    color: Colors.black87,
                   ),
                 ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFFFEE500),
-                  foregroundColor: Colors.black87,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),

@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:todo_app/core/theme/app_colors.dart';
 import 'package:todo_app/domain/entities/todo.dart';
 import 'package:todo_app/presentation/providers/database_provider.dart';
+import 'package:todo_app/presentation/providers/theme_provider.dart';
 import 'package:todo_app/presentation/screens/settings_screen.dart';
 
 // Provider for all todos (unfiltered)
@@ -22,17 +23,18 @@ class StatisticsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final isDarkMode = ref.watch(isDarkModeProvider);
     final todosAsync = ref.watch(allTodosProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.darkBackground,
+      backgroundColor: AppColors.getBackground(isDarkMode),
       body: SafeArea(
         child: Column(
           children: [
             // Header with gradient
             Container(
               decoration: BoxDecoration(
-                gradient: AppColors.getHeaderGradient(true),
+                gradient: AppColors.getHeaderGradient(isDarkMode),
               ),
               padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
               child: Row(
@@ -43,8 +45,8 @@ class StatisticsScreen extends ConsumerWidget {
                     children: [
                       Text(
                         'statistics'.tr(),
-                        style: const TextStyle(
-                          color: AppColors.textWhite,
+                        style: TextStyle(
+                          color: AppColors.getText(isDarkMode),
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
                         ),
@@ -52,8 +54,8 @@ class StatisticsScreen extends ConsumerWidget {
                       const SizedBox(height: 4),
                       Text(
                         'my_work_status'.tr(),
-                        style: const TextStyle(
-                          color: AppColors.textGray,
+                        style: TextStyle(
+                          color: AppColors.getTextSecondary(isDarkMode),
                           fontSize: 14,
                         ),
                       ),
@@ -116,8 +118,8 @@ class StatisticsScreen extends ConsumerWidget {
                       const SizedBox(height: 16),
                       Text(
                         '${'error'.tr()}: $error',
-                        style: const TextStyle(
-                          color: AppColors.textGray,
+                        style: TextStyle(
+                          color: AppColors.getTextSecondary(isDarkMode),
                         ),
                       ),
                     ],
@@ -129,10 +131,10 @@ class StatisticsScreen extends ConsumerWidget {
             // Bottom Navigation
             Container(
               decoration: BoxDecoration(
-                color: AppColors.darkCard,
+                color: AppColors.getCard(isDarkMode),
                 border: Border(
                   top: BorderSide(
-                    color: AppColors.darkBorder.withValues(alpha: 0.3),
+                    color: AppColors.getBorder(isDarkMode).withValues(alpha: 0.3),
                     width: 1,
                   ),
                 ),
@@ -328,13 +330,14 @@ class _StatisticsData {
 }
 
 // Overall Progress Card
-class _OverallProgressCard extends StatelessWidget {
+class _OverallProgressCard extends ConsumerWidget {
   final _StatisticsData stats;
 
   const _OverallProgressCard({required this.stats});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isDarkMode = ref.watch(isDarkModeProvider);
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -368,7 +371,7 @@ class _OverallProgressCard extends StatelessWidget {
               const SizedBox(width: 12),
               Text(
                 'overall_progress'.tr(),
-                style: const TextStyle(
+                style: TextStyle(
                   color: Colors.white,
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -413,7 +416,7 @@ class _OverallProgressCard extends StatelessWidget {
   }
 }
 
-class _StatItem extends StatelessWidget {
+class _StatItem extends ConsumerWidget {
   final String label;
   final String value;
   final IconData icon;
@@ -425,14 +428,15 @@ class _StatItem extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isDarkMode = ref.watch(isDarkModeProvider);
     return Column(
       children: [
         Icon(icon, color: Colors.white.withValues(alpha: 0.8), size: 20),
         const SizedBox(height: 8),
         Text(
           value,
-          style: const TextStyle(
+          style: TextStyle(
             color: Colors.white,
             fontSize: 24,
             fontWeight: FontWeight.bold,
@@ -452,17 +456,18 @@ class _StatItem extends StatelessWidget {
 }
 
 // Today's Statistics Card
-class _TodayStatisticsCard extends StatelessWidget {
+class _TodayStatisticsCard extends ConsumerWidget {
   final _StatisticsData stats;
 
   const _TodayStatisticsCard({required this.stats});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isDarkMode = ref.watch(isDarkModeProvider);
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.darkCard,
+        color: AppColors.getCard(isDarkMode),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
@@ -485,8 +490,8 @@ class _TodayStatisticsCard extends StatelessWidget {
               const SizedBox(width: 12),
               Text(
                 'today_statistics'.tr(),
-                style: const TextStyle(
-                  color: AppColors.textWhite,
+                style: TextStyle(
+                  color: AppColors.getText(isDarkMode),
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                 ),
@@ -530,7 +535,7 @@ class _TodayStatisticsCard extends StatelessWidget {
   }
 }
 
-class _InfoCard extends StatelessWidget {
+class _InfoCard extends ConsumerWidget {
   final IconData icon;
   final String label;
   final String value;
@@ -544,11 +549,12 @@ class _InfoCard extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isDarkMode = ref.watch(isDarkModeProvider);
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.darkInput,
+        color: AppColors.getInput(isDarkMode),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
@@ -557,8 +563,8 @@ class _InfoCard extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             value,
-            style: const TextStyle(
-              color: AppColors.textWhite,
+            style: TextStyle(
+              color: AppColors.getText(isDarkMode),
               fontSize: 20,
               fontWeight: FontWeight.bold,
             ),
@@ -566,8 +572,8 @@ class _InfoCard extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             label,
-            style: const TextStyle(
-              color: AppColors.textGray,
+            style: TextStyle(
+              color: AppColors.getTextSecondary(isDarkMode),
               fontSize: 12,
             ),
           ),
@@ -578,17 +584,18 @@ class _InfoCard extends StatelessWidget {
 }
 
 // Weekly Statistics Card
-class _WeeklyStatisticsCard extends StatelessWidget {
+class _WeeklyStatisticsCard extends ConsumerWidget {
   final _StatisticsData stats;
 
   const _WeeklyStatisticsCard({required this.stats});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isDarkMode = ref.watch(isDarkModeProvider);
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.darkCard,
+        color: AppColors.getCard(isDarkMode),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
@@ -614,8 +621,8 @@ class _WeeklyStatisticsCard extends StatelessWidget {
                   const SizedBox(width: 12),
                   Text(
                     'this_week_statistics'.tr(),
-                    style: const TextStyle(
-                      color: AppColors.textWhite,
+                    style: TextStyle(
+                      color: AppColors.getText(isDarkMode),
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                     ),
@@ -630,7 +637,7 @@ class _WeeklyStatisticsCard extends StatelessWidget {
                 ),
                 child: Text(
                   'completed_count'.tr(namedArgs: {'count': '${stats.weekCompleted}'}),
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: Colors.white,
                     fontSize: 12,
                     fontWeight: FontWeight.bold,
@@ -647,13 +654,14 @@ class _WeeklyStatisticsCard extends StatelessWidget {
   }
 }
 
-class _DailyCompletionChart extends StatelessWidget {
+class _DailyCompletionChart extends ConsumerWidget {
   final Map<String, int> completions;
 
   const _DailyCompletionChart({required this.completions});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isDarkMode = ref.watch(isDarkModeProvider);
     final maxValue = completions.values.isEmpty ? 1 : completions.values.reduce((a, b) => a > b ? a : b).toDouble();
     final days = ['monday'.tr(), 'tuesday'.tr(), 'wednesday'.tr(), 'thursday'.tr(), 'friday'.tr(), 'saturday'.tr(), 'sunday'.tr()];
 
@@ -675,8 +683,8 @@ class _DailyCompletionChart extends StatelessWidget {
                   if (value > 0)
                     Text(
                       '$value',
-                      style: const TextStyle(
-                        color: AppColors.textGray,
+                      style: TextStyle(
+                        color: AppColors.getTextSecondary(isDarkMode),
                         fontSize: 10,
                       ),
                     ),
@@ -685,15 +693,15 @@ class _DailyCompletionChart extends StatelessWidget {
                     height: height.clamp(20, 100),
                     decoration: BoxDecoration(
                       gradient: value > 0 ? AppColors.primaryGradient : null,
-                      color: value == 0 ? AppColors.darkInput : null,
+                      color: value == 0 ? AppColors.getInput(isDarkMode) : null,
                       borderRadius: const BorderRadius.vertical(top: Radius.circular(6)),
                     ),
                   ),
                   const SizedBox(height: 8),
                   Text(
                     day,
-                    style: const TextStyle(
-                      color: AppColors.textGray,
+                    style: TextStyle(
+                      color: AppColors.getTextSecondary(isDarkMode),
                       fontSize: 12,
                     ),
                   ),
@@ -708,19 +716,20 @@ class _DailyCompletionChart extends StatelessWidget {
 }
 
 // Category Breakdown Card
-class _CategoryBreakdownCard extends StatelessWidget {
+class _CategoryBreakdownCard extends ConsumerWidget {
   final _StatisticsData stats;
 
   const _CategoryBreakdownCard({required this.stats});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isDarkMode = ref.watch(isDarkModeProvider);
     final incomplete = stats.totalTodos - stats.completedTodos;
 
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.darkCard,
+        color: AppColors.getCard(isDarkMode),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
@@ -743,8 +752,8 @@ class _CategoryBreakdownCard extends StatelessWidget {
               const SizedBox(width: 12),
               Text(
                 'category_analysis'.tr(),
-                style: const TextStyle(
-                  color: AppColors.textWhite,
+                style: TextStyle(
+                  color: AppColors.getText(isDarkMode),
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                 ),
@@ -773,7 +782,7 @@ class _CategoryBreakdownCard extends StatelessWidget {
   }
 }
 
-class _ProgressItem extends StatelessWidget {
+class _ProgressItem extends ConsumerWidget {
   final String label;
   final int value;
   final int total;
@@ -789,7 +798,8 @@ class _ProgressItem extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isDarkMode = ref.watch(isDarkModeProvider);
     final percentage = total > 0 ? (value / total * 100) : 0.0;
 
     return Column(
@@ -804,8 +814,8 @@ class _ProgressItem extends StatelessWidget {
                 const SizedBox(width: 8),
                 Text(
                   label,
-                  style: const TextStyle(
-                    color: AppColors.textWhite,
+                  style: TextStyle(
+                    color: AppColors.getText(isDarkMode),
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
                   ),
@@ -814,8 +824,8 @@ class _ProgressItem extends StatelessWidget {
             ),
             Text(
               '$value (${percentage.toStringAsFixed(0)}%)',
-              style: const TextStyle(
-                color: AppColors.textGray,
+              style: TextStyle(
+                color: AppColors.getTextSecondary(isDarkMode),
                 fontSize: 14,
               ),
             ),
@@ -827,7 +837,7 @@ class _ProgressItem extends StatelessWidget {
           child: LinearProgressIndicator(
             value: total > 0 ? value / total : 0,
             minHeight: 8,
-            backgroundColor: AppColors.darkInput,
+            backgroundColor: AppColors.getInput(isDarkMode),
             valueColor: AlwaysStoppedAnimation<Color>(color),
           ),
         ),
@@ -837,17 +847,18 @@ class _ProgressItem extends StatelessWidget {
 }
 
 // Time-based Statistics Card
-class _TimeBasedStatisticsCard extends StatelessWidget {
+class _TimeBasedStatisticsCard extends ConsumerWidget {
   final _StatisticsData stats;
 
   const _TimeBasedStatisticsCard({required this.stats});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isDarkMode = ref.watch(isDarkModeProvider);
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.darkCard,
+        color: AppColors.getCard(isDarkMode),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
@@ -870,8 +881,8 @@ class _TimeBasedStatisticsCard extends StatelessWidget {
               const SizedBox(width: 12),
               Text(
                 'time_analysis'.tr(),
-                style: const TextStyle(
-                  color: AppColors.textWhite,
+                style: TextStyle(
+                  color: AppColors.getText(isDarkMode),
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                 ),
@@ -906,7 +917,7 @@ class _TimeBasedStatisticsCard extends StatelessWidget {
   }
 }
 
-class _TimeInfoCard extends StatelessWidget {
+class _TimeInfoCard extends ConsumerWidget {
   final IconData icon;
   final String label;
   final String value;
@@ -918,11 +929,12 @@ class _TimeInfoCard extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isDarkMode = ref.watch(isDarkModeProvider);
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.darkInput,
+        color: AppColors.getInput(isDarkMode),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
@@ -931,8 +943,8 @@ class _TimeInfoCard extends StatelessWidget {
           const SizedBox(height: 12),
           Text(
             value,
-            style: const TextStyle(
-              color: AppColors.textWhite,
+            style: TextStyle(
+              color: AppColors.getText(isDarkMode),
               fontSize: 18,
               fontWeight: FontWeight.bold,
             ),
@@ -941,8 +953,8 @@ class _TimeInfoCard extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             label,
-            style: const TextStyle(
-              color: AppColors.textGray,
+            style: TextStyle(
+              color: AppColors.getTextSecondary(isDarkMode),
               fontSize: 11,
             ),
             textAlign: TextAlign.center,
@@ -954,7 +966,7 @@ class _TimeInfoCard extends StatelessWidget {
 }
 
 // Navigation Item Widget
-class _NavItem extends StatelessWidget {
+class _NavItem extends ConsumerWidget {
   final IconData icon;
   final String label;
   final bool isActive;
@@ -968,7 +980,8 @@ class _NavItem extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isDarkMode = ref.watch(isDarkModeProvider);
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -999,13 +1012,17 @@ class _NavItem extends StatelessWidget {
               Icon(
                 icon,
                 size: 24,
-                color: isActive ? AppColors.textWhite : AppColors.textGray,
+                color: isActive
+                    ? AppColors.primaryBlue
+                    : AppColors.getTextSecondary(isDarkMode),
               ),
               const SizedBox(height: 4),
               Text(
                 label,
                 style: TextStyle(
-                  color: isActive ? AppColors.textWhite : AppColors.textGray,
+                  color: isActive
+                      ? AppColors.primaryBlue
+                      : AppColors.getTextSecondary(isDarkMode),
                   fontSize: 12,
                   fontWeight: FontWeight.w500,
                 ),
