@@ -1,12 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:todo_app/domain/entities/todo.dart';
 import 'package:todo_app/presentation/widgets/custom_todo_item.dart';
+import 'package:todo_app/presentation/providers/theme_provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:easy_localization_loader/easy_localization_loader.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 
 void main() {
+  // Helper function to wrap widget in ProviderScope for testing
+  Widget createTestWidget(Widget child) {
+    return ProviderScope(
+      overrides: [
+        isDarkModeProvider.overrideWith((ref) => false),
+      ],
+      child: MaterialApp(
+        home: Scaffold(
+          body: child,
+        ),
+      ),
+    );
+  }
+
   group('CustomTodoItem Widget', () {
     late Todo testTodo;
     late bool toggleCalled;
@@ -31,14 +47,12 @@ void main() {
 
       // Act
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: CustomTodoItem(
-              todo: testTodo,
-              onToggle: () {},
-              onDelete: () {},
-              onTap: () {},
-            ),
+        createTestWidget(
+          CustomTodoItem(
+            todo: testTodo,
+            onToggle: () {},
+            onDelete: () {},
+            onTap: () {},
           ),
         ),
       );
@@ -59,14 +73,12 @@ void main() {
 
       // Act
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: CustomTodoItem(
-              todo: testTodo,
-              onToggle: () {},
-              onDelete: () {},
-              onTap: () {},
-            ),
+        createTestWidget(
+          CustomTodoItem(
+            todo: testTodo,
+            onToggle: () {},
+            onDelete: () {},
+            onTap: () {},
           ),
         ),
       );
@@ -87,14 +99,12 @@ void main() {
 
       // Act
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: CustomTodoItem(
-              todo: testTodo,
-              onToggle: () {},
-              onDelete: () {},
-              onTap: () {},
-            ),
+        createTestWidget(
+          CustomTodoItem(
+            todo: testTodo,
+            onToggle: () {},
+            onDelete: () {},
+            onTap: () {},
           ),
         ),
       );
@@ -117,14 +127,12 @@ void main() {
 
       // Act
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: CustomTodoItem(
-              todo: testTodo,
-              onToggle: () {},
-              onDelete: () {},
-              onTap: () {},
-            ),
+        createTestWidget(
+          CustomTodoItem(
+            todo: testTodo,
+            onToggle: () {},
+            onDelete: () {},
+            onTap: () {},
           ),
         ),
       );
@@ -145,14 +153,12 @@ void main() {
 
       // Act
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: CustomTodoItem(
-              todo: testTodo,
-              onToggle: () {},
-              onDelete: () {},
-              onTap: () {},
-            ),
+        createTestWidget(
+          CustomTodoItem(
+            todo: testTodo,
+            onToggle: () {},
+            onDelete: () {},
+            onTap: () {},
           ),
         ),
       );
@@ -173,14 +179,12 @@ void main() {
 
       // Act
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: CustomTodoItem(
-              todo: testTodo,
-              onToggle: () => toggleCalled = true,
-              onDelete: () {},
-              onTap: () {},
-            ),
+        createTestWidget(
+          CustomTodoItem(
+            todo: testTodo,
+            onToggle: () => toggleCalled = true,
+            onDelete: () {},
+            onTap: () {},
           ),
         ),
       );
@@ -210,14 +214,12 @@ void main() {
 
       // Act
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: CustomTodoItem(
-              todo: testTodo,
-              onToggle: () {},
-              onDelete: () => deleteCalled = true,
-              onTap: () {},
-            ),
+        createTestWidget(
+          CustomTodoItem(
+            todo: testTodo,
+            onToggle: () {},
+            onDelete: () => deleteCalled = true,
+            onTap: () {},
           ),
         ),
       );
@@ -246,14 +248,12 @@ void main() {
 
       // Act
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: CustomTodoItem(
-              todo: testTodo,
-              onToggle: () {},
-              onDelete: () {},
-              onTap: () => tapCalled = true,
-            ),
+        createTestWidget(
+          CustomTodoItem(
+            todo: testTodo,
+            onToggle: () {},
+            onDelete: () {},
+            onTap: () => tapCalled = true,
           ),
         ),
       );
@@ -284,14 +284,12 @@ void main() {
 
       // Act
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: CustomTodoItem(
-              todo: testTodo,
-              onToggle: () {},
-              onDelete: () {},
-              onTap: () {},
-            ),
+        createTestWidget(
+          CustomTodoItem(
+            todo: testTodo,
+            onToggle: () {},
+            onDelete: () {},
+            onTap: () {},
           ),
         ),
       );
@@ -314,14 +312,12 @@ void main() {
 
       // Act
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: CustomTodoItem(
-              todo: testTodo,
-              onToggle: () {},
-              onDelete: () {},
-              onTap: () {},
-            ),
+        createTestWidget(
+          CustomTodoItem(
+            todo: testTodo,
+            onToggle: () {},
+            onDelete: () {},
+            onTap: () {},
           ),
         ),
       );
@@ -346,14 +342,12 @@ void main() {
 
       // Act
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: CustomTodoItem(
-              todo: testTodo,
-              onToggle: () {},
-              onDelete: () {},
-              onTap: () {},
-            ),
+        createTestWidget(
+          CustomTodoItem(
+            todo: testTodo,
+            onToggle: () {},
+            onDelete: () {},
+            onTap: () {},
           ),
         ),
       );
@@ -374,14 +368,12 @@ void main() {
 
       // Act
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: CustomTodoItem(
-              todo: testTodo,
-              onToggle: () {},
-              onDelete: () {},
-              onTap: () {},
-            ),
+        createTestWidget(
+          CustomTodoItem(
+            todo: testTodo,
+            onToggle: () {},
+            onDelete: () {},
+            onTap: () {},
           ),
         ),
       );
@@ -406,14 +398,12 @@ void main() {
 
       // Act
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: CustomTodoItem(
-              todo: testTodo,
-              onToggle: () {},
-              onDelete: () {},
-              onTap: () {},
-            ),
+        createTestWidget(
+          CustomTodoItem(
+            todo: testTodo,
+            onToggle: () {},
+            onDelete: () {},
+            onTap: () {},
           ),
         ),
       );

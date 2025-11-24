@@ -1,20 +1,34 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:todo_app/presentation/widgets/progress_card.dart';
+import 'package:todo_app/presentation/providers/theme_provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:easy_localization_loader/easy_localization_loader.dart';
 
 void main() {
+  // Helper function to wrap widget in ProviderScope for testing
+  Widget createTestWidget(Widget child) {
+    return ProviderScope(
+      overrides: [
+        isDarkModeProvider.overrideWith((ref) => false),
+      ],
+      child: MaterialApp(
+        home: Scaffold(
+          body: child,
+        ),
+      ),
+    );
+  }
+
   group('ProgressCard Widget', () {
     testWidgets('renders completed and total counts', (WidgetTester tester) async {
       // Arrange & Act
       await tester.pumpWidget(
-        const MaterialApp(
-          home: Scaffold(
-            body: ProgressCard(
-              completed: 5,
-              total: 10,
-            ),
+        createTestWidget(
+          const ProgressCard(
+            completed: 5,
+            total: 10,
           ),
         ),
       );
@@ -28,12 +42,10 @@ void main() {
     testWidgets('renders progress label', (WidgetTester tester) async {
       // Arrange & Act
       await tester.pumpWidget(
-        const MaterialApp(
-          home: Scaffold(
-            body: ProgressCard(
-              completed: 3,
-              total: 7,
-            ),
+        createTestWidget(
+          const ProgressCard(
+            completed: 3,
+            total: 7,
           ),
         ),
       );
@@ -52,12 +64,10 @@ void main() {
 
       // Act
       await tester.pumpWidget(
-        const MaterialApp(
-          home: Scaffold(
-            body: ProgressCard(
-              completed: completed,
-              total: total,
-            ),
+        createTestWidget(
+          const ProgressCard(
+            completed: completed,
+            total: total,
           ),
         ),
       );
@@ -70,12 +80,10 @@ void main() {
     testWidgets('calculates 100% for full completion', (WidgetTester tester) async {
       // Arrange & Act
       await tester.pumpWidget(
-        const MaterialApp(
-          home: Scaffold(
-            body: ProgressCard(
-              completed: 10,
-              total: 10,
-            ),
+        createTestWidget(
+          const ProgressCard(
+            completed: 10,
+            total: 10,
           ),
         ),
       );
@@ -90,12 +98,10 @@ void main() {
     testWidgets('calculates 0% for no completion', (WidgetTester tester) async {
       // Arrange & Act
       await tester.pumpWidget(
-        const MaterialApp(
-          home: Scaffold(
-            body: ProgressCard(
-              completed: 0,
-              total: 15,
-            ),
+        createTestWidget(
+          const ProgressCard(
+            completed: 0,
+            total: 15,
           ),
         ),
       );
@@ -110,12 +116,10 @@ void main() {
     testWidgets('handles zero total correctly', (WidgetTester tester) async {
       // Arrange & Act
       await tester.pumpWidget(
-        const MaterialApp(
-          home: Scaffold(
-            body: ProgressCard(
-              completed: 0,
-              total: 0,
-            ),
+        createTestWidget(
+          const ProgressCard(
+            completed: 0,
+            total: 0,
           ),
         ),
       );
@@ -130,12 +134,10 @@ void main() {
     testWidgets('renders progress bar with correct structure', (WidgetTester tester) async {
       // Arrange & Act
       await tester.pumpWidget(
-        const MaterialApp(
-          home: Scaffold(
-            body: ProgressCard(
-              completed: 7,
-              total: 10,
-            ),
+        createTestWidget(
+          const ProgressCard(
+            completed: 7,
+            total: 10,
           ),
         ),
       );
@@ -160,12 +162,10 @@ void main() {
 
       for (final testCase in testCases) {
         await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: ProgressCard(
-                completed: testCase['completed'] as int,
-                total: testCase['total'] as int,
-              ),
+          createTestWidget(
+            ProgressCard(
+              completed: testCase['completed'] as int,
+              total: testCase['total'] as int,
             ),
           ),
         );
@@ -185,12 +185,10 @@ void main() {
     testWidgets('renders ClipRRect for rounded progress bar', (WidgetTester tester) async {
       // Arrange & Act
       await tester.pumpWidget(
-        const MaterialApp(
-          home: Scaffold(
-            body: ProgressCard(
-              completed: 5,
-              total: 10,
-            ),
+        createTestWidget(
+          const ProgressCard(
+            completed: 5,
+            total: 10,
           ),
         ),
       );
@@ -205,12 +203,10 @@ void main() {
     testWidgets('renders Container with correct decoration', (WidgetTester tester) async {
       // Arrange & Act
       await tester.pumpWidget(
-        const MaterialApp(
-          home: Scaffold(
-            body: ProgressCard(
-              completed: 3,
-              total: 10,
-            ),
+        createTestWidget(
+          const ProgressCard(
+            completed: 3,
+            total: 10,
           ),
         ),
       );
