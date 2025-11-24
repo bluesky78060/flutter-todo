@@ -1524,7 +1524,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 end: Alignment.bottomRight,
               )
             : const LinearGradient(
-                colors: [Color(0xFF3B82F6), Color(0xFF60A5FA)],
+                colors: [Color(0xFF2563EB), Color(0xFF3B82F6)],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
