@@ -341,11 +341,11 @@ class _OverallProgressCard extends ConsumerWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        gradient: AppColors.primaryGradient,
+        gradient: AppColors.getProgressGradient(isDarkMode),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: AppColors.primaryBlue.withValues(alpha: 0.3),
+            color: AppColors.primaryBlue.withValues(alpha: 0.2),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -359,7 +359,7 @@ class _OverallProgressCard extends ConsumerWidget {
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
+                  color: isDarkMode ? Colors.white.withValues(alpha: 0.2) : AppColors.primaryBlue.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: const Icon(
@@ -372,7 +372,7 @@ class _OverallProgressCard extends ConsumerWidget {
               Text(
                 'overall_progress'.tr(),
                 style: TextStyle(
-                  color: Colors.white,
+                  color: isDarkMode ? Colors.white : AppColors.textDark,
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                 ),
@@ -406,8 +406,8 @@ class _OverallProgressCard extends ConsumerWidget {
             child: LinearProgressIndicator(
               value: stats.totalTodos > 0 ? stats.completedTodos / stats.totalTodos : 0,
               minHeight: 8,
-              backgroundColor: Colors.white.withValues(alpha: 0.2),
-              valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+              backgroundColor: isDarkMode ? Colors.white.withValues(alpha: 0.2) : AppColors.primaryBlue.withValues(alpha: 0.2),
+              valueColor: AlwaysStoppedAnimation<Color>(isDarkMode ? Colors.white : AppColors.primaryBlue),
             ),
           ),
         ],
@@ -432,12 +432,12 @@ class _StatItem extends ConsumerWidget {
     final isDarkMode = ref.watch(isDarkModeProvider);
     return Column(
       children: [
-        Icon(icon, color: Colors.white.withValues(alpha: 0.8), size: 20),
+        Icon(icon, color: isDarkMode ? Colors.white.withValues(alpha: 0.8) : AppColors.primaryBlue, size: 20),
         const SizedBox(height: 8),
         Text(
           value,
           style: TextStyle(
-            color: Colors.white,
+            color: isDarkMode ? Colors.white : AppColors.textDark,
             fontSize: 24,
             fontWeight: FontWeight.bold,
           ),
@@ -446,7 +446,7 @@ class _StatItem extends ConsumerWidget {
         Text(
           label,
           style: TextStyle(
-            color: Colors.white.withValues(alpha: 0.8),
+            color: isDarkMode ? Colors.white.withValues(alpha: 0.8) : AppColors.textGrayDark,
             fontSize: 12,
           ),
         ),

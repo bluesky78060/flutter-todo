@@ -1012,8 +1012,8 @@ class _FilterChip extends ConsumerWidget {
             Flexible(
               child: Text(
                 label,
-                style: const TextStyle(
-                  color: AppColors.textWhite,
+                style: TextStyle(
+                  color: AppColors.getText(isDarkMode),
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
                 ),
@@ -1024,7 +1024,7 @@ class _FilterChip extends ConsumerWidget {
             Text(
               '$count',
               style: TextStyle(
-                color: AppColors.textGray,
+                color: AppColors.getTextSecondary(isDarkMode),
                 fontSize: 14,
               ),
             ),
@@ -1165,8 +1165,8 @@ class _CategoryChip extends ConsumerWidget {
               ],
               Text(
                 label,
-                style: const TextStyle(
-                  color: AppColors.textWhite,
+                style: TextStyle(
+                  color: AppColors.getText(isDarkMode),
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
                 ),

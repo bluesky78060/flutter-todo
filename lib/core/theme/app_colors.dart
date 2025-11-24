@@ -9,7 +9,7 @@ class AppColors {
 
   // Light Theme Colors
   static const Color lightBackground = Color(0xFFF5F7FA);
-  static const Color lightCard = Color(0xFFFFFFFF);
+  static const Color lightCard = Color(0xFFF8FAFB);
   static const Color lightInput = Color(0xFFF0F4F8);
   static const Color lightBorder = Color(0xFFE1E8ED);
 
@@ -45,6 +45,12 @@ class AppColors {
     end: Alignment.bottomCenter,
   );
 
+  static const LinearGradient lightProgressGradient = LinearGradient(
+    colors: [Color(0xFFE3F2FD), Color(0xFFBBDEFB)],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
+
   // Helper methods for theme-aware colors
   static Color getBackground(bool isDark) => isDark ? darkBackground : lightBackground;
   static Color getCard(bool isDark) => isDark ? darkCard : lightCard;
@@ -53,4 +59,5 @@ class AppColors {
   static Color getText(bool isDark) => isDark ? textWhite : textDark;
   static Color getTextSecondary(bool isDark) => isDark ? textGray : textGrayDark;
   static LinearGradient getHeaderGradient(bool isDark) => isDark ? darkHeaderGradient : lightHeaderGradient;
+  static LinearGradient getProgressGradient(bool isDark) => isDark ? primaryGradient : lightProgressGradient;
 }
