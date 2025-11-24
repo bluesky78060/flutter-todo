@@ -12,6 +12,7 @@ import 'package:todo_app/presentation/providers/auth_providers.dart';
 import 'package:todo_app/presentation/providers/backup_provider.dart';
 import 'package:todo_app/presentation/providers/theme_provider.dart';
 import 'package:todo_app/presentation/providers/todo_providers.dart';
+import 'package:todo_app/presentation/screens/theme_preview_screen.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -122,6 +123,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               child: ListView(
                 padding: const EdgeInsets.all(20),
                 children: [
+                  // Theme Toggle Card
+                  _buildThemeToggleCard(),
+                  const SizedBox(height: 32),
+
                   // Profile Section
                   _buildSectionHeader('account'.tr()),
                   const SizedBox(height: 12),
@@ -984,6 +989,53 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 borderRadius: BorderRadius.circular(10),
               ),
               child: const Icon(
+                FluentIcons.color_24_regular,
+                color: AppColors.primaryBlue,
+              ),
+            ),
+            title: const Text(
+              '테마 미리보기',
+              style: TextStyle(
+                color: AppColors.textWhite,
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            subtitle: const Text(
+              '라이트/다크 모드 UI 확인',
+              style: TextStyle(
+                color: AppColors.textGray,
+                fontSize: 14,
+              ),
+            ),
+            trailing: Icon(
+              FluentIcons.chevron_right_24_regular,
+              color: AppColors.getTextSecondary(isDarkMode),
+            ),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const ThemePreviewScreen(),
+                ),
+              );
+            },
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+          ),
+          Divider(
+            color: AppColors.getBorder(isDarkMode),
+            height: 1,
+            indent: 68,
+          ),
+          ListTile(
+            leading: Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: AppColors.getInput(isDarkMode),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Icon(
                 FluentIcons.mail_24_regular,
                 color: AppColors.primaryBlue,
               ),
@@ -1454,6 +1506,142 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildThemeToggleCard() {
+    final isDarkMode = ref.watch(isDarkModeProvider);
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 4),
+      decoration: BoxDecoration(
+        gradient: isDarkMode
+            ? const LinearGradient(
+                colors: [Color(0xFF1E3A8A), Color(0xFF1E40AF)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              )
+            : const LinearGradient(
+                colors: [Color(0xFF3B82F6), Color(0xFF60A5FA)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: (isDarkMode ? Colors.blue.shade900 : Colors.blue.shade300)
+                .withOpacity(0.3),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Row(
+          children: [
+            // 왼쪽 아이콘
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(
+                isDarkMode
+                    ? FluentIcons.weather_moon_24_filled
+                    : FluentIcons.weather_sunny_24_filled,
+                color: Colors.white,
+                size: 32,
+              ),
+            ),
+            const SizedBox(width: 16),
+
+            // 중앙 텍스트
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    isDarkMode ? '다크 모드' : '라이트 모드',
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    isDarkMode ? '어두운 테마 활성화' : '밝은 테마 활성화',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.white.withOpacity(0.9),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            // 오른쪽 토글 스위치
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(24),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // 라이트 모드 버튼
+                  GestureDetector(
+                    onTap: () {
+                      ref.read(themeProvider.notifier).setTheme(ThemeMode.light);
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 8),
+                      decoration: BoxDecoration(
+                        color:
+                            !isDarkMode ? Colors.white : Colors.transparent,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Icon(
+                        FluentIcons.weather_sunny_24_filled,
+                        size: 20,
+                        color: !isDarkMode
+                            ? AppColors.primaryBlue
+                            : Colors.white.withOpacity(0.7),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  // 다크 모드 버튼
+                  GestureDetector(
+                    onTap: () {
+                      ref.read(themeProvider.notifier).setTheme(ThemeMode.dark);
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: isDarkMode ? Colors.white : Colors.transparent,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Icon(
+                        FluentIcons.weather_moon_24_filled,
+                        size: 20,
+                        color: isDarkMode
+                            ? AppColors.primaryBlue
+                            : Colors.white.withOpacity(0.7),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );

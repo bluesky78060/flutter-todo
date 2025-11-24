@@ -11,6 +11,7 @@ import 'package:todo_app/presentation/screens/todo_list_screen.dart';
 import 'package:todo_app/presentation/screens/oauth_callback_screen.dart';
 import 'package:todo_app/presentation/screens/category_management_screen.dart';
 import 'package:todo_app/presentation/screens/calendar_screen.dart';
+import 'package:todo_app/presentation/screens/theme_preview_screen.dart';
 import 'package:todo_app/core/utils/app_logger.dart';
 
 final goRouterProvider = Provider<GoRouter>((ref) {
@@ -27,6 +28,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       final isRegisterRoute =
           state.matchedLocation == AppConstants.registerRoute;
       final isOAuthCallbackRoute = state.matchedLocation == '/oauth-callback';
+      final isThemePreviewRoute = state.matchedLocation == '/theme-preview';
 
       // While loading initial auth state, stay on login/register routes
       final isLoading = userAsync.isLoading;
@@ -40,9 +42,15 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         return null;
       }
 
+      // Allow theme preview route without authentication
+      if (isThemePreviewRoute) {
+        logger.d('   🎨 Theme preview route - allowing without auth');
+        return null;
+      }
+
       if (isLoading) {
         logger.d('   ⏳ Loading state - staying on auth routes');
-        if (!isLoginRoute && !isRegisterRoute) {
+        if (!isLoginRoute && !isRegisterRoute && !isThemePreviewRoute) {
           return AppConstants.loginRoute;
         }
         return null;
@@ -57,7 +65,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         }
       }
 
-      if (!isAuthenticated && !isLoginRoute && !isRegisterRoute) {
+      if (!isAuthenticated && !isLoginRoute && !isRegisterRoute && !isThemePreviewRoute) {
         logger.d('   🔒 Not authenticated - redirecting to login');
         return AppConstants.loginRoute;
       }
@@ -112,6 +120,11 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         path: '/calendar',
         name: 'calendar',
         builder: (context, state) => const CalendarScreen(),
+      ),
+      GoRoute(
+        path: '/theme-preview',
+        name: 'theme-preview',
+        builder: (context, state) => const ThemePreviewScreen(),
       ),
     ],
     errorBuilder: (context, state) => Scaffold(

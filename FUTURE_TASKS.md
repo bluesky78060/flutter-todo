@@ -12,6 +12,34 @@
 
 ## ✅ 완료된 작업 (Completed)
 
+### 2025-11-24
+- ✅ **Flutter Web OAuth 로그인 수정**
+  - OAuth 401 에러 해결 (Supabase Anon Key 갱신)
+  - Hash routing 지원 추가 (`#/oauth-callback`)
+  - Platform-specific config 구현 (conditional imports)
+  - `window.ENV` 읽기 기능 구현 (`dart:js_util`)
+  - Google/Kakao OAuth 로그인 정상 작동
+- ✅ **Flutter Web 주소 검색 수정** (Naver → Google Geocoding)
+  - Web CORS 에러 해결 (Supabase Edge Function 사용)
+  - Google Maps Geocoding API 통합
+  - Edge Function: `google-geocode/index.ts` 생성
+  - 주소 검색 정상 작동 ("문단길 15" 등)
+  - 배포 환경(GitHub Pages) 전체 테스트 통과
+- ✅ **Supabase Configuration 개선**
+  - Conditional imports로 web/non-web 분리
+  - `supabase_config_web.dart`: `window.ENV` 읽기
+  - `supabase_config_stub.dart`: 플랫폼 stub
+  - GitHub Secrets `APP_SUPABASE_*` prefix 사용
+- ✅ **배포 파이프라인 수정**
+  - GitHub Actions workflow 수정 (환경변수 주입)
+  - `scripts/inject_env.sh` 업데이트
+  - `scripts/validate_supabase_key.sh` 생성 (로컬 검증)
+- ✅ **기술 문서 작성**
+  - `TECHNICAL_REPORT_WEB_OAUTH_GEOCODING_FIX.md` (500+ 줄)
+  - OAuth/Geocoding 문제 상세 분석
+  - 솔루션 구현 가이드
+  - 향후 개선 방안 제시
+
 ### 2025-11-19
 - ✅ **주소 검색 API 전환** (Naver Geocoding → Google Geocoding)
   - Naver Geocoding API 모바일 앱 401 에러 해결

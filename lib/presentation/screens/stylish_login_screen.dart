@@ -9,6 +9,8 @@ import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:todo_app/core/config/oauth_redirect.dart';
 import 'package:todo_app/core/utils/app_logger.dart';
+import 'package:todo_app/presentation/providers/theme_provider.dart';
+import 'package:todo_app/core/theme/app_colors.dart';
 
 class StylishLoginScreen extends ConsumerStatefulWidget {
   const StylishLoginScreen({super.key});
@@ -260,12 +262,30 @@ class _StylishLoginScreenState extends ConsumerState<StylishLoginScreen>
 
   @override
   Widget build(BuildContext context) {
-    // Dark mode only
-    final darkGradient = [
-      const Color(0xFF1E293B), // Slate 800
-      const Color(0xFF0F172A), // Slate 900
-      const Color(0xFF020617), // Slate 950
-    ];
+    final themeMode = ref.watch(themeProvider);
+    final isDark = themeMode == ThemeMode.dark;
+
+    // Dynamic Colors
+    final gradientColors = isDark
+        ? [
+            const Color(0xFF1E293B), // Slate 800
+            const Color(0xFF0F172A), // Slate 900
+            const Color(0xFF020617), // Slate 950
+          ]
+        : [
+            const Color(0xFFF0F9FF), // Sky 50
+            const Color(0xFFE0F2FE), // Sky 100
+            const Color(0xFFBAE6FD), // Sky 200
+          ];
+
+    final textColor = isDark ? Colors.white : const Color(0xFF1E293B);
+    final subTextColor = isDark ? Colors.white.withValues(alpha: 0.8) : const Color(0xFF475569);
+    final cardColor = isDark ? Colors.white.withValues(alpha: 0.1) : Colors.white.withValues(alpha: 0.7);
+    final cardBorderColor = isDark ? Colors.white.withValues(alpha: 0.2) : Colors.white.withValues(alpha: 0.5);
+    final inputFillColor = isDark ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.05);
+    final inputBorderColor = isDark ? Colors.white.withValues(alpha: 0.2) : Colors.black.withValues(alpha: 0.1);
+    final inputHintColor = isDark ? Colors.white.withValues(alpha: 0.5) : Colors.black.withValues(alpha: 0.4);
+    final iconColor = isDark ? Colors.white.withValues(alpha: 0.6) : Colors.black.withValues(alpha: 0.5);
 
     return Scaffold(
       body: Stack(
@@ -276,9 +296,16 @@ class _StylishLoginScreenState extends ConsumerState<StylishLoginScreen>
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
-                colors: darkGradient,
+                colors: gradientColors,
               ),
             ),
+          ),
+
+          // Theme Toggle Button (Top Right)
+          Positioned(
+            top: 48,
+            right: 24,
+            child: _buildThemeToggleButton(isDark),
           ),
 
           // Floating Orbs
@@ -329,11 +356,11 @@ class _StylishLoginScreenState extends ConsumerState<StylishLoginScreen>
                 child: Card(
                   elevation: 24,
                   shadowColor: Colors.black.withValues(alpha: 0.3),
-                  color: Colors.white.withValues(alpha: 0.1),
+                  color: cardColor,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(24),
                     side: BorderSide(
-                      color: Colors.white.withValues(alpha: 0.2),
+                      color: cardBorderColor,
                       width: 1,
                     ),
                   ),
@@ -375,12 +402,12 @@ class _StylishLoginScreenState extends ConsumerState<StylishLoginScreen>
                             const SizedBox(height: 12),
 
                             // Title
-                            const Text(
+                            Text(
                               'Todo App',
                               style: TextStyle(
                                 fontSize: 28,
                                 fontWeight: FontWeight.bold,
-                                color: Colors.white,
+                                color: textColor,
                               ),
                             ),
                             const SizedBox(height: 6),
@@ -388,7 +415,7 @@ class _StylishLoginScreenState extends ConsumerState<StylishLoginScreen>
                               'login_subtitle'.tr(),
                               style: TextStyle(
                                 fontSize: 14,
-                                color: Colors.white.withValues(alpha: 0.8),
+                                color: subTextColor,
                               ),
                             ),
                             const SizedBox(height: 24),
@@ -399,6 +426,11 @@ class _StylishLoginScreenState extends ConsumerState<StylishLoginScreen>
                               hintText: 'email'.tr(),
                               icon: Icons.email_outlined,
                               keyboardType: TextInputType.emailAddress,
+                              fillColor: inputFillColor,
+                              borderColor: inputBorderColor,
+                              hintColor: inputHintColor,
+                              iconColor: iconColor,
+                              textColor: textColor,
                             ),
                             const SizedBox(height: 12),
 
@@ -411,6 +443,11 @@ class _StylishLoginScreenState extends ConsumerState<StylishLoginScreen>
                               onSubmitted: (_) => _isSignUpMode
                                   ? _signUpWithEmail()
                                   : _signInWithEmail(),
+                              fillColor: inputFillColor,
+                              borderColor: inputBorderColor,
+                              hintColor: inputHintColor,
+                              iconColor: iconColor,
+                              textColor: textColor,
                             ),
                             const SizedBox(height: 12),
 
@@ -435,16 +472,16 @@ class _StylishLoginScreenState extends ConsumerState<StylishLoginScreen>
                                           fillColor: WidgetStateProperty.resolveWith<Color>(
                                             (states) {
                                               if (states.contains(WidgetState.disabled)) {
-                                                return Colors.white.withValues(alpha: 0.3);
+                                                return inputBorderColor;
                                               }
                                               return states.contains(WidgetState.selected)
                                                   ? const Color(0xFF3B82F6)
-                                                  : Colors.white.withValues(alpha: 0.3);
+                                                  : inputBorderColor;
                                             },
                                           ),
                                           checkColor: Colors.white,
                                           side: BorderSide(
-                                            color: Colors.white.withValues(alpha: 0.5),
+                                            color: inputBorderColor,
                                             width: 1.5,
                                           ),
                                         ),
@@ -453,7 +490,7 @@ class _StylishLoginScreenState extends ConsumerState<StylishLoginScreen>
                                       Text(
                                         'remember_me'.tr(),
                                         style: TextStyle(
-                                          color: Colors.white.withValues(alpha: 0.8),
+                                          color: subTextColor,
                                           fontSize: 14,
                                         ),
                                       ),
@@ -471,10 +508,10 @@ class _StylishLoginScreenState extends ConsumerState<StylishLoginScreen>
                                     child: Text(
                                       'forgot_password'.tr(),
                                       style: TextStyle(
-                                        color: Colors.white.withValues(alpha: 0.8),
+                                        color: subTextColor,
                                         fontSize: 14,
                                         decoration: TextDecoration.underline,
-                                        decorationColor: Colors.white.withValues(alpha: 0.8),
+                                        decorationColor: subTextColor,
                                       ),
                                     ),
                                   ),
@@ -531,7 +568,7 @@ class _StylishLoginScreenState extends ConsumerState<StylishLoginScreen>
                                       ? 'already_have_account'.tr()
                                       : 'dont_have_account'.tr(),
                                   style: TextStyle(
-                                    color: Colors.white.withValues(alpha: 0.7),
+                                    color: subTextColor,
                                     fontSize: 14,
                                   ),
                                 ),
@@ -545,8 +582,8 @@ class _StylishLoginScreenState extends ConsumerState<StylishLoginScreen>
                                         },
                                   child: Text(
                                     _isSignUpMode ? 'login'.tr() : 'sign_up'.tr(),
-                                    style: const TextStyle(
-                                      color: Colors.white,
+                                    style: TextStyle(
+                                      color: textColor,
                                       fontWeight: FontWeight.bold,
                                       fontSize: 14,
                                     ),
@@ -562,7 +599,7 @@ class _StylishLoginScreenState extends ConsumerState<StylishLoginScreen>
                                 children: [
                                   Expanded(
                                     child: Divider(
-                                      color: Colors.white.withValues(alpha: 0.2),
+                                      color: inputBorderColor,
                                     ),
                                   ),
                                   Padding(
@@ -570,14 +607,14 @@ class _StylishLoginScreenState extends ConsumerState<StylishLoginScreen>
                                     child: Text(
                                       'or'.tr(),
                                       style: TextStyle(
-                                        color: Colors.white.withValues(alpha: 0.6),
+                                        color: subTextColor,
                                         fontSize: 13,
                                       ),
                                     ),
                                   ),
                                   Expanded(
                                     child: Divider(
-                                      color: Colors.white.withValues(alpha: 0.2),
+                                      color: inputBorderColor,
                                     ),
                                   ),
                                 ],
@@ -619,6 +656,26 @@ class _StylishLoginScreenState extends ConsumerState<StylishLoginScreen>
                     ),
                   ),
                 ),
+              ),
+            ),
+          ),
+          
+          // Theme Toggle Button
+          Positioned(
+            top: MediaQuery.of(context).padding.top + 16,
+            right: 16,
+            child: IconButton(
+              onPressed: () {
+                ref.read(themeProvider.notifier).toggleTheme();
+              },
+              icon: Icon(
+                isDark ? Icons.light_mode : Icons.dark_mode,
+                color: textColor,
+              ),
+              style: IconButton.styleFrom(
+                backgroundColor: isDark 
+                    ? Colors.white.withValues(alpha: 0.1) 
+                    : Colors.white.withValues(alpha: 0.5),
               ),
             ),
           ),
@@ -667,13 +724,18 @@ class _StylishLoginScreenState extends ConsumerState<StylishLoginScreen>
     bool obscureText = false,
     TextInputType? keyboardType,
     Function(String)? onSubmitted,
+    required Color fillColor,
+    required Color borderColor,
+    required Color hintColor,
+    required Color iconColor,
+    required Color textColor,
   }) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.1),
+        color: fillColor,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: Colors.white.withValues(alpha: 0.2),
+          color: borderColor,
           width: 1,
         ),
       ),
@@ -683,11 +745,11 @@ class _StylishLoginScreenState extends ConsumerState<StylishLoginScreen>
         keyboardType: keyboardType,
         enabled: !_isLoading,
         onSubmitted: onSubmitted,
-        style: const TextStyle(color: Colors.white),
+        style: TextStyle(color: textColor),
         decoration: InputDecoration(
           hintText: hintText,
-          hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.5)),
-          prefixIcon: Icon(icon, color: Colors.white.withValues(alpha: 0.6)),
+          hintStyle: TextStyle(color: hintColor),
+          prefixIcon: Icon(icon, color: iconColor),
           border: InputBorder.none,
           contentPadding: const EdgeInsets.symmetric(
             horizontal: 16,
@@ -726,6 +788,90 @@ class _StylishLoginScreenState extends ConsumerState<StylishLoginScreen>
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildThemeToggleButton(bool isDark) {
+    return Container(
+      decoration: BoxDecoration(
+        color: isDark
+            ? Colors.white.withValues(alpha: 0.1)
+            : Colors.white.withValues(alpha: 0.7),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: isDark
+              ? Colors.white.withValues(alpha: 0.2)
+              : Colors.white.withValues(alpha: 0.5),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(24),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // 라이트 모드 버튼
+              _buildThemeModeButton(
+                icon: Icons.wb_sunny,
+                isSelected: !isDark,
+                onTap: () {
+                  ref.read(themeProvider.notifier).setTheme(ThemeMode.light);
+                },
+                isDark: isDark,
+              ),
+              // 다크 모드 버튼
+              _buildThemeModeButton(
+                icon: Icons.nightlight_round,
+                isSelected: isDark,
+                onTap: () {
+                  ref.read(themeProvider.notifier).setTheme(ThemeMode.dark);
+                },
+                isDark: isDark,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildThemeModeButton({
+    required IconData icon,
+    required bool isSelected,
+    required VoidCallback onTap,
+    required bool isDark,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? (isDark
+                  ? Colors.white.withValues(alpha: 0.2)
+                  : const Color(0xFF2563EB).withValues(alpha: 0.2))
+              : Colors.transparent,
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Icon(
+          icon,
+          size: 20,
+          color: isSelected
+              ? (isDark ? Colors.white : const Color(0xFF2563EB))
+              : (isDark
+                  ? Colors.white.withValues(alpha: 0.5)
+                  : Colors.black.withValues(alpha: 0.5)),
         ),
       ),
     );
