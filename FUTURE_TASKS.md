@@ -28,6 +28,11 @@
   - todo_repository_impl_test.dart: position 파라미터 추가 (4개 인스턴스)
   - category_repository_impl_test.dart: position 파라미터 추가 (2개 인스턴스)
   - CI/CD 테스트 통과 (128개 테스트 성공)
+- ✅ **Google Play 업로드 키 재설정 및 배포** (14.1)
+  - 새 업로드 키스토어 생성 및 PEM 인증서 생성
+  - Google Play Console 재설정 요청 승인 완료
+  - 버전 1.0.13+39까지 성공적으로 업로드
+  - 드래그 앤 드롭 기능 포함된 최신 버전 배포
 - ✅ **관리자 대시보드 구현** (13.1)
   - 익명화된 통계 전용 대시보드 완성
   - 5개 Supabase RPC 함수 생성 (SECURITY DEFINER)
@@ -143,11 +148,6 @@
 - ✅ Phase 1: Infrastructure (DB, Repository, LocationService)
 - ✅ Phase 2: UI Integration (LocationPickerDialog, Todo Form)
 - ✅ Phase 3: Google Maps API 인프라 구축
-
-**남은 작업 (Phase 3 - 사용자 수동 작업 필요)**:
-- [ ] Google Cloud Console에서 API 키 발급
-- [ ] `android/local.properties` 파일 생성 및 API 키 입력
-- [ ] Supabase에서 location migration SQL 실행
 
 **남은 작업 (Phase 4 - 향후 구현)**:
 - [ ] Geofencing 백그라운드 모니터링 (geofence_service_flutter)
