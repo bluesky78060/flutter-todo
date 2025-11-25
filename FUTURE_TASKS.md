@@ -12,6 +12,18 @@
 
 ## ✅ 완료된 작업 (Completed)
 
+### 2025-11-25
+- ✅ **관리자 대시보드 구현** (13.1)
+  - 익명화된 통계 전용 대시보드 완성
+  - 5개 Supabase RPC 함수 생성 (SECURITY DEFINER)
+  - Flutter 관리자 권한 체크 시스템 구현
+  - Settings 화면에 관리자만 버튼 표시
+  - 권한 없는 사용자 접근 차단 기능
+  - 통계 데이터: 사용자, Todo, 카테고리, 시간대별 활동, 요일별 완료율
+  - Pull-to-refresh 지원
+  - 7개 요일 모두 표시 (데이터 없는 요일 포함)
+  - Type casting 오류 수정 (int → double 변환)
+
 ### 2025-11-24
 - ✅ **Flutter Web OAuth 로그인 수정**
   - OAuth 401 에러 해결 (Supabase Anon Key 갱신)

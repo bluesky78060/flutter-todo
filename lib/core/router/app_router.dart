@@ -11,7 +11,10 @@ import 'package:todo_app/presentation/screens/todo_list_screen.dart';
 import 'package:todo_app/presentation/screens/oauth_callback_screen.dart';
 import 'package:todo_app/presentation/screens/category_management_screen.dart';
 import 'package:todo_app/presentation/screens/calendar_screen.dart';
-import 'package:todo_app/presentation/screens/theme_preview_screen.dart';
+// import 'package:todo_app/presentation/screens/theme_preview_screen.dart'; // Temporarily disabled
+import 'package:todo_app/presentation/screens/settings_screen.dart';
+import 'package:todo_app/presentation/screens/test_login_screen.dart';
+import 'package:todo_app/presentation/screens/admin_dashboard_screen.dart';
 import 'package:todo_app/core/utils/app_logger.dart';
 
 final goRouterProvider = Provider<GoRouter>((ref) {
@@ -29,6 +32,8 @@ final goRouterProvider = Provider<GoRouter>((ref) {
           state.matchedLocation == AppConstants.registerRoute;
       final isOAuthCallbackRoute = state.matchedLocation == '/oauth-callback';
       final isThemePreviewRoute = state.matchedLocation == '/theme-preview';
+      final isDevSettingsRoute = state.matchedLocation == '/dev-settings';
+      final isTestLoginRoute = state.matchedLocation == '/test-login';
 
       // While loading initial auth state, stay on login/register routes
       final isLoading = userAsync.isLoading;
@@ -48,9 +53,21 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         return null;
       }
 
+      // Allow dev settings route without authentication (local development only)
+      if (isDevSettingsRoute) {
+        logger.d('   🔧 Dev settings route - allowing without auth');
+        return null;
+      }
+
+      // Allow test login route without authentication (local development only)
+      if (isTestLoginRoute) {
+        logger.d('   🧪 Test login route - allowing without auth');
+        return null;
+      }
+
       if (isLoading) {
         logger.d('   ⏳ Loading state - staying on auth routes');
-        if (!isLoginRoute && !isRegisterRoute && !isThemePreviewRoute) {
+        if (!isLoginRoute && !isRegisterRoute && !isThemePreviewRoute && !isDevSettingsRoute && !isTestLoginRoute) {
           return AppConstants.loginRoute;
         }
         return null;
@@ -65,7 +82,14 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         }
       }
 
-      if (!isAuthenticated && !isLoginRoute && !isRegisterRoute && !isThemePreviewRoute) {
+      // Allow direct access to app routes for local development testing
+      final isAppRoute = state.matchedLocation == '/todos' ||
+                        state.matchedLocation.startsWith('/todos/') ||
+                        state.matchedLocation == '/calendar' ||
+                        state.matchedLocation == '/categories' ||
+                        state.matchedLocation == '/admin-dashboard';
+
+      if (!isAuthenticated && !isLoginRoute && !isRegisterRoute && !isThemePreviewRoute && !isDevSettingsRoute && !isTestLoginRoute && !isAppRoute) {
         logger.d('   🔒 Not authenticated - redirecting to login');
         return AppConstants.loginRoute;
       }
@@ -122,9 +146,26 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const CalendarScreen(),
       ),
       GoRoute(
-        path: '/theme-preview',
-        name: 'theme-preview',
-        builder: (context, state) => const ThemePreviewScreen(),
+        path: '/admin-dashboard',
+        name: 'admin-dashboard',
+        builder: (context, state) => const AdminDashboardScreen(),
+      ),
+      // GoRoute(
+      //   path: '/theme-preview',
+      //   name: 'theme-preview',
+      //   builder: (context, state) => const ThemePreviewScreen(),
+      // ),
+      // Development-only route to access settings screen locally
+      GoRoute(
+        path: '/dev-settings',
+        name: 'dev-settings',
+        builder: (context, state) => const SettingsScreen(),
+      ),
+      // Test login route for local development
+      GoRoute(
+        path: '/test-login',
+        name: 'test-login',
+        builder: (context, state) => const TestLoginScreen(),
       ),
     ],
     errorBuilder: (context, state) => Scaffold(

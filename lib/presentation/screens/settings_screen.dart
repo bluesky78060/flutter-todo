@@ -8,6 +8,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:todo_app/core/services/backup_service.dart';
 import 'package:todo_app/core/theme/app_colors.dart';
 import 'package:todo_app/core/utils/samsung_device_utils.dart';
+import 'package:todo_app/presentation/providers/admin_providers.dart';
 import 'package:todo_app/presentation/providers/auth_providers.dart';
 import 'package:todo_app/presentation/providers/backup_provider.dart';
 import 'package:todo_app/presentation/providers/theme_provider.dart';
@@ -161,6 +162,20 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   _buildCategoryCard(),
                   const SizedBox(height: 32),
 
+                  // Admin Dashboard (관리자만 표시)
+                  ...ref.watch(isAdminProvider).when(
+                        data: (isAdmin) => isAdmin
+                            ? [
+                                _buildSectionHeader('관리자'),
+                                const SizedBox(height: 12),
+                                _buildAdminCard(),
+                                const SizedBox(height: 32),
+                              ]
+                            : [],
+                        loading: () => [],
+                        error: (_, __) => [],
+                      ),
+
                   // App Info
                   _buildSectionHeader('info'.tr()),
                   const SizedBox(height: 12),
@@ -170,6 +185,58 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildAdminCard() {
+    final isDarkMode = ref.watch(isDarkModeProvider);
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.getCard(isDarkMode),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.2),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: ListTile(
+        leading: Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: AppColors.getInput(isDarkMode),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: const Icon(
+            FluentIcons.data_bar_vertical_24_regular,
+            color: AppColors.primaryBlue,
+          ),
+        ),
+        title: const Text(
+          '관리자 대시보드',
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        subtitle: const Text(
+          '익명화된 통계 및 분석',
+          style: TextStyle(
+            fontSize: 14,
+          ),
+        ),
+        trailing: Icon(
+          FluentIcons.chevron_right_24_regular,
+          color: AppColors.getTextSecondary(isDarkMode),
+        ),
+        onTap: () {
+          context.push('/admin-dashboard');
+        },
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
       ),
     );
   }
