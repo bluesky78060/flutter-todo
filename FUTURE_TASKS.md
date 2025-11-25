@@ -13,6 +13,21 @@
 ## ✅ 완료된 작업 (Completed)
 
 ### 2025-11-25
+- ✅ **드래그 앤 드롭 정렬 기능 구현**
+  - Todo 항목 드래그로 순서 변경 가능
+  - position 필드 추가 (Supabase + Drift)
+  - Supabase 마이그레이션 생성 (인덱스 포함)
+  - ReorderableListView 적용 (드래그 핸들 포함)
+  - 카테고리별 독립 정렬 지원
+  - 앱 재시작 후에도 순서 유지
+  - updateTodoPositions 메서드 구현 (로컬 + 원격)
+  - Todo 편집 시 position 값 보존
+  - 반복 Todo 그룹 순서 변경 지원
+  - 버전 1.0.13+39 AAB 빌드 및 배포
+- ✅ **테스트 수정**
+  - todo_repository_impl_test.dart: position 파라미터 추가 (4개 인스턴스)
+  - category_repository_impl_test.dart: position 파라미터 추가 (2개 인스턴스)
+  - CI/CD 테스트 통과 (128개 테스트 성공)
 - ✅ **관리자 대시보드 구현** (13.1)
   - 익명화된 통계 전용 대시보드 완성
   - 5개 Supabase RPC 함수 생성 (SECURITY DEFINER)
