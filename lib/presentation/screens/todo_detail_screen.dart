@@ -13,6 +13,11 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:todo_app/domain/entities/subtask.dart' as entity;
 import 'package:todo_app/presentation/providers/auth_providers.dart';
 import 'package:todo_app/presentation/providers/theme_provider.dart';
+import 'package:todo_app/presentation/providers/attachment_providers.dart';
+import 'package:todo_app/domain/entities/attachment.dart' as attachment_entity;
+import 'package:todo_app/presentation/widgets/image_viewer_dialog.dart';
+import 'package:todo_app/presentation/widgets/pdf_viewer_dialog.dart';
+import 'package:todo_app/presentation/widgets/text_viewer_dialog.dart';
 
 class TodoDetailScreen extends ConsumerWidget {
   final int todoId;
@@ -298,6 +303,13 @@ class TodoDetailScreen extends ConsumerWidget {
               _SubtasksSection(
                 todoId: todoId,
                 userId: ref.read(currentUserProvider).value?.uuid ?? '',
+                isDarkMode: isDarkMode,
+              ),
+
+              // Attachments Section
+              const SizedBox(height: 24),
+              _AttachmentsSection(
+                todoId: todoId,
                 isDarkMode: isDarkMode,
               ),
 
@@ -822,6 +834,261 @@ class _SubtaskItem extends StatelessWidget {
               onDelete();
             }
           },
+        ),
+      ),
+    );
+  }
+}
+
+class _AttachmentsSection extends ConsumerWidget {
+  final int todoId;
+  final bool isDarkMode;
+
+  const _AttachmentsSection({
+    required this.todoId,
+    required this.isDarkMode,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final attachmentsAsync = ref.watch(attachmentListProvider(todoId));
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.getCard(isDarkMode),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header
+          Row(
+            children: [
+              const Icon(
+                FluentIcons.attach_24_regular,
+                color: AppColors.primaryBlue,
+                size: 24,
+              ),
+              const SizedBox(width: 12),
+              Text(
+                'attachments'.tr(),
+                style: TextStyle(
+                  color: AppColors.getText(isDarkMode),
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const Spacer(),
+              attachmentsAsync.whenOrNull(
+                data: (attachments) => Text(
+                  '${attachments.length}',
+                  style: TextStyle(
+                    color: AppColors.getTextSecondary(isDarkMode),
+                    fontSize: 12,
+                  ),
+                ),
+              ) ?? const SizedBox.shrink(),
+            ],
+          ),
+          const SizedBox(height: 16),
+
+          // Attachment list
+          attachmentsAsync.when(
+            data: (attachments) {
+              if (attachments.isEmpty) {
+                return Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  child: Center(
+                    child: Text(
+                      'no_attachments'.tr(),
+                      style: TextStyle(
+                        color: AppColors.getTextSecondary(isDarkMode),
+                        fontSize: 14,
+                      ),
+                    ),
+                  ),
+                );
+              }
+
+              return GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 3,
+                  crossAxisSpacing: 8,
+                  mainAxisSpacing: 8,
+                  childAspectRatio: 1,
+                ),
+                itemCount: attachments.length,
+                itemBuilder: (context, index) {
+                  final attachment = attachments[index];
+                  return _AttachmentItem(
+                    attachment: attachment,
+                    isDarkMode: isDarkMode,
+                    onTap: () {
+                      if (attachment.mimeType.startsWith('image/')) {
+                        // Show image viewer for images
+                        showDialog(
+                          context: context,
+                          builder: (context) => ImageViewerDialog(
+                            attachment: attachment,
+                          ),
+                        );
+                      } else if (attachment.mimeType.contains('pdf')) {
+                        // Show PDF viewer for PDF files
+                        showDialog(
+                          context: context,
+                          builder: (context) => PdfViewerDialog(
+                            attachment: attachment,
+                          ),
+                        );
+                      } else if (_isTextFile(attachment.mimeType, attachment.fileName)) {
+                        // Show text viewer for text files
+                        showDialog(
+                          context: context,
+                          builder: (context) => TextViewerDialog(
+                            attachment: attachment,
+                          ),
+                        );
+                      } else {
+                        // For other file types, show a message
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('file_preview_not_supported'.tr(namedArgs: {'fileName': attachment.fileName})),
+                            duration: const Duration(seconds: 2),
+                          ),
+                        );
+                      }
+                    },
+                  );
+                },
+              );
+            },
+            loading: () => const Center(
+              child: Padding(
+                padding: EdgeInsets.all(12.0),
+                child: CircularProgressIndicator(
+                  color: AppColors.primaryBlue,
+                ),
+              ),
+            ),
+            error: (error, _) => Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: Text(
+                'error'.tr() + ': $error',
+                style: const TextStyle(color: Colors.red),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Helper function to check if file is a text file
+  bool _isTextFile(String mimeType, String fileName) {
+    // Check MIME type
+    if (mimeType.startsWith('text/')) {
+      return true;
+    }
+
+    // Check file extension for common text files
+    final extension = fileName.toLowerCase().split('.').last;
+    const textExtensions = [
+      'txt', 'md', 'json', 'xml', 'html', 'css', 'js', 'ts',
+      'dart', 'java', 'kt', 'swift', 'py', 'rb', 'php', 'c', 'cpp',
+      'h', 'hpp', 'cs', 'go', 'rs', 'yaml', 'yml', 'toml', 'ini',
+      'conf', 'config', 'log', 'csv', 'sql', 'sh', 'bash'
+    ];
+
+    return textExtensions.contains(extension);
+  }
+}
+
+class _AttachmentItem extends StatelessWidget {
+  final attachment_entity.Attachment attachment;
+  final bool isDarkMode;
+  final VoidCallback onTap;
+
+  const _AttachmentItem({
+    required this.attachment,
+    required this.isDarkMode,
+    required this.onTap,
+  });
+
+  IconData _getFileIcon() {
+    if (attachment.mimeType.startsWith('image/')) {
+      return FluentIcons.image_24_filled;
+    } else if (attachment.mimeType.startsWith('video/')) {
+      return FluentIcons.video_24_filled;
+    } else if (attachment.mimeType.contains('pdf')) {
+      return FluentIcons.document_pdf_24_filled;
+    } else if (attachment.mimeType.contains('word') ||
+               attachment.mimeType.contains('document')) {
+      return FluentIcons.document_24_filled;
+    } else if (attachment.mimeType.contains('excel') ||
+               attachment.mimeType.contains('spreadsheet')) {
+      return FluentIcons.document_table_24_filled;
+    } else {
+      return FluentIcons.document_24_regular;
+    }
+  }
+
+  String _formatFileSize(int bytes) {
+    if (bytes < 1024) {
+      return '$bytes B';
+    } else if (bytes < 1024 * 1024) {
+      return '${(bytes / 1024).toStringAsFixed(1)} KB';
+    } else {
+      return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        decoration: BoxDecoration(
+          color: AppColors.getBackground(isDarkMode),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: AppColors.getTextSecondary(isDarkMode).withValues(alpha: 0.2),
+          ),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              _getFileIcon(),
+              color: AppColors.primaryBlue,
+              size: 40,
+            ),
+            const SizedBox(height: 8),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+              child: Text(
+                attachment.fileName,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: AppColors.getText(isDarkMode),
+                  fontSize: 11,
+                ),
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              _formatFileSize(attachment.fileSize),
+              style: TextStyle(
+                color: AppColors.getTextSecondary(isDarkMode),
+                fontSize: 9,
+              ),
+            ),
+          ],
         ),
       ),
     );

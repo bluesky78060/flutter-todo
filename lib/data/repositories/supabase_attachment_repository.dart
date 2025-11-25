@@ -1,4 +1,5 @@
 import 'package:fpdart/fpdart.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:todo_app/core/errors/failures.dart';
 import 'package:todo_app/data/datasources/remote/supabase_attachment_datasource.dart';
 import 'package:todo_app/domain/entities/attachment.dart';
@@ -40,10 +41,15 @@ class SupabaseAttachmentRepository implements AttachmentRepository {
     required String storagePath,
   }) async {
     try {
-      // User ID will be set by provider
+      // Get current user ID from Supabase
+      final userId = Supabase.instance.client.auth.currentUser?.id;
+      if (userId == null) {
+        return const Left(AuthFailure('User not authenticated'));
+      }
+
       final id = await dataSource.createAttachment(
         todoId: todoId,
-        userId: '', // Will be set by provider
+        userId: userId,
         fileName: fileName,
         filePath: filePath,
         fileSize: fileSize,

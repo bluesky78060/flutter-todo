@@ -50,7 +50,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
       if (!response) {
         logger.e('❌ OAuth returned false');
-        throw 'Google 로그인 실패';
+        throw 'google_login_failed'.tr();
       }
 
       logger.d('✅ OAuth redirect initiated successfully');
@@ -60,7 +60,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       logger.e('Stack trace: $stackTrace');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Google 로그인 실패: ${e.toString()}')),
+          SnackBar(content: Text('${'google_login_failed'.tr()}: ${e.toString()}')),
         );
         setState(() => _isLoading = false);
       }
@@ -85,12 +85,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             );
 
       if (!response) {
-        throw 'Kakao 로그인 실패';
+        throw 'kakao_login_failed'.tr();
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Kakao 로그인 실패: ${e.toString()}')),
+          SnackBar(content: Text('${'kakao_login_failed'.tr()}: ${e.toString()}')),
         );
       }
     } finally {
@@ -275,7 +275,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 decoration: InputDecoration(
                   labelText: 'password'.tr(),
                   labelStyle: TextStyle(color: AppColors.getTextSecondary(isDarkMode)),
-                  hintText: '최소 6자 이상',
+                  hintText: 'password_min_length'.tr(),
                   hintStyle: TextStyle(color: AppColors.getTextSecondary(isDarkMode)),
                   border: OutlineInputBorder(
                     borderSide: BorderSide(color: AppColors.getBorder(isDarkMode)),

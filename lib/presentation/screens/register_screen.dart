@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -31,7 +32,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         _passwordController.text.isEmpty) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('모든 필드를 입력해주세요')),
+          SnackBar(content: Text('all_fields_required'.tr())),
         );
       }
       return;
@@ -50,7 +51,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       } else {
         // Success - show message and navigate back to login
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('계정이 생성되었습니다! 로그인해주세요.')),
+          SnackBar(content: Text('account_created'.tr())),
         );
         context.go('/');
       }
@@ -60,7 +61,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('회원가입')),
+      appBar: AppBar(title: Text('register'.tr())),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -68,14 +69,14 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           children: [
             TextField(
               controller: _nameController,
-              decoration: const InputDecoration(labelText: '이름', border: OutlineInputBorder()),
+              decoration: InputDecoration(labelText: 'name_label'.tr(), border: const OutlineInputBorder()),
               textInputAction: TextInputAction.next,
               autofillHints: const [AutofillHints.name],
             ),
             const SizedBox(height: 16),
             TextField(
               controller: _emailController,
-              decoration: const InputDecoration(labelText: '이메일', border: OutlineInputBorder()),
+              decoration: InputDecoration(labelText: 'email_label'.tr(), border: const OutlineInputBorder()),
               keyboardType: TextInputType.emailAddress,
               textInputAction: TextInputAction.next,
               autofillHints: const [AutofillHints.email],
@@ -83,7 +84,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             const SizedBox(height: 16),
             TextField(
               controller: _passwordController,
-              decoration: const InputDecoration(labelText: '비밀번호', border: OutlineInputBorder()),
+              decoration: InputDecoration(labelText: 'password_label'.tr(), border: const OutlineInputBorder()),
               obscureText: true,
               textInputAction: TextInputAction.done,
               onSubmitted: (_) => _register(),
@@ -94,7 +95,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: _isLoading ? null : _register,
-                child: _isLoading ? const CircularProgressIndicator() : const Text('가입하기'),
+                child: _isLoading ? const CircularProgressIndicator() : Text('sign_up_button'.tr()),
               ),
             ),
             const SizedBox(height: 8),
@@ -106,7 +107,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   context.go('/login');
                 }
               },
-              child: const Text('이미 계정이 있으신가요? 로그인'),
+              child: Text('already_have_account_login'.tr()),
             ),
           ],
         ),

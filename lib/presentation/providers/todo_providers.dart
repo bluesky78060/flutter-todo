@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:todo_app/core/services/notification_service.dart';
@@ -6,6 +7,7 @@ import 'package:todo_app/presentation/providers/database_provider.dart';
 import 'package:todo_app/core/utils/app_logger.dart';
 import 'package:todo_app/presentation/widgets/recurring_edit_dialog.dart';
 import 'package:todo_app/presentation/widgets/recurring_delete_dialog.dart';
+import 'package:todo_app/presentation/providers/attachment_providers.dart';
 
 // Todo filter state
 enum TodoFilter { all, pending, completed }
@@ -143,7 +145,7 @@ class TodoActions {
       (failure) {
         logger.e('❌ TodoActions: Failed to create todo');
         logger.e('   Error: $failure');
-        throw Exception('DB 저장 실패: $failure');
+        throw Exception('${'db_save_failed'.tr()}: $failure');
       },
       (todoId) async {
         logger.d('✅ TodoActions: Todo created with ID: $todoId');
@@ -167,7 +169,7 @@ class TodoActions {
 
             await notificationService.scheduleNotification(
               id: todoId,
-              title: '할일 알림',
+              title: 'todo_reminder'.tr(),
               body: title,
               scheduledDate: notificationTime,
             );
@@ -270,7 +272,7 @@ class TodoActions {
           await masterResult.fold(
             (failure) {
               logger.e('❌ TodoActions: Failed to fetch master todo');
-              throw Exception('마스터 todo 조회 실패: $failure');
+              throw Exception('${'master_todo_fetch_failed'.tr()}: $failure');
             },
             (masterTodo) async {
               // Update the master with the changes from this instance
@@ -287,7 +289,7 @@ class TodoActions {
               await result.fold(
                 (failure) {
                   logger.e('❌ TodoActions: Failed to update master todo');
-                  throw Exception('마스터 todo 업데이트 실패: $failure');
+                  throw Exception('${'master_todo_update_failed'.tr()}: $failure');
                 },
                 (_) async {
                   logger.d('✅ TodoActions: Master todo updated');
@@ -358,7 +360,7 @@ class TodoActions {
     await todoResult.fold(
       (failure) {
         logger.e('❌ TodoActions: Failed to fetch todo for deletion');
-        throw Exception('Todo 조회 실패: $failure');
+        throw Exception('${'todo_fetch_failed'.tr()}: $failure');
       },
       (todo) async {
         // Check if this is a recurring todo instance
@@ -381,7 +383,7 @@ class TodoActions {
               await allTodosResult.fold(
                 (failure) {
                   logger.e('❌ TodoActions: Failed to fetch todos');
-                  throw Exception('Todos 조회 실패: $failure');
+                  throw Exception('${'todos_fetch_failed'.tr()}: $failure');
                 },
                 (allTodos) async {
                   // Find all future instances including this one
@@ -409,7 +411,7 @@ class TodoActions {
               await allTodosResult.fold(
                 (failure) {
                   logger.e('❌ TodoActions: Failed to fetch todos');
-                  throw Exception('Todos 조회 실패: $failure');
+                  throw Exception('${'todos_fetch_failed'.tr()}: $failure');
                 },
                 (allTodos) async {
                   // Find all instances
@@ -441,7 +443,7 @@ class TodoActions {
     );
   }
 
-  /// Helper method to delete a single todo with notification cleanup
+  /// Helper method to delete a single todo with notification and attachment cleanup
   Future<void> _deleteSingleTodo(
     int id,
     NotificationService notificationService,
@@ -456,12 +458,30 @@ class TodoActions {
       // Continue with deletion even if notification cancel fails
     }
 
+    // Delete attachments from Supabase Storage before deleting todo
+    try {
+      final attachmentService = ref.read(attachmentServiceProvider);
+      final deleteResult = await attachmentService.deleteFilesByTodoId(id);
+      deleteResult.fold(
+        (failure) {
+          logger.d('⚠️ TodoActions: Failed to delete attachments for todo $id: $failure');
+          // Continue with todo deletion even if attachment deletion fails
+        },
+        (_) {
+          logger.d('✅ TodoActions: Attachments deleted for todo $id');
+        },
+      );
+    } catch (e) {
+      logger.d('⚠️ TodoActions: Error deleting attachments: $e');
+      // Continue with todo deletion even if attachment deletion fails
+    }
+
     final result = await repository.deleteTodo(id);
     result.fold(
       (failure) {
         logger.e('❌ TodoActions: Failed to delete todo $id');
         logger.e('   Error: $failure');
-        throw Exception('DB 삭제 실패: $failure');
+        throw Exception('${'db_delete_failed'.tr()}: $failure');
       },
       (_) {
         logger.d('✅ TodoActions: Todo deleted successfully: $id');
@@ -477,7 +497,7 @@ class TodoActions {
     await todoResult.fold(
       (failure) {
         logger.e('❌ TodoActions: Failed to fetch todo for toggle completion');
-        throw Exception('Todo 조회 실패: $failure');
+        throw Exception('${'todo_fetch_failed'.tr()}: $failure');
       },
       (todo) async {
         // Toggle the completion status
@@ -548,11 +568,11 @@ class TodoActions {
     await todoResult.fold(
       (failure) {
         logger.e('❌ TodoActions: Failed to fetch todo for rescheduling');
-        throw Exception('Todo 조회 실패: $failure');
+        throw Exception('${'todo_fetch_failed'.tr()}: $failure');
       },
       (todo) async {
         if (todo.dueDate == null) {
-          throw Exception('마감일이 없는 할일은 이월할 수 없습니다');
+          throw Exception('cannot_reschedule_without_due_date'.tr());
         }
 
         // Keep the original time, change only the date
@@ -590,7 +610,7 @@ class TodoActions {
         await result.fold(
           (failure) {
             logger.e('❌ TodoActions: Failed to reschedule todo');
-            throw Exception('일정 이월 실패: $failure');
+            throw Exception('${'reschedule_failed'.tr()}: $failure');
           },
           (_) async {
             logger.d('✅ TodoActions: Todo rescheduled successfully');
@@ -603,7 +623,7 @@ class TodoActions {
                 // Schedule new notification
                 await notificationService.scheduleNotification(
                   id: id,
-                  title: '할일 알림',
+                  title: 'todo_reminder'.tr(),
                   body: todo.title,
                   scheduledDate: newNotificationTime,
                 );
@@ -645,7 +665,7 @@ class TodoActions {
       (failure) {
         logger.e('❌ TodoActions: Failed to update todo positions');
         logger.e('   Error: $failure');
-        throw Exception('Position 업데이트 실패: $failure');
+        throw Exception('${'position_update_failed'.tr()}: $failure');
       },
       (_) {
         logger.d('✅ TodoActions: Todo positions updated successfully');

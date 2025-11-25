@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
@@ -11,7 +12,10 @@ import 'package:todo_app/domain/entities/todo.dart';
 import 'package:todo_app/presentation/providers/todo_providers.dart';
 import 'package:todo_app/presentation/providers/category_providers.dart';
 import 'package:todo_app/presentation/providers/theme_provider.dart';
+import 'package:todo_app/presentation/providers/attachment_providers.dart';
+import 'package:todo_app/presentation/providers/database_provider.dart';
 import 'package:todo_app/presentation/widgets/recurrence_settings_dialog.dart';
+import 'package:mime/mime.dart';
 import 'package:todo_app/presentation/widgets/recurring_edit_dialog.dart';
 import 'package:todo_app/presentation/widgets/location_picker_dialog.dart';
 import 'package:todo_app/core/services/geofence_workmanager_service.dart';
@@ -38,6 +42,9 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
   double? _locationLongitude;
   String? _locationName;
   double? _locationRadius;
+
+  // Attachment fields
+  final List<File> _selectedFiles = [];
 
   bool get _isEditMode => widget.existingTodo != null;
 
@@ -217,6 +224,148 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
     );
   }
 
+  Future<void> _pickAttachment() async {
+    if (!mounted || kIsWeb) return;
+
+    final isDarkMode = ref.read(isDarkModeProvider);
+
+    // Show attachment source selection
+    await showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.getCard(isDarkMode),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: Icon(
+                  FluentIcons.camera_24_regular,
+                  color: AppColors.getText(isDarkMode),
+                ),
+                title: Text(
+                  'take_photo_with_camera'.tr(),
+                  style: TextStyle(color: AppColors.getText(isDarkMode)),
+                ),
+                onTap: () async {
+                  Navigator.pop(context);
+                  await _pickFromCamera();
+                },
+              ),
+              ListTile(
+                leading: Icon(
+                  FluentIcons.image_24_regular,
+                  color: AppColors.getText(isDarkMode),
+                ),
+                title: Text(
+                  'choose_from_gallery'.tr(),
+                  style: TextStyle(color: AppColors.getText(isDarkMode)),
+                ),
+                onTap: () async {
+                  Navigator.pop(context);
+                  await _pickFromGallery();
+                },
+              ),
+              ListTile(
+                leading: Icon(
+                  FluentIcons.document_24_regular,
+                  color: AppColors.getText(isDarkMode),
+                ),
+                title: Text(
+                  'choose_file'.tr(),
+                  style: TextStyle(color: AppColors.getText(isDarkMode)),
+                ),
+                onTap: () async {
+                  Navigator.pop(context);
+                  await _pickFile();
+                },
+              ),
+              const SizedBox(height: 8),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _pickFromCamera() async {
+    final attachmentService = ref.read(attachmentServiceProvider);
+    final result = await attachmentService.pickImageFromCamera();
+
+    result.fold(
+      (failure) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('image_capture_failed'.tr()),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      },
+      (file) {
+        setState(() {
+          _selectedFiles.add(file);
+        });
+      },
+    );
+  }
+
+  Future<void> _pickFromGallery() async {
+    final attachmentService = ref.read(attachmentServiceProvider);
+    final result = await attachmentService.pickImageFromGallery();
+
+    result.fold(
+      (failure) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('image_select_failed'.tr()),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      },
+      (file) {
+        setState(() {
+          _selectedFiles.add(file);
+        });
+      },
+    );
+  }
+
+  Future<void> _pickFile() async {
+    final attachmentService = ref.read(attachmentServiceProvider);
+    final result = await attachmentService.pickFile();
+
+    result.fold(
+      (failure) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('file_select_failed'.tr()),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      },
+      (file) {
+        setState(() {
+          _selectedFiles.add(file);
+        });
+      },
+    );
+  }
+
+  void _removeFile(int index) {
+    setState(() {
+      _selectedFiles.removeAt(index);
+    });
+  }
+
   Future<void> _selectNotificationTime() async {
     if (!mounted) return;
 
@@ -375,18 +524,57 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
         }
       } else {
         // Create mode: create new todo
-        await ref.read(todoActionsProvider).createTodo(
-              _titleController.text,
-              _descriptionController.text,
-              _selectedDueDate,
-              categoryId: _selectedCategoryId,
-              notificationTime: _selectedNotificationTime,
-              recurrenceRule: _recurrenceRule,
-              locationLatitude: _locationLatitude,
-              locationLongitude: _locationLongitude,
-              locationName: _locationName,
-              locationRadius: _locationRadius,
-            );
+        // Need to capture todoId for attachment upload
+        final repository = ref.read(todoRepositoryProvider);
+        final result = await repository.createTodo(
+          _titleController.text,
+          _descriptionController.text,
+          _selectedDueDate,
+          categoryId: _selectedCategoryId,
+          notificationTime: _selectedNotificationTime,
+          recurrenceRule: _recurrenceRule,
+          locationLatitude: _locationLatitude,
+          locationLongitude: _locationLongitude,
+          locationName: _locationName,
+          locationRadius: _locationRadius,
+        );
+
+        final todoId = result.fold(
+          (failure) {
+            throw Exception('Failed to create todo: $failure');
+          },
+          (id) => id,
+        );
+
+        // Schedule notification if needed (same logic as TodoActions)
+        if (_selectedNotificationTime != null) {
+          await ref.read(notificationServiceProvider).scheduleNotification(
+                id: todoId,
+                title: _titleController.text,
+                body: _descriptionController.text.isNotEmpty
+                    ? _descriptionController.text
+                    : '',
+                scheduledDate: _selectedNotificationTime!,
+              );
+        }
+
+        // Upload attachments if any (Mobile only)
+        print('[TodoFormDialog] Checking upload conditions: kIsWeb=$kIsWeb, filesCount=${_selectedFiles.length}');
+        if (!kIsWeb && _selectedFiles.isNotEmpty) {
+          print('[TodoFormDialog] Conditions met, calling _uploadAttachments for new todo');
+          await _uploadAttachments(todoId);
+        } else {
+          print('[TodoFormDialog] Upload skipped - conditions not met');
+        }
+      }
+
+      // Upload attachments for edited todo (Mobile only)
+      print('[TodoFormDialog] Edit mode check: isEditMode=$_isEditMode, kIsWeb=$kIsWeb, filesCount=${_selectedFiles.length}');
+      if (_isEditMode && !kIsWeb && _selectedFiles.isNotEmpty) {
+        print('[TodoFormDialog] Conditions met, calling _uploadAttachments for edited todo');
+        await _uploadAttachments(widget.existingTodo!.id);
+      } else if (_isEditMode) {
+        print('[TodoFormDialog] Edit mode upload skipped - conditions not met');
       }
 
       // Check geofence immediately if location is set (non-web only)
@@ -404,6 +592,80 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
             duration: const Duration(seconds: 5),
           ),
         );
+      }
+    }
+  }
+
+  /// Upload attachments to Supabase Storage and save metadata
+  Future<void> _uploadAttachments(int todoId) async {
+    print('[TodoFormDialog] Starting upload for ${_selectedFiles.length} files to todoId: $todoId');
+
+    final attachmentService = ref.read(attachmentServiceProvider);
+    final localRepo = ref.read(attachmentLocalRepositoryProvider);
+    final remoteRepo = ref.read(attachmentRemoteRepositoryProvider);
+
+    for (final file in _selectedFiles) {
+      try {
+        print('[TodoFormDialog] Uploading file: ${file.path}');
+
+        // 1. Upload to Supabase Storage
+        final uploadResult = await attachmentService.uploadFile(
+          file: file,
+          todoId: todoId,
+        );
+
+        final storagePath = uploadResult.fold(
+          (failure) {
+            throw Exception('Upload failed: $failure');
+          },
+          (path) => path,
+        );
+
+        // 2. Get file info
+        final fileName = file.path.split('/').last;
+        final fileSize = attachmentService.getFileSize(file);
+        final mimeType = lookupMimeType(file.path) ?? 'application/octet-stream';
+
+        // 3. Save to local database
+        final localResult = await localRepo.createAttachment(
+          todoId: todoId,
+          fileName: fileName,
+          filePath: file.path,
+          fileSize: fileSize,
+          mimeType: mimeType,
+          storagePath: storagePath,
+        );
+
+        await localResult.fold(
+          (failure) {
+            print('[TodoFormDialog] Failed to save attachment to local DB: $failure');
+          },
+          (_) {
+            print('[TodoFormDialog] Attachment saved to local DB: $fileName');
+          },
+        );
+
+        // 4. Save to remote database
+        final remoteResult = await remoteRepo.createAttachment(
+          todoId: todoId,
+          fileName: fileName,
+          filePath: file.path,
+          fileSize: fileSize,
+          mimeType: mimeType,
+          storagePath: storagePath,
+        );
+
+        await remoteResult.fold(
+          (failure) {
+            print('[TodoFormDialog] Failed to save attachment to remote DB: $failure');
+          },
+          (_) {
+            print('[TodoFormDialog] Attachment saved to remote DB: $fileName');
+          },
+        );
+      } catch (e) {
+        print('[TodoFormDialog] Failed to upload attachment: $e');
+        // Continue with next file even if one fails
       }
     }
   }
@@ -787,7 +1049,7 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  context.locale.languageCode == 'ko' ? '반복 설정 (선택사항)' : 'Recurrence (Optional)',
+                  'recurrence_optional'.tr(),
                   style: TextStyle(
                     color: AppColors.getTextSecondary(isDarkMode),
                     fontSize: 14,
@@ -856,7 +1118,7 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  context.locale.languageCode == 'ko' ? '위치 기반 알림 (선택사항)' : 'Location-based Reminder (Optional)',
+                  'location_based_reminder_optional'.tr(),
                   style: TextStyle(
                     color: AppColors.getTextSecondary(isDarkMode),
                     fontSize: 14,
@@ -886,7 +1148,7 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
                         const SizedBox(width: 12),
                         Expanded(
                           child: Text(
-                            _locationName ?? (context.locale.languageCode == 'ko' ? '위치 설정' : 'Set Location'),
+                            _locationName ?? 'set_location'.tr(),
                             style: TextStyle(
                               color: _locationName != null
                                   ? AppColors.getText(isDarkMode)
@@ -919,6 +1181,141 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
                 ),
               ],
             ),
+            const SizedBox(height: 20),
+
+            // Attachments Section (Mobile only)
+            if (!kIsWeb) ...[
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'attachments_optional'.tr(),
+                    style: TextStyle(
+                      color: AppColors.getTextSecondary(isDarkMode),
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  // Add attachment button
+                  InkWell(
+                    onTap: _pickAttachment,
+                    borderRadius: BorderRadius.circular(12),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 14,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.getInput(isDarkMode),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            FluentIcons.attach_24_regular,
+                            color: AppColors.getTextSecondary(isDarkMode),
+                            size: 20,
+                          ),
+                          const SizedBox(width: 12),
+                          Text(
+                            'attach_file'.tr(),
+                            style: TextStyle(
+                              color: AppColors.getTextSecondary(isDarkMode),
+                              fontSize: 16,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  // Selected files list
+                  if (_selectedFiles.isNotEmpty) ...[
+                    const SizedBox(height: 12),
+                    ...List.generate(_selectedFiles.length, (index) {
+                      final file = _selectedFiles[index];
+                      final fileName = file.path.split('/').last;
+                      final isImage = fileName.toLowerCase().endsWith('.jpg') ||
+                          fileName.toLowerCase().endsWith('.jpeg') ||
+                          fileName.toLowerCase().endsWith('.png') ||
+                          fileName.toLowerCase().endsWith('.gif');
+
+                      return Container(
+                        margin: const EdgeInsets.only(bottom: 8),
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: AppColors.getInput(isDarkMode),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Row(
+                          children: [
+                            // Thumbnail or icon
+                            if (isImage)
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(8),
+                                child: Image.file(
+                                  file,
+                                  width: 50,
+                                  height: 50,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return Container(
+                                      width: 50,
+                                      height: 50,
+                                      color: AppColors.getCard(isDarkMode),
+                                      child: Icon(
+                                        FluentIcons.image_24_regular,
+                                        color: AppColors.getTextSecondary(isDarkMode),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              )
+                            else
+                              Container(
+                                width: 50,
+                                height: 50,
+                                decoration: BoxDecoration(
+                                  color: AppColors.getCard(isDarkMode),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Icon(
+                                  FluentIcons.document_24_regular,
+                                  color: AppColors.getTextSecondary(isDarkMode),
+                                ),
+                              ),
+                            const SizedBox(width: 12),
+                            // File name
+                            Expanded(
+                              child: Text(
+                                fileName,
+                                style: TextStyle(
+                                  color: AppColors.getText(isDarkMode),
+                                  fontSize: 14,
+                                ),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            // Remove button
+                            IconButton(
+                              onPressed: () => _removeFile(index),
+                              icon: Icon(
+                                FluentIcons.dismiss_24_regular,
+                                color: AppColors.getTextSecondary(isDarkMode),
+                                size: 18,
+                              ),
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(),
+                            ),
+                          ],
+                        ),
+                      );
+                    }),
+                  ],
+                ],
+              ),
+            ],
             const SizedBox(height: 32),
 
             // Action Buttons

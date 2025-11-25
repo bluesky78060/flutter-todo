@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -59,7 +60,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
       appBar: AppBar(
         backgroundColor: AppColors.getCard(isDarkMode),
         title: Text(
-          '캘린더',
+          'calendar'.tr(),
           style: TextStyle(color: AppColors.getText(isDarkMode)),
         ),
         leading: IconButton(
@@ -176,7 +177,11 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      '${_selectedDay!.year}년 ${_selectedDay!.month}월 ${_selectedDay!.day}일',
+                      'year_month_day'.tr(namedArgs: {
+                        'year': '${_selectedDay!.year}',
+                        'month': '${_selectedDay!.month}',
+                        'day': '${_selectedDay!.day}'
+                      }),
                       style: TextStyle(
                         color: AppColors.getText(isDarkMode),
                         fontSize: 16,
@@ -191,7 +196,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
-                        '${_getTodosForDay(_selectedDay!, todos).length}개',
+                        'count_items'.tr(namedArgs: {'count': '${_getTodosForDay(_selectedDay!, todos).length}'}),
                         style: const TextStyle(
                           color: AppColors.primaryBlue,
                           fontSize: 12,
@@ -209,7 +214,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
               Expanded(
                 child: Center(
                   child: Text(
-                    '날짜를 선택하세요',
+                    'select_date_message'.tr(),
                     style: TextStyle(
                       color: AppColors.textGray.withValues(alpha: 0.6),
                       fontSize: 16,
@@ -224,7 +229,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
         ),
         error: (error, _) => Center(
           child: Text(
-            '오류: $error',
+            '${'error'.tr()}: $error',
             style: const TextStyle(color: Colors.red),
           ),
         ),
@@ -245,7 +250,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
             ),
             const SizedBox(height: 16),
             Text(
-              '이 날짜에 할일이 없습니다',
+              'no_todos_for_date'.tr(),
               style: TextStyle(
                 color: AppColors.textGray.withValues(alpha: 0.6),
                 fontSize: 16,
@@ -291,7 +296,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text('오류: $e'),
+                content: Text('${'error'.tr()}: $e'),
                 backgroundColor: Colors.red,
               ),
             );
@@ -306,7 +311,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('오류: $e'),
+              content: Text('${'error'.tr()}: $e'),
               backgroundColor: Colors.red,
             ),
           );
