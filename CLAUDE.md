@@ -90,6 +90,23 @@ flutter build ios --release --build-name=1.0.6 --build-number=16 --no-codesign
 - 각 스토어별로 빌드 번호는 항상 증가해야 함
 - 현재 Android: 1.0.10+34, iOS: 1.0.5+15
 
+**CRITICAL: 빌드 전 최신 업로드 버전 확인 필수**
+```bash
+# Google Play Console에서 최신 업로드된 빌드 번호 확인
+# Settings > App integrity > App bundles > 최신 버전 번호 확인
+#
+# 예: Google Play Console에 1.0.12+37이 업로드되어 있다면
+# 새 빌드는 반드시 38 이상이어야 함
+#
+# WRONG: ./scripts/build_android.sh 1.0.13 35  # 35 < 37 (거부됨)
+# RIGHT: ./scripts/build_android.sh 1.0.13 39  # 39 > 37 (승인됨)
+```
+
+**빌드 번호 규칙**:
+- 새 빌드 번호는 반드시 Google Play에 업로드된 최신 빌드 번호보다 커야 함
+- 빌드 전 항상 Google Play Console에서 최신 버전 확인
+- 빌드 번호가 작으면 업로드 시 "Version code X has already been used" 오류 발생
+
 **IMPORTANT**: 빌드 스크립트 사용 시 버전 번호가 포함된 파일이 자동 생성되므로 수동 복사 불필요
 
 ### Code Generation
