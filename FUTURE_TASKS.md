@@ -1,7 +1,7 @@
 # 향후 추가 기능 및 개선 사항
 
 현재 버전: **1.0.11+35**
-최종 업데이트: **2025-11-18**
+최종 업데이트: **2025-11-25**
 
 ## 우선순위 분류
 - 🔴 **High**: 핵심 기능, 사용자 경험에 직접적 영향
@@ -13,6 +13,23 @@
 ## ✅ 완료된 작업 (Completed)
 
 ### 2025-11-25
+- ✅ **첨부파일 시스템 완전 구현** (1.5)
+  - Supabase Storage setup with `todo-attachments` bucket
+  - Row-Level Security (RLS) policies for file access control
+  - File upload/download functionality (images, PDFs, text files, JSON, etc.)
+  - File picker integration (camera, gallery, file system)
+  - Image viewer with zoom and pan (InteractiveViewer)
+  - PDF viewer with Syncfusion PDF Viewer (zoom, text selection)
+  - Text file viewer supporting 40+ file extensions
+  - JSON file upload support (MIME type mapping workaround)
+  - Attachment metadata storage (local Drift + remote Supabase)
+  - Attachment display in todo detail screen (grid view with icons)
+  - File size formatting and display
+  - Automatic attachment deletion when todo is deleted
+  - Dual Repository Pattern: Local (Drift) + Remote (Supabase)
+  - Storage Path Structure: `{userId}/{todoId}/{timestamp}_{filename}`
+  - 15개 파일 생성, 6개 파일 수정
+  - 참고 문서: `SUPABASE_STORAGE_SETUP.md`, `TASKS.md`
 - ✅ **드래그 앤 드롭 정렬 기능 구현**
   - Todo 항목 드래그로 순서 변경 가능
   - position 필드 추가 (Supabase + Drift)
@@ -181,16 +198,26 @@
 
 ### 1. 핵심 기능 추가 (Core Features)
 
-#### 🟡 1.5 첨부파일 지원
+#### ✅ 1.5 첨부파일 지원 (완료 - 2025-11-25)
 **설명**: Todo에 이미지, 문서 파일 첨부
-**필요 작업**:
-- [ ] Supabase Storage 버킷 생성 및 RLS 설정
-- [ ] 파일 선택 UI (`image_picker`, `file_picker`)
-- [ ] 파일 업로드/다운로드 로직
-- [ ] 첨부파일 썸네일 표시
-- [ ] 파일 삭제 및 용량 제한 관리
+**완료된 작업**:
+- ✅ Supabase Storage 버킷 생성 및 RLS 설정
+- ✅ 파일 선택 UI (`image_picker`, `file_picker`)
+- ✅ 파일 업로드/다운로드 로직
+- ✅ 첨부파일 썸네일 표시 (그리드 뷰, 아이콘)
+- ✅ Todo 삭제 시 첨부파일 자동 삭제
+- ✅ 이미지/PDF/텍스트 파일 뷰어 구현
 
-**예상 작업 시간**: 1-2일
+**향후 개선사항**:
+- [ ] 파일 크기 제한 (10MB) 구현
+- [ ] 첨부파일 개수 제한 (5-10개) 구현
+- [ ] 개별 파일 삭제 UI
+- [ ] 다운로드 버튼 추가
+- [ ] 웹 플랫폼 파일 업로드 지원
+- [ ] 비디오 뷰어
+- [ ] 오디오 플레이어
+
+**참고 문서**: `TASKS.md`, `SUPABASE_STORAGE_SETUP.md`
 
 ---
 
@@ -521,7 +548,8 @@
 - 📋 프로필 관리 (예정)
 
 ### Phase 3 (5-6개월) - 고급 기능
-- 첨부파일
+- ✅ 첨부파일 (완료)
+- 첨부파일 개선 (파일 크기/개수 제한, 개별 삭제)
 - 테마 커스터마이징
 - Todo 공유
 - 타임 트래킹
@@ -568,4 +596,4 @@
 
 ---
 
-**문서 최종 업데이트**: 2025-11-18
+**문서 최종 업데이트**: 2025-11-25 21:30 KST
