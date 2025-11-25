@@ -21,6 +21,7 @@ abstract class TodoRepository {
     double? locationRadius,
   });
   Future<Either<Failure, Unit>> updateTodo(Todo todo);
+  Future<Either<Failure, Unit>> updateTodoPositions(List<Todo> todos);
   Future<Either<Failure, Unit>> deleteTodo(int id);
   Future<Either<Failure, Unit>> toggleCompletion(int id);
   Future<Either<Failure, int>> deleteCompletedTodos();

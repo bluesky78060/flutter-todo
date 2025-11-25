@@ -636,6 +636,23 @@ class TodoActions {
       },
     );
   }
+
+  Future<void> updateTodoPositions(List<Todo> todos) async {
+    final repository = ref.read(todoRepositoryProvider);
+    final result = await repository.updateTodoPositions(todos);
+
+    result.fold(
+      (failure) {
+        logger.e('❌ TodoActions: Failed to update todo positions');
+        logger.e('   Error: $failure');
+        throw Exception('Position 업데이트 실패: $failure');
+      },
+      (_) {
+        logger.d('✅ TodoActions: Todo positions updated successfully');
+        ref.invalidate(todosProvider);
+      },
+    );
+  }
 }
 
 final todoActionsProvider = Provider((ref) => TodoActions(ref));

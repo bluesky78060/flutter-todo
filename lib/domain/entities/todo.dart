@@ -16,6 +16,7 @@ class Todo {
   final double? locationLongitude; // Location-based notification longitude
   final String? locationName; // Human-readable location name (e.g., "Home", "Office")
   final double? locationRadius; // Geofence radius in meters (default: 100m)
+  final int position; // Order position for drag and drop sorting (per category)
 
   const Todo({
     required this.id,
@@ -35,6 +36,7 @@ class Todo {
     this.locationLongitude,
     this.locationName,
     this.locationRadius,
+    this.position = 0,
   });
 
   Todo copyWith({
@@ -55,6 +57,7 @@ class Todo {
     double? locationLongitude,
     String? locationName,
     double? locationRadius,
+    int? position,
   }) {
     return Todo(
       id: id ?? this.id,
@@ -74,6 +77,7 @@ class Todo {
       locationLongitude: locationLongitude ?? this.locationLongitude,
       locationName: locationName ?? this.locationName,
       locationRadius: locationRadius ?? this.locationRadius,
+      position: position ?? this.position,
     );
   }
 }

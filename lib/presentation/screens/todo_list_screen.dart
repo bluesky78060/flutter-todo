@@ -789,9 +789,12 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> {
                   // Group todos by recurring series
                   final groupedTodos = _groupTodosBySeries(todos);
 
-                  return ListView.builder(
+                  return ReorderableListView.builder(
                     padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
                     itemCount: groupedTodos.length,
+                    onReorder: (oldIndex, newIndex) {
+                      _onReorder(oldIndex, newIndex, groupedTodos);
+                    },
                     itemBuilder: (context, index) {
                       final group = groupedTodos[index];
 
@@ -978,6 +981,66 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> {
     });
 
     return result;
+  }
+
+  /// Handle reordering of todos
+  void _onReorder(int oldIndex, int newIndex, List<List<Todo>> groupedTodos) {
+    print('🔄 _onReorder called: oldIndex=$oldIndex, newIndex=$newIndex');
+    print('📊 Number of groups: ${groupedTodos.length}');
+
+    if (oldIndex < newIndex) {
+      newIndex -= 1;
+      print('📌 Adjusted newIndex to: $newIndex');
+    }
+
+    // Flatten the grouped todos to get all todos in display order
+    final List<Todo> allTodos = [];
+    for (final group in groupedTodos) {
+      allTodos.addAll(group);
+    }
+    print('📋 Total todos after flattening: ${allTodos.length}');
+    print('📝 Todos before reorder: ${allTodos.map((t) => '${t.title}(pos:${t.position})').join(', ')}');
+
+    // Create a mutable copy
+    final mutableTodos = List<Todo>.from(allTodos);
+
+    // Get the group that's being moved
+    final movedGroup = groupedTodos[oldIndex];
+    print('📦 Moving group with ${movedGroup.length} todos: ${movedGroup.map((t) => t.title).join(', ')}');
+
+    // Calculate the actual position in the flattened list
+    int actualOldIndex = 0;
+    for (int i = 0; i < oldIndex; i++) {
+      actualOldIndex += groupedTodos[i].length;
+    }
+
+    int actualNewIndex = 0;
+    for (int i = 0; i < newIndex; i++) {
+      actualNewIndex += groupedTodos[i].length;
+    }
+    print('🎯 Actual positions: oldIndex=$actualOldIndex → newIndex=$actualNewIndex');
+
+    // Remove all todos in the moved group
+    for (int i = movedGroup.length - 1; i >= 0; i--) {
+      mutableTodos.removeAt(actualOldIndex);
+    }
+
+    // Insert them at the new position
+    for (int i = 0; i < movedGroup.length; i++) {
+      mutableTodos.insert(actualNewIndex + i, movedGroup[i]);
+    }
+
+    // Update positions for all todos
+    final updatedTodos = <Todo>[];
+    for (int i = 0; i < mutableTodos.length; i++) {
+      updatedTodos.add(mutableTodos[i].copyWith(position: i));
+    }
+    print('📝 Todos after reorder: ${updatedTodos.map((t) => '${t.title}(pos:${t.position})').join(', ')}');
+
+    // Update positions in the repository
+    print('💾 Calling updateTodoPositions with ${updatedTodos.length} todos');
+    ref.read(todoActionsProvider).updateTodoPositions(updatedTodos);
+    print('✅ updateTodoPositions call completed');
   }
 }
 

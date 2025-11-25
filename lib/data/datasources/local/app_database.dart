@@ -36,6 +36,7 @@ class Todos extends Table {
   RealColumn get locationLongitude => real().nullable()(); // Location longitude
   TextColumn get locationName => text().nullable()(); // Human-readable location name
   RealColumn get locationRadius => real().nullable()(); // Geofence radius in meters
+  IntColumn get position => integer().withDefault(const Constant(0))(); // Order position for drag and drop sorting
 }
 
 // Users Table (for Auth)
@@ -64,7 +65,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 7;
+  int get schemaVersion => 8;
 
   @override
   MigrationStrategy get migration {
@@ -100,6 +101,10 @@ class AppDatabase extends _$AppDatabase {
           await migrator.addColumn(todos, todos.locationLongitude);
           await migrator.addColumn(todos, todos.locationName);
           await migrator.addColumn(todos, todos.locationRadius);
+        }
+        if (from < 8) {
+          // Add position column for drag and drop sorting
+          await migrator.addColumn(todos, todos.position);
         }
       },
     );
@@ -221,6 +226,7 @@ class AppDatabase extends _$AppDatabase {
           parentRecurringTodoId: todo.parentRecurringTodoId.present ? todo.parentRecurringTodoId.value : null,
           snoozeCount: todo.snoozeCount.present ? todo.snoozeCount.value : 0,
           lastSnoozeTime: todo.lastSnoozeTime.present ? todo.lastSnoozeTime.value : null,
+          position: todo.position.present ? todo.position.value : 0,
         ),
       );
     }

@@ -84,6 +84,22 @@ class SupabaseTodoRepository implements TodoRepository {
   }
 
   @override
+  Future<Either<Failure, Unit>> updateTodoPositions(List<Todo> todos) async {
+    try {
+      print('📦 [SupabaseTodoRepository] updateTodoPositions called with ${todos.length} todos');
+      for (final todo in todos) {
+        print('  💾 Updating todo: ${todo.title} (id=${todo.id}, position=${todo.position})');
+        await dataSource.updateTodo(todo);
+      }
+      print('✅ [SupabaseTodoRepository] All positions updated successfully');
+      return right(unit);
+    } catch (e) {
+      print('❌ [SupabaseTodoRepository] Error updating positions: $e');
+      return Left(DatabaseFailure(e.toString()));
+    }
+  }
+
+  @override
   Future<Either<Failure, Unit>> deleteTodo(int id) async {
     try {
       await dataSource.deleteTodo(id);

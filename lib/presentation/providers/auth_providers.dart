@@ -4,9 +4,24 @@ import 'package:todo_app/core/errors/failures.dart';
 import 'package:todo_app/domain/entities/auth_user.dart' as domain;
 import 'package:todo_app/presentation/providers/database_provider.dart';
 import 'package:todo_app/core/utils/app_logger.dart';
+import 'package:todo_app/core/config/dev_config.dart';
 
 // Stream-based Current User Provider that listens to Supabase auth state changes
 final currentUserProvider = StreamProvider<domain.AuthUser?>((ref) async* {
+  // Check if local dev mode is enabled
+  if (DevConfig.enableLocalDevMode) {
+    logger.d('🧪 Local dev mode enabled - providing mock user');
+    final mockUser = domain.AuthUser(
+      id: int.parse(DevConfig.mockUserId.replaceAll(RegExp(r'[^0-9]'), '123')),
+      uuid: DevConfig.mockUserUuid,
+      email: DevConfig.mockUserEmail,
+      name: DevConfig.mockUserName,
+      createdAt: DateTime.now(),
+    );
+    yield mockUser;
+    return;
+  }
+
   final repository = ref.watch(authRepositoryProvider);
 
   logger.d('🎯 currentUserProvider: Starting auth stream');

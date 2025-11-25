@@ -349,6 +349,7 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
             locationLongitude: _locationLongitude,
             locationName: _locationName,
             locationRadius: _locationRadius,
+            position: existingTodo.position, // Preserve position when editing
           );
 
           await ref.read(todoActionsProvider).updateTodo(
@@ -368,6 +369,7 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
             locationLongitude: _locationLongitude,
             locationName: _locationName,
             locationRadius: _locationRadius,
+            position: existingTodo.position, // Preserve position when editing
           );
           await ref.read(todoActionsProvider).updateTodo(updatedTodo);
         }

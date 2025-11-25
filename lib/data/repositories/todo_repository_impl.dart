@@ -106,8 +106,21 @@ class TodoRepositoryImpl implements TodoRepository {
         locationLongitude: todo.locationLongitude,
         locationName: todo.locationName,
         locationRadius: todo.locationRadius,
+        position: todo.position,
       );
       await database.updateTodo(dbTodo);
+      return const Right(unit);
+    } catch (e) {
+      return Left(DatabaseFailure(e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, Unit>> updateTodoPositions(List<entity.Todo> todos) async {
+    try {
+      for (final todo in todos) {
+        await updateTodo(todo);
+      }
       return const Right(unit);
     } catch (e) {
       return Left(DatabaseFailure(e.toString()));
@@ -180,6 +193,7 @@ class TodoRepositoryImpl implements TodoRepository {
       locationLongitude: todo.locationLongitude,
       locationName: todo.locationName,
       locationRadius: todo.locationRadius,
+      position: todo.position ?? 0,
     );
   }
 }

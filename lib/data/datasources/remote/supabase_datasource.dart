@@ -19,7 +19,7 @@ class SupabaseTodoDataSource {
       final response = await client
           .from('todos')
           .select()
-          .order('created_at', ascending: false);
+          .order('position', ascending: true);
 
       if (kDebugMode) {
         logger.d('✅ getTodos succeeded, response count: ${(response as List).length}');
@@ -61,7 +61,7 @@ class SupabaseTodoDataSource {
         logger.d('📡 Executing Supabase query...');
       }
 
-      final response = await query.order('created_at', ascending: false);
+      final response = await query.order('position', ascending: true);
 
       if (kDebugMode) {
         logger.d('✅ Supabase query succeeded, response count: ${(response as List).length}');
@@ -184,6 +184,7 @@ class SupabaseTodoDataSource {
       'location_longitude': todo.locationLongitude,
       'location_name': todo.locationName,
       'location_radius': todo.locationRadius,
+      'position': todo.position,
     }).eq('id', todo.id);
   }
 
@@ -306,6 +307,7 @@ class SupabaseTodoDataSource {
       locationLongitude: (json['location_longitude'] as num?)?.toDouble(),
       locationName: json['location_name'] as String?,
       locationRadius: (json['location_radius'] as num?)?.toDouble(),
+      position: json['position'] as int? ?? 0,
     );
   }
 }
