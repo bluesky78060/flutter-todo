@@ -174,6 +174,21 @@ class MockTodoRepository extends _i1.Mock implements _i2.TodoRepository {
           as _i4.Future<_i5.Either<_i6.Failure, _i5.Unit>>);
 
   @override
+  _i4.Future<_i5.Either<_i6.Failure, _i5.Unit>> updateTodoPositions(
+    List<_i7.Todo>? todos,
+  ) =>
+      (super.noSuchMethod(
+            Invocation.method(#updateTodoPositions, [todos]),
+            returnValue: _i4.Future<_i5.Either<_i6.Failure, _i5.Unit>>.value(
+              _i8.dummyValue<_i5.Either<_i6.Failure, _i5.Unit>>(
+                this,
+                Invocation.method(#updateTodoPositions, [todos]),
+              ),
+            ),
+          )
+          as _i4.Future<_i5.Either<_i6.Failure, _i5.Unit>>);
+
+  @override
   _i4.Future<_i5.Either<_i6.Failure, _i5.Unit>> deleteTodo(int? id) =>
       (super.noSuchMethod(
             Invocation.method(#deleteTodo, [id]),

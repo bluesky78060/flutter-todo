@@ -60,12 +60,25 @@ class Subtasks extends Table {
   DateTimeColumn get completedAt => dateTime().nullable()();
 }
 
-@DriftDatabase(tables: [Categories, Todos, Users, Subtasks])
+// Attachments Table (for file attachments)
+class Attachments extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  IntColumn get todoId => integer().references(Todos, #id, onDelete: KeyAction.cascade)();
+  TextColumn get userId => text()(); // Supabase user UUID
+  TextColumn get fileName => text().withLength(min: 1, max: 255)();
+  TextColumn get filePath => text()(); // Local file path (if stored locally)
+  IntColumn get fileSize => integer()(); // File size in bytes
+  TextColumn get mimeType => text()(); // MIME type (e.g., image/jpeg, application/pdf)
+  TextColumn get storagePath => text()(); // Full path in Supabase Storage: {user_id}/{todo_id}/{filename}
+  DateTimeColumn get createdAt => dateTime()();
+}
+
+@DriftDatabase(tables: [Categories, Todos, Users, Subtasks, Attachments])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 8;
+  int get schemaVersion => 9;
 
   @override
   MigrationStrategy get migration {
@@ -105,6 +118,10 @@ class AppDatabase extends _$AppDatabase {
         if (from < 8) {
           // Add position column for drag and drop sorting
           await migrator.addColumn(todos, todos.position);
+        }
+        if (from < 9) {
+          // Add attachments table for file attachments
+          await migrator.createTable(attachments);
         }
       },
     );
@@ -275,6 +292,37 @@ class AppDatabase extends _$AppDatabase {
       'total': allSubtasks.length,
       'completed': completedCount,
     };
+  }
+
+  // Attachment methods
+  Future<List<Attachment>> getAttachmentsByTodoId(int todoId) =>
+      (select(attachments)..where((a) => a.todoId.equals(todoId))).get();
+
+  Future<Attachment?> getAttachmentById(int id) =>
+      (select(attachments)..where((a) => a.id.equals(id))).getSingleOrNull();
+
+  Future<int> insertAttachment(AttachmentsCompanion attachment) =>
+      into(attachments).insert(attachment);
+
+  Future<bool> updateAttachment(Attachment attachment) =>
+      update(attachments).replace(attachment);
+
+  Future<int> deleteAttachment(int id) =>
+      (delete(attachments)..where((a) => a.id.equals(id))).go();
+
+  Future<int> deleteAttachmentsByTodoId(int todoId) =>
+      (delete(attachments)..where((a) => a.todoId.equals(todoId))).go();
+
+  // Get attachment count for a todo
+  Future<int> getAttachmentCount(int todoId) async {
+    final allAttachments = await getAttachmentsByTodoId(todoId);
+    return allAttachments.length;
+  }
+
+  // Get total file size for a todo's attachments
+  Future<int> getTotalFileSize(int todoId) async {
+    final allAttachments = await getAttachmentsByTodoId(todoId);
+    return allAttachments.fold<int>(0, (sum, a) => sum + a.fileSize);
   }
 }
 

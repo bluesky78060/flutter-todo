@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 1.0.10+34
+version: 1.0.12+38
 
 environment:
   sdk: ^3.9.2
@@ -93,6 +93,13 @@ dependencies:
   # Share
   share_plus: ^10.0.0
 
+  # Location & Geofencing
+  geolocator: ^13.0.2
+  geocoding: ^3.0.0
+  flutter_naver_map: ^1.2.3
+  http: ^1.2.0  # For Naver Geocoding API
+  geofence_service: ^6.0.0+1  # Background geofencing
+
   # Background Processing (using GitHub repo for Flutter 3.38 compatibility)
   workmanager:
     git:
@@ -122,6 +129,7 @@ dev_dependencies:
 
   # Testing
   mockito: ^5.4.4
+  easy_localization_loader: ^2.0.1
 
   # Linting
   flutter_lints: ^5.0.0
