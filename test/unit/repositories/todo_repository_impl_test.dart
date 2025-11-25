@@ -54,6 +54,7 @@ void main() {
             recurrenceRule: null,
             parentRecurringTodoId: null,
             snoozeCount: 0,
+            position: 0,
           ),
           Todo(
             id: 2,
@@ -68,6 +69,7 @@ void main() {
             recurrenceRule: null,
             parentRecurringTodoId: null,
             snoozeCount: 0,
+            position: 1,
           ),
         ];
 
@@ -152,6 +154,7 @@ void main() {
             recurrenceRule: null,
             parentRecurringTodoId: null,
             snoozeCount: 0,
+            position: 0,
           ),
         ];
 
@@ -209,6 +212,7 @@ void main() {
           recurrenceRule: null,
           parentRecurringTodoId: null,
           snoozeCount: 0,
+          position: 0,
         );
 
         when(mockDatabase.getTodoById(1)).thenAnswer((_) async => dbTodo);
