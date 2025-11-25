@@ -13,7 +13,7 @@ import 'package:todo_app/presentation/screens/category_management_screen.dart';
 import 'package:todo_app/presentation/screens/calendar_screen.dart';
 // import 'package:todo_app/presentation/screens/theme_preview_screen.dart'; // Temporarily disabled
 import 'package:todo_app/presentation/screens/settings_screen.dart';
-import 'package:todo_app/presentation/screens/test_login_screen.dart';
+// import 'package:todo_app/presentation/screens/test_login_screen.dart'; // Development only
 import 'package:todo_app/presentation/screens/admin_dashboard_screen.dart';
 import 'package:todo_app/core/utils/app_logger.dart';
 
@@ -33,7 +33,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       final isOAuthCallbackRoute = state.matchedLocation == '/oauth-callback';
       final isThemePreviewRoute = state.matchedLocation == '/theme-preview';
       final isDevSettingsRoute = state.matchedLocation == '/dev-settings';
-      final isTestLoginRoute = state.matchedLocation == '/test-login';
+      // final isTestLoginRoute = state.matchedLocation == '/test-login'; // Development only
 
       // While loading initial auth state, stay on login/register routes
       final isLoading = userAsync.isLoading;
@@ -60,14 +60,14 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       }
 
       // Allow test login route without authentication (local development only)
-      if (isTestLoginRoute) {
-        logger.d('   🧪 Test login route - allowing without auth');
-        return null;
-      }
+      // if (isTestLoginRoute) {
+      //   logger.d('   🧪 Test login route - allowing without auth');
+      //   return null;
+      // }
 
       if (isLoading) {
         logger.d('   ⏳ Loading state - staying on auth routes');
-        if (!isLoginRoute && !isRegisterRoute && !isThemePreviewRoute && !isDevSettingsRoute && !isTestLoginRoute) {
+        if (!isLoginRoute && !isRegisterRoute && !isThemePreviewRoute && !isDevSettingsRoute) {
           return AppConstants.loginRoute;
         }
         return null;
@@ -89,7 +89,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
                         state.matchedLocation == '/categories' ||
                         state.matchedLocation == '/admin-dashboard';
 
-      if (!isAuthenticated && !isLoginRoute && !isRegisterRoute && !isThemePreviewRoute && !isDevSettingsRoute && !isTestLoginRoute && !isAppRoute) {
+      if (!isAuthenticated && !isLoginRoute && !isRegisterRoute && !isThemePreviewRoute && !isDevSettingsRoute && !isAppRoute) {
         logger.d('   🔒 Not authenticated - redirecting to login');
         return AppConstants.loginRoute;
       }
@@ -162,11 +162,11 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const SettingsScreen(),
       ),
       // Test login route for local development
-      GoRoute(
-        path: '/test-login',
-        name: 'test-login',
-        builder: (context, state) => const TestLoginScreen(),
-      ),
+      // GoRoute(
+      //   path: '/test-login',
+      //   name: 'test-login',
+      //   builder: (context, state) => const TestLoginScreen(),
+      // ),
     ],
     errorBuilder: (context, state) => Scaffold(
       body: Center(
