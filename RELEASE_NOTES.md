@@ -1,11 +1,48 @@
 # DoDo 앱 출시 노트
 
-## 최신 버전: 1.0.13+39 🚀
+## 최신 버전: 1.0.14+42 🚀
 
-**최종 업데이트**: 2025년 11월 25일
+**최종 업데이트**: 2025년 11월 26일
 **현재 상태**: Google Play에 배포됨
 **패키지 이름**: kr.bluesky.dodo
 **플랫폼**: Android 6.0 (API 23) 이상, iOS 11.0 이상, Web
+
+---
+
+## 버전 1.0.14+42 - 안정성 개선 🔧
+
+**출시일**: 2025년 11월 26일
+
+### 버그 수정 🐛
+
+#### DateTime 시간대 처리 개선
+- ✅ **Supabase 및 로컬 저장소 DateTime 처리 수정**
+  - UTC 시간대 변환 로직 수정
+  - 마감일, 알림 시간 등 날짜 필드 정확성 향상
+  - 타임존 관련 버그로 인한 시간 불일치 문제 해결
+
+#### 할 일 목록 즉시 반영
+- ✅ **새 할 일 생성 시 목록 즉시 업데이트**
+  - TodoFormDialog에서 할 일 생성 후 목록 자동 새로고침
+  - `ref.invalidate(todosProvider)` 추가로 실시간 동기화
+  - 수동 새로고침 없이 즉시 목록에 반영
+
+### 기술 개선 🔧
+
+- ✅ **테스트 컴파일 오류 수정**
+  - `getMaxTodoPosition()` 메서드 추가
+  - Drift 데이터베이스 테스트 호환성 개선
+
+**수정된 파일**
+- `lib/presentation/widgets/todo_form_dialog.dart` (즉시 반영 수정)
+- `lib/data/datasources/local/app_database.dart` (테스트 수정)
+- `lib/data/datasources/remote/supabase_datasource.dart` (DateTime 수정)
+
+**커밋 정보**
+- 커밋: ddb6592 - fix: Refresh todo list immediately after creating a new todo
+- 커밋: d3be204 - fix: Add getMaxTodoPosition method to fix test compilation error
+- 커밋: 141c103 - fix: Correct DateTime timezone handling for Supabase and local storage
+- 푸시 날짜: 2025-11-26
 
 ---
 
@@ -131,6 +168,44 @@
 ---
 
 ## Play Store 출시 노트 (간단 버전)
+
+### v1.0.14 한국어 버전 (500자 제한)
+
+```
+v1.0.14 업데이트 🔧
+
+안정성 개선:
+• 날짜/시간 처리 버그 수정
+• 새 할 일 추가 시 즉시 목록에 반영
+• 마감일/알림 시간 정확도 향상
+
+기술 개선:
+• UTC 시간대 변환 로직 수정
+• 데이터베이스 동기화 안정성 향상
+• 테스트 코드 개선
+
+더욱 안정적인 DoDo를 경험하세요!
+완전 무료, 광고 없음!
+```
+
+### v1.0.14 영어 버전 (500자 제한)
+
+```
+v1.0.14 Update 🔧
+
+Stability Improvements:
+• Fixed date/time handling bugs
+• New todos now appear immediately in list
+• Improved due date/reminder accuracy
+
+Technical Improvements:
+• UTC timezone conversion fixed
+• Enhanced database sync stability
+• Test code improvements
+
+Experience a more stable DoDo!
+Free, no ads!
+```
 
 ### v1.0.9 한국어 버전 (500자 제한)
 
