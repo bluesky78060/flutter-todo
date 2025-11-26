@@ -33,6 +33,9 @@ class CategoryRepositoryImpl implements CategoryRepository {
 
             if (existingCategory == null) {
               // Category doesn't exist locally, insert it
+              final createdAtString = categoryData['created_at'] as String;
+              final createdAtParsed = DateTime.parse(createdAtString);
+
               await database.insertCategoryWithId(
                 CategoriesCompanion.insert(
                   id: drift.Value(id),
@@ -40,7 +43,7 @@ class CategoryRepositoryImpl implements CategoryRepository {
                   name: categoryData['name'] as String,
                   color: categoryData['color'] as String,
                   icon: drift.Value(categoryData['icon'] as String?),
-                  createdAt: DateTime.parse(categoryData['created_at'] as String),
+                  createdAt: createdAtParsed,
                 ),
               );
               logger.d('✅ Synced category from Supabase: ${categoryData['name']} (ID: $id)');

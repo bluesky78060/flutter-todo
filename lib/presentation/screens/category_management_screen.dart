@@ -178,7 +178,7 @@ class CategoryManagementScreen extends ConsumerWidget {
           ),
         ),
         subtitle: Text(
-          DateFormat('yyyy-MM-dd').format(category.createdAt),
+          DateFormat('yyyy-MM-dd').format(category.createdAt.toLocal()),
           style: TextStyle(
             color: AppColors.getTextSecondary(isDarkMode),
             fontSize: 14,

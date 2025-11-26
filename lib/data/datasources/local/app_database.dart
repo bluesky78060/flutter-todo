@@ -79,7 +79,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 10;
+  int get schemaVersion => 11;
 
   @override
   MigrationStrategy get migration {
@@ -128,8 +128,72 @@ class AppDatabase extends _$AppDatabase {
           // Add locationTriggeredAt field to track last geofence notification time
           await migrator.addColumn(todos, todos.locationTriggeredAt);
         }
+        if (from < 11) {
+          // Migrate DateTime columns from INTEGER (unix timestamp) to TEXT (ISO 8601)
+          // This preserves timezone information and fixes UTC/local time issues
+          await _migrateDateTimeColumnsToText(migrator);
+        }
       },
     );
+  }
+
+  /// Migrate all DateTime columns from INTEGER to TEXT format
+  /// This is required when enabling store_date_time_values_as_text option
+  Future<void> _migrateDateTimeColumnsToText(Migrator migrator) async {
+    // Helper function to convert unix timestamp to ISO 8601 text
+    // datetime(unixTimestamp, 'unixepoch') converts to datetime, then we format as ISO 8601
+    const dateTimeConversion = "datetime(old_value, 'unixepoch')";
+
+    // Categories table - created_at column
+    await customStatement('''
+      UPDATE categories
+      SET created_at = $dateTimeConversion
+      WHERE typeof(created_at) = 'integer'
+    '''.replaceAll('old_value', 'created_at'));
+
+    // Todos table - multiple DateTime columns
+    final todoDateColumns = [
+      'created_at',
+      'completed_at',
+      'due_date',
+      'notification_time',
+      'last_snooze_time',
+      'location_triggered_at',
+    ];
+
+    for (final column in todoDateColumns) {
+      await customStatement('''
+        UPDATE todos
+        SET $column = datetime($column, 'unixepoch')
+        WHERE typeof($column) = 'integer'
+      ''');
+    }
+
+    // Users table - created_at column
+    await customStatement('''
+      UPDATE users
+      SET created_at = datetime(created_at, 'unixepoch')
+      WHERE typeof(created_at) = 'integer'
+    ''');
+
+    // Subtasks table - created_at, completed_at columns
+    await customStatement('''
+      UPDATE subtasks
+      SET created_at = datetime(created_at, 'unixepoch')
+      WHERE typeof(created_at) = 'integer'
+    ''');
+    await customStatement('''
+      UPDATE subtasks
+      SET completed_at = datetime(completed_at, 'unixepoch')
+      WHERE typeof(completed_at) = 'integer'
+    ''');
+
+    // Attachments table - created_at column
+    await customStatement('''
+      UPDATE attachments
+      SET created_at = datetime(created_at, 'unixepoch')
+      WHERE typeof(created_at) = 'integer'
+    ''');
   }
 
   // Get all todos

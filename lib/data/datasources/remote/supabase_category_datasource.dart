@@ -34,7 +34,7 @@ class SupabaseCategoryDataSource {
         'name': name,
         'color': color,
         'icon': icon,
-        'created_at': DateTime.now().toIso8601String(),
+        'created_at': DateTime.now().toUtc().toIso8601String(),
       }).select().single();
 
       AppLogger.info('✅ Category created in Supabase: $name');
@@ -94,7 +94,7 @@ class SupabaseCategoryDataSource {
         'name': name,
         'color': color,
         'icon': icon,
-        'created_at': createdAt.toIso8601String(),
+        'created_at': createdAt.toUtc().toIso8601String(),
       });
 
       AppLogger.info('✅ Category synced to Supabase: $name (ID: $localId)');

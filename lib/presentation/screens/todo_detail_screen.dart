@@ -25,7 +25,8 @@ class TodoDetailScreen extends ConsumerWidget {
   const TodoDetailScreen({super.key, required this.todoId});
 
   String _formatDateTime(DateTime dateTime) {
-    return '${dateTime.year}. ${dateTime.month}. ${dateTime.day}. ${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}';
+    final local = dateTime.toLocal();
+    return '${local.year}. ${local.month}. ${local.day}. ${local.hour.toString().padLeft(2, '0')}:${local.minute.toString().padLeft(2, '0')}';
   }
 
   @override

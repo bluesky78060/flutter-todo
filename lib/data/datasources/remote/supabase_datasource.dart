@@ -154,8 +154,8 @@ class SupabaseTodoDataSource {
         'description': description,
         'user_id': userId,
         'category_id': categoryId,
-        'due_date': dueDate?.toIso8601String(),
-        'notification_time': notificationTime?.toIso8601String(),
+        'due_date': dueDate?.toUtc().toIso8601String(),
+        'notification_time': notificationTime?.toUtc().toIso8601String(),
         'recurrence_rule': recurrenceRule,
         'parent_recurring_todo_id': parentRecurringTodoId,
         'location_latitude': locationLatitude,
@@ -190,13 +190,13 @@ class SupabaseTodoDataSource {
       'description': todo.description,
       'is_completed': todo.isCompleted,
       'category_id': todo.categoryId,
-      'completed_at': todo.completedAt?.toIso8601String(),
-      'due_date': todo.dueDate?.toIso8601String(),
-      'notification_time': todo.notificationTime?.toIso8601String(),
+      'completed_at': todo.completedAt?.toUtc().toIso8601String(),
+      'due_date': todo.dueDate?.toUtc().toIso8601String(),
+      'notification_time': todo.notificationTime?.toUtc().toIso8601String(),
       'recurrence_rule': todo.recurrenceRule,
       'parent_recurring_todo_id': todo.parentRecurringTodoId,
       'snooze_count': todo.snoozeCount,
-      'last_snooze_time': todo.lastSnoozeTime?.toIso8601String(),
+      'last_snooze_time': todo.lastSnoozeTime?.toUtc().toIso8601String(),
       'location_latitude': todo.locationLatitude,
       'location_longitude': todo.locationLongitude,
       'location_name': todo.locationName,
@@ -245,7 +245,7 @@ class SupabaseTodoDataSource {
 
     await client.from('todos').update({
       'is_completed': newCompleted,
-      'completed_at': newCompleted ? DateTime.now().toIso8601String() : null,
+      'completed_at': newCompleted ? DateTime.now().toUtc().toIso8601String() : null,
     }).eq('id', id);
   }
 

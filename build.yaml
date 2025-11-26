@@ -1,0 +1,7 @@
+targets:
+  $default:
+    builders:
+      drift_dev:
+        options:
+          # Store DateTime as ISO 8601 text to preserve timezone information
+          store_date_time_values_as_text: true

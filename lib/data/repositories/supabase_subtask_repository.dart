@@ -172,8 +172,8 @@ class SupabaseSubtaskRepository implements SubtaskRepository {
       'title': subtask.title,
       'is_completed': subtask.isCompleted,
       'position': subtask.position,
-      'created_at': subtask.createdAt.toIso8601String(),
-      'completed_at': subtask.completedAt?.toIso8601String(),
+      'created_at': subtask.createdAt.toUtc().toIso8601String(),
+      'completed_at': subtask.completedAt?.toUtc().toIso8601String(),
     };
   }
 }

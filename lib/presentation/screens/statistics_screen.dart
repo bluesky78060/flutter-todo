@@ -230,13 +230,15 @@ class StatisticsScreen extends ConsumerWidget {
 
     // Today's statistics
     final todayCreated = todos.where((t) {
-      final created = DateTime(t.createdAt.year, t.createdAt.month, t.createdAt.day);
+      final localCreated = t.createdAt.toLocal();
+      final created = DateTime(localCreated.year, localCreated.month, localCreated.day);
       return created.isAtSameMomentAs(today);
     }).length;
 
     final todayCompleted = todos.where((t) {
       if (t.completedAt == null) return false;
-      final completed = DateTime(t.completedAt!.year, t.completedAt!.month, t.completedAt!.day);
+      final localCompleted = t.completedAt!.toLocal();
+      final completed = DateTime(localCompleted.year, localCompleted.month, localCompleted.day);
       return completed.isAtSameMomentAs(today);
     }).length;
 
