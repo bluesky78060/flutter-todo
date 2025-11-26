@@ -1,10 +1,12 @@
 import 'package:drift/drift.dart' hide Table;
 import 'package:geolocator/geolocator.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:todo_app/core/services/geofence_calculator.dart';
 import 'package:todo_app/core/services/location_service.dart';
 import 'package:todo_app/core/services/notification_service.dart';
 import 'package:todo_app/core/utils/app_logger.dart';
 import 'package:todo_app/data/datasources/local/app_database.dart';
+import 'package:todo_app/data/datasources/remote/supabase_location_datasource.dart';
 import 'package:workmanager/workmanager.dart';
 
 /// GeofenceWorkManagerService handles background location monitoring
@@ -157,6 +159,18 @@ class GeofenceWorkManagerService {
             await database.update(database.todos).replace(
               todo.copyWith(locationTriggeredAt: Value(now)),
             );
+
+            // Sync to Supabase if available
+            try {
+              if (Supabase.instance.client.auth.currentUser != null) {
+                final dataSource = SupabaseLocationDataSource(
+                  Supabase.instance.client,
+                );
+                await dataSource.updateTriggeredAt(todo.id, now);
+              }
+            } catch (e) {
+              AppLogger.warning('⚠️ Failed to sync geofence state to Supabase', error: e);
+            }
 
             AppLogger.info(
               '🔔 Triggered notification for "${todo.title}" (distance: ${distance.toStringAsFixed(0)}m)',
