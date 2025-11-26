@@ -566,6 +566,9 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
         } else {
           print('[TodoFormDialog] Upload skipped - conditions not met');
         }
+
+        // Invalidate todosProvider to refresh the list immediately
+        ref.invalidate(todosProvider);
       }
 
       // Upload attachments for edited todo (Mobile only)

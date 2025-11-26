@@ -294,12 +294,12 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> {
     super.dispose();
   }
 
-  void _addTodoFromInput() {
+  Future<void> _addTodoFromInput() async {
     final text = _inputController.text.trim();
     if (text.isEmpty) return;
 
-    ref.read(todoActionsProvider).createTodo(text, '', null);
     _inputController.clear();
+    await ref.read(todoActionsProvider).createTodo(text, '', null);
   }
 
   /// Handle todo deletion with recurring dialog if needed

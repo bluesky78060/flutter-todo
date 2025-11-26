@@ -141,85 +141,83 @@ class TodoActions {
       locationRadius: locationRadius,
     );
 
-    await result.fold(
-      (failure) {
-        logger.e('❌ TodoActions: Failed to create todo');
-        logger.e('   Error: $failure');
-        throw Exception('${'db_save_failed'.tr()}: $failure');
-      },
-      (todoId) async {
-        logger.d('✅ TodoActions: Todo created with ID: $todoId');
+    // Use isRight/isLeft pattern for proper async handling
+    if (result.isLeft()) {
+      final failure = result.getLeft().toNullable();
+      logger.e('❌ TodoActions: Failed to create todo');
+      logger.e('   Error: $failure');
+      throw Exception('${'db_save_failed'.tr()}: $failure');
+    }
+
+    final todoId = result.getRight().toNullable()!;
+    logger.d('✅ TodoActions: Todo created with ID: $todoId');
+    logger.d('   Title: $title');
+    logger.d('   Due Date: $dueDate');
+    logger.d('   Notification Time: $notificationTime');
+    logger.d('   Recurrence Rule: $recurrenceRule');
+
+    // Schedule notification if notificationTime is set
+    if (notificationTime != null) {
+      try {
+        final notificationService = ref.read(notificationServiceProvider);
+        final now = DateTime.now();
+        final difference = notificationTime.difference(now);
+
+        logger.d('📅 TodoActions: Scheduling notification for todo $todoId');
         logger.d('   Title: $title');
-        logger.d('   Due Date: $dueDate');
         logger.d('   Notification Time: $notificationTime');
-        logger.d('   Recurrence Rule: $recurrenceRule');
+        logger.d('   Current Time: $now');
+        logger.d('   Time until notification: ${difference.inMinutes} minutes');
 
-        // Schedule notification if notificationTime is set
-        if (notificationTime != null) {
-          try {
-            final notificationService = ref.read(notificationServiceProvider);
-            final now = DateTime.now();
-            final difference = notificationTime.difference(now);
+        await notificationService.scheduleNotification(
+          id: todoId,
+          title: 'todo_reminder'.tr(),
+          body: title,
+          scheduledDate: notificationTime,
+        );
 
-            logger.d('📅 TodoActions: Scheduling notification for todo $todoId');
-            logger.d('   Title: $title');
-            logger.d('   Notification Time: $notificationTime');
-            logger.d('   Current Time: $now');
-            logger.d('   Time until notification: ${difference.inMinutes} minutes');
+        // Verify scheduling
+        final pending = await notificationService.getPendingNotifications();
+        final thisNotification = pending.where((n) => n.id == todoId).firstOrNull;
 
-            await notificationService.scheduleNotification(
-              id: todoId,
-              title: 'todo_reminder'.tr(),
-              body: title,
-              scheduledDate: notificationTime,
-            );
-
-            // Verify scheduling
-            final pending = await notificationService.getPendingNotifications();
-            final thisNotification = pending.where((n) => n.id == todoId).firstOrNull;
-
-            if (thisNotification != null) {
-              logger.d('✅ TodoActions: Notification verified in pending list');
-              logger.d('   Pending notifications count: ${pending.length}');
-            } else {
-              logger.d('⚠️ TodoActions: Notification not found in pending list!');
-            }
-          } catch (e, stackTrace) {
-            logger.d('❌ TodoActions: Failed to schedule notification: $e');
-            logger.d('   Stack trace: $stackTrace');
-            // Don't throw - allow todo creation to succeed even if notification fails
-          }
+        if (thisNotification != null) {
+          logger.d('✅ TodoActions: Notification verified in pending list');
+          logger.d('   Pending notifications count: ${pending.length}');
         } else {
-          logger.d('ℹ️ TodoActions: No notification time set');
+          logger.d('⚠️ TodoActions: Notification not found in pending list!');
         }
+      } catch (e, stackTrace) {
+        logger.d('❌ TodoActions: Failed to schedule notification: $e');
+        logger.d('   Stack trace: $stackTrace');
+        // Don't throw - allow todo creation to succeed even if notification fails
+      }
+    } else {
+      logger.d('ℹ️ TodoActions: No notification time set');
+    }
 
-        // Generate recurring instances if this is a recurring todo
-        if (recurrenceRule != null) {
-          try {
-            logger.d('🔄 TodoActions: Generating recurring instances for todo $todoId');
-            final recurringService = ref.read(recurringTodoServiceProvider);
+    // Generate recurring instances if this is a recurring todo
+    if (recurrenceRule != null) {
+      try {
+        logger.d('🔄 TodoActions: Generating recurring instances for todo $todoId');
+        final recurringService = ref.read(recurringTodoServiceProvider);
 
-            // Fetch the created todo to pass to the service
-            final todoResult = await repository.getTodoById(todoId);
-            await todoResult.fold(
-              (failure) {
-                logger.e('❌ TodoActions: Failed to fetch created todo for recurring instance generation');
-              },
-              (todo) async {
-                await recurringService.generateInstancesForNewMaster(todo);
-                logger.d('✅ TodoActions: Recurring instances generated successfully');
-              },
-            );
-          } catch (e, stackTrace) {
-            logger.e('❌ TodoActions: Failed to generate recurring instances',
-              error: e, stackTrace: stackTrace);
-            // Don't throw - allow todo creation to succeed even if instance generation fails
-          }
+        // Fetch the created todo to pass to the service
+        final todoResult = await repository.getTodoById(todoId);
+        if (todoResult.isRight()) {
+          final todo = todoResult.getRight().toNullable()!;
+          await recurringService.generateInstancesForNewMaster(todo);
+          logger.d('✅ TodoActions: Recurring instances generated successfully');
+        } else {
+          logger.e('❌ TodoActions: Failed to fetch created todo for recurring instance generation');
         }
+      } catch (e, stackTrace) {
+        logger.e('❌ TodoActions: Failed to generate recurring instances',
+          error: e, stackTrace: stackTrace);
+        // Don't throw - allow todo creation to succeed even if instance generation fails
+      }
+    }
 
-        ref.invalidate(todosProvider);
-      },
-    );
+    ref.invalidate(todosProvider);
   }
 
   /// Update a todo
