@@ -125,12 +125,28 @@ class SupabaseTodoDataSource {
         throw Exception('로그인이 필요합니다. 다시 로그인해주세요.');
       }
 
+      // 최대 position 값을 구해서 새 position 계산
+      final maxPositionResponse = await client
+          .from('todos')
+          .select('position')
+          .eq('user_id', userId)
+          .order('position', ascending: false)
+          .limit(1);
+
+      int newPosition = 0;
+      if ((maxPositionResponse as List).isNotEmpty) {
+        final maxPosition = maxPositionResponse[0]['position'] as int?;
+        if (maxPosition != null) {
+          newPosition = maxPosition + 1;
+        }
+      }
+
       if (kDebugMode) {
         logger.d('Creating todo: userId=$userId, title=$title, '
             'categoryId=$categoryId, dueDate=${dueDate?.toIso8601String()}, '
             'notificationTime=${notificationTime?.toIso8601String()}, '
             'recurrenceRule=$recurrenceRule, parentRecurringTodoId=$parentRecurringTodoId, '
-            'location=$locationLatitude,$locationLongitude');
+            'location=$locationLatitude,$locationLongitude, position=$newPosition');
       }
 
       final response = await client.from('todos').insert({
@@ -146,10 +162,11 @@ class SupabaseTodoDataSource {
         'location_longitude': locationLongitude,
         'location_name': locationName,
         'location_radius': locationRadius,
+        'position': newPosition,
       }).select('id').single();
 
       if (kDebugMode) {
-        logger.d('Todo created successfully with id: ${response['id']}');
+        logger.d('Todo created successfully with id: ${response['id']}, position: $newPosition');
       }
       return response['id'] as int;
     } catch (e, stackTrace) {

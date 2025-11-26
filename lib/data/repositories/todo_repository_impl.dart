@@ -62,6 +62,17 @@ class TodoRepositoryImpl implements TodoRepository {
     double? locationRadius,
   }) async {
     try {
+      // 현재 최대 position 조회
+      final maxPositionTodo = await (database.select(database.todos)
+            ..orderBy([(t) => OrderingTerm(expression: t.position, ascending: false)])
+            ..limit(1))
+          .getSingleOrNull();
+
+      int newPosition = 0;
+      if (maxPositionTodo != null) {
+        newPosition = maxPositionTodo.position + 1;
+      }
+
       final id = await database.insertTodo(
         TodosCompanion(
           title: drift.Value(title),
@@ -77,6 +88,7 @@ class TodoRepositoryImpl implements TodoRepository {
           locationLongitude: drift.Value(locationLongitude),
           locationName: drift.Value(locationName),
           locationRadius: drift.Value(locationRadius),
+          position: drift.Value(newPosition),
         ),
       );
       return Right(id);
