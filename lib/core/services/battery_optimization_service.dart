@@ -162,7 +162,7 @@ class BatteryOptimizationService {
     }
 
     try {
-      const methodChannel = MethodChannel('com.example.todo_app/battery');
+      const methodChannel = MethodChannel('kr.bluesky.dodo/battery');
       final result = await methodChannel.invokeMethod<bool>(
         'isIgnoringBatteryOptimizations',
       );
@@ -180,7 +180,7 @@ class BatteryOptimizationService {
     }
 
     try {
-      const methodChannel = MethodChannel('com.example.todo_app/battery');
+      const methodChannel = MethodChannel('kr.bluesky.dodo/battery');
       await methodChannel.invokeMethod<void>(
         'requestIgnoreBatteryOptimizations',
       );
