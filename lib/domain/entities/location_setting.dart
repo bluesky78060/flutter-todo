@@ -1,24 +1,125 @@
-import 'package:freezed_annotation/freezed_annotation.dart';
+class LocationSetting {
+  final int id;
+  final String userId;
+  final int todoId;
+  final double latitude;
+  final double longitude;
+  final int radius;
+  final String? locationName;
+  final String geofenceState;
+  final DateTime? triggeredAt;
+  final DateTime createdAt;
+  final DateTime updatedAt;
 
-part 'location_setting.freezed.dart';
-part 'location_setting.g.dart';
+  const LocationSetting({
+    required this.id,
+    required this.userId,
+    required this.todoId,
+    required this.latitude,
+    required this.longitude,
+    required this.radius,
+    this.locationName,
+    this.geofenceState = 'outside',
+    this.triggeredAt,
+    required this.createdAt,
+    required this.updatedAt,
+  });
 
-@freezed
-class LocationSetting with _$LocationSetting {
-  const factory LocationSetting({
-    required int id,
-    required String userId,
-    required int todoId,
-    required double latitude,
-    required double longitude,
-    required int radius,
+  factory LocationSetting.fromJson(Map<String, dynamic> json) {
+    return LocationSetting(
+      id: json['id'] as int,
+      userId: json['user_id'] as String,
+      todoId: json['todo_id'] as int,
+      latitude: (json['latitude'] as num).toDouble(),
+      longitude: (json['longitude'] as num).toDouble(),
+      radius: json['radius'] as int,
+      locationName: json['location_name'] as String?,
+      geofenceState: json['geofence_state'] as String? ?? 'outside',
+      triggeredAt: json['triggered_at'] != null
+          ? DateTime.parse(json['triggered_at'] as String)
+          : null,
+      createdAt: DateTime.parse(json['created_at'] as String),
+      updatedAt: DateTime.parse(json['updated_at'] as String),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'user_id': userId,
+      'todo_id': todoId,
+      'latitude': latitude,
+      'longitude': longitude,
+      'radius': radius,
+      'location_name': locationName,
+      'geofence_state': geofenceState,
+      'triggered_at': triggeredAt?.toIso8601String(),
+      'created_at': createdAt.toIso8601String(),
+      'updated_at': updatedAt.toIso8601String(),
+    };
+  }
+
+  LocationSetting copyWith({
+    int? id,
+    String? userId,
+    int? todoId,
+    double? latitude,
+    double? longitude,
+    int? radius,
     String? locationName,
-    @Default('outside') String geofenceState, // outside/entering/inside/exiting
-    DateTime? triggeredAt, // 마지막 알림 시간 (중복 방지)
-    required DateTime createdAt,
-    required DateTime updatedAt,
-  }) = _LocationSetting;
+    String? geofenceState,
+    DateTime? triggeredAt,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) {
+    return LocationSetting(
+      id: id ?? this.id,
+      userId: userId ?? this.userId,
+      todoId: todoId ?? this.todoId,
+      latitude: latitude ?? this.latitude,
+      longitude: longitude ?? this.longitude,
+      radius: radius ?? this.radius,
+      locationName: locationName ?? this.locationName,
+      geofenceState: geofenceState ?? this.geofenceState,
+      triggeredAt: triggeredAt ?? this.triggeredAt,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
 
-  factory LocationSetting.fromJson(Map<String, dynamic> json) =>
-      _$LocationSettingFromJson(json);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is LocationSetting &&
+          runtimeType == other.runtimeType &&
+          id == other.id &&
+          userId == other.userId &&
+          todoId == other.todoId &&
+          latitude == other.latitude &&
+          longitude == other.longitude &&
+          radius == other.radius &&
+          locationName == other.locationName &&
+          geofenceState == other.geofenceState &&
+          triggeredAt == other.triggeredAt &&
+          createdAt == other.createdAt &&
+          updatedAt == other.updatedAt;
+
+  @override
+  int get hashCode =>
+      id.hashCode ^
+      userId.hashCode ^
+      todoId.hashCode ^
+      latitude.hashCode ^
+      longitude.hashCode ^
+      radius.hashCode ^
+      locationName.hashCode ^
+      geofenceState.hashCode ^
+      triggeredAt.hashCode ^
+      createdAt.hashCode ^
+      updatedAt.hashCode;
+
+  @override
+  String toString() {
+    return 'LocationSetting(id: $id, userId: $userId, todoId: $todoId, latitude: $latitude, longitude: $longitude, radius: $radius, locationName: $locationName, geofenceState: $geofenceState, triggeredAt: $triggeredAt, createdAt: $createdAt, updatedAt: $updatedAt)';
+  }
 }
