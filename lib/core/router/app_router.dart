@@ -82,14 +82,8 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         }
       }
 
-      // Allow direct access to app routes for local development testing
-      final isAppRoute = state.matchedLocation == '/todos' ||
-                        state.matchedLocation.startsWith('/todos/') ||
-                        state.matchedLocation == '/calendar' ||
-                        state.matchedLocation == '/categories' ||
-                        state.matchedLocation == '/admin-dashboard';
-
-      if (!isAuthenticated && !isLoginRoute && !isRegisterRoute && !isThemePreviewRoute && !isDevSettingsRoute && !isAppRoute) {
+      // Redirect to login if not authenticated and trying to access protected routes
+      if (!isAuthenticated && !isLoginRoute && !isRegisterRoute && !isThemePreviewRoute && !isDevSettingsRoute) {
         logger.d('   🔒 Not authenticated - redirecting to login');
         return AppConstants.loginRoute;
       }

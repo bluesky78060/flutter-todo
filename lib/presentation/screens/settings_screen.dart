@@ -1190,9 +1190,19 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   const SizedBox(width: 12),
                   Expanded(
                     child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-                        ref.read(authActionsProvider).logout();
+                      onPressed: () async {
+                        // Save navigation context before closing dialog
+                        final navigator = Navigator.of(context);
+                        final router = GoRouter.of(context);
+
+                        // Close dialog
+                        navigator.pop();
+
+                        // Logout
+                        await ref.read(authActionsProvider).logout();
+
+                        // Navigate to login screen
+                        router.go('/login');
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.red,
