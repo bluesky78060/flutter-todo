@@ -6,6 +6,8 @@ import 'package:go_router/go_router.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:todo_app/core/services/backup_service.dart';
+import 'package:todo_app/core/services/battery_optimization_service.dart';
+import 'package:todo_app/core/services/geofence_workmanager_service.dart';
 import 'package:todo_app/core/theme/app_colors.dart';
 import 'package:todo_app/core/utils/samsung_device_utils.dart';
 import 'package:todo_app/presentation/providers/admin_providers.dart';
@@ -30,6 +32,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   bool _isBatteryOptimizationIgnored = false;
   bool _isFoldableDevice = false;
   String? _deviceModel;
+
+  // Geofencing settings
+  bool _geofencingEnabled = true;
+  int _geofencingIntervalMinutes = 15;
+  bool _batteryOptimizationEnabled = true;
+  BatteryState _currentBatteryState = BatteryState.medium;
 
   @override
   void initState() {
@@ -160,6 +168,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   _buildSectionHeader('categories'.tr()),
                   const SizedBox(height: 12),
                   _buildCategoryCard(),
+                  const SizedBox(height: 32),
+
+                  // Geofencing Settings
+                  _buildSectionHeader('geofencing_settings'.tr()),
+                  const SizedBox(height: 12),
+                  _buildGeofencingCard(),
                   const SizedBox(height: 32),
 
                   // Admin Dashboard (관리자만 표시)
@@ -1720,6 +1734,277 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  /// Geofencing settings card
+  Widget _buildGeofencingCard() {
+    final isDarkMode = ref.watch(isDarkModeProvider);
+    final batteryService = BatteryOptimizationService();
+
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.getCard(isDarkMode),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.2),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          children: [
+            // Enable/Disable toggle
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        _geofencingEnabled
+                            ? 'geofencing_enabled'.tr()
+                            : 'geofencing_disabled'.tr(),
+                        style: TextStyle(
+                          color: AppColors.getText(isDarkMode),
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        _geofencingEnabled
+                            ? 'location_notifications'.tr()
+                            : 'geofencing_status'.tr(),
+                        style: TextStyle(
+                          color: AppColors.getTextSecondary(isDarkMode),
+                          fontSize: 13,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Switch(
+                  value: _geofencingEnabled,
+                  onChanged: (value) {
+                    setState(() {
+                      _geofencingEnabled = value;
+                      if (value) {
+                        // Start geofencing
+                        GeofenceWorkManagerService.startMonitoring(
+                          intervalMinutes: _geofencingIntervalMinutes,
+                        );
+                      } else {
+                        // Stop geofencing
+                        GeofenceWorkManagerService.stopMonitoring();
+                      }
+                    });
+                  },
+                  activeColor: AppColors.primaryBlue,
+                  activeTrackColor: AppColors.primaryBlue.withValues(alpha: 0.3),
+                ),
+              ],
+            ),
+
+            if (_geofencingEnabled) ...[
+              const SizedBox(height: 24),
+              const Divider(height: 1),
+              const SizedBox(height: 24),
+
+              // Battery optimization mode
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'geofencing_battery_optimization'.tr(),
+                          style: TextStyle(
+                            color: AppColors.getText(isDarkMode),
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'geofencing_battery_optimization_desc'.tr(),
+                          style: TextStyle(
+                            color: AppColors.getTextSecondary(isDarkMode),
+                            fontSize: 13,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Switch(
+                    value: _batteryOptimizationEnabled,
+                    onChanged: (value) {
+                      setState(() {
+                        _batteryOptimizationEnabled = value;
+                      });
+                    },
+                    activeColor: AppColors.primaryBlue,
+                    activeTrackColor:
+                        AppColors.primaryBlue.withValues(alpha: 0.3),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 24),
+              const Divider(height: 1),
+              const SizedBox(height: 24),
+
+              // Check interval selector
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'geofencing_check_interval'.tr(),
+                    style: TextStyle(
+                      color: AppColors.getText(isDarkMode),
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      _buildIntervalButton(
+                        isDarkMode,
+                        'geofencing_interval_10min'.tr(),
+                        10,
+                      ),
+                      _buildIntervalButton(
+                        isDarkMode,
+                        'geofencing_interval_15min'.tr(),
+                        15,
+                      ),
+                      _buildIntervalButton(
+                        isDarkMode,
+                        'geofencing_interval_30min'.tr(),
+                        30,
+                      ),
+                      _buildIntervalButton(
+                        isDarkMode,
+                        'geofencing_interval_60min'.tr(),
+                        60,
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 24),
+              const Divider(height: 1),
+              const SizedBox(height: 24),
+
+              // Battery status and current state
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'battery_optimization_status'.tr(),
+                        style: TextStyle(
+                          color: AppColors.getText(isDarkMode),
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        _batteryOptimizationEnabled
+                            ? batteryService.formatBatteryState(_currentBatteryState)
+                            : 'battery_optimization_disabled'.tr(),
+                        style: TextStyle(
+                          color: AppColors.getTextSecondary(isDarkMode),
+                          fontSize: 13,
+                        ),
+                      ),
+                    ],
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.getInput(isDarkMode),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      '${_geofencingIntervalMinutes}m',
+                      style: TextStyle(
+                        color: AppColors.primaryBlue,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Build interval button
+  Widget _buildIntervalButton(
+    bool isDarkMode,
+    String label,
+    int minutes,
+  ) {
+    final isSelected = _geofencingIntervalMinutes == minutes;
+
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _geofencingIntervalMinutes = minutes;
+          // Update geofencing interval if enabled
+          if (_geofencingEnabled) {
+            GeofenceWorkManagerService.startMonitoring(
+              intervalMinutes: minutes,
+            );
+          }
+        });
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? AppColors.primaryBlue
+              : AppColors.getInput(isDarkMode),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: isSelected
+                ? AppColors.primaryBlue
+                : AppColors.getBorder(isDarkMode),
+          ),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: isSelected
+                ? Colors.white
+                : AppColors.getTextSecondary(isDarkMode),
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+          ),
         ),
       ),
     );
