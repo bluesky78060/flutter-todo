@@ -276,6 +276,7 @@ void main() {
     group('createTodo', () {
       test('creates todo and returns id', () async {
         // Arrange
+        when(mockDatabase.getMaxTodoPosition()).thenAnswer((_) async => 0);
         when(mockDatabase.insertTodo(any)).thenAnswer((_) async => 42);
 
         // Act
@@ -295,6 +296,7 @@ void main() {
           },
         );
 
+        verify(mockDatabase.getMaxTodoPosition()).called(1);
         verify(mockDatabase.insertTodo(any)).called(1);
       });
 
@@ -303,6 +305,7 @@ void main() {
         final dueDate = DateTime.utc(2026, 6, 5);
         final notificationTime = DateTime.utc(2026, 6, 5, 9, 0);
 
+        when(mockDatabase.getMaxTodoPosition()).thenAnswer((_) async => 5);
         when(mockDatabase.insertTodo(any)).thenAnswer((_) async => 10);
 
         // Act
@@ -325,11 +328,13 @@ void main() {
           },
         );
 
+        verify(mockDatabase.getMaxTodoPosition()).called(1);
         verify(mockDatabase.insertTodo(any)).called(1);
       });
 
       test('returns DatabaseFailure on error', () async {
         // Arrange
+        when(mockDatabase.getMaxTodoPosition()).thenAnswer((_) async => 0);
         when(mockDatabase.insertTodo(any))
             .thenThrow(Exception('Insert error'));
 

@@ -63,15 +63,8 @@ class TodoRepositoryImpl implements TodoRepository {
   }) async {
     try {
       // 현재 최대 position 조회
-      final maxPositionTodo = await (database.select(database.todos)
-            ..orderBy([(t) => OrderingTerm(expression: t.position, ascending: false)])
-            ..limit(1))
-          .getSingleOrNull();
-
-      int newPosition = 0;
-      if (maxPositionTodo != null) {
-        newPosition = maxPositionTodo.position + 1;
-      }
+      final maxPosition = await database.getMaxTodoPosition();
+      final newPosition = maxPosition + 1;
 
       final id = await database.insertTodo(
         TodosCompanion(

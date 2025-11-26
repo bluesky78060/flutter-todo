@@ -213,6 +213,15 @@ class AppDatabase extends _$AppDatabase {
     return getAllTodos();
   }
 
+  // Get maximum position value
+  Future<int> getMaxTodoPosition() async {
+    final maxPositionTodo = await (select(todos)
+          ..orderBy([(t) => OrderingTerm(expression: t.position, mode: OrderingMode.desc)])
+          ..limit(1))
+        .getSingleOrNull();
+    return maxPositionTodo?.position ?? -1;
+  }
+
   // Insert todo
   Future<int> insertTodo(TodosCompanion todo) => into(todos).insert(todo);
 
