@@ -87,8 +87,13 @@ dependencies:
   # Calendar
   table_calendar: ^3.1.2
 
-  # File Picker
+  # File Picker & Image Picker
   file_picker: ^8.0.0
+  image_picker: ^1.1.2
+  mime: ^1.0.6
+
+  # PDF & Document Viewer
+  syncfusion_flutter_pdfviewer: ^28.2.7
 
   # Share
   share_plus: ^10.0.0

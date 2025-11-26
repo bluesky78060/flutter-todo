@@ -1,5 +1,14 @@
 # DoDo 앱 출시 노트
 
+## 최신 버전: 1.0.13+39 🚀
+
+**최종 업데이트**: 2025년 11월 25일
+**현재 상태**: Google Play에 배포됨
+**패키지 이름**: kr.bluesky.dodo
+**플랫폼**: Android 6.0 (API 23) 이상, iOS 11.0 이상, Web
+
+---
+
 ## 버전 1.0.0 - 첫 번째 릴리스! 🎉
 
 **출시일**: 2025년 11월 6일
@@ -432,6 +441,114 @@ Free, no ads!
 
 ---
 
+### v1.0.13+39 (2025-11-25)
+**드래그 앤 드롭 정렬 기능 및 관리자 대시보드 완성**
+
+**신규 기능**
+- ✅ **드래그 앤 드롭 정렬 기능**
+  - Todo 항목을 드래그로 순서 변경 가능
+  - 카테고리별 독립적인 정렬 지원
+  - 앱 재시작 후에도 순서 유지
+  - ReorderableListView를 이용한 직관적 UI
+
+- ✅ **관리자 대시보드 (익명화된 통계)**
+  - 사용자, Todo, 카테고리 통계
+  - 시간대별 활동 분석
+  - 요일별 완료율 분석
+  - Pull-to-refresh 지원
+
+**기술 구현**
+- ✅ **Position 필드 추가 (Drift + Supabase)**
+  - todos 테이블에 position 컬럼 추가
+  - Supabase 마이그레이션 생성 (인덱스 포함)
+  - updateTodoPositions 메서드 구현
+
+- ✅ **관리자 권한 시스템**
+  - Supabase RPC 함수 5개 생성 (SECURITY DEFINER)
+  - Flutter 관리자 권한 체크
+  - Settings 화면에 관리자 버튼 표시
+
+**부가 기능**
+- ✅ **첨부파일 시스템 Phase 1**
+  - Supabase Storage 버킷 생성
+  - 파일 업로드/다운로드 기능
+  - 이미지/PDF/텍스트 파일 뷰어
+
+**수정된 파일**
+- `lib/domain/entities/todo.dart` (position 필드 추가)
+- `lib/data/datasources/local/drift_todo_datasource.dart` (정렬 로직)
+- `lib/presentation/screens/todo_list_screen.dart` (ReorderableListView 적용)
+- `lib/presentation/screens/admin_dashboard_screen.dart` (신규)
+- `android/app/src/main/kotlin/kr/bluesky/dodo/MainActivity.kt` (Method Channel 추가)
+- `pubspec.yaml` (버전 1.0.13+39로 업데이트)
+
+**테스트**
+- ✅ 128개 테스트 통과 (CI/CD)
+- ✅ position 파라미터 추가로 모든 테스트 통과
+
+**빌드 정보**
+- AAB: 51.2 MB (build/app/outputs/bundle/release/app-release-1.0.13+39.aab)
+- Google Play에 성공적으로 업로드
+- 최신 빌드 번호: 39
+
+**커밋 정보**
+- 커밋 메시지: "feat: Implement drag-and-drop todo sorting with position persistence"
+- 푸시 날짜: 2025-11-25
+
+---
+
+### v1.0.11+35 (2025-11-19)
+**첨부파일 시스템 및 서브태스크 완전 구현**
+
+**신규 기능**
+- ✅ **첨부파일 시스템 (Phase 1-2 완료)**
+  - Supabase Storage에 파일 저장
+  - 다양한 파일 형식 지원 (이미지, PDF, 텍스트, JSON)
+  - 파일 선택 UI (카메라, 갤러리, 파일 시스템)
+  - 이미지 뷰어 (확대/축소, 팬)
+  - PDF 뷰어 (Syncfusion PDF Viewer)
+  - 텍스트 파일 뷰어 (40+ 확장자)
+
+- ✅ **서브태스크 기능**
+  - Subtask 엔티티 및 Repository
+  - Todo 상세 화면에서 서브태스크 CRUD
+  - 서브태스크 완료 상태 추적
+  - Supabase 동기화
+
+- ✅ **알림 스누즈 기능**
+  - 5분/10분/30분/1시간/3시간 옵션
+  - 커스텀 시간 설정 가능
+  - SnoozeDialog UI
+
+- ✅ **서브태스크 기능 완전 구현**
+  - Subtask 엔티티, Repository, Provider
+  - Todo 상세 화면에 서브태스크 CRUD
+  - Supabase 마이그레이션 SQL
+
+**기술 개선**
+- ✅ **Dual Repository Pattern**
+  - 로컬 (Drift) + 원격 (Supabase) 동기화
+  - 자동 업데이트 감지 및 동기화
+
+- ✅ **CI/CD 파이프라인 구축**
+  - GitHub Actions 통합
+  - Codecov 커버리지 추적
+  - 128개 테스트 자동 실행
+
+**수정된 파일**
+- `lib/domain/entities/attachment.dart` (신규)
+- `lib/domain/entities/subtask.dart` (신규)
+- `lib/data/datasources/local/drift_attachment_datasource.dart` (신규)
+- `lib/data/datasources/local/drift_subtask_datasource.dart` (신규)
+- `lib/presentation/screens/todo_detail_screen.dart` (신규 탭 추가)
+- 15개 파일 신규 생성, 6개 파일 수정
+
+**커밋 정보**
+- 주요 커밋: 다양한 첨부파일 및 서브태스크 구현
+- 푸시 날짜: 2025-11-19
+
+---
+
 ### v1.0.10 (2025-11-18)
 **위치 기반 알림 즉시 확인 기능 추가**
 
@@ -533,11 +650,15 @@ Free, no ads!
 - **앱 이름**: DoDo (두두)
 - **패키지 이름**: kr.bluesky.dodo
 - **개발자**: 이찬희
-- **버전**: 1.0.0 (빌드 1)
+- **현재 버전**: 1.0.13 (빌드 39)
 - **최소 SDK**: Android 6.0 (API 23)
 - **타겟 SDK**: Android 14 (API 34)
+- **iOS 최소 버전**: iOS 11.0
+- **웹 지원**: Flutter Web (Chrome, Safari, Firefox)
 - **서명**: SHA384withRSA (2048-bit)
 - **인증서 유효기간**: 2025-11-06 ~ 2053-03-24
+- **Google Play 상태**: 배포됨 (Google Play Console 관리자)
+- **마지막 빌드**: 2025-11-25
 
 ---
 

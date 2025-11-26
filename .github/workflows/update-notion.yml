@@ -1,0 +1,221 @@
+name: Update Notion Release Notes
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to update (e.g., 1.0.13+39)'
+        required: true
+        default: '1.0.13+39'
+      release_date:
+        description: 'Release date (YYYY-MM-DD format)'
+        required: true
+        default: '2025-11-25'
+  push:
+    branches:
+      - main
+    paths:
+      - 'RELEASE_NOTES.md'
+      - 'NOTION_RELEASE_NOTES.md'
+  release:
+    types: [published]
+
+jobs:
+  update-notion:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: |
+          npm install -g axios
+          npm install -g dotenv
+
+      - name: Get version info from RELEASE_NOTES.md
+        id: version_info
+        run: |
+          VERSION=$(head -5 RELEASE_NOTES.md | grep "최신 버전" | sed 's/.*: //' | sed 's/ .*//')
+          RELEASE_DATE=$(head -5 RELEASE_NOTES.md | grep "최종 업데이트" | sed 's/.*: //')
+          STATUS=$(head -8 RELEASE_NOTES.md | grep "현재 상태" | sed 's/.*: //')
+
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "release_date=$RELEASE_DATE" >> $GITHUB_OUTPUT
+          echo "status=$STATUS" >> $GITHUB_OUTPUT
+
+          echo "📦 Detected version: $VERSION"
+          echo "📅 Release date: $RELEASE_DATE"
+          echo "✅ Status: $STATUS"
+
+      - name: Read NOTION_RELEASE_NOTES.md
+        id: notion_content
+        run: |
+          CONTENT=$(cat NOTION_RELEASE_NOTES.md | sed 's/"/\\"/g' | sed 's/$/\\n/' | tr -d '\n')
+          echo "content=$CONTENT" >> $GITHUB_OUTPUT
+
+      - name: Update Notion page via API
+        env:
+          NOTION_API_KEY: ${{ secrets.NOTION_API_KEY }}
+          NOTION_PAGE_ID: ${{ secrets.NOTION_PAGE_ID }}
+        run: |
+          cat > update_notion.js << 'EOF'
+          const axios = require('axios');
+
+          const NOTION_API_KEY = process.env.NOTION_API_KEY;
+          const NOTION_PAGE_ID = process.env.NOTION_PAGE_ID;
+          const VERSION = process.env.VERSION;
+          const RELEASE_DATE = process.env.RELEASE_DATE;
+          const STATUS = process.env.STATUS;
+
+          if (!NOTION_API_KEY || !NOTION_PAGE_ID) {
+            console.error('❌ Missing required environment variables');
+            console.error('   NOTION_API_KEY:', NOTION_API_KEY ? '✓' : '✗');
+            console.error('   NOTION_PAGE_ID:', NOTION_PAGE_ID ? '✓' : '✗');
+            process.exit(1);
+          }
+
+          const apiClient = axios.create({
+            baseURL: 'https://api.notion.com/v1',
+            headers: {
+              'Authorization': `Bearer ${NOTION_API_KEY}`,
+              'Notion-Version': '2024-06-15'
+            }
+          });
+
+          async function updateNotionPage() {
+            try {
+              console.log('🔄 Updating Notion page...');
+              console.log(`   Version: ${VERSION}`);
+              console.log(`   Release Date: ${RELEASE_DATE}`);
+              console.log(`   Status: ${STATUS}`);
+              console.log(`   Page ID: ${NOTION_PAGE_ID}`);
+
+              // Update page properties
+              const response = await apiClient.patch(
+                `/pages/${NOTION_PAGE_ID}`,
+                {
+                  properties: {
+                    'Version': {
+                      'title': [
+                        {
+                          'text': {
+                            'content': VERSION
+                          }
+                        }
+                      ]
+                    },
+                    'Status': {
+                      'select': {
+                        'name': STATUS.includes('배포') ? '배포됨' : '준비중'
+                      }
+                    },
+                    'Last Updated': {
+                      'date': {
+                        'start': RELEASE_DATE
+                      }
+                    }
+                  }
+                }
+              );
+
+              console.log('✅ Successfully updated Notion page!');
+              console.log('📝 Page ID:', response.data.id);
+              console.log('⏰ Last edited time:', response.data.last_edited_time);
+
+              return true;
+            } catch (error) {
+              console.error('❌ Error updating Notion page:');
+              if (error.response) {
+                console.error('Status:', error.response.status);
+                console.error('Data:', JSON.stringify(error.response.data, null, 2));
+              } else {
+                console.error(error.message);
+              }
+
+              // Print helpful debugging info
+              console.log('\n🔍 Debug Information:');
+              console.log('   API Key length:', NOTION_API_KEY?.length || 0);
+              console.log('   Page ID format:', NOTION_PAGE_ID?.length === 36 ? 'UUID format ✓' : 'Check format');
+
+              process.exit(1);
+            }
+          }
+
+          updateNotionPage();
+          EOF
+
+          node update_notion.js
+        env:
+          VERSION: ${{ steps.version_info.outputs.version }}
+          RELEASE_DATE: ${{ steps.version_info.outputs.release_date }}
+          STATUS: ${{ steps.version_info.outputs.status }}
+
+      - name: Create commit comment
+        if: success()
+        run: |
+          echo "✅ Notion Release Notes Updated"
+          echo ""
+          echo "📦 Version: ${{ steps.version_info.outputs.version }}"
+          echo "📅 Release Date: ${{ steps.version_info.outputs.release_date }}"
+          echo "✅ Status: ${{ steps.version_info.outputs.status }}"
+          echo ""
+          echo "🔗 Notion page ID: ${{ secrets.NOTION_PAGE_ID }}"
+
+      - name: Handle failure
+        if: failure()
+        run: |
+          echo "❌ Failed to update Notion page"
+          echo ""
+          echo "Troubleshooting steps:"
+          echo "1. Check NOTION_API_KEY is set correctly in GitHub Secrets"
+          echo "2. Check NOTION_PAGE_ID is set correctly in GitHub Secrets"
+          echo "3. Verify the Integration has access to the Release Notes page"
+          echo "4. Check that the page properties match the API schema"
+          echo ""
+          echo "GitHub Secrets URL:"
+          echo "https://github.com/${{ github.repository }}/settings/secrets/actions"
+
+  test-connection:
+    if: always()
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Verify Notion credentials
+        env:
+          NOTION_API_KEY: ${{ secrets.NOTION_API_KEY }}
+          NOTION_PAGE_ID: ${{ secrets.NOTION_PAGE_ID }}
+        run: |
+          echo "🔍 Checking Notion credentials..."
+          echo ""
+
+          if [ -z "$NOTION_API_KEY" ]; then
+            echo "❌ NOTION_API_KEY is not set"
+            echo "   → Go to Settings → Secrets and variables → Actions"
+            echo "   → Add NOTION_API_KEY with your Notion API token"
+          else
+            echo "✅ NOTION_API_KEY is set (length: ${#NOTION_API_KEY})"
+          fi
+
+          echo ""
+
+          if [ -z "$NOTION_PAGE_ID" ]; then
+            echo "❌ NOTION_PAGE_ID is not set"
+            echo "   → Go to Settings → Secrets and variables → Actions"
+            echo "   → Add NOTION_PAGE_ID with your page ID"
+          else
+            echo "✅ NOTION_PAGE_ID is set: ${NOTION_PAGE_ID}"
+          fi
+
+          echo ""
+          echo "📖 Setup guide: See NOTION_UPDATE_GUIDE.md for detailed instructions"

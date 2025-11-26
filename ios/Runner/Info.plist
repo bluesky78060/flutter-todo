@@ -49,6 +49,7 @@
 	<array>
 		<string>fetch</string>
 		<string>remote-notification</string>
+		<string>location</string>
 	</array>
 	<key>CFBundleURLTypes</key>
 	<array>
@@ -68,6 +69,13 @@
 	<string>파일을 업로드하기 위해 사진 라이브러리 접근 권한이 필요합니다.</string>
 	<key>NSCameraUsageDescription</key>
 	<string>파일을 업로드하기 위해 카메라 접근 권한이 필요합니다.</string>
+	<!-- Location Permissions for Geofencing -->
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>앱이 현재 위치를 사용하여 위치 기반 알림을 제공합니다.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>앱이 백그라운드에서 당신의 위치를 모니터링하여 목표 위치에 도달하면 알림을 보냅니다.</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>앱이 백그라운드에서 당신의 위치를 모니터링합니다.</string>
 	<!-- OAuth Google Sign In -->
 	<key>GIDClientID</key>
 	<string>621785374771-2a4meibhjq1lmq4ccon9c5imt0ds9eks.apps.googleusercontent.com</string>

@@ -1,5 +1,6 @@
-import 'package:flutter/foundation.dart';
+import 'package:drift/drift.dart' hide Table;
 import 'package:geolocator/geolocator.dart';
+import 'package:todo_app/core/services/geofence_calculator.dart';
 import 'package:todo_app/core/services/location_service.dart';
 import 'package:todo_app/core/services/notification_service.dart';
 import 'package:todo_app/core/utils/app_logger.dart';
@@ -110,6 +111,8 @@ class GeofenceWorkManagerService {
 
       // Check each todo's geofence
       int triggeredCount = 0;
+      int skippedCount = 0;
+
       for (final todo in todos) {
         // Skip if todo is already completed
         if (todo.isCompleted) continue;
@@ -119,33 +122,52 @@ class GeofenceWorkManagerService {
           continue;
         }
 
-        // Calculate distance to geofence
-        final distance = locationService.calculateDistance(
-          currentPosition.latitude,
-          currentPosition.longitude,
-          todo.locationLatitude!,
-          todo.locationLongitude!,
+        // Calculate accurate distance using Haversine formula
+        final distance = GeofenceCalculator.calculateHaversineDistance(
+          userLatitude: currentPosition.latitude,
+          userLongitude: currentPosition.longitude,
+          targetLatitude: todo.locationLatitude!,
+          targetLongitude: todo.locationLongitude!,
         );
 
         final radius = todo.locationRadius ?? 100.0; // Default 100m
         final isWithin = distance <= radius;
 
         if (isWithin) {
-          triggeredCount++;
+          // Check for duplicate notification prevention (24-hour throttling)
+          final lastTriggeredAt = todo.locationTriggeredAt;
+          final now = DateTime.now();
+          final shouldTrigger = lastTriggeredAt == null ||
+              now.difference(lastTriggeredAt).inHours >= 24;
 
-          // Trigger notification
-          await notificationService.showLocationNotification(
-            id: todo.id,
-            title: todo.title,
-            body: todo.description.isNotEmpty
-                ? todo.description
-                : 'You are near ${todo.locationName ?? "your destination"}',
-            distance: distance,
-          );
+          if (shouldTrigger) {
+            triggeredCount++;
 
-          AppLogger.info(
-            '🔔 Triggered notification for "${todo.title}" (distance: ${distance.toStringAsFixed(0)}m)',
-          );
+            // Trigger notification
+            await notificationService.showLocationNotification(
+              id: todo.id,
+              title: todo.title,
+              body: todo.description.isNotEmpty
+                  ? todo.description
+                  : 'You are near ${todo.locationName ?? "your destination"}',
+              distance: distance,
+            );
+
+            // Update locationTriggeredAt timestamp
+            await database.update(database.todos).replace(
+              todo.copyWith(locationTriggeredAt: Value(now)),
+            );
+
+            AppLogger.info(
+              '🔔 Triggered notification for "${todo.title}" (distance: ${distance.toStringAsFixed(0)}m)',
+            );
+          } else {
+            skippedCount++;
+            final hoursSinceLastTrigger = now.difference(lastTriggeredAt).inHours;
+            AppLogger.debug(
+              '⏱️ Skipped duplicate notification for "${todo.title}" (triggered ${hoursSinceLastTrigger}h ago)',
+            );
+          }
         } else {
           AppLogger.debug(
             '📍 "${todo.title}": ${distance.toStringAsFixed(0)}m away (radius: ${radius}m)',
@@ -154,7 +176,9 @@ class GeofenceWorkManagerService {
       }
 
       if (triggeredCount > 0) {
-        AppLogger.info('✅ Triggered $triggeredCount location notifications');
+        AppLogger.info('✅ Triggered $triggeredCount location notifications (skipped: $skippedCount)');
+      } else if (skippedCount > 0) {
+        AppLogger.debug('ℹ️ No new geofences triggered (skipped $skippedCount duplicates)');
       } else {
         AppLogger.debug('ℹ️ No geofences triggered');
       }

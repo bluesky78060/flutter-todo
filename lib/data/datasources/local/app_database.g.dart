@@ -603,6 +603,17 @@ class $TodosTable extends Todos with TableInfo<$TodosTable, Todo> {
     type: DriftSqlType.double,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _locationTriggeredAtMeta =
+      const VerificationMeta('locationTriggeredAt');
+  @override
+  late final GeneratedColumn<DateTime> locationTriggeredAt =
+      GeneratedColumn<DateTime>(
+        'location_triggered_at',
+        aliasedName,
+        true,
+        type: DriftSqlType.dateTime,
+        requiredDuringInsert: false,
+      );
   static const VerificationMeta _positionMeta = const VerificationMeta(
     'position',
   );
@@ -634,6 +645,7 @@ class $TodosTable extends Todos with TableInfo<$TodosTable, Todo> {
     locationLongitude,
     locationName,
     locationRadius,
+    locationTriggeredAt,
     position,
   ];
   @override
@@ -789,6 +801,15 @@ class $TodosTable extends Todos with TableInfo<$TodosTable, Todo> {
         ),
       );
     }
+    if (data.containsKey('location_triggered_at')) {
+      context.handle(
+        _locationTriggeredAtMeta,
+        locationTriggeredAt.isAcceptableOrUnknown(
+          data['location_triggered_at']!,
+          _locationTriggeredAtMeta,
+        ),
+      );
+    }
     if (data.containsKey('position')) {
       context.handle(
         _positionMeta,
@@ -872,6 +893,10 @@ class $TodosTable extends Todos with TableInfo<$TodosTable, Todo> {
         DriftSqlType.double,
         data['${effectivePrefix}location_radius'],
       ),
+      locationTriggeredAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}location_triggered_at'],
+      ),
       position: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}position'],
@@ -903,6 +928,7 @@ class Todo extends DataClass implements Insertable<Todo> {
   final double? locationLongitude;
   final String? locationName;
   final double? locationRadius;
+  final DateTime? locationTriggeredAt;
   final int position;
   const Todo({
     required this.id,
@@ -922,6 +948,7 @@ class Todo extends DataClass implements Insertable<Todo> {
     this.locationLongitude,
     this.locationName,
     this.locationRadius,
+    this.locationTriggeredAt,
     required this.position,
   });
   @override
@@ -965,6 +992,9 @@ class Todo extends DataClass implements Insertable<Todo> {
     }
     if (!nullToAbsent || locationRadius != null) {
       map['location_radius'] = Variable<double>(locationRadius);
+    }
+    if (!nullToAbsent || locationTriggeredAt != null) {
+      map['location_triggered_at'] = Variable<DateTime>(locationTriggeredAt);
     }
     map['position'] = Variable<int>(position);
     return map;
@@ -1011,6 +1041,9 @@ class Todo extends DataClass implements Insertable<Todo> {
       locationRadius: locationRadius == null && nullToAbsent
           ? const Value.absent()
           : Value(locationRadius),
+      locationTriggeredAt: locationTriggeredAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(locationTriggeredAt),
       position: Value(position),
     );
   }
@@ -1044,6 +1077,9 @@ class Todo extends DataClass implements Insertable<Todo> {
       ),
       locationName: serializer.fromJson<String?>(json['locationName']),
       locationRadius: serializer.fromJson<double?>(json['locationRadius']),
+      locationTriggeredAt: serializer.fromJson<DateTime?>(
+        json['locationTriggeredAt'],
+      ),
       position: serializer.fromJson<int>(json['position']),
     );
   }
@@ -1068,6 +1104,7 @@ class Todo extends DataClass implements Insertable<Todo> {
       'locationLongitude': serializer.toJson<double?>(locationLongitude),
       'locationName': serializer.toJson<String?>(locationName),
       'locationRadius': serializer.toJson<double?>(locationRadius),
+      'locationTriggeredAt': serializer.toJson<DateTime?>(locationTriggeredAt),
       'position': serializer.toJson<int>(position),
     };
   }
@@ -1090,6 +1127,7 @@ class Todo extends DataClass implements Insertable<Todo> {
     Value<double?> locationLongitude = const Value.absent(),
     Value<String?> locationName = const Value.absent(),
     Value<double?> locationRadius = const Value.absent(),
+    Value<DateTime?> locationTriggeredAt = const Value.absent(),
     int? position,
   }) => Todo(
     id: id ?? this.id,
@@ -1123,6 +1161,9 @@ class Todo extends DataClass implements Insertable<Todo> {
     locationRadius: locationRadius.present
         ? locationRadius.value
         : this.locationRadius,
+    locationTriggeredAt: locationTriggeredAt.present
+        ? locationTriggeredAt.value
+        : this.locationTriggeredAt,
     position: position ?? this.position,
   );
   Todo copyWithCompanion(TodosCompanion data) {
@@ -1170,6 +1211,9 @@ class Todo extends DataClass implements Insertable<Todo> {
       locationRadius: data.locationRadius.present
           ? data.locationRadius.value
           : this.locationRadius,
+      locationTriggeredAt: data.locationTriggeredAt.present
+          ? data.locationTriggeredAt.value
+          : this.locationTriggeredAt,
       position: data.position.present ? data.position.value : this.position,
     );
   }
@@ -1194,6 +1238,7 @@ class Todo extends DataClass implements Insertable<Todo> {
           ..write('locationLongitude: $locationLongitude, ')
           ..write('locationName: $locationName, ')
           ..write('locationRadius: $locationRadius, ')
+          ..write('locationTriggeredAt: $locationTriggeredAt, ')
           ..write('position: $position')
           ..write(')'))
         .toString();
@@ -1218,6 +1263,7 @@ class Todo extends DataClass implements Insertable<Todo> {
     locationLongitude,
     locationName,
     locationRadius,
+    locationTriggeredAt,
     position,
   );
   @override
@@ -1241,6 +1287,7 @@ class Todo extends DataClass implements Insertable<Todo> {
           other.locationLongitude == this.locationLongitude &&
           other.locationName == this.locationName &&
           other.locationRadius == this.locationRadius &&
+          other.locationTriggeredAt == this.locationTriggeredAt &&
           other.position == this.position);
 }
 
@@ -1262,6 +1309,7 @@ class TodosCompanion extends UpdateCompanion<Todo> {
   final Value<double?> locationLongitude;
   final Value<String?> locationName;
   final Value<double?> locationRadius;
+  final Value<DateTime?> locationTriggeredAt;
   final Value<int> position;
   const TodosCompanion({
     this.id = const Value.absent(),
@@ -1281,6 +1329,7 @@ class TodosCompanion extends UpdateCompanion<Todo> {
     this.locationLongitude = const Value.absent(),
     this.locationName = const Value.absent(),
     this.locationRadius = const Value.absent(),
+    this.locationTriggeredAt = const Value.absent(),
     this.position = const Value.absent(),
   });
   TodosCompanion.insert({
@@ -1301,6 +1350,7 @@ class TodosCompanion extends UpdateCompanion<Todo> {
     this.locationLongitude = const Value.absent(),
     this.locationName = const Value.absent(),
     this.locationRadius = const Value.absent(),
+    this.locationTriggeredAt = const Value.absent(),
     this.position = const Value.absent(),
   }) : title = Value(title),
        description = Value(description),
@@ -1323,6 +1373,7 @@ class TodosCompanion extends UpdateCompanion<Todo> {
     Expression<double>? locationLongitude,
     Expression<String>? locationName,
     Expression<double>? locationRadius,
+    Expression<DateTime>? locationTriggeredAt,
     Expression<int>? position,
   }) {
     return RawValuesInsertable({
@@ -1344,6 +1395,8 @@ class TodosCompanion extends UpdateCompanion<Todo> {
       if (locationLongitude != null) 'location_longitude': locationLongitude,
       if (locationName != null) 'location_name': locationName,
       if (locationRadius != null) 'location_radius': locationRadius,
+      if (locationTriggeredAt != null)
+        'location_triggered_at': locationTriggeredAt,
       if (position != null) 'position': position,
     });
   }
@@ -1366,6 +1419,7 @@ class TodosCompanion extends UpdateCompanion<Todo> {
     Value<double?>? locationLongitude,
     Value<String?>? locationName,
     Value<double?>? locationRadius,
+    Value<DateTime?>? locationTriggeredAt,
     Value<int>? position,
   }) {
     return TodosCompanion(
@@ -1387,6 +1441,7 @@ class TodosCompanion extends UpdateCompanion<Todo> {
       locationLongitude: locationLongitude ?? this.locationLongitude,
       locationName: locationName ?? this.locationName,
       locationRadius: locationRadius ?? this.locationRadius,
+      locationTriggeredAt: locationTriggeredAt ?? this.locationTriggeredAt,
       position: position ?? this.position,
     );
   }
@@ -1447,6 +1502,11 @@ class TodosCompanion extends UpdateCompanion<Todo> {
     if (locationRadius.present) {
       map['location_radius'] = Variable<double>(locationRadius.value);
     }
+    if (locationTriggeredAt.present) {
+      map['location_triggered_at'] = Variable<DateTime>(
+        locationTriggeredAt.value,
+      );
+    }
     if (position.present) {
       map['position'] = Variable<int>(position.value);
     }
@@ -1473,6 +1533,7 @@ class TodosCompanion extends UpdateCompanion<Todo> {
           ..write('locationLongitude: $locationLongitude, ')
           ..write('locationName: $locationName, ')
           ..write('locationRadius: $locationRadius, ')
+          ..write('locationTriggeredAt: $locationTriggeredAt, ')
           ..write('position: $position')
           ..write(')'))
         .toString();
@@ -3264,6 +3325,7 @@ typedef $$TodosTableCreateCompanionBuilder =
       Value<double?> locationLongitude,
       Value<String?> locationName,
       Value<double?> locationRadius,
+      Value<DateTime?> locationTriggeredAt,
       Value<int> position,
     });
 typedef $$TodosTableUpdateCompanionBuilder =
@@ -3285,6 +3347,7 @@ typedef $$TodosTableUpdateCompanionBuilder =
       Value<double?> locationLongitude,
       Value<String?> locationName,
       Value<double?> locationRadius,
+      Value<DateTime?> locationTriggeredAt,
       Value<int> position,
     });
 
@@ -3432,6 +3495,11 @@ class $$TodosTableFilterComposer extends Composer<_$AppDatabase, $TodosTable> {
 
   ColumnFilters<double> get locationRadius => $composableBuilder(
     column: $table.locationRadius,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get locationTriggeredAt => $composableBuilder(
+    column: $table.locationTriggeredAt,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -3603,6 +3671,11 @@ class $$TodosTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<DateTime> get locationTriggeredAt => $composableBuilder(
+    column: $table.locationTriggeredAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<int> get position => $composableBuilder(
     column: $table.position,
     builder: (column) => ColumnOrderings(column),
@@ -3710,6 +3783,11 @@ class $$TodosTableAnnotationComposer
 
   GeneratedColumn<double> get locationRadius => $composableBuilder(
     column: $table.locationRadius,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get locationTriggeredAt => $composableBuilder(
+    column: $table.locationTriggeredAt,
     builder: (column) => column,
   );
 
@@ -3839,6 +3917,7 @@ class $$TodosTableTableManager
                 Value<double?> locationLongitude = const Value.absent(),
                 Value<String?> locationName = const Value.absent(),
                 Value<double?> locationRadius = const Value.absent(),
+                Value<DateTime?> locationTriggeredAt = const Value.absent(),
                 Value<int> position = const Value.absent(),
               }) => TodosCompanion(
                 id: id,
@@ -3858,6 +3937,7 @@ class $$TodosTableTableManager
                 locationLongitude: locationLongitude,
                 locationName: locationName,
                 locationRadius: locationRadius,
+                locationTriggeredAt: locationTriggeredAt,
                 position: position,
               ),
           createCompanionCallback:
@@ -3879,6 +3959,7 @@ class $$TodosTableTableManager
                 Value<double?> locationLongitude = const Value.absent(),
                 Value<String?> locationName = const Value.absent(),
                 Value<double?> locationRadius = const Value.absent(),
+                Value<DateTime?> locationTriggeredAt = const Value.absent(),
                 Value<int> position = const Value.absent(),
               }) => TodosCompanion.insert(
                 id: id,
@@ -3898,6 +3979,7 @@ class $$TodosTableTableManager
                 locationLongitude: locationLongitude,
                 locationName: locationName,
                 locationRadius: locationRadius,
+                locationTriggeredAt: locationTriggeredAt,
                 position: position,
               ),
           withReferenceMapper: (p0) => p0

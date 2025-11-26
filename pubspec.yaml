@@ -104,6 +104,7 @@ dependencies:
   flutter_naver_map: ^1.2.3
   http: ^1.2.0  # For Naver Geocoding API
   geofence_service: ^6.0.0+1  # Background geofencing
+  battery_plus: ^7.0.0  # Battery status monitoring for geofencing optimization
 
   # Background Processing (using GitHub repo for Flutter 3.38 compatibility)
   workmanager:

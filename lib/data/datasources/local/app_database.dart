@@ -36,6 +36,7 @@ class Todos extends Table {
   RealColumn get locationLongitude => real().nullable()(); // Location longitude
   TextColumn get locationName => text().nullable()(); // Human-readable location name
   RealColumn get locationRadius => real().nullable()(); // Geofence radius in meters
+  DateTimeColumn get locationTriggeredAt => dateTime().nullable()(); // Last time geofence notification was triggered
   IntColumn get position => integer().withDefault(const Constant(0))(); // Order position for drag and drop sorting
 }
 
@@ -78,7 +79,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 9;
+  int get schemaVersion => 10;
 
   @override
   MigrationStrategy get migration {
@@ -122,6 +123,10 @@ class AppDatabase extends _$AppDatabase {
         if (from < 9) {
           // Add attachments table for file attachments
           await migrator.createTable(attachments);
+        }
+        if (from < 10) {
+          // Add locationTriggeredAt field to track last geofence notification time
+          await migrator.addColumn(todos, todos.locationTriggeredAt);
         }
       },
     );
@@ -243,6 +248,11 @@ class AppDatabase extends _$AppDatabase {
           parentRecurringTodoId: todo.parentRecurringTodoId.present ? todo.parentRecurringTodoId.value : null,
           snoozeCount: todo.snoozeCount.present ? todo.snoozeCount.value : 0,
           lastSnoozeTime: todo.lastSnoozeTime.present ? todo.lastSnoozeTime.value : null,
+          locationLatitude: todo.locationLatitude.present ? todo.locationLatitude.value : null,
+          locationLongitude: todo.locationLongitude.present ? todo.locationLongitude.value : null,
+          locationName: todo.locationName.present ? todo.locationName.value : null,
+          locationRadius: todo.locationRadius.present ? todo.locationRadius.value : null,
+          locationTriggeredAt: todo.locationTriggeredAt.present ? todo.locationTriggeredAt.value : null,
           position: todo.position.present ? todo.position.value : 0,
         ),
       );
