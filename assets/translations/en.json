@@ -484,5 +484,14 @@
   "restore_overwrite": "Overwrite",
   "restore_delete_then_restore": "Delete existing data then restore",
   "restore_merge": "Merge",
-  "restore_merge_latest_first": "Merge with latest data first"
+  "restore_merge_latest_first": "Merge with latest data first",
+
+  "offline_mode": "Offline Mode",
+  "offline_mode_description": "Changes are saved locally and will sync when online",
+  "offline": "Offline",
+  "connected": "Connected",
+  "last_sync": "Last sync",
+  "sync_failed": "Sync failed",
+  "retry": "Retry",
+  "syncing": "Syncing..."
 }

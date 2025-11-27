@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:todo_app/core/services/notification_service.dart';
 import 'package:todo_app/domain/entities/todo.dart';
 import 'package:todo_app/presentation/providers/database_provider.dart';
+import 'package:todo_app/presentation/providers/connectivity_provider.dart';
 import 'package:todo_app/core/utils/app_logger.dart';
 import 'package:todo_app/presentation/widgets/recurring_edit_dialog.dart';
 import 'package:todo_app/presentation/widgets/recurring_delete_dialog.dart';
@@ -128,6 +129,11 @@ class TodoActions {
     double? locationRadius,
   }) async {
     final repository = ref.read(todoRepositoryProvider);
+    final syncNotifier = ref.read(syncStateProvider.notifier);
+
+    // Start sync
+    syncNotifier.startSync();
+
     final result = await repository.createTodo(
       title,
       description,
@@ -146,6 +152,7 @@ class TodoActions {
       final failure = result.getLeft().toNullable();
       logger.e('❌ TodoActions: Failed to create todo');
       logger.e('   Error: $failure');
+      syncNotifier.syncFailed('$failure', shouldRetry: true);
       throw Exception('${'db_save_failed'.tr()}: $failure');
     }
 
@@ -217,6 +224,9 @@ class TodoActions {
       }
     }
 
+    // Sync success
+    await syncNotifier.syncSuccess();
+
     ref.invalidate(todosProvider);
   }
 
@@ -227,6 +237,10 @@ class TodoActions {
     RecurringEditMode? recurringEditMode,
   }) async {
     final repository = ref.read(todoRepositoryProvider);
+    final syncNotifier = ref.read(syncStateProvider.notifier);
+
+    // Start sync
+    syncNotifier.startSync();
 
     // Check if this is a recurring todo instance (has parentRecurringTodoId)
     if (todo.parentRecurringTodoId != null && recurringEditMode != null) {
@@ -251,10 +265,14 @@ class TodoActions {
             parentRecurringTodoId: null, // Detach from series
           );
           final result = await repository.updateTodo(detachedTodo);
-          result.fold(
-            (failure) => throw Exception(failure),
-            (_) {
+          await result.fold(
+            (failure) async {
+              syncNotifier.syncFailed('$failure', shouldRetry: true);
+              throw Exception(failure);
+            },
+            (_) async {
               logger.d('✅ TodoActions: Instance detached and updated');
+              await syncNotifier.syncSuccess();
               ref.invalidate(todosProvider);
               ref.invalidate(todoDetailProvider(todo.id));
             },
@@ -268,8 +286,9 @@ class TodoActions {
           // First, get the master todo
           final masterResult = await repository.getTodoById(todo.parentRecurringTodoId!);
           await masterResult.fold(
-            (failure) {
+            (failure) async {
               logger.e('❌ TodoActions: Failed to fetch master todo');
+              syncNotifier.syncFailed('$failure', shouldRetry: true);
               throw Exception('${'master_todo_fetch_failed'.tr()}: $failure');
             },
             (masterTodo) async {
@@ -285,8 +304,9 @@ class TodoActions {
 
               final result = await repository.updateTodo(updatedMaster);
               await result.fold(
-                (failure) {
+                (failure) async {
                   logger.e('❌ TodoActions: Failed to update master todo');
+                  syncNotifier.syncFailed('$failure', shouldRetry: true);
                   throw Exception('${'master_todo_update_failed'.tr()}: $failure');
                 },
                 (_) async {
@@ -319,6 +339,7 @@ class TodoActions {
                     },
                   );
 
+                  await syncNotifier.syncSuccess();
                   ref.invalidate(todosProvider);
                   ref.invalidate(todoDetailProvider(todo.id));
                 },
@@ -331,10 +352,14 @@ class TodoActions {
       // Regular todo update (non-recurring or master todo)
       logger.d('📝 TodoActions: Updating regular todo');
       final result = await repository.updateTodo(todo);
-      result.fold(
-        (failure) => throw Exception(failure),
-        (_) {
+      await result.fold(
+        (failure) async {
+          syncNotifier.syncFailed('$failure', shouldRetry: true);
+          throw Exception(failure);
+        },
+        (_) async {
           logger.d('✅ TodoActions: Todo updated successfully');
+          await syncNotifier.syncSuccess();
           ref.invalidate(todosProvider);
           ref.invalidate(todoDetailProvider(todo.id));
         },
@@ -350,14 +375,19 @@ class TodoActions {
   }) async {
     final repository = ref.read(todoRepositoryProvider);
     final notificationService = ref.read(notificationServiceProvider);
+    final syncNotifier = ref.read(syncStateProvider.notifier);
 
     logger.d('🗑️ TodoActions: Attempting to delete todo $id');
+
+    // Start sync
+    syncNotifier.startSync();
 
     // First, fetch the todo to check if it's a recurring instance
     final todoResult = await repository.getTodoById(id);
     await todoResult.fold(
-      (failure) {
+      (failure) async {
         logger.e('❌ TodoActions: Failed to fetch todo for deletion');
+        syncNotifier.syncFailed('$failure', shouldRetry: true);
         throw Exception('${'todo_fetch_failed'.tr()}: $failure');
       },
       (todo) async {
@@ -370,7 +400,7 @@ class TodoActions {
             case RecurringDeleteMode.thisOnly:
               // Delete only this instance
               logger.d('   Deleting this instance only');
-              await _deleteSingleTodo(id, notificationService, repository);
+              await _deleteSingleTodo(id, notificationService, repository, syncNotifier);
               break;
 
             case RecurringDeleteMode.thisAndFuture:
@@ -379,8 +409,9 @@ class TodoActions {
 
               final allTodosResult = await repository.getTodos();
               await allTodosResult.fold(
-                (failure) {
+                (failure) async {
                   logger.e('❌ TodoActions: Failed to fetch todos');
+                  syncNotifier.syncFailed('$failure', shouldRetry: true);
                   throw Exception('${'todos_fetch_failed'.tr()}: $failure');
                 },
                 (allTodos) async {
@@ -395,7 +426,7 @@ class TodoActions {
 
                   logger.d('   Deleting ${instancesToDelete.length} instances');
                   for (final instance in instancesToDelete) {
-                    await _deleteSingleTodo(instance.id, notificationService, repository);
+                    await _deleteSingleTodo(instance.id, notificationService, repository, syncNotifier);
                   }
                 },
               );
@@ -407,8 +438,9 @@ class TodoActions {
 
               final allTodosResult = await repository.getTodos();
               await allTodosResult.fold(
-                (failure) {
+                (failure) async {
                   logger.e('❌ TodoActions: Failed to fetch todos');
+                  syncNotifier.syncFailed('$failure', shouldRetry: true);
                   throw Exception('${'todos_fetch_failed'.tr()}: $failure');
                 },
                 (allTodos) async {
@@ -420,12 +452,12 @@ class TodoActions {
                   // Delete all instances
                   logger.d('   Deleting ${allInstances.length} instances');
                   for (final instance in allInstances) {
-                    await _deleteSingleTodo(instance.id, notificationService, repository);
+                    await _deleteSingleTodo(instance.id, notificationService, repository, syncNotifier);
                   }
 
                   // Delete the master todo
                   logger.d('   Deleting master todo ${todo.parentRecurringTodoId}');
-                  await _deleteSingleTodo(todo.parentRecurringTodoId!, notificationService, repository);
+                  await _deleteSingleTodo(todo.parentRecurringTodoId!, notificationService, repository, syncNotifier);
                 },
               );
               break;
@@ -433,9 +465,11 @@ class TodoActions {
         } else {
           // Regular todo deletion (non-recurring or master todo)
           logger.d('📝 TodoActions: Deleting regular todo');
-          await _deleteSingleTodo(id, notificationService, repository);
+          await _deleteSingleTodo(id, notificationService, repository, syncNotifier);
         }
 
+        // Sync success
+        await syncNotifier.syncSuccess();
         ref.invalidate(todosProvider);
       },
     );
@@ -446,6 +480,7 @@ class TodoActions {
     int id,
     NotificationService notificationService,
     dynamic repository,
+    SyncStateNotifier syncNotifier,
   ) async {
     // Cancel notification before deleting todo
     try {
@@ -479,6 +514,7 @@ class TodoActions {
       (failure) {
         logger.e('❌ TodoActions: Failed to delete todo $id');
         logger.e('   Error: $failure');
+        syncNotifier.syncFailed('$failure', shouldRetry: true);
         throw Exception('${'db_delete_failed'.tr()}: $failure');
       },
       (_) {
@@ -489,20 +525,26 @@ class TodoActions {
 
   Future<void> toggleCompletion(int id) async {
     final repository = ref.read(todoRepositoryProvider);
+    final syncNotifier = ref.read(syncStateProvider.notifier);
+
+    // Start sync
+    syncNotifier.startSync();
 
     // First, fetch the todo to check if it's a recurring instance
     final todoResult = await repository.getTodoById(id);
     await todoResult.fold(
-      (failure) {
+      (failure) async {
         logger.e('❌ TodoActions: Failed to fetch todo for toggle completion');
+        syncNotifier.syncFailed('$failure', shouldRetry: true);
         throw Exception('${'todo_fetch_failed'.tr()}: $failure');
       },
       (todo) async {
         // Toggle the completion status
         final result = await repository.toggleCompletion(id);
         await result.fold(
-          (failure) {
+          (failure) async {
             logger.e('❌ TodoActions: Failed to toggle completion');
+            syncNotifier.syncFailed('$failure', shouldRetry: true);
             throw Exception(failure);
           },
           (_) async {
@@ -542,6 +584,8 @@ class TodoActions {
               }
             }
 
+            // Sync success
+            await syncNotifier.syncSuccess();
             ref.invalidate(todosProvider);
             ref.invalidate(todoDetailProvider(id));
           },

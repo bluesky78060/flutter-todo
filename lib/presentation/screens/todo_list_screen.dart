@@ -20,6 +20,8 @@ import 'package:todo_app/presentation/widgets/todo_form_dialog.dart';
 import 'package:todo_app/presentation/widgets/recurring_delete_dialog.dart';
 import 'package:todo_app/core/utils/recurrence_utils.dart';
 import 'package:todo_app/core/utils/color_utils.dart';
+import 'package:todo_app/presentation/providers/connectivity_provider.dart';
+import 'package:todo_app/presentation/widgets/offline_banner.dart';
 
 class TodoListScreen extends ConsumerStatefulWidget {
   const TodoListScreen({super.key});
@@ -399,6 +401,8 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> {
       body: SafeArea(
         child: Column(
           children: [
+            // Offline Banner
+            const OfflineBanner(),
             // Header with gradient
             Container(
               decoration: BoxDecoration(
@@ -424,12 +428,18 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> {
                             ),
                           ),
                           const SizedBox(height: 4),
-                          Text(
-                            'keep_it_up'.tr(),
-                            style: TextStyle(
-                              color: AppColors.getTextSecondary(isDarkMode),
-                              fontSize: 14,
-                            ),
+                          Row(
+                            children: [
+                              Text(
+                                'keep_it_up'.tr(),
+                                style: TextStyle(
+                                  color: AppColors.getTextSecondary(isDarkMode),
+                                  fontSize: 14,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              const ConnectionStatusWidget(),
+                            ],
                           ),
                         ],
                       ),

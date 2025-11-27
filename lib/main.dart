@@ -95,28 +95,37 @@ void main() async {
 
 Future<void> runAppWithErrorHandling() async {
   // Initialize Supabase with platform-specific auth options
-  if (kIsWeb) {
-    await Supabase.initialize(
-      url: SupabaseConfig.url,
-      anonKey: SupabaseConfig.anonKey,
-      authOptions: FlutterAuthClientOptions(
-        authFlowType: AuthFlowType.pkce,
-        // Force web to use current URL for OAuth redirects
-        // This prevents deep link URLs from being stored
-        autoRefreshToken: true,
-      ),
-    );
-    logger.d('✅ Supabase initialized for web with PKCE auth flow');
-  } else {
-    await Supabase.initialize(
-      url: SupabaseConfig.url,
-      anonKey: SupabaseConfig.anonKey,
-      authOptions: const FlutterAuthClientOptions(
-        authFlowType: AuthFlowType.pkce,
-      ),
-    );
-    logger.d('✅ Supabase initialized for mobile with PKCE auth flow');
+  try {
+    if (kIsWeb) {
+      await Supabase.initialize(
+        url: SupabaseConfig.url,
+        anonKey: SupabaseConfig.anonKey,
+        authOptions: FlutterAuthClientOptions(
+          authFlowType: AuthFlowType.pkce,
+          // Force web to use current URL for OAuth redirects
+          // This prevents deep link URLs from being stored
+          autoRefreshToken: true,
+        ),
+      );
+      logger.d('✅ Supabase initialized for web with PKCE auth flow');
+    } else {
+      await Supabase.initialize(
+        url: SupabaseConfig.url,
+        anonKey: SupabaseConfig.anonKey,
+        authOptions: const FlutterAuthClientOptions(
+          authFlowType: AuthFlowType.pkce,
+        ),
+      );
+      logger.d('✅ Supabase initialized for mobile with PKCE auth flow');
+    }
+  } catch (e, stackTrace) {
+    logger.e('❌ Main: Failed to initialize Supabase',
+        error: e, stackTrace: stackTrace);
+    // Continue with app even if Supabase initialization fails
+    // This allows the app to show error screen instead of crashing
   }
+
+  logger.d('✅ Main: Supabase initialization complete, starting notification service');
 
   // Initialize Notification Service (without requesting permissions yet)
   // Permissions will be requested in TodoListScreen after Activity context is ready
@@ -130,6 +139,8 @@ Future<void> runAppWithErrorHandling() async {
     // TODO: Report to Sentry after re-enabling
     // await Sentry.captureException(e, stackTrace: stackTrace);
   }
+
+  logger.d('✅ Main: Notification service setup complete');
 
   // Initialize Geofence WorkManager Service for location-based notifications
   // Only initialize on mobile platforms, not web
@@ -150,6 +161,8 @@ Future<void> runAppWithErrorHandling() async {
 
   final prefs = await SharedPreferences.getInstance();
 
+  logger.d('✅ Main: SharedPreferences loaded, starting app');
+
   runApp(
     EasyLocalization(
       supportedLocales: const [Locale('en'), Locale('ko')],
@@ -163,6 +176,8 @@ Future<void> runAppWithErrorHandling() async {
       ),
     ),
   );
+
+  logger.d('✅ Main: runApp completed');
 }
 
 class MyApp extends ConsumerStatefulWidget {

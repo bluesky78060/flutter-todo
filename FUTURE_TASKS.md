@@ -12,6 +12,17 @@
 
 ## ✅ 완료된 작업 (Completed)
 
+### 2025-11-27
+- ✅ **오프라인 모드 개선** (2.2)
+  - 네트워크 연결 상태 감지 서비스 구현 (connectivity_plus)
+  - 오프라인 상태 UI 배너 (OfflineBanner) 추가
+  - 동기화 상태 표시 (마지막 동기화 시간, SyncStatusIndicator)
+  - 동기화 실패 시 재시도 로직 구현 (점진적 지연: 5s, 15s, 30s, 최대 3회)
+  - 연결 상태 위젯 (ConnectionStatusWidget) 앱바에 통합
+  - TodoActions에 동기화 콜백 통합 (createTodo, updateTodo, deleteTodo, toggleCompletion)
+  - 한국어/영어 번역 키 추가 (offline_mode, sync_failed 등)
+  - Riverpod 3.x Notifier 패턴 적용
+
 ### 2025-11-25
 - ✅ **첨부파일 시스템 완전 구현** (1.5)
   - Supabase Storage setup with `todo-attachments` bucket
@@ -194,10 +205,6 @@
 - ✅ Google Play Console에 재설정 요청 제출
 - ✅ 새 키로 AAB 빌드 (1.0.11+35-FINAL.aab)
 
-**다음 단계**:
-- [ ] Google 승인 대기 (1-2일 예상)
-- [ ] 승인 후 AAB 업로드
-
 ---
 
 ## 📋 향후 작업 (Upcoming Tasks)
@@ -229,15 +236,21 @@
 
 ### 2. 데이터 관리 및 동기화
 
-#### 🟡 2.2 오프라인 모드 개선
-**현재 상태**: Drift로 로컬 저장, 온라인 시 Supabase 동기화
-**개선 사항**:
-- [ ] 오프라인 상태 감지 UI 표시
-- [ ] 동기화 충돌 해결 전략 구현 (Last-Write-Wins vs Manual Merge)
-- [ ] 동기화 실패 시 재시도 로직
-- [ ] 동기화 상태 표시 (마지막 동기화 시간)
+#### 🟡 2.2 오프라인 모드 개선 ✅
+**현재 상태**: 구현 완료 (2025-11-27)
+**구현 사항**:
+- [x] 오프라인 상태 감지 UI 표시 (OfflineBanner)
+- [x] 동기화 상태 표시 (마지막 동기화 시간)
+- [x] 동기화 실패 시 재시도 로직 (점진적 지연: 5s, 15s, 30s)
+- [x] 연결 상태 위젯 (ConnectionStatusWidget)
+- [ ] 동기화 충돌 해결 전략 구현 (Last-Write-Wins vs Manual Merge) - 향후 과제
 
-**예상 작업 시간**: 6-8시간
+**생성된 파일**:
+- `lib/core/services/connectivity_service.dart` - 네트워크 상태 감지 서비스
+- `lib/presentation/providers/connectivity_provider.dart` - 연결/동기화 상태 관리
+- `lib/presentation/widgets/offline_banner.dart` - 오프라인 배너 및 동기화 UI
+
+**실제 작업 시간**: 약 4시간
 
 ---
 
@@ -268,15 +281,15 @@
 
 ### 4. 사용자 경험 개선
 
-#### 🟡 4.2 드래그 앤 드롭 정렬
+#### ✅ 4.2 드래그 앤 드롭 정렬 (완료 - 2025-11-25)
 **설명**: Todo 순서를 드래그로 변경
-**필요 작업**:
-- [ ] `ReorderableListView` 사용
-- [ ] Todo에 `position` 필드 추가
-- [ ] 순서 변경 시 DB 업데이트
-- [ ] 카테고리별 독립적 정렬
-
-**예상 작업 시간**: 3-4시간
+**완료된 작업**:
+- [x] `ReorderableListView` 사용
+- [x] Todo에 `position` 필드 추가
+- [x] 순서 변경 시 DB 업데이트 (로컬 + Supabase)
+- [x] 카테고리별 독립적 정렬
+- [x] 앱 재시작 후에도 순서 유지
+- [x] 반복 Todo 그룹 순서 변경 지원
 
 ---
 

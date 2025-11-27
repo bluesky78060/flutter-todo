@@ -71,15 +71,15 @@ class _FakeStreamQueryUpdateRules_7 extends _i1.SmartFake
     : super(parent, parentInvocation);
 }
 
-class _FakeGeneratedDatabase_8 extends _i1.SmartFake
-    implements _i2.GeneratedDatabase {
-  _FakeGeneratedDatabase_8(Object parent, Invocation parentInvocation)
+class _FakeDriftDatabaseOptions_8 extends _i1.SmartFake
+    implements _i2.DriftDatabaseOptions {
+  _FakeDriftDatabaseOptions_8(Object parent, Invocation parentInvocation)
     : super(parent, parentInvocation);
 }
 
-class _FakeDriftDatabaseOptions_9 extends _i1.SmartFake
-    implements _i2.DriftDatabaseOptions {
-  _FakeDriftDatabaseOptions_9(Object parent, Invocation parentInvocation)
+class _FakeGeneratedDatabase_9 extends _i1.SmartFake
+    implements _i2.GeneratedDatabase {
+  _FakeGeneratedDatabase_9(Object parent, Invocation parentInvocation)
     : super(parent, parentInvocation);
 }
 
@@ -277,26 +277,26 @@ class MockAppDatabase extends _i1.Mock implements _i3.AppDatabase {
           as _i2.StreamQueryUpdateRules);
 
   @override
-  _i2.GeneratedDatabase get attachedDatabase =>
-      (super.noSuchMethod(
-            Invocation.getter(#attachedDatabase),
-            returnValue: _FakeGeneratedDatabase_8(
-              this,
-              Invocation.getter(#attachedDatabase),
-            ),
-          )
-          as _i2.GeneratedDatabase);
-
-  @override
   _i2.DriftDatabaseOptions get options =>
       (super.noSuchMethod(
             Invocation.getter(#options),
-            returnValue: _FakeDriftDatabaseOptions_9(
+            returnValue: _FakeDriftDatabaseOptions_8(
               this,
               Invocation.getter(#options),
             ),
           )
           as _i2.DriftDatabaseOptions);
+
+  @override
+  _i2.GeneratedDatabase get attachedDatabase =>
+      (super.noSuchMethod(
+            Invocation.getter(#attachedDatabase),
+            returnValue: _FakeGeneratedDatabase_9(
+              this,
+              Invocation.getter(#attachedDatabase),
+            ),
+          )
+          as _i2.GeneratedDatabase);
 
   @override
   _i2.DatabaseConnection get connection =>
@@ -376,6 +376,14 @@ class MockAppDatabase extends _i1.Mock implements _i3.AppDatabase {
             returnValue: _i5.Future<List<_i3.Todo>>.value(<_i3.Todo>[]),
           )
           as _i5.Future<List<_i3.Todo>>);
+
+  @override
+  _i5.Future<int> getMaxTodoPosition() =>
+      (super.noSuchMethod(
+            Invocation.method(#getMaxTodoPosition, []),
+            returnValue: _i5.Future<int>.value(0),
+          )
+          as _i5.Future<int>);
 
   @override
   _i5.Future<int> insertTodo(_i3.TodosCompanion? todo) =>

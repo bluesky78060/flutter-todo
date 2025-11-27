@@ -484,5 +484,14 @@
   "restore_overwrite": "덮어쓰기",
   "restore_delete_then_restore": "기존 데이터 삭제 후 복원",
   "restore_merge": "병합",
-  "restore_merge_latest_first": "최신 데이터 우선 병합"
+  "restore_merge_latest_first": "최신 데이터 우선 병합",
+
+  "offline_mode": "오프라인 모드",
+  "offline_mode_description": "변경사항은 로컬에 저장되며, 온라인 시 동기화됩니다",
+  "offline": "오프라인",
+  "connected": "연결됨",
+  "last_sync": "마지막 동기화",
+  "sync_failed": "동기화 실패",
+  "retry": "재시도",
+  "syncing": "동기화 중..."
 }
