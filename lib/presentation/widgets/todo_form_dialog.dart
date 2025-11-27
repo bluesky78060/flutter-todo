@@ -448,6 +448,88 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
     });
   }
 
+  Future<void> _showDeleteConfirmation(int index) async {
+    final isDarkMode = ref.read(isDarkModeProvider);
+    final fileName = _selectedFiles[index].path.split('/').last;
+
+    final shouldDelete = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: AppColors.getCard(isDarkMode),
+          title: Text(
+            'delete_attachment'.tr(),
+            style: TextStyle(
+              color: AppColors.getText(isDarkMode),
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'confirm_delete_attachment'.tr(),
+                style: TextStyle(
+                  color: AppColors.getTextSecondary(isDarkMode),
+                  fontSize: 14,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: AppColors.getInput(isDarkMode),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  fileName,
+                  style: TextStyle(
+                    color: AppColors.getText(isDarkMode),
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: Text(
+                'cancel'.tr(),
+                style: TextStyle(color: AppColors.getTextSecondary(isDarkMode)),
+              ),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: Text(
+                'delete'.tr(),
+                style: const TextStyle(color: Colors.redAccent),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (shouldDelete == true && mounted) {
+      _removeFile(index);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('attachment_deleted'.tr()),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    }
+  }
+
   Future<void> _selectNotificationTime() async {
     if (!mounted) return;
 
@@ -1372,26 +1454,49 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
                             const SizedBox(width: 12),
                             // File name
                             Expanded(
-                              child: Text(
-                                fileName,
-                                style: TextStyle(
-                                  color: AppColors.getText(isDarkMode),
-                                  fontSize: 14,
-                                ),
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    fileName,
+                                    style: TextStyle(
+                                      color: AppColors.getText(isDarkMode),
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    '${(file.lengthSync() / 1024).toStringAsFixed(1)} KB',
+                                    style: TextStyle(
+                                      color: AppColors.getTextSecondary(isDarkMode),
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
-                            // Remove button
-                            IconButton(
-                              onPressed: () => _removeFile(index),
-                              icon: Icon(
-                                FluentIcons.dismiss_24_regular,
-                                color: AppColors.getTextSecondary(isDarkMode),
-                                size: 18,
+                            const SizedBox(width: 8),
+                            // Delete button with confirmation
+                            Container(
+                              decoration: BoxDecoration(
+                                color: Colors.redAccent.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(8),
                               ),
-                              padding: EdgeInsets.zero,
-                              constraints: const BoxConstraints(),
+                              child: IconButton(
+                                onPressed: () => _showDeleteConfirmation(index),
+                                icon: Icon(
+                                  FluentIcons.delete_24_regular,
+                                  color: Colors.redAccent,
+                                  size: 18,
+                                ),
+                                padding: const EdgeInsets.all(4),
+                                constraints: const BoxConstraints(),
+                                tooltip: 'delete_attachment'.tr(),
+                              ),
                             ),
                           ],
                         ),
