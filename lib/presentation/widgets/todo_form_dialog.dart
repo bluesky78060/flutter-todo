@@ -19,6 +19,7 @@ import 'package:mime/mime.dart';
 import 'package:todo_app/presentation/widgets/recurring_edit_dialog.dart';
 import 'package:todo_app/presentation/widgets/location_picker_dialog.dart';
 import 'package:todo_app/core/services/geofence_workmanager_service.dart';
+import 'package:todo_app/core/services/attachment_service.dart';
 
 class TodoFormDialog extends ConsumerStatefulWidget {
   final Todo? existingTodo; // null = create mode, not null = edit mode
@@ -307,6 +308,33 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
         }
       },
       (file) {
+        // Validate file size and count
+        final sizeError = attachmentService.validateFileSize(file);
+        if (sizeError != null) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(sizeError),
+                backgroundColor: Colors.red,
+                duration: const Duration(seconds: 4),
+              ),
+            );
+          }
+          return;
+        }
+
+        if (_selectedFiles.length >= AttachmentService.maxAttachmentsPerTodo) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('max_attachments_reached'.tr(args: ['${AttachmentService.maxAttachmentsPerTodo}'])),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+          return;
+        }
+
         setState(() {
           _selectedFiles.add(file);
         });
@@ -330,6 +358,33 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
         }
       },
       (file) {
+        // Validate file size and count
+        final sizeError = attachmentService.validateFileSize(file);
+        if (sizeError != null) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(sizeError),
+                backgroundColor: Colors.red,
+                duration: const Duration(seconds: 4),
+              ),
+            );
+          }
+          return;
+        }
+
+        if (_selectedFiles.length >= AttachmentService.maxAttachmentsPerTodo) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('max_attachments_reached'.tr(args: ['${AttachmentService.maxAttachmentsPerTodo}'])),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+          return;
+        }
+
         setState(() {
           _selectedFiles.add(file);
         });
@@ -353,6 +408,33 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
         }
       },
       (file) {
+        // Validate file size and count
+        final sizeError = attachmentService.validateFileSize(file);
+        if (sizeError != null) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(sizeError),
+                backgroundColor: Colors.red,
+                duration: const Duration(seconds: 4),
+              ),
+            );
+          }
+          return;
+        }
+
+        if (_selectedFiles.length >= AttachmentService.maxAttachmentsPerTodo) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('max_attachments_reached'.tr(args: ['${AttachmentService.maxAttachmentsPerTodo}'])),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+          return;
+        }
+
         setState(() {
           _selectedFiles.add(file);
         });
