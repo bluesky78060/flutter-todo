@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Widget text colors -->
+    <color name="widget_text_primary">#212121</color>
+    <color name="widget_text_secondary">#757575</color>
+    <color name="widget_text_disabled">#BDBDBD</color>
+
+    <!-- Widget backgrounds -->
+    <color name="widget_background">#FFFFFF</color>
+    <color name="widget_background_light">#F5F5F5</color>
+
+    <!-- Widget accents -->
+    <color name="widget_divider">#EEEEEE</color>
+    <color name="widget_accent">#7B61FF</color>
+    <color name="widget_completed">#4CAF50</color>
+    <color name="widget_pending">#FF9800</color>
+
+    <!-- Dark mode colors (for future use) -->
+    <color name="widget_background_dark">#121212</color>
+    <color name="widget_text_primary_dark">#FFFFFF</color>
+    <color name="widget_text_secondary_dark">#B0B0B0</color>
+</resources>

@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/widget_background"
+    android:orientation="vertical"
+    android:padding="12dp">
+
+    <!-- Header - Month/Year -->
+    <TextView
+        android:id="@+id/calendar_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="December 2025"
+        android:textColor="@color/widget_text_primary"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:gravity="center"
+        android:paddingBottom="12dp" />
+
+    <!-- Divider -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/widget_divider" />
+
+    <!-- Day names header -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingVertical="8dp">
+
+        <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1"
+            android:text="Mo" android:gravity="center" android:textSize="11sp" android:textColor="@color/widget_text_secondary" />
+        <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1"
+            android:text="Tu" android:gravity="center" android:textSize="11sp" android:textColor="@color/widget_text_secondary" />
+        <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1"
+            android:text="We" android:gravity="center" android:textSize="11sp" android:textColor="@color/widget_text_secondary" />
+        <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1"
+            android:text="Th" android:gravity="center" android:textSize="11sp" android:textColor="@color/widget_text_secondary" />
+        <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1"
+            android:text="Fr" android:gravity="center" android:textSize="11sp" android:textColor="@color/widget_text_secondary" />
+        <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1"
+            android:text="Sa" android:gravity="center" android:textSize="11sp" android:textColor="@color/widget_text_secondary" />
+        <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1"
+            android:text="Su" android:gravity="center" android:textSize="11sp" android:textColor="@color/widget_text_secondary" />
+    </LinearLayout>
+
+    <!-- Row 1 -->
+    <LinearLayout
+        android:id="@+id/calendar_row_1"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="horizontal">
+        <TextView android:id="@+id/calendar_day_1" android:layout_width="0dp" android:layout_height="match_parent"
+            android:layout_weight="1" android:gravity="center" android:textSize="12sp" />
+        <TextView android:id="@+id/calendar_day_2" android:layout_width="0dp" android:layout_height="match_parent"
+            android:layout_weight="1" android:gravity="center" android:textSize="12sp" />
+        <TextView android:id="@+id/calendar_day_3" android:layout_width="0dp" android:layout_height="match_parent"
+            android:layout_weight="1" android:gravity="center" android:textSize="12sp" />
+        <TextView android:id="@+id/calendar_day_4" android:layout_width="0dp" android:layout_height="match_parent"
+            android:layout_weight="1" android:gravity="center" android:textSize="12sp" />
+        <TextView android:id="@+id/calendar_day_5" android:layout_width="0dp" android:layout_height="match_parent"
+            android:layout_weight="1" android:gravity="center" android:textSize="12sp" />
+        <TextView android:id="@+id/calendar_day_6" android:layout_width="0dp" android:layout_height="match_parent"
+            android:layout_weight="1" android:gravity="center" android:textSize="12sp" />
+        <TextView android:id="@+id/calendar_day_7" android:layout_width="0dp" android:layout_height="match_parent"
+            android:layout_weight="1" android:gravity="center" android:textSize="12sp" />
+    </LinearLayout>
+
+    <!-- Row 2 -->
+    <LinearLayout
+        android:id="@+id/calendar_row_2"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="horizontal">
+        <TextView android:id="@+id/calendar_day_8" android:layout_width="0dp" android:layout_height="match_parent"
+            android:layout_weight="1" android:gravity="center" android:textSize="12sp" />
+        <TextView android:id="@+id/calendar_day_9" android:layout_width="0dp" android:layout_height="match_parent"
+            android:layout_weight="1" android:gravity="center" android:textSize="12sp" />
+        <TextView android:id="@+id/calendar_day_10" android:layout_width="0dp" android:layout_height="match_parent"
+            android:layout_weight="1" android:gravity="center" android:textSize="12sp" />
+        <TextView android:id="@+id/calendar_day_11" android:layout_width="0dp" android:layout_height="match_parent"
+            android:layout_weight="1" android:gravity="center" android:textSize="12sp" />
+        <TextView android:id="@+id/calendar_day_12" android:layout_width="0dp" android:layout_height="match_parent"
+            android:layout_weight="1" android:gravity="center" android:textSize="12sp" />
+        <TextView android:id="@+id/calendar_day_13" android:layout_width="0dp" android:layout_height="match_parent"
+            android:layout_weight="1" android:gravity="center" android:textSize="12sp" />
+        <TextView android:id="@+id/calendar_day_14" android:layout_width="0dp" android:layout_height="match_parent"
+            android:layout_weight="1" android:gravity="center" android:textSize="12sp" />
+    </LinearLayout>
+
+    <!-- Row 3 -->
+    <LinearLayout
+        android:id="@+id/calendar_row_3"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="horizontal">
+        <TextView android:id="@+id/calendar_day_15" android:layout_width="0dp" android:layout_height="match_parent"
+            android:layout_weight="1" android:gravity="center" android:textSize="12sp" />
+        <TextView android:id="@+id/calendar_day_16" android:layout_width="0dp" android:layout_height="match_parent"
+            android:layout_weight="1" android:gravity="center" android:textSize="12sp" />
+        <TextView android:id="@+id/calendar_day_17" android:layout_width="0dp" android:layout_height="match_parent"
+            android:layout_weight="1" android:gravity="center" android:textSize="12sp" />
+        <TextView android:id="@+id/calendar_day_18" android:layout_width="0dp" android:layout_height="match_parent"
+            android:layout_weight="1" android:gravity="center" android:textSize="12sp" />
+        <TextView android:id="@+id/calendar_day_19" android:layout_width="0dp" android:layout_height="match_parent"
+            android:layout_weight="1" android:gravity="center" android:textSize="12sp" />
+        <TextView android:id="@+id/calendar_day_20" android:layout_width="0dp" android:layout_height="match_parent"
+            android:layout_weight="1" android:gravity="center" android:textSize="12sp" />
+        <TextView android:id="@+id/calendar_day_21" android:layout_width="0dp" android:layout_height="match_parent"
+            android:layout_weight="1" android:gravity="center" android:textSize="12sp" />
+    </LinearLayout>
+
+    <!-- Row 4 -->
+    <LinearLayout
+        android:id="@+id/calendar_row_4"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="horizontal">
+        <TextView android:id="@+id/calendar_day_22" android:layout_width="0dp" android:layout_height="match_parent"
+            android:layout_weight="1" android:gravity="center" android:textSize="12sp" />
+        <TextView android:id="@+id/calendar_day_23" android:layout_width="0dp" android:layout_height="match_parent"
+            android:layout_weight="1" android:gravity="center" android:textSize="12sp" />
+        <TextView android:id="@+id/calendar_day_24" android:layout_width="0dp" android:layout_height="match_parent"
+            android:layout_weight="1" android:gravity="center" android:textSize="12sp" />
+        <TextView android:id="@+id/calendar_day_25" android:layout_width="0dp" android:layout_height="match_parent"
+            android:layout_weight="1" android:gravity="center" android:textSize="12sp" />
+        <TextView android:id="@+id/calendar_day_26" android:layout_width="0dp" android:layout_height="match_parent"
+            android:layout_weight="1" android:gravity="center" android:textSize="12sp" />
+        <TextView android:id="@+id/calendar_day_27" android:layout_width="0dp" android:layout_height="match_parent"
+            android:layout_weight="1" android:gravity="center" android:textSize="12sp" />
+        <TextView android:id="@+id/calendar_day_28" android:layout_width="0dp" android:layout_height="match_parent"
+            android:layout_weight="1" android:gravity="center" android:textSize="12sp" />
+    </LinearLayout>
+
+    <!-- Row 5 -->
+    <LinearLayout
+        android:id="@+id/calendar_row_5"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="horizontal">
+        <TextView android:id="@+id/calendar_day_29" android:layout_width="0dp" android:layout_height="match_parent"
+            android:layout_weight="1" android:gravity="center" android:textSize="12sp" />
+        <TextView android:id="@+id/calendar_day_30" android:layout_width="0dp" android:layout_height="match_parent"
+            android:layout_weight="1" android:gravity="center" android:textSize="12sp" />
+        <TextView android:id="@+id/calendar_day_31" android:layout_width="0dp" android:layout_height="match_parent"
+            android:layout_weight="1" android:gravity="center" android:textSize="12sp" />
+        <View android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" />
+        <View android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" />
+        <View android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" />
+        <View android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" />
+    </LinearLayout>
+
+    <!-- Row 6 (empty) -->
+    <LinearLayout
+        android:id="@+id/calendar_row_6"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="horizontal" />
+</LinearLayout>
