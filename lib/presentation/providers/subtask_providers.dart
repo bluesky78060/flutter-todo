@@ -1,6 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:todo_app/data/datasources/local/app_database.dart';
 import 'package:todo_app/data/repositories/subtask_repository_impl.dart';
 import 'package:todo_app/data/repositories/supabase_subtask_repository.dart';
 import 'package:todo_app/domain/entities/subtask.dart' as entity;
@@ -77,7 +76,7 @@ class SubtaskActions {
       data: (session) async {
         // Save to local first
         final localRepo = _ref.read(subtaskRepositoryProvider);
-        final localResult = await localRepo.createSubtask(subtask);
+        await localRepo.createSubtask(subtask);
 
         // If user is authenticated, save to remote as well
         if (session != null) {

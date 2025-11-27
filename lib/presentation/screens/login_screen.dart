@@ -35,7 +35,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       // Supabase OAuth 플로우 사용 (웹에서 작동)
       final redirectUrl = oauthRedirectUrl();
       logger.d('🔗 Google OAuth redirectTo: $redirectUrl');
-      logger.d('🔑 Supabase client initialized: ${Supabase.instance.client.auth != null}');
+      logger.d('🔑 Supabase client initialized');
 
       final response = redirectUrl == null
           ? await Supabase.instance.client.auth.signInWithOAuth(

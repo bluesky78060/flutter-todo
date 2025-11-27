@@ -1468,6 +1468,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
     try {
       // Show loading dialog
+      if (!mounted) return;
       showDialog(
         context: context,
         barrierDismissible: false,

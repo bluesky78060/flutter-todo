@@ -6,11 +6,10 @@ import 'package:todo_app/presentation/providers/category_providers.dart';
 
 /// Future provider for BackupService with SharedPreferences
 final backupServiceFutureProvider = FutureProvider<BackupService>((ref) async {
-  final database = ref.watch(localDatabaseProvider);
   final todoRepository = ref.watch(todoRepositoryProvider);
   final categoryRepository = ref.watch(categoryRepositoryProvider);
   final prefs = await SharedPreferences.getInstance();
-  return BackupService(database, prefs, todoRepository, categoryRepository);
+  return BackupService(prefs, todoRepository, categoryRepository);
 });
 
 /// Actions provider for backup operations

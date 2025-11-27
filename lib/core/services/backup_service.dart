@@ -1,25 +1,21 @@
 import 'dart:convert';
 import 'dart:io';
-import 'package:drift/drift.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:todo_app/core/errors/failures.dart';
-import 'package:todo_app/data/datasources/local/app_database.dart';
 import 'package:todo_app/domain/repositories/todo_repository.dart';
 import 'package:todo_app/domain/repositories/category_repository.dart';
 
 /// Backup and restore service for all app data
 class BackupService {
-  final AppDatabase _database;
   final SharedPreferences _prefs;
   final TodoRepository _todoRepository;
   final CategoryRepository _categoryRepository;
 
   BackupService(
-    this._database,
     this._prefs,
     this._todoRepository,
     this._categoryRepository,

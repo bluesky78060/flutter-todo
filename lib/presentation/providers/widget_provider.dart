@@ -1,5 +1,4 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:todo_app/core/widget/widget_models.dart';
 import 'package:todo_app/core/widget/widget_service.dart';
 import 'package:todo_app/presentation/providers/database_provider.dart';
