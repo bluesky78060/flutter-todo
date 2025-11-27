@@ -3,7 +3,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:home_widget/home_widget.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:todo_app/core/widget/widget_models.dart';
-import 'package:todo_app/domain/entities/todo_entity.dart';
+import 'package:todo_app/domain/entities/todo.dart';
 import 'package:todo_app/domain/repositories/todo_repository.dart';
 
 /// Service to manage home screen widget updates and configuration
@@ -61,7 +61,11 @@ class WidgetService {
   /// Get calendar data for the current month
   Future<CalendarData> getCalendarData() async {
     try {
-      final todos = await todoRepository.getAllTodos();
+      final result = await todoRepository.getTodos();
+      final todos = result.fold(
+        (failure) => <Todo>[],
+        (todos) => todos,
+      );
       return CalendarData.fromTodos(todos, DateTime.now());
     } catch (e) {
       // Return empty calendar data on error
@@ -78,7 +82,11 @@ class WidgetService {
   /// Get today's todo data
   Future<TodoListData> getTodaysTodos() async {
     try {
-      final todos = await todoRepository.getAllTodos();
+      final result = await todoRepository.getTodos();
+      final todos = result.fold(
+        (failure) => <Todo>[],
+        (todos) => todos,
+      );
       return TodoListData.fromTodos(todos);
     } catch (e) {
       // Return empty todo list data on error

@@ -16,7 +16,7 @@ final widgetServiceProvider = Provider<WidgetService>((ref) {
 });
 
 /// Widget configuration provider
-final widgetConfigProvider = StateProvider<WidgetConfig>((ref) {
+final widgetConfigProvider = Provider<WidgetConfig>((ref) {
   final service = ref.watch(widgetServiceProvider);
   return service.getWidgetConfig();
 });
@@ -34,13 +34,13 @@ final widgetTodoListDataProvider = FutureProvider<TodoListData>((ref) async {
 });
 
 /// Widget view type provider (for UI state)
-final widgetViewTypeProvider = StateProvider<WidgetViewType>((ref) {
+final widgetViewTypeProvider = Provider<WidgetViewType>((ref) {
   final config = ref.watch(widgetConfigProvider);
   return config.viewType;
 });
 
 /// Widget enabled state provider
-final widgetEnabledProvider = StateProvider<bool>((ref) {
+final widgetEnabledProvider = Provider<bool>((ref) {
   final config = ref.watch(widgetConfigProvider);
   return config.isEnabled;
 });
@@ -98,18 +98,20 @@ final widgetNeedsUpdateProvider = Provider<bool>((ref) {
 });
 
 /// Provider for widget update notification
-final widgetUpdateNotifierProvider = StateNotifierProvider<
+final widgetUpdateNotifierProvider = AsyncNotifierProvider<
     WidgetUpdateNotifier,
-    AsyncValue<void>>((ref) {
-  final service = ref.watch(widgetServiceProvider);
-  return WidgetUpdateNotifier(service);
+    void>(() {
+  return WidgetUpdateNotifier();
 });
 
 /// Notifier for handling widget updates
-class WidgetUpdateNotifier extends StateNotifier<AsyncValue<void>> {
-  final WidgetService _service;
+class WidgetUpdateNotifier extends AsyncNotifier<void> {
+  late WidgetService _service;
 
-  WidgetUpdateNotifier(this._service) : super(const AsyncValue.data(null));
+  @override
+  Future<void> build() async {
+    _service = ref.watch(widgetServiceProvider);
+  }
 
   /// Trigger manual widget update
   Future<void> updateWidget() async {

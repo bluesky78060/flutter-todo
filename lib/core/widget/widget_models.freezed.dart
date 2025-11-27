@@ -212,8 +212,8 @@ return $default(_that.month,_that.dayTaskCounts,_that.daysWithTasks,_that.comple
 /// @nodoc
 @JsonSerializable()
 
-class _CalendarData implements CalendarData {
-  const _CalendarData({required this.month, required final  Map<int, int> dayTaskCounts, required final  List<int> daysWithTasks, required final  List<int> completedDays, required this.lastUpdated}): _dayTaskCounts = dayTaskCounts,_daysWithTasks = daysWithTasks,_completedDays = completedDays;
+class _CalendarData extends CalendarData {
+  const _CalendarData({required this.month, required final  Map<int, int> dayTaskCounts, required final  List<int> daysWithTasks, required final  List<int> completedDays, required this.lastUpdated}): _dayTaskCounts = dayTaskCounts,_daysWithTasks = daysWithTasks,_completedDays = completedDays,super._();
   factory _CalendarData.fromJson(Map<String, dynamic> json) => _$CalendarDataFromJson(json);
 
 @override final  DateTime month;
@@ -307,7 +307,7 @@ as DateTime,
 /// @nodoc
 mixin _$TodoListData {
 
- DateTime get date; List<TodoEntity> get todos; int get completedCount; int get pendingCount; DateTime get lastUpdated;
+ DateTime get date; List<Todo> get todos; int get completedCount; int get pendingCount; DateTime get lastUpdated;
 /// Create a copy of TodoListData
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -338,7 +338,7 @@ abstract mixin class $TodoListDataCopyWith<$Res>  {
   factory $TodoListDataCopyWith(TodoListData value, $Res Function(TodoListData) _then) = _$TodoListDataCopyWithImpl;
 @useResult
 $Res call({
- DateTime date, List<TodoEntity> todos, int completedCount, int pendingCount, DateTime lastUpdated
+ DateTime date, List<Todo> todos, int completedCount, int pendingCount, DateTime lastUpdated
 });
 
 
@@ -359,7 +359,7 @@ class _$TodoListDataCopyWithImpl<$Res>
   return _then(_self.copyWith(
 date: null == date ? _self.date : date // ignore: cast_nullable_to_non_nullable
 as DateTime,todos: null == todos ? _self.todos : todos // ignore: cast_nullable_to_non_nullable
-as List<TodoEntity>,completedCount: null == completedCount ? _self.completedCount : completedCount // ignore: cast_nullable_to_non_nullable
+as List<Todo>,completedCount: null == completedCount ? _self.completedCount : completedCount // ignore: cast_nullable_to_non_nullable
 as int,pendingCount: null == pendingCount ? _self.pendingCount : pendingCount // ignore: cast_nullable_to_non_nullable
 as int,lastUpdated: null == lastUpdated ? _self.lastUpdated : lastUpdated // ignore: cast_nullable_to_non_nullable
 as DateTime,
@@ -447,7 +447,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( DateTime date,  List<TodoEntity> todos,  int completedCount,  int pendingCount,  DateTime lastUpdated)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( DateTime date,  List<Todo> todos,  int completedCount,  int pendingCount,  DateTime lastUpdated)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _TodoListData() when $default != null:
 return $default(_that.date,_that.todos,_that.completedCount,_that.pendingCount,_that.lastUpdated);case _:
@@ -468,7 +468,7 @@ return $default(_that.date,_that.todos,_that.completedCount,_that.pendingCount,_
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( DateTime date,  List<TodoEntity> todos,  int completedCount,  int pendingCount,  DateTime lastUpdated)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( DateTime date,  List<Todo> todos,  int completedCount,  int pendingCount,  DateTime lastUpdated)  $default,) {final _that = this;
 switch (_that) {
 case _TodoListData():
 return $default(_that.date,_that.todos,_that.completedCount,_that.pendingCount,_that.lastUpdated);case _:
@@ -488,7 +488,7 @@ return $default(_that.date,_that.todos,_that.completedCount,_that.pendingCount,_
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( DateTime date,  List<TodoEntity> todos,  int completedCount,  int pendingCount,  DateTime lastUpdated)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( DateTime date,  List<Todo> todos,  int completedCount,  int pendingCount,  DateTime lastUpdated)?  $default,) {final _that = this;
 switch (_that) {
 case _TodoListData() when $default != null:
 return $default(_that.date,_that.todos,_that.completedCount,_that.pendingCount,_that.lastUpdated);case _:
@@ -503,12 +503,12 @@ return $default(_that.date,_that.todos,_that.completedCount,_that.pendingCount,_
 
 
 class _TodoListData extends TodoListData {
-  const _TodoListData({required this.date, required final  List<TodoEntity> todos, required this.completedCount, required this.pendingCount, required this.lastUpdated}): _todos = todos,super._();
+  const _TodoListData({required this.date, required final  List<Todo> todos, required this.completedCount, required this.pendingCount, required this.lastUpdated}): _todos = todos,super._();
   
 
 @override final  DateTime date;
- final  List<TodoEntity> _todos;
-@override List<TodoEntity> get todos {
+ final  List<Todo> _todos;
+@override List<Todo> get todos {
   if (_todos is EqualUnmodifiableListView) return _todos;
   // ignore: implicit_dynamic_type
   return EqualUnmodifiableListView(_todos);
@@ -548,7 +548,7 @@ abstract mixin class _$TodoListDataCopyWith<$Res> implements $TodoListDataCopyWi
   factory _$TodoListDataCopyWith(_TodoListData value, $Res Function(_TodoListData) _then) = __$TodoListDataCopyWithImpl;
 @override @useResult
 $Res call({
- DateTime date, List<TodoEntity> todos, int completedCount, int pendingCount, DateTime lastUpdated
+ DateTime date, List<Todo> todos, int completedCount, int pendingCount, DateTime lastUpdated
 });
 
 
@@ -569,7 +569,7 @@ class __$TodoListDataCopyWithImpl<$Res>
   return _then(_TodoListData(
 date: null == date ? _self.date : date // ignore: cast_nullable_to_non_nullable
 as DateTime,todos: null == todos ? _self._todos : todos // ignore: cast_nullable_to_non_nullable
-as List<TodoEntity>,completedCount: null == completedCount ? _self.completedCount : completedCount // ignore: cast_nullable_to_non_nullable
+as List<Todo>,completedCount: null == completedCount ? _self.completedCount : completedCount // ignore: cast_nullable_to_non_nullable
 as int,pendingCount: null == pendingCount ? _self.pendingCount : pendingCount // ignore: cast_nullable_to_non_nullable
 as int,lastUpdated: null == lastUpdated ? _self.lastUpdated : lastUpdated // ignore: cast_nullable_to_non_nullable
 as DateTime,
@@ -583,7 +583,7 @@ as DateTime,
 /// @nodoc
 mixin _$WidgetConfig {
 
- WidgetViewType get viewType; bool get isEnabled; DateTime get lastUpdated;
+ WidgetViewType get viewType; bool get isEnabled; DateTime? get lastUpdated;
 /// Create a copy of WidgetConfig
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -616,7 +616,7 @@ abstract mixin class $WidgetConfigCopyWith<$Res>  {
   factory $WidgetConfigCopyWith(WidgetConfig value, $Res Function(WidgetConfig) _then) = _$WidgetConfigCopyWithImpl;
 @useResult
 $Res call({
- WidgetViewType viewType, bool isEnabled, DateTime lastUpdated
+ WidgetViewType viewType, bool isEnabled, DateTime? lastUpdated
 });
 
 
@@ -633,12 +633,12 @@ class _$WidgetConfigCopyWithImpl<$Res>
 
 /// Create a copy of WidgetConfig
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? viewType = null,Object? isEnabled = null,Object? lastUpdated = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? viewType = null,Object? isEnabled = null,Object? lastUpdated = freezed,}) {
   return _then(_self.copyWith(
 viewType: null == viewType ? _self.viewType : viewType // ignore: cast_nullable_to_non_nullable
 as WidgetViewType,isEnabled: null == isEnabled ? _self.isEnabled : isEnabled // ignore: cast_nullable_to_non_nullable
-as bool,lastUpdated: null == lastUpdated ? _self.lastUpdated : lastUpdated // ignore: cast_nullable_to_non_nullable
-as DateTime,
+as bool,lastUpdated: freezed == lastUpdated ? _self.lastUpdated : lastUpdated // ignore: cast_nullable_to_non_nullable
+as DateTime?,
   ));
 }
 
@@ -723,7 +723,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( WidgetViewType viewType,  bool isEnabled,  DateTime lastUpdated)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( WidgetViewType viewType,  bool isEnabled,  DateTime? lastUpdated)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _WidgetConfig() when $default != null:
 return $default(_that.viewType,_that.isEnabled,_that.lastUpdated);case _:
@@ -744,7 +744,7 @@ return $default(_that.viewType,_that.isEnabled,_that.lastUpdated);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( WidgetViewType viewType,  bool isEnabled,  DateTime lastUpdated)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( WidgetViewType viewType,  bool isEnabled,  DateTime? lastUpdated)  $default,) {final _that = this;
 switch (_that) {
 case _WidgetConfig():
 return $default(_that.viewType,_that.isEnabled,_that.lastUpdated);case _:
@@ -764,7 +764,7 @@ return $default(_that.viewType,_that.isEnabled,_that.lastUpdated);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( WidgetViewType viewType,  bool isEnabled,  DateTime lastUpdated)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( WidgetViewType viewType,  bool isEnabled,  DateTime? lastUpdated)?  $default,) {final _that = this;
 switch (_that) {
 case _WidgetConfig() when $default != null:
 return $default(_that.viewType,_that.isEnabled,_that.lastUpdated);case _:
@@ -784,7 +784,7 @@ class _WidgetConfig extends WidgetConfig {
 
 @override final  WidgetViewType viewType;
 @override final  bool isEnabled;
-@override final  DateTime lastUpdated;
+@override final  DateTime? lastUpdated;
 
 /// Create a copy of WidgetConfig
 /// with the given fields replaced by the non-null parameter values.
@@ -819,7 +819,7 @@ abstract mixin class _$WidgetConfigCopyWith<$Res> implements $WidgetConfigCopyWi
   factory _$WidgetConfigCopyWith(_WidgetConfig value, $Res Function(_WidgetConfig) _then) = __$WidgetConfigCopyWithImpl;
 @override @useResult
 $Res call({
- WidgetViewType viewType, bool isEnabled, DateTime lastUpdated
+ WidgetViewType viewType, bool isEnabled, DateTime? lastUpdated
 });
 
 
@@ -836,12 +836,12 @@ class __$WidgetConfigCopyWithImpl<$Res>
 
 /// Create a copy of WidgetConfig
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? viewType = null,Object? isEnabled = null,Object? lastUpdated = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? viewType = null,Object? isEnabled = null,Object? lastUpdated = freezed,}) {
   return _then(_WidgetConfig(
 viewType: null == viewType ? _self.viewType : viewType // ignore: cast_nullable_to_non_nullable
 as WidgetViewType,isEnabled: null == isEnabled ? _self.isEnabled : isEnabled // ignore: cast_nullable_to_non_nullable
-as bool,lastUpdated: null == lastUpdated ? _self.lastUpdated : lastUpdated // ignore: cast_nullable_to_non_nullable
-as DateTime,
+as bool,lastUpdated: freezed == lastUpdated ? _self.lastUpdated : lastUpdated // ignore: cast_nullable_to_non_nullable
+as DateTime?,
   ));
 }
 

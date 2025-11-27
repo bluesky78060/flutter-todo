@@ -36,14 +36,16 @@ _WidgetConfig _$WidgetConfigFromJson(Map<String, dynamic> json) =>
     _WidgetConfig(
       viewType: $enumDecode(_$WidgetViewTypeEnumMap, json['viewType']),
       isEnabled: json['isEnabled'] as bool,
-      lastUpdated: DateTime.parse(json['lastUpdated'] as String),
+      lastUpdated: json['lastUpdated'] == null
+          ? null
+          : DateTime.parse(json['lastUpdated'] as String),
     );
 
 Map<String, dynamic> _$WidgetConfigToJson(_WidgetConfig instance) =>
     <String, dynamic>{
       'viewType': _$WidgetViewTypeEnumMap[instance.viewType]!,
       'isEnabled': instance.isEnabled,
-      'lastUpdated': instance.lastUpdated.toIso8601String(),
+      'lastUpdated': instance.lastUpdated?.toIso8601String(),
     };
 
 const _$WidgetViewTypeEnumMap = {

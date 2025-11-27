@@ -1,8 +1,4 @@
-import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:todo_app/domain/entities/todo_entity.dart';
-
-part 'widget_models.freezed.dart';
-part 'widget_models.g.dart';
+import 'package:todo_app/domain/entities/todo.dart';
 
 /// Widget view type enum
 enum WidgetViewType {
@@ -11,22 +7,24 @@ enum WidgetViewType {
 }
 
 /// Calendar data model for widget display
-@freezed
-class CalendarData with _$CalendarData {
-  const factory CalendarData({
-    required DateTime month,
-    required Map<int, int> dayTaskCounts,
-    required List<int> daysWithTasks,
-    required List<int> completedDays,
-    required DateTime lastUpdated,
-  }) = _CalendarData;
+class CalendarData {
+  final DateTime month;
+  final Map<int, int> dayTaskCounts;
+  final List<int> daysWithTasks;
+  final List<int> completedDays;
+  final DateTime lastUpdated;
 
-  factory CalendarData.fromJson(Map<String, dynamic> json) =>
-      _$CalendarDataFromJson(json);
+  const CalendarData({
+    required this.month,
+    required this.dayTaskCounts,
+    required this.daysWithTasks,
+    required this.completedDays,
+    required this.lastUpdated,
+  });
 
   /// Generate calendar data from todos
   static CalendarData fromTodos(
-    List<TodoEntity> todos,
+    List<Todo> todos,
     DateTime month,
   ) {
     final Map<int, int> dayTaskCounts = {};
@@ -63,24 +61,45 @@ class CalendarData with _$CalendarData {
 
   /// Check if day is fully completed
   bool isCompletedDay(int day) => completedDays.contains(day);
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is CalendarData &&
+          runtimeType == other.runtimeType &&
+          month == other.month &&
+          dayTaskCounts == other.dayTaskCounts &&
+          daysWithTasks == other.daysWithTasks &&
+          completedDays == other.completedDays &&
+          lastUpdated == other.lastUpdated;
+
+  @override
+  int get hashCode =>
+      month.hashCode ^
+      dayTaskCounts.hashCode ^
+      daysWithTasks.hashCode ^
+      completedDays.hashCode ^
+      lastUpdated.hashCode;
 }
 
 /// Today's todo list data model for widget display
-@freezed
-class TodoListData with _$TodoListData {
-  const factory TodoListData({
-    required DateTime date,
-    required List<TodoEntity> todos,
-    required int completedCount,
-    required int pendingCount,
-    required DateTime lastUpdated,
-  }) = _TodoListData;
+class TodoListData {
+  final DateTime date;
+  final List<Todo> todos;
+  final int completedCount;
+  final int pendingCount;
+  final DateTime lastUpdated;
 
-  const TodoListData._();
-
+  const TodoListData({
+    required this.date,
+    required this.todos,
+    required this.completedCount,
+    required this.pendingCount,
+    required this.lastUpdated,
+  });
 
   /// Generate today's todo data from todos
-  static TodoListData fromTodos(List<TodoEntity> todos) {
+  static TodoListData fromTodos(List<Todo> todos) {
     final today = DateTime.now();
     final todaysTodos = todos.where((todo) {
       final dueDate = todo.dueDate;
@@ -97,8 +116,8 @@ class TodoListData with _$TodoListData {
     todaysTodos.sort((a, b) {
       if (a.isCompleted == b.isCompleted) {
         // Both completed or both pending
-        if (a.reminderTime != null && b.reminderTime != null) {
-          return a.reminderTime!.compareTo(b.reminderTime!);
+        if (a.notificationTime != null && b.notificationTime != null) {
+          return a.notificationTime!.compareTo(b.notificationTime!);
         }
         return a.createdAt.compareTo(b.createdAt);
       }
@@ -115,7 +134,7 @@ class TodoListData with _$TodoListData {
   }
 
   /// Get display todos (max 5 for widget)
-  List<TodoEntity> getDisplayTodos({int maxItems = 5}) {
+  List<Todo> getDisplayTodos({int maxItems = 5}) {
     return todos.take(maxItems).toList();
   }
 
@@ -123,21 +142,38 @@ class TodoListData with _$TodoListData {
   String getFormattedDate() {
     return '${date.month}/${date.day}';
   }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is TodoListData &&
+          runtimeType == other.runtimeType &&
+          date == other.date &&
+          todos == other.todos &&
+          completedCount == other.completedCount &&
+          pendingCount == other.pendingCount &&
+          lastUpdated == other.lastUpdated;
+
+  @override
+  int get hashCode =>
+      date.hashCode ^
+      todos.hashCode ^
+      completedCount.hashCode ^
+      pendingCount.hashCode ^
+      lastUpdated.hashCode;
 }
 
 /// Widget configuration model
-@freezed
-class WidgetConfig with _$WidgetConfig {
-  const factory WidgetConfig({
-    required WidgetViewType viewType,
-    required bool isEnabled,
-    required DateTime lastUpdated,
-  }) = _WidgetConfig;
+class WidgetConfig {
+  final WidgetViewType viewType;
+  final bool isEnabled;
+  final DateTime? lastUpdated;
 
-  const WidgetConfig._();
-
-  factory WidgetConfig.fromJson(Map<String, dynamic> json) =>
-      _$WidgetConfigFromJson(json);
+  const WidgetConfig({
+    required this.viewType,
+    required this.isEnabled,
+    required this.lastUpdated,
+  });
 
   /// Default configuration
   static const WidgetConfig defaultConfig = WidgetConfig(
@@ -145,4 +181,35 @@ class WidgetConfig with _$WidgetConfig {
     isEnabled: true,
     lastUpdated: null,
   );
+
+  /// Convert to JSON for storage
+  Map<String, dynamic> toJson() => {
+        'viewType': viewType.name,
+        'isEnabled': isEnabled,
+        'lastUpdated': lastUpdated?.toIso8601String(),
+      };
+
+  /// Create from JSON
+  factory WidgetConfig.fromJson(Map<String, dynamic> json) {
+    return WidgetConfig(
+      viewType: WidgetViewType.values.byName(json['viewType'] ?? 'today'),
+      isEnabled: json['isEnabled'] ?? true,
+      lastUpdated: json['lastUpdated'] != null
+          ? DateTime.parse(json['lastUpdated'])
+          : null,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is WidgetConfig &&
+          runtimeType == other.runtimeType &&
+          viewType == other.viewType &&
+          isEnabled == other.isEnabled &&
+          lastUpdated == other.lastUpdated;
+
+  @override
+  int get hashCode =>
+      viewType.hashCode ^ isEnabled.hashCode ^ lastUpdated.hashCode;
 }
