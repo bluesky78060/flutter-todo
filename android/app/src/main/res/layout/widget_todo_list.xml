@@ -1,138 +1,233 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/widget_background"
     android:orientation="vertical"
-    android:padding="16dp">
+    android:padding="12dp"
+    android:clickable="true">
 
     <!-- Header -->
     <TextView
         android:id="@+id/widget_title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Today's Tasks"
-        android:textColor="@color/widget_text_primary"
-        android:textSize="18sp"
+        android:text="@string/widget_today_tasks"
+        android:textColor="#212121"
+        android:textSize="16sp"
         android:textStyle="bold"
-        android:paddingBottom="12dp" />
+        android:paddingBottom="8dp" />
 
-    <!-- Divider -->
-    <View
+    <!-- Divider (using TextView instead of View for RemoteViews compatibility) -->
+    <TextView
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:background="@color/widget_divider" />
+        android:background="#EEEEEE" />
 
-    <!-- Todo List Container -->
+    <!-- Todo Item 1 -->
     <LinearLayout
-        android:id="@+id/widget_list_container"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:orientation="vertical"
-        android:paddingTop="12dp">
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingTop="6dp"
+        android:paddingBottom="4dp">
 
-        <!-- Todo Item 1 -->
-        <LinearLayout
-            android:layout_width="match_parent"
+        <TextView
+            android:id="@+id/widget_todo_1_checkbox"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_gravity="center_vertical"
+            android:layout_marginEnd="12dp"
+            android:text="@string/widget_checkbox"
+            android:textSize="18sp"
+            android:gravity="center"
+            android:textColor="#757575" />
+
+        <TextView
+            android:id="@+id/widget_todo_1_text"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:paddingVertical="8dp">
+            android:layout_weight="1"
+            android:layout_gravity="center_vertical"
+            android:text="@string/widget_task_1"
+            android:textColor="#212121"
+            android:textSize="14sp"
+            android:maxLines="1"
+            android:ellipsize="end" />
 
-            <CheckBox
-                android:id="@+id/widget_todo_1_checkbox"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:layout_gravity="center_vertical"
-                android:layout_marginEnd="12dp" />
-
-            <TextView
-                android:id="@+id/widget_todo_1_text"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:layout_gravity="center_vertical"
-                android:text="Task 1"
-                android:textColor="@color/widget_text_primary"
-                android:textSize="14sp" />
-
-            <TextView
-                android:id="@+id/widget_todo_1_time"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
-                android:text="10:00"
-                android:textColor="@color/widget_text_secondary"
-                android:textSize="12sp" />
-        </LinearLayout>
-
-        <!-- Todo Item 2 -->
-        <LinearLayout
-            android:layout_width="match_parent"
+        <TextView
+            android:id="@+id/widget_todo_1_time"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:paddingVertical="8dp">
+            android:layout_gravity="center_vertical"
+            android:text=""
+            android:textColor="#757575"
+            android:textSize="12sp" />
+    </LinearLayout>
 
-            <CheckBox
-                android:id="@+id/widget_todo_2_checkbox"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:layout_gravity="center_vertical"
-                android:layout_marginEnd="12dp" />
+    <!-- Todo Item 2 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingTop="4dp"
+        android:paddingBottom="4dp">
 
-            <TextView
-                android:id="@+id/widget_todo_2_text"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:layout_gravity="center_vertical"
-                android:text="Task 2"
-                android:textColor="@color/widget_text_primary"
-                android:textSize="14sp" />
+        <TextView
+            android:id="@+id/widget_todo_2_checkbox"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_gravity="center_vertical"
+            android:layout_marginEnd="12dp"
+            android:text="@string/widget_checkbox"
+            android:textSize="18sp"
+            android:gravity="center"
+            android:textColor="#757575" />
 
-            <TextView
-                android:id="@+id/widget_todo_2_time"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
-                android:text="14:30"
-                android:textColor="@color/widget_text_secondary"
-                android:textSize="12sp" />
-        </LinearLayout>
-
-        <!-- Todo Item 3 -->
-        <LinearLayout
-            android:layout_width="match_parent"
+        <TextView
+            android:id="@+id/widget_todo_2_text"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:paddingVertical="8dp">
+            android:layout_weight="1"
+            android:layout_gravity="center_vertical"
+            android:text="@string/widget_task_2"
+            android:textColor="#212121"
+            android:textSize="14sp"
+            android:maxLines="1"
+            android:ellipsize="end" />
 
-            <CheckBox
-                android:id="@+id/widget_todo_3_checkbox"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:layout_gravity="center_vertical"
-                android:layout_marginEnd="12dp" />
+        <TextView
+            android:id="@+id/widget_todo_2_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:text=""
+            android:textColor="#757575"
+            android:textSize="12sp" />
+    </LinearLayout>
 
-            <TextView
-                android:id="@+id/widget_todo_3_text"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:layout_gravity="center_vertical"
-                android:text="Task 3"
-                android:textColor="@color/widget_text_primary"
-                android:textSize="14sp" />
+    <!-- Todo Item 3 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingTop="4dp"
+        android:paddingBottom="4dp">
 
-            <TextView
-                android:id="@+id/widget_todo_3_time"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
-                android:text="16:00"
-                android:textColor="@color/widget_text_secondary"
-                android:textSize="12sp" />
-        </LinearLayout>
+        <TextView
+            android:id="@+id/widget_todo_3_checkbox"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_gravity="center_vertical"
+            android:layout_marginEnd="12dp"
+            android:text="@string/widget_checkbox"
+            android:textSize="18sp"
+            android:gravity="center"
+            android:textColor="#757575" />
+
+        <TextView
+            android:id="@+id/widget_todo_3_text"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_gravity="center_vertical"
+            android:text="@string/widget_task_3"
+            android:textColor="#212121"
+            android:textSize="14sp"
+            android:maxLines="1"
+            android:ellipsize="end" />
+
+        <TextView
+            android:id="@+id/widget_todo_3_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:text=""
+            android:textColor="#757575"
+            android:textSize="12sp" />
+    </LinearLayout>
+
+    <!-- Todo Item 4 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingTop="4dp"
+        android:paddingBottom="4dp">
+
+        <TextView
+            android:id="@+id/widget_todo_4_checkbox"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_gravity="center_vertical"
+            android:layout_marginEnd="12dp"
+            android:text="@string/widget_checkbox"
+            android:textSize="18sp"
+            android:gravity="center"
+            android:textColor="#757575" />
+
+        <TextView
+            android:id="@+id/widget_todo_4_text"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_gravity="center_vertical"
+            android:text="@string/widget_task_4"
+            android:textColor="#212121"
+            android:textSize="14sp"
+            android:maxLines="1"
+            android:ellipsize="end" />
+
+        <TextView
+            android:id="@+id/widget_todo_4_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:text=""
+            android:textColor="#757575"
+            android:textSize="12sp" />
+    </LinearLayout>
+
+    <!-- Todo Item 5 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingTop="4dp"
+        android:paddingBottom="4dp">
+
+        <TextView
+            android:id="@+id/widget_todo_5_checkbox"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_gravity="center_vertical"
+            android:layout_marginEnd="12dp"
+            android:text="@string/widget_checkbox"
+            android:textSize="18sp"
+            android:gravity="center"
+            android:textColor="#757575" />
+
+        <TextView
+            android:id="@+id/widget_todo_5_text"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_gravity="center_vertical"
+            android:text="@string/widget_task_5"
+            android:textColor="#212121"
+            android:textSize="14sp"
+            android:maxLines="1"
+            android:ellipsize="end" />
+
+        <TextView
+            android:id="@+id/widget_todo_5_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:text=""
+            android:textColor="#757575"
+            android:textSize="12sp" />
     </LinearLayout>
 
     <!-- Footer - Tap to open app -->
@@ -140,9 +235,9 @@
         android:id="@+id/widget_footer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Tap to view all tasks"
-        android:textColor="@color/widget_text_secondary"
-        android:textSize="12sp"
+        android:text="@string/widget_tap_to_view"
+        android:textColor="#757575"
+        android:textSize="11sp"
         android:gravity="center"
-        android:paddingTop="8dp" />
+        android:paddingTop="6dp" />
 </LinearLayout>

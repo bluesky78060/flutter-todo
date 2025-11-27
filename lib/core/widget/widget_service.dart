@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:home_widget/home_widget.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:todo_app/core/services/korean_holiday_service.dart';
 import 'package:todo_app/core/widget/widget_models.dart';
 import 'package:todo_app/domain/entities/todo.dart';
 import 'package:todo_app/domain/repositories/todo_repository.dart';
@@ -102,27 +103,31 @@ class WidgetService {
 
   /// Update widget display based on current configuration
   Future<void> updateWidget() async {
+    print('📱 WidgetService.updateWidget() called');
     try {
       final config = getWidgetConfig();
+      print('   Config: viewType=${config.viewType}, isEnabled=${config.isEnabled}');
 
       if (!config.isEnabled) {
         // Clear widget if disabled
+        print('   Widget disabled, clearing data');
         await HomeWidget.setAppGroupId('group.dodo.widget');
         await HomeWidget.saveWidgetData<String>('view_type', 'none');
         return;
       }
 
-      // Update widget based on view type
-      if (config.viewType == WidgetViewType.calendar) {
-        await _updateCalendarWidget();
-      } else {
-        await _updateTodoListWidget();
-      }
+      // Update both widgets (user may have both on home screen)
+      print('   Updating todo list widget');
+      await _updateTodoListWidget();
+
+      print('   Updating calendar widget');
+      await _updateCalendarWidget();
 
       // Save last update time
       await _updateLastModified();
+      print('   Widget update completed');
     } catch (e) {
-      print('Error updating widget: $e');
+      print('❌ Error updating widget: $e');
     }
   }
 
@@ -132,22 +137,72 @@ class WidgetService {
       await HomeWidget.setAppGroupId('group.dodo.widget');
 
       final calendarData = await getCalendarData();
-      await HomeWidget.saveWidgetData<String>(
-        'view_type',
-        'calendar',
-      );
-      await HomeWidget.saveWidgetData<String>(
-        'calendar_data',
-        '',
-      );
+      print('📅 WidgetService: Updating calendar widget');
+      print('   Days with tasks: ${calendarData.daysWithTasks}');
 
-      // Notify native widget
+      await HomeWidget.saveWidgetData<String>('view_type', 'calendar');
+
+      // Calculate calendar grid (Sunday first layout)
+      final now = DateTime.now();
+      final firstDayOfMonth = DateTime(now.year, now.month, 1);
+      final lastDayOfMonth = DateTime(now.year, now.month + 1, 0);
+      final daysInMonth = lastDayOfMonth.day;
+
+      // Get the weekday of the first day (DateTime.weekday: 1=Mon, 7=Sun)
+      // Convert to Sunday-first (0=Sun, 1=Mon, ..., 6=Sat)
+      final firstWeekday = firstDayOfMonth.weekday % 7; // 0=Sun, 1=Mon, ..., 6=Sat
+
+      print('   First day of month: ${firstDayOfMonth.weekday} -> $firstWeekday (Sun=0)');
+      print('   Days in month: $daysInMonth');
+
+      // Fetch Korean holidays for this month
+      Set<int> holidays = {};
+      try {
+        holidays = await KoreanHolidayService.getHolidaysForMonth(now.year, now.month);
+        print('   Holidays this month: $holidays');
+      } catch (e) {
+        print('   Failed to fetch holidays: $e');
+      }
+
+      // Save holidays data as comma-separated string for Kotlin widget
+      final holidaysStr = holidays.join(',');
+      await HomeWidget.saveWidgetData<String>('calendar_holidays', holidaysStr);
+      print('   Saved holidays string: $holidaysStr');
+
+      // Clear all 42 cells first (6 rows x 7 columns)
+      for (int i = 1; i <= 42; i++) {
+        await HomeWidget.saveWidgetData<String>('calendar_day_$i', '');
+      }
+
+      // Fill in the days at correct positions
+      for (int day = 1; day <= daysInMonth; day++) {
+        // Position in grid (1-indexed): firstWeekday + day
+        final gridPosition = firstWeekday + day;
+
+        final taskCount = calendarData.getTaskCount(day);
+        final isHoliday = holidays.contains(day);
+        String dayText;
+        if (taskCount > 0) {
+          // Show dot indicator for days with tasks
+          dayText = '$day●';
+        } else {
+          dayText = '$day';
+        }
+        // Add holiday marker (★) for Kotlin to detect and color red
+        if (isHoliday) {
+          dayText = '$dayText★';
+        }
+        await HomeWidget.saveWidgetData<String>('calendar_day_$gridPosition', dayText);
+      }
+
+      // Notify native widget - use full qualified class name for Android
       await HomeWidget.updateWidget(
-        name: 'TodoCalendarWidget',
+        qualifiedAndroidName: 'kr.bluesky.dodo.widgets.TodoCalendarWidget',
         iOSName: 'TodoCalendarWidget',
       );
+      print('✅ WidgetService: Calendar widget update triggered');
     } catch (e) {
-      print('Error updating calendar widget: $e');
+      print('❌ Error updating calendar widget: $e');
     }
   }
 
@@ -157,22 +212,54 @@ class WidgetService {
       await HomeWidget.setAppGroupId('group.dodo.widget');
 
       final todoData = await getTodaysTodos();
-      await HomeWidget.saveWidgetData<String>(
-        'view_type',
-        'todo_list',
-      );
-      await HomeWidget.saveWidgetData<String>(
-        'todo_data',
-        '',
-      );
+      print('📱 WidgetService: Updating todo list widget');
+      print('   Total pending todos: ${todoData.todos.length}');
 
-      // Notify native widget
+      // Save view type
+      await HomeWidget.saveWidgetData<String>('view_type', 'todo_list');
+
+      // Get top 5 pending todos to display (already filtered and sorted by TodoListData)
+      final displayTodos = todoData.todos.take(5).toList();
+
+      print('   Todos to display: ${displayTodos.length}');
+
+      // Save todo items with keys that Kotlin widget expects
+      for (int i = 0; i < 5; i++) {
+        if (i < displayTodos.length) {
+          final todo = displayTodos[i];
+          print('   Saving todo ${i + 1}: ${todo.title}');
+          await HomeWidget.saveWidgetData<String>(
+            'todo_${i + 1}_text',
+            todo.title,
+          );
+          // Format time if available
+          String timeStr = '';
+          if (todo.notificationTime != null) {
+            final time = todo.notificationTime!;
+            timeStr = '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
+          } else if (todo.dueDate != null) {
+            final date = todo.dueDate!;
+            timeStr = '${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
+          }
+          await HomeWidget.saveWidgetData<String>(
+            'todo_${i + 1}_time',
+            timeStr,
+          );
+        } else {
+          // Clear unused slots
+          await HomeWidget.saveWidgetData<String?>('todo_${i + 1}_text', null);
+          await HomeWidget.saveWidgetData<String>('todo_${i + 1}_time', '');
+        }
+      }
+
+      // Notify native widget - use full qualified class name for Android
       await HomeWidget.updateWidget(
-        name: 'TodoListWidget',
+        qualifiedAndroidName: 'kr.bluesky.dodo.widgets.TodoListWidget',
         iOSName: 'TodoListWidget',
       );
+      print('✅ WidgetService: Widget update triggered');
     } catch (e) {
-      print('Error updating todo list widget: $e');
+      print('❌ Error updating todo list widget: $e');
     }
   }
 

@@ -22,6 +22,7 @@ import 'package:todo_app/core/utils/recurrence_utils.dart';
 import 'package:todo_app/core/utils/color_utils.dart';
 import 'package:todo_app/presentation/providers/connectivity_provider.dart';
 import 'package:todo_app/presentation/widgets/offline_banner.dart';
+import 'package:todo_app/presentation/providers/widget_provider.dart';
 
 class TodoListScreen extends ConsumerStatefulWidget {
   const TodoListScreen({super.key});
@@ -50,9 +51,25 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> {
       Future.delayed(const Duration(milliseconds: 500), () {
         if (mounted) {
           _checkAndRequestPermissions();
+          // 초기 위젯 업데이트 (앱 시작 시)
+          _updateHomeWidget();
         }
       });
     });
+  }
+
+  /// 홈 화면 위젯 업데이트
+  Future<void> _updateHomeWidget() async {
+    if (kIsWeb) return;
+    debugPrint('🔧 TodoListScreen: Calling _updateHomeWidget');
+    try {
+      final widgetService = ref.read(widgetServiceProvider);
+      debugPrint('🔧 TodoListScreen: Got widgetService, calling updateWidget');
+      await widgetService.updateWidget();
+      debugPrint('🔧 TodoListScreen: Widget update completed');
+    } catch (e) {
+      debugPrint('❌ Failed to update home widget: $e');
+    }
   }
 
   void _onSearchChanged() {
@@ -416,33 +433,42 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'todo_list'.tr(),
-                            style: TextStyle(
-                              color: AppColors.getText(isDarkMode),
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Row(
-                            children: [
-                              Text(
-                                'keep_it_up'.tr(),
-                                style: TextStyle(
-                                  color: AppColors.getTextSecondary(isDarkMode),
-                                  fontSize: 14,
-                                ),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'todo_list'.tr(),
+                              style: TextStyle(
+                                color: AppColors.getText(isDarkMode),
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
                               ),
-                              const SizedBox(width: 8),
-                              const ConnectionStatusWidget(),
-                            ],
-                          ),
-                        ],
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 4),
+                            Row(
+                              children: [
+                                Flexible(
+                                  child: Text(
+                                    'keep_it_up'.tr(),
+                                    style: TextStyle(
+                                      color: AppColors.getTextSecondary(isDarkMode),
+                                      fontSize: 14,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                const ConnectionStatusWidget(),
+                              ],
+                            ),
+                          ],
+                        ),
                       ),
+                      const SizedBox(width: 8),
                       Row(
                         children: [
                           // Refresh Button

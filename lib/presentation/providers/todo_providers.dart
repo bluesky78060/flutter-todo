@@ -9,6 +9,7 @@ import 'package:todo_app/core/utils/app_logger.dart';
 import 'package:todo_app/presentation/widgets/recurring_edit_dialog.dart';
 import 'package:todo_app/presentation/widgets/recurring_delete_dialog.dart';
 import 'package:todo_app/presentation/providers/attachment_providers.dart';
+import 'package:todo_app/presentation/providers/widget_provider.dart';
 
 // Todo filter state
 enum TodoFilter { all, pending, completed }
@@ -228,6 +229,20 @@ class TodoActions {
     await syncNotifier.syncSuccess();
 
     ref.invalidate(todosProvider);
+
+    // Update home screen widget
+    _updateWidget();
+  }
+
+  /// Helper method to update home screen widget
+  void _updateWidget() {
+    try {
+      final widgetService = ref.read(widgetServiceProvider);
+      widgetService.updateWidget();
+      logger.d('📱 TodoActions: Home screen widget updated');
+    } catch (e) {
+      logger.d('⚠️ TodoActions: Failed to update widget: $e');
+    }
   }
 
   /// Update a todo
@@ -275,6 +290,7 @@ class TodoActions {
               await syncNotifier.syncSuccess();
               ref.invalidate(todosProvider);
               ref.invalidate(todoDetailProvider(todo.id));
+              _updateWidget();
             },
           );
           break;
@@ -342,6 +358,7 @@ class TodoActions {
                   await syncNotifier.syncSuccess();
                   ref.invalidate(todosProvider);
                   ref.invalidate(todoDetailProvider(todo.id));
+                  _updateWidget();
                 },
               );
             },
@@ -362,6 +379,7 @@ class TodoActions {
           await syncNotifier.syncSuccess();
           ref.invalidate(todosProvider);
           ref.invalidate(todoDetailProvider(todo.id));
+          _updateWidget();
         },
       );
     }
@@ -471,6 +489,7 @@ class TodoActions {
         // Sync success
         await syncNotifier.syncSuccess();
         ref.invalidate(todosProvider);
+        _updateWidget();
       },
     );
   }
@@ -588,6 +607,7 @@ class TodoActions {
             await syncNotifier.syncSuccess();
             ref.invalidate(todosProvider);
             ref.invalidate(todoDetailProvider(id));
+            _updateWidget();
           },
         );
       },
@@ -678,6 +698,7 @@ class TodoActions {
 
             ref.invalidate(todosProvider);
             ref.invalidate(todoDetailProvider(id));
+            _updateWidget();
           },
         );
       },
@@ -694,6 +715,7 @@ class TodoActions {
       (failure) => throw Exception('Failed to delete completed todos'),
       (count) {
         ref.invalidate(todosProvider);
+        _updateWidget();
         return count;
       },
     );

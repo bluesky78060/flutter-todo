@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">DoDo</string>
+    <string name="widget_todo_list_description">홈 화면에 오늘의 할 일을 표시합니다</string>
+    <string name="widget_calendar_description">할 일이 표시된 월간 캘린더를 보여줍니다</string>
+
+    <!-- Widget strings -->
+    <string name="widget_today_tasks">할일</string>
+    <string name="widget_task_1">할 일 1</string>
+    <string name="widget_task_2">할 일 2</string>
+    <string name="widget_task_3">할 일 3</string>
+    <string name="widget_tap_to_view">탭하여 전체 보기</string>
+    <string name="widget_checkbox">○</string>
+
+    <!-- Calendar widget strings -->
+    <string name="widget_calendar_title">2025년 12월</string>
+    <string name="widget_day_mon">월</string>
+    <string name="widget_day_tue">화</string>
+    <string name="widget_day_wed">수</string>
+    <string name="widget_day_thu">목</string>
+    <string name="widget_day_fri">금</string>
+    <string name="widget_day_sat">토</string>
+    <string name="widget_day_sun">일</string>
+</resources>

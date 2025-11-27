@@ -131,6 +131,8 @@ class _CustomTodoItemState extends ConsumerState<CustomTodoItem>
                                   : null,
                               decorationColor: AppColors.getTextSecondary(isDarkMode),
                             ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
                           ),
                           if (widget.todo.description.isNotEmpty) ...[
                             SizedBox(height: 4),
@@ -158,12 +160,16 @@ class _CustomTodoItemState extends ConsumerState<CustomTodoItem>
                                   size: 14,
                                 ),
                                 SizedBox(width: 6),
-                                Text(
-                                  _formatDueDate(widget.todo.dueDate!),
-                                  style: TextStyle(
-                                    color: AppColors.primaryBlue,
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w500,
+                                Flexible(
+                                  child: Text(
+                                    _formatDueDate(widget.todo.dueDate!),
+                                    style: TextStyle(
+                                      color: AppColors.primaryBlue,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
                                   ),
                                 ),
                               ],
@@ -179,14 +185,18 @@ class _CustomTodoItemState extends ConsumerState<CustomTodoItem>
                                   size: 14,
                                 ),
                                 SizedBox(width: 6),
-                                Text(
-                                  'notification_prefix'.tr(namedArgs: {
-                                    'time': _formatDueDate(widget.todo.notificationTime!)
-                                  }),
-                                  style: TextStyle(
-                                    color: AppColors.accentOrange,
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w500,
+                                Flexible(
+                                  child: Text(
+                                    'notification_prefix'.tr(namedArgs: {
+                                      'time': _formatDueDate(widget.todo.notificationTime!)
+                                    }),
+                                    style: TextStyle(
+                                      color: AppColors.accentOrange,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
                                   ),
                                 ),
                               ],
@@ -202,12 +212,16 @@ class _CustomTodoItemState extends ConsumerState<CustomTodoItem>
                                   size: 14,
                                 ),
                                 SizedBox(width: 6),
-                                Text(
-                                  'recurring'.tr(),
-                                  style: TextStyle(
-                                    color: AppColors.primaryBlue,
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w500,
+                                Flexible(
+                                  child: Text(
+                                    'recurring'.tr(),
+                                    style: TextStyle(
+                                      color: AppColors.primaryBlue,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
                                   ),
                                 ),
                               ],

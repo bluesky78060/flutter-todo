@@ -51,6 +51,8 @@ class OfflineBanner extends ConsumerWidget {
                       fontWeight: FontWeight.bold,
                       fontSize: 14,
                     ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                   Text(
                     tr('offline_mode_description'),
@@ -58,6 +60,8 @@ class OfflineBanner extends ConsumerWidget {
                       color: Colors.white.withValues(alpha: 0.9),
                       fontSize: 12,
                     ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ],
               ),
@@ -96,11 +100,15 @@ class SyncStatusIndicator extends ConsumerWidget {
         _buildStatusIcon(syncState),
         if (showLastSync && lastSyncString != null) ...[
           const SizedBox(width: 6),
-          Text(
-            lastSyncString,
-            style: TextStyle(
-              fontSize: 12,
-              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+          Flexible(
+            child: Text(
+              lastSyncString,
+              style: TextStyle(
+                fontSize: 12,
+                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
           ),
         ],

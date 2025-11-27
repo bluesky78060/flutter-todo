@@ -107,35 +107,45 @@ class TodoListData {
     required this.lastUpdated,
   });
 
-  /// Generate today's todo data from todos
+  /// Generate todo data from todos (shows all pending todos for widget)
   static TodoListData fromTodos(List<Todo> todos) {
     final today = DateTime.now();
-    final todaysTodos = todos.where((todo) {
-      final dueDate = todo.dueDate;
-      return dueDate != null &&
-          dueDate.year == today.year &&
-          dueDate.month == today.month &&
-          dueDate.day == today.day;
-    }).toList();
 
-    final completedCount = todaysTodos.where((t) => t.isCompleted).length;
-    final pendingCount = todaysTodos.where((t) => !t.isCompleted).length;
+    // For widget: show all pending (not completed) todos, not just today's
+    // This is more useful for users who want to see their task list
+    final pendingTodos = todos.where((todo) => !todo.isCompleted).toList();
 
-    // Sort: pending first, then completed
-    todaysTodos.sort((a, b) {
-      if (a.isCompleted == b.isCompleted) {
-        // Both completed or both pending
-        if (a.notificationTime != null && b.notificationTime != null) {
-          return a.notificationTime!.compareTo(b.notificationTime!);
-        }
-        return a.createdAt.compareTo(b.createdAt);
+    // Sort by due date (earliest first), then by notification time, then by created date
+    pendingTodos.sort((a, b) {
+      // First sort by due date (tasks with due date first)
+      final aDue = a.dueDate;
+      final bDue = b.dueDate;
+
+      if (aDue != null && bDue != null) {
+        final cmp = aDue.compareTo(bDue);
+        if (cmp != 0) return cmp;
+      } else if (aDue != null) {
+        return -1; // a has due date, b doesn't -> a first
+      } else if (bDue != null) {
+        return 1;  // b has due date, a doesn't -> b first
       }
-      return a.isCompleted ? 1 : -1;
+
+      // Then by notification time
+      if (a.notificationTime != null && b.notificationTime != null) {
+        final cmp = a.notificationTime!.compareTo(b.notificationTime!);
+        if (cmp != 0) return cmp;
+      }
+
+      // Finally by created date
+      return a.createdAt.compareTo(b.createdAt);
     });
+
+    final completedCount = todos.where((t) => t.isCompleted).length;
+    final pendingCount = pendingTodos.length;
 
     return TodoListData(
       date: today,
-      todos: todaysTodos,
+      todos: pendingTodos,
       completedCount: completedCount,
       pendingCount: pendingCount,
       lastUpdated: DateTime.now(),

@@ -94,7 +94,7 @@
 
         <!-- Home Widget: Today's Todo List Widget -->
         <receiver
-            android:name="com.dodo.todo_app.widgets.TodoListWidget"
+            android:name=".widgets.TodoListWidget"
             android:exported="true"
             android:enabled="true">
             <intent-filter>
@@ -108,7 +108,7 @@
 
         <!-- Home Widget: Calendar Widget -->
         <receiver
-            android:name="com.dodo.todo_app.widgets.TodoCalendarWidget"
+            android:name=".widgets.TodoCalendarWidget"
             android:exported="true"
             android:enabled="true">
             <intent-filter>

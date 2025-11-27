@@ -116,11 +116,11 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                     fontWeight: FontWeight.bold,
                   ),
                   // Default days
-                  defaultTextStyle: const TextStyle(
-                    color: AppColors.textWhite,
+                  defaultTextStyle: TextStyle(
+                    color: AppColors.getText(isDarkMode),
                   ),
-                  weekendTextStyle: const TextStyle(
-                    color: AppColors.accentOrange,
+                  weekendTextStyle: TextStyle(
+                    color: isDarkMode ? AppColors.accentOrange : const Color(0xFFE53935),
                   ),
                   outsideTextStyle: TextStyle(
                     color: AppColors.textGray.withValues(alpha: 0.5),
