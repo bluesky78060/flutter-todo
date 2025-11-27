@@ -14,6 +14,7 @@ import 'package:todo_app/presentation/providers/todo_providers.dart';
 import 'package:todo_app/presentation/providers/category_providers.dart';
 import 'package:todo_app/presentation/providers/database_provider.dart';
 import 'package:todo_app/presentation/providers/theme_provider.dart';
+import 'package:todo_app/presentation/providers/pagination_provider.dart';
 import 'package:todo_app/presentation/screens/settings_screen.dart';
 import 'package:todo_app/presentation/screens/statistics_screen.dart';
 import 'package:todo_app/presentation/widgets/custom_todo_item.dart';
@@ -35,6 +36,7 @@ class TodoListScreen extends ConsumerStatefulWidget {
 class _TodoListScreenState extends ConsumerState<TodoListScreen> {
   final TextEditingController _inputController = TextEditingController();
   final TextEditingController _searchController = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
   bool _isRequestingPermissions = false; // 중복 요청 방지 플래그
   bool _isSearching = false;
   Timer? _debounceTimer;
@@ -45,6 +47,9 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> {
 
     // Setup search debounce
     _searchController.addListener(_onSearchChanged);
+
+    // Setup scroll listener for pagination
+    _scrollController.addListener(_onScroll);
 
     // Activity context가 준비된 후 권한 요청 (첫 실행 시에만)
     // 추가 지연을 둬서 Activity가 완전히 준비되도록 함
@@ -70,6 +75,25 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> {
       debugPrint('🔧 TodoListScreen: Widget update completed');
     } catch (e) {
       debugPrint('❌ Failed to update home widget: $e');
+    }
+  }
+
+  /// Handle scroll events for pagination
+  void _onScroll() {
+    if (!_scrollController.hasClients) return;
+
+    final maxScroll = _scrollController.position.maxScrollExtent;
+    final currentScroll = _scrollController.offset;
+
+    // Trigger pagination when user scrolls near the end (within 500px)
+    if (maxScroll - currentScroll <= 500) {
+      final pagination = ref.read(paginationProvider.notifier);
+      final state = ref.read(paginationProvider);
+
+      // Only load more if not already loading and has more items
+      if (!state.isLoading && state.hasMore) {
+        pagination.loadNextPage();
+      }
     }
   }
 
@@ -387,6 +411,7 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> {
   void dispose() {
     _inputController.dispose();
     _searchController.dispose();
+    _scrollController.dispose();
     _debounceTimer?.cancel();
     super.dispose();
   }
@@ -490,6 +515,21 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> {
     final isDarkMode = ref.watch(isDarkModeProvider);
     final todosAsync = ref.watch(todosProvider);
     final currentFilter = ref.watch(todoFilterProvider);
+
+    // Reset pagination when filter or category changes
+    ref.listen(todoFilterProvider, (prev, next) {
+      if (prev != next) {
+        ref.read(paginationProvider.notifier).reset();
+        _scrollController.jumpTo(0);
+      }
+    });
+
+    ref.listen(categoryFilterProvider, (prev, next) {
+      if (prev != next) {
+        ref.read(paginationProvider.notifier).reset();
+        _scrollController.jumpTo(0);
+      }
+    });
 
     return Scaffold(
       backgroundColor: AppColors.getBackground(isDarkMode),
@@ -904,6 +944,7 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> {
                   final groupedTodos = _groupTodosBySeries(todos);
 
                   return ReorderableListView.builder(
+                    scrollController: _scrollController,
                     padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
                     itemCount: groupedTodos.length,
                     onReorder: (oldIndex, newIndex) {
