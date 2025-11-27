@@ -1,6 +1,8 @@
-# Flutter Todo App with Supabase
+# 🚀 DoDo - Flutter Todo App with Supabase
 
 Supabase 백엔드를 사용하는 Flutter Todo 애플리케이션입니다.
+
+> **처음 사용하시나요?** [👉 초보자 가이드](BEGINNER_GUIDE.html) 또는 [📄 마크다운 버전](BEGINNER_GUIDE.md)을 확인하세요!
 
 ## 주요 기능
 
