@@ -98,6 +98,9 @@ dependencies:
   # Share
   share_plus: ^10.0.0
 
+  # Network Connectivity
+  connectivity_plus: ^6.0.3
+
   # Location & Geofencing
   geolocator: ^13.0.2
   geocoding: ^3.0.0
@@ -121,6 +124,9 @@ dependencies:
 
   # Environment Variables
   flutter_dotenv: ^5.1.0
+
+  # Home Screen Widget
+  home_widget: ^0.8.1
 
 dev_dependencies:
   flutter_test:

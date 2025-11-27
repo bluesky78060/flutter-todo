@@ -1923,7 +1923,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               const Divider(height: 1),
               const SizedBox(height: 24),
 
-              // Check interval selector
+              // Check interval selector with dial
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -1935,33 +1935,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-                  const SizedBox(height: 12),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: [
-                      _buildIntervalButton(
-                        isDarkMode,
-                        'geofencing_interval_10min'.tr(),
-                        10,
-                      ),
-                      _buildIntervalButton(
-                        isDarkMode,
-                        'geofencing_interval_15min'.tr(),
-                        15,
-                      ),
-                      _buildIntervalButton(
-                        isDarkMode,
-                        'geofencing_interval_30min'.tr(),
-                        30,
-                      ),
-                      _buildIntervalButton(
-                        isDarkMode,
-                        'geofencing_interval_60min'.tr(),
-                        60,
-                      ),
-                    ],
-                  ),
+                  const SizedBox(height: 24),
+                  _buildIntervalDial(isDarkMode),
                 ],
               ),
 
@@ -2023,50 +1998,171 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     );
   }
 
-  /// Build interval button
-  Widget _buildIntervalButton(
-    bool isDarkMode,
-    String label,
-    int minutes,
-  ) {
-    final isSelected = _geofencingIntervalMinutes == minutes;
+  /// Build interval dial with slider (1-30 minutes)
+  Widget _buildIntervalDial(bool isDarkMode) {
+    final intervals = [1, 2, 3, 5, 10, 15, 20, 30];
+    final selectedIndex = intervals.indexOf(_geofencingIntervalMinutes);
+    final actualIndex = selectedIndex >= 0 ? selectedIndex : 4; // Default to 10 minutes
 
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          _geofencingIntervalMinutes = minutes;
-          // Update geofencing interval if enabled
-          if (_geofencingEnabled) {
-            GeofenceWorkManagerService.startMonitoring(
-              intervalMinutes: minutes,
-            );
-          }
-        });
-      },
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? AppColors.primaryBlue
-              : AppColors.getInput(isDarkMode),
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(
-            color: isSelected
-                ? AppColors.primaryBlue
-                : AppColors.getBorder(isDarkMode),
+    return Column(
+      children: [
+        // Dial visualization with center display
+        Container(
+          height: 200,
+          decoration: BoxDecoration(
+            gradient: RadialGradient(
+              colors: [
+                AppColors.getInput(isDarkMode),
+                AppColors.getCard(isDarkMode),
+              ],
+              stops: const [0.0, 1.0],
+            ),
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.1),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  '${_geofencingIntervalMinutes}',
+                  style: TextStyle(
+                    color: AppColors.primaryBlue,
+                    fontSize: 48,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  _geofencingIntervalMinutes == 1 ? '분' : '분',
+                  style: TextStyle(
+                    color: AppColors.getTextSecondary(isDarkMode),
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
-        child: Text(
-          label,
-          style: TextStyle(
-            color: isSelected
-                ? Colors.white
-                : AppColors.getTextSecondary(isDarkMode),
-            fontSize: 12,
-            fontWeight: FontWeight.w600,
+        const SizedBox(height: 24),
+
+        // Slider
+        SliderTheme(
+          data: SliderThemeData(
+            trackHeight: 6,
+            thumbShape: RoundSliderThumbShape(
+              enabledThumbRadius: 14,
+              elevation: 4,
+            ),
+            overlayShape: RoundSliderOverlayShape(overlayRadius: 20),
+            activeTrackColor: AppColors.primaryBlue,
+            inactiveTrackColor: AppColors.getInput(isDarkMode),
+            thumbColor: AppColors.primaryBlue,
+          ),
+          child: Slider(
+            value: actualIndex.toDouble(),
+            min: 0,
+            max: (intervals.length - 1).toDouble(),
+            divisions: intervals.length - 1,
+            onChanged: (value) {
+              setState(() {
+                final newMinutes = intervals[value.toInt()];
+                _geofencingIntervalMinutes = newMinutes;
+                // Update geofencing interval if enabled
+                if (_geofencingEnabled) {
+                  GeofenceWorkManagerService.startMonitoring(
+                    intervalMinutes: newMinutes,
+                  );
+                }
+              });
+            },
           ),
         ),
-      ),
+        const SizedBox(height: 20),
+
+        // Interval labels
+        SizedBox(
+          height: 50,
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: List.generate(
+                intervals.length,
+                (index) {
+                  final minutes = intervals[index];
+                  final isSelected = _geofencingIntervalMinutes == minutes;
+
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    child: GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          _geofencingIntervalMinutes = minutes;
+                          // Update geofencing interval if enabled
+                          if (_geofencingEnabled) {
+                            GeofenceWorkManagerService.startMonitoring(
+                              intervalMinutes: minutes,
+                            );
+                          }
+                        });
+                      },
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            width: 40,
+                            height: 40,
+                            decoration: BoxDecoration(
+                              color: isSelected
+                                  ? AppColors.primaryBlue
+                                  : AppColors.getInput(isDarkMode),
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: isSelected
+                                    ? AppColors.primaryBlue
+                                    : AppColors.getBorder(isDarkMode),
+                                width: 2,
+                              ),
+                            ),
+                            child: Center(
+                              child: Text(
+                                '$minutes',
+                                style: TextStyle(
+                                  color: isSelected
+                                      ? Colors.white
+                                      : AppColors.getTextSecondary(isDarkMode),
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            minutes == 1 ? '분' : '분',
+                            style: TextStyle(
+                              color: AppColors.getTextSecondary(isDarkMode),
+                              fontSize: 10,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

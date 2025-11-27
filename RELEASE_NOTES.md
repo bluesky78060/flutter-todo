@@ -1,19 +1,48 @@
 # DoDo 앱 출시 노트
 
-## 최신 버전: 1.0.15+43 🚀 (개발 중)
+## 최신 버전: 1.0.15+43 🚀
 
 **최종 업데이트**: 2025년 11월 27일
-**현재 상태**: 오프라인 모드 기능 개발 완료
+**현재 상태**: Google Play 배포 준비 완료
 **패키지 이름**: kr.bluesky.dodo
 **플랫폼**: Android 6.0 (API 23) 이상, iOS 11.0 이상, Web
 
 ---
 
-## 버전 1.0.15+43 - 오프라인 모드 및 동기화 개선 📡
+## 버전 1.0.15+43 - 오프라인 모드 및 위젯 개선 📡🎨
 
-**개발 완료일**: 2025년 11월 27일
+**출시일**: 2025년 11월 27일
 
 ### 신규 기능 ✨
+
+#### 위젯 UI 개선 및 다국어 지원
+- ✅ **위젯 제목 간소화**
+  - "오늘의 할 일" → "할일"로 변경
+  - 더 깔끔하고 직관적인 디자인
+
+- ✅ **투명 테마 가독성 개선**
+  - 텍스트 색상 회색 → 흰색으로 변경
+  - 배경이 어두운 홈 화면에서도 명확하게 표시
+  - TodoListWidget, TodoCalendarWidget 모두 적용
+
+- ✅ **위젯 설정 화면 다국어 지원**
+  - 하드코딩된 한글을 번역 키로 변환
+  - 테마 이름: 라이트, 다크, 투명, 블루, 퍼플 (한/영)
+  - UI 텍스트: 테마 선택, 미리보기, 탭하여 모든 할일 보기
+  - 요일 표시: 일, 월, 화, 수, 목, 금, 토 (한/영)
+
+- ✅ **고급 위젯 기술 문서화**
+  - 삼성 스타일 인터랙티브 위젯 구현 가이드 작성
+  - RemoteViewsService/Factory, BroadcastReceiver 아키텍처
+  - `claudedocs/WIDGET_ADVANCED_IMPLEMENTATION.md` (600+ 라인)
+
+**수정된 파일 (위젯)**:
+- `android/app/src/main/res/values-ko/strings.xml` - 한국어 위젯 문자열
+- `android/app/src/main/kotlin/kr/bluesky/dodo/widgets/TodoListWidget.kt` - 투명 테마 색상
+- `android/app/src/main/kotlin/kr/bluesky/dodo/widgets/TodoCalendarWidget.kt` - 투명 테마 색상
+- `lib/presentation/screens/widget_config_screen.dart` - 다국어 지원
+- `assets/translations/ko.json` - 번역 키 추가
+- `assets/translations/en.json` - 영어 번역 추가
 
 #### 오프라인 모드 개선 (2.2 완료)
 - ✅ **네트워크 연결 상태 모니터링**

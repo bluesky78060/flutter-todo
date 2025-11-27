@@ -4,6 +4,7 @@ import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
 import 'package:todo_app/core/theme/app_colors.dart';
 import 'package:todo_app/core/services/notification_service.dart';
@@ -108,7 +109,14 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> {
 
         await Future.delayed(const Duration(milliseconds: 300));
 
-        // 3단계: 배터리 최적화 제외 요청
+        // 3단계: 위치 권한 요청 (위치 기반 알림용)
+        if (mounted) {
+          await _requestLocationPermission();
+        }
+
+        await Future.delayed(const Duration(milliseconds: 300));
+
+        // 4단계: 배터리 최적화 제외 요청
         if (mounted) {
           await _requestBatteryOptimization();
         }
@@ -207,6 +215,76 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> {
     if (shouldOpen == true) {
       final notificationService = NotificationService();
       await notificationService.openNotificationSettings();
+    }
+  }
+
+  Future<void> _requestLocationPermission() async {
+    try {
+      final permission = await Geolocator.checkPermission();
+      final isDark = ref.read(isDarkModeProvider);
+
+      // Skip if already granted
+      if (permission == LocationPermission.always ||
+          permission == LocationPermission.whileInUse) {
+        debugPrint('📍 Location permission already granted');
+        return;
+      }
+
+      // Skip if permanently denied
+      if (permission == LocationPermission.deniedForever) {
+        debugPrint('⚠️ Location permission permanently denied');
+        return;
+      }
+
+      // Request permission
+      if (mounted) {
+        final shouldRequest = await showDialog<bool>(
+          context: context,
+          builder: (context) => AlertDialog(
+            backgroundColor: AppColors.getCard(isDark),
+            title: Row(
+              children: [
+                const Icon(FluentIcons.location_24_regular, color: AppColors.primaryBlue),
+                const SizedBox(width: 12),
+                Text(
+                  'permission_location_title'.tr(),
+                  style: const TextStyle(color: AppColors.textWhite),
+                ),
+              ],
+            ),
+            content: Text(
+              'permission_location_desc'.tr(),
+              style: const TextStyle(color: AppColors.textGray, height: 1.5),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: Text('deny'.tr(), style: const TextStyle(color: AppColors.textGray)),
+              ),
+              ElevatedButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primaryBlue,
+                ),
+                child: Text('allow'.tr(), style: const TextStyle(color: Colors.white)),
+              ),
+            ],
+          ),
+        );
+
+        if (shouldRequest == true) {
+          final result = await Geolocator.requestPermission();
+          if (result == LocationPermission.denied) {
+            debugPrint('📍 Location permission denied');
+          } else if (result == LocationPermission.deniedForever) {
+            debugPrint('⚠️ Location permission denied forever - geofence won\'t work');
+          } else {
+            debugPrint('✅ Location permission granted: $result');
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint('Location permission request error: $e');
     }
   }
 

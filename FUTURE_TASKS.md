@@ -13,6 +13,33 @@
 ## ✅ 완료된 작업 (Completed)
 
 ### 2025-11-27
+- ✅ **위젯 UI 개선 및 다국어 지원**
+  - 위젯 제목 변경: "오늘의 할 일" → "할일" (strings.xml, ko.json)
+  - 투명 테마 가독성 개선: 회색 텍스트 → 흰색 텍스트 (TodoListWidget.kt, TodoCalendarWidget.kt)
+  - 위젯 설정 화면 다국어 지원 (widget_config_screen.dart)
+    - 하드코딩된 한글을 번역 키로 변경 (`tr()` 함수 사용)
+    - 테마 이름: 라이트, 다크, 투명, 블루, 퍼플
+    - UI 텍스트: 테마 선택, 미리보기, 탭하여 모든 할일 보기
+  - 영어 번역 키 추가 (en.json): theme_light, theme_dark, theme_transparent 등
+  - 요일 번역 키 추가: day_sun, day_mon, day_tue, day_wed, day_thu, day_fri, day_sat
+  - **수정된 파일**: 6개
+    - `android/app/src/main/res/values-ko/strings.xml`
+    - `android/app/src/main/kotlin/kr/bluesky/dodo/widgets/TodoListWidget.kt`
+    - `android/app/src/main/kotlin/kr/bluesky/dodo/widgets/TodoCalendarWidget.kt`
+    - `lib/presentation/screens/widget_config_screen.dart`
+    - `assets/translations/ko.json`
+    - `assets/translations/en.json`
+
+- ✅ **고급 위젯 기술 문서화**
+  - FUTURE_TASKS.md에 섹션 4.4 추가 (삼성 스타일 인터랙티브 위젯)
+  - 상세 기술 가이드 생성: `claudedocs/WIDGET_ADVANCED_IMPLEMENTATION.md` (600+ 라인)
+    - RemoteViewsService/RemoteViewsFactory 아키텍처
+    - BroadcastReceiver 위젯 액션 처리
+    - PendingIntent 개별 아이템 클릭
+    - Flutter MethodChannel 연동
+    - 레이아웃 XML 예시
+    - 단계별 구현 계획 (1-2주)
+
 - ✅ **오프라인 모드 개선** (2.2)
   - 네트워크 연결 상태 감지 서비스 구현 (connectivity_plus)
   - 오프라인 상태 UI 배너 (OfflineBanner) 추가
@@ -428,4 +455,4 @@
 
 ---
 
-**문서 최종 업데이트**: 2025-11-27 09:30 KST
+**문서 최종 업데이트**: 2025-11-27 11:00 KST
