@@ -226,7 +226,7 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
   }
 
   Future<void> _pickAttachment() async {
-    if (!mounted || kIsWeb) return;
+    if (!mounted) return;
 
     final isDarkMode = ref.read(isDarkModeProvider);
 
@@ -801,26 +801,22 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
               );
         }
 
-        // Upload attachments if any (Mobile only)
-        print('[TodoFormDialog] Checking upload conditions: kIsWeb=$kIsWeb, filesCount=${_selectedFiles.length}');
-        if (!kIsWeb && _selectedFiles.isNotEmpty) {
-          print('[TodoFormDialog] Conditions met, calling _uploadAttachments for new todo');
+        // Upload attachments if any
+        print('[TodoFormDialog] Checking upload conditions: filesCount=${_selectedFiles.length}');
+        if (_selectedFiles.isNotEmpty) {
+          print('[TodoFormDialog] Uploading ${_selectedFiles.length} attachments for new todo');
           await _uploadAttachments(todoId);
-        } else {
-          print('[TodoFormDialog] Upload skipped - conditions not met');
         }
 
         // Invalidate todosProvider to refresh the list immediately
         ref.invalidate(todosProvider);
       }
 
-      // Upload attachments for edited todo (Mobile only)
-      print('[TodoFormDialog] Edit mode check: isEditMode=$_isEditMode, kIsWeb=$kIsWeb, filesCount=${_selectedFiles.length}');
-      if (_isEditMode && !kIsWeb && _selectedFiles.isNotEmpty) {
-        print('[TodoFormDialog] Conditions met, calling _uploadAttachments for edited todo');
+      // Upload attachments for edited todo
+      print('[TodoFormDialog] Edit mode check: isEditMode=$_isEditMode, filesCount=${_selectedFiles.length}');
+      if (_isEditMode && _selectedFiles.isNotEmpty) {
+        print('[TodoFormDialog] Uploading ${_selectedFiles.length} attachments for edited todo');
         await _uploadAttachments(widget.existingTodo!.id);
-      } else if (_isEditMode) {
-        print('[TodoFormDialog] Edit mode upload skipped - conditions not met');
       }
 
       // Check geofence immediately if location is set (non-web only)
