@@ -94,6 +94,12 @@ android {
     packaging {
         jniLibs {
             useLegacyPackaging = true
+            // ============================================================
+            // ABI 필터링 (arm64-v8a: 95% 이상의 활성 Android 기기 지원)
+            // ============================================================
+            // excludes += "armeabi-v7a/libc++_shared.so"
+            // excludes += "x86/libc++_shared.so"
+            // excludes += "x86_64/libc++_shared.so"
         }
     }
 }

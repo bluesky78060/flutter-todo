@@ -1,10 +1,10 @@
-# Flutter 기본 규칙
--keep class io.flutter.app.** { *; }
--keep class io.flutter.plugin.** { *; }
--keep class io.flutter.util.** { *; }
--keep class io.flutter.view.** { *; }
--keep class io.flutter.** { *; }
--keep class io.flutter.plugins.** { *; }
+# Flutter 기본 규칙 (최소한만 유지)
+-keep class io.flutter.app.FlutterActivity { *; }
+-keep class io.flutter.embedding.android.FlutterActivity { *; }
+-keep class io.flutter.embedding.engine.FlutterEngine { *; }
+-keep class io.flutter.embedding.engine.dart.DartExecutor { *; }
+-keep class io.flutter.plugin.common.** { *; }
+-keep class io.flutter.view.FlutterMain { *; }
 
 # Gson 규칙 (JSON 직렬화)
 -keepattributes Signature
@@ -55,3 +55,35 @@
 -keep class io.flutter.embedding.engine.deferredcomponents.** { *; }
 -dontwarn io.flutter.embedding.android.FlutterPlayStoreSplitApplication
 -dontwarn io.flutter.embedding.engine.deferredcomponents.**
+
+# ============================================================
+# 공격적인 최적화 규칙 (크기 감소: 3-4MB)
+# ============================================================
+
+# 라이브러리 접근성 축소 (private으로 변환)
+-dontskipnonpubliclibraryclasses
+-dontskipnonpubliclibraryclassmembers
+-allowaccessmodification
+
+# 메서드 및 필드 최적화
+-optimizationpasses 5
+-optimizations code/simplification/arithmetic,code/simplification/cast,code/allocation/variable
+-assumenosideeffects class android.util.Log {
+    public static *** d(...);
+    public static *** v(...);
+    public static *** i(...);
+}
+
+# 불필요한 속성 제거
+-dontwarn org.apache.**
+-dontwarn sun.reflect.**
+-dontwarn javax.net.ssl.**
+-dontwarn java.beans.**
+-dontwarn java.lang.management.**
+-dontwarn sun.misc.**
+
+# 서명 유지 (필요시에만)
+-keepattributes Exceptions,InnerClasses,Signature,LineNumberTable,SourceFile,Deprecated,Synthetic,EnclosingMethod
+
+# 원본 파일명 변경 (더 짧게)
+-renamesourcefileattribute SourceFile

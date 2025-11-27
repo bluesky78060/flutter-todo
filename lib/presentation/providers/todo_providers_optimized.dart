@@ -557,15 +557,15 @@ class TodoActions {
     syncNotifier.startSync();
 
     final todoResult = await repository.getTodoById(id);
-    return todoResult.fold(
-      (failure) {
+    await todoResult.fold(
+      (failure) async {
         syncNotifier.syncFailed('$failure', shouldRetry: true);
         throw Exception('${'todo_fetch_failed'.tr()}: $failure');
       },
       (todo) async {
         final result = await repository.toggleCompletion(id);
-        return result.fold(
-          (failure) {
+        await result.fold(
+          (failure) async {
             syncNotifier.syncFailed('$failure', shouldRetry: true);
             throw Exception(failure);
           },
@@ -593,7 +593,7 @@ class TodoActions {
           },
         );
       },
-    ) as Future<void>;
+    );
   }
 
   Future<void> rescheduleTodo(int id, DateTime newDate) async {
@@ -601,7 +601,7 @@ class TodoActions {
     final notificationService = ref.read(notificationServiceProvider);
 
     final todoResult = await repository.getTodoById(id);
-    return todoResult.fold(
+    await todoResult.fold(
       (failure) {
         throw Exception('${'todo_fetch_failed'.tr()}: $failure');
       },
@@ -634,7 +634,7 @@ class TodoActions {
         );
 
         final result = await repository.updateTodo(updatedTodo);
-        return result.fold(
+        await result.fold(
           (failure) {
             throw Exception('${'reschedule_failed'.tr()}: $failure');
           },
@@ -659,7 +659,7 @@ class TodoActions {
           },
         );
       },
-    ) as Future<void>;
+    );
   }
 
   Future<int> deleteCompletedTodos() async {

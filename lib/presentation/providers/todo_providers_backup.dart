@@ -11,10 +11,7 @@ import 'package:todo_app/presentation/widgets/recurring_delete_dialog.dart';
 import 'package:todo_app/presentation/providers/attachment_providers.dart';
 import 'package:todo_app/presentation/providers/widget_provider.dart';
 
-// ============================================================================
-// FILTER STATE PROVIDERS (No changes - already optimal)
-// ============================================================================
-
+// Todo filter state
 enum TodoFilter { all, pending, completed }
 
 class TodoFilterNotifier extends Notifier<TodoFilter> {
@@ -29,9 +26,10 @@ class TodoFilterNotifier extends Notifier<TodoFilter> {
 final todoFilterProvider =
     NotifierProvider<TodoFilterNotifier, TodoFilter>(TodoFilterNotifier.new);
 
+// Category filter state
 class CategoryFilterNotifier extends Notifier<int?> {
   @override
-  int? build() => null;
+  int? build() => null; // null means no category filter
 
   void setCategory(int? categoryId) {
     state = categoryId;
@@ -45,6 +43,7 @@ class CategoryFilterNotifier extends Notifier<int?> {
 final categoryFilterProvider =
     NotifierProvider<CategoryFilterNotifier, int?>(CategoryFilterNotifier.new);
 
+// Search query state
 class SearchQueryNotifier extends Notifier<String> {
   @override
   String build() => '';
@@ -61,147 +60,45 @@ class SearchQueryNotifier extends Notifier<String> {
 final searchQueryProvider =
     NotifierProvider<SearchQueryNotifier, String>(SearchQueryNotifier.new);
 
-// ============================================================================
-// OPTIMIZED DATA LAYER: Base Todos Provider (Cached, No Filtering)
-// ============================================================================
-
-/// Base todos provider - fetches ALL todos once and caches them
-/// Only invalidated on CRUD operations, NOT on filter changes
-/// This is the single source of truth for todo data
-final baseTodosProvider = FutureProvider<List<Todo>>((ref) async {
+// Todos List Provider
+final todosProvider = FutureProvider<List<Todo>>((ref) async {
   final repository = ref.watch(todoRepositoryProvider);
-
-  logger.d('📥 baseTodosProvider: Fetching all todos from repository');
-
-  final result = await repository.getTodos();
-
-  return result.fold(
-    (failure) {
-      logger.e('❌ baseTodosProvider: Failed to fetch todos - $failure');
-      throw Exception(failure);
-    },
-    (todos) {
-      // Filter out master recurring todos (they should not be displayed)
-      final visibleTodos = todos.where((todo) {
-        final isMasterRecurringTodo = todo.recurrenceRule != null &&
-                                       todo.recurrenceRule!.isNotEmpty &&
-                                       todo.parentRecurringTodoId == null;
-        return !isMasterRecurringTodo;
-      }).toList();
-
-      logger.d('✅ baseTodosProvider: Loaded ${visibleTodos.length} todos (filtered ${todos.length - visibleTodos.length} master todos)');
-      return visibleTodos;
-    },
-  );
-});
-
-// ============================================================================
-// OPTIMIZED FILTERING LAYER: Client-Side Filtering (No DB Queries)
-// ============================================================================
-
-/// Filtered todos provider - applies completion status filter in memory
-/// Does NOT query database - works with cached baseTodosProvider data
-/// Performance: O(n) linear scan, ~1-5ms for typical todo lists
-final statusFilteredTodosProvider = Provider<AsyncValue<List<Todo>>>((ref) {
-  final baseTodosAsync = ref.watch(baseTodosProvider);
   final filter = ref.watch(todoFilterProvider);
-
-  return baseTodosAsync.whenData((todos) {
-    switch (filter) {
-      case TodoFilter.all:
-        return todos;
-      case TodoFilter.pending:
-        return todos.where((todo) => !todo.isCompleted).toList();
-      case TodoFilter.completed:
-        return todos.where((todo) => todo.isCompleted).toList();
-    }
-  });
-});
-
-/// Category filtered todos provider - applies category filter in memory
-/// Builds on top of statusFilteredTodosProvider for progressive filtering
-/// Performance: O(n) linear scan, minimal overhead
-final categoryFilteredTodosProvider = Provider<AsyncValue<List<Todo>>>((ref) {
-  final statusFilteredAsync = ref.watch(statusFilteredTodosProvider);
   final categoryFilter = ref.watch(categoryFilterProvider);
-
-  return statusFilteredAsync.whenData((todos) {
-    if (categoryFilter == null) {
-      return todos;
-    }
-    return todos.where((todo) => todo.categoryId == categoryFilter).toList();
-  });
-});
-
-// ============================================================================
-// SEARCH LAYER: Separate Provider for Search (DB Query Only When Needed)
-// ============================================================================
-
-/// Search results provider - queries database only when search query exists
-/// Uses debounced search query from searchQueryProvider
-/// Performance: Database query only on search, not on filter changes
-final searchResultsProvider = FutureProvider<List<Todo>?>((ref) async {
-  final repository = ref.watch(todoRepositoryProvider);
   final searchQuery = ref.watch(searchQueryProvider);
 
-  // Return null if no search query (signals to use filtered todos instead)
-  if (searchQuery.trim().isEmpty) {
-    return null;
-  }
-
-  logger.d('🔍 searchResultsProvider: Searching for "$searchQuery"');
-
-  final result = await repository.searchTodos(searchQuery);
+  // If search query exists, use search instead of filter
+  final result = searchQuery.trim().isNotEmpty
+      ? await repository.searchTodos(searchQuery)
+      : await repository.getFilteredTodos(switch (filter) {
+          TodoFilter.all => 'all',
+          TodoFilter.pending => 'pending',
+          TodoFilter.completed => 'completed',
+        });
 
   return result.fold(
-    (failure) {
-      logger.e('❌ searchResultsProvider: Search failed - $failure');
-      throw Exception(failure);
-    },
+    (failure) => throw Exception(failure),
     (todos) {
-      // Filter out master recurring todos
-      final visibleTodos = todos.where((todo) {
+      // Filter out master recurring todos (they should not be displayed, only their instances)
+      var filteredTodos = todos.where((todo) {
+        // Hide master todos: those with recurrenceRule but no parentRecurringTodoId
         final isMasterRecurringTodo = todo.recurrenceRule != null &&
                                        todo.recurrenceRule!.isNotEmpty &&
                                        todo.parentRecurringTodoId == null;
         return !isMasterRecurringTodo;
       }).toList();
 
-      logger.d('✅ searchResultsProvider: Found ${visibleTodos.length} results');
-      return visibleTodos;
+      // Apply category filter if selected
+      if (categoryFilter != null) {
+        filteredTodos = filteredTodos.where((todo) => todo.categoryId == categoryFilter).toList();
+      }
+
+      return filteredTodos;
     },
   );
 });
 
-// ============================================================================
-// FINAL TODOS PROVIDER: Smart Selection Between Search and Filter
-// ============================================================================
-
-/// Main todos provider - smart selector between search results and filtered todos
-/// UI should watch this provider for the final list of todos to display
-///
-/// Performance characteristics:
-/// - Filter change: 1-5ms (in-memory filtering only)
-/// - Search: 50-200ms (database query)
-/// - CRUD operation: Invalidates baseTodosProvider, triggers refetch
-final todosProvider = Provider<AsyncValue<List<Todo>>>((ref) {
-  final searchResultsAsync = ref.watch(searchResultsProvider);
-  final categoryFilteredAsync = ref.watch(categoryFilteredTodosProvider);
-
-  // If search is active, use search results
-  return searchResultsAsync.whenData((searchResults) {
-    if (searchResults != null) {
-      return searchResults;
-    }
-    // Otherwise, use filtered todos
-    return categoryFilteredAsync.value ?? [];
-  });
-});
-
-// ============================================================================
-// TODO DETAIL PROVIDER (No changes needed)
-// ============================================================================
-
+// Todo Detail Provider
 final todoDetailProvider =
     FutureProvider.family<Todo, int>((ref, id) async {
   final repository = ref.watch(todoRepositoryProvider);
@@ -212,27 +109,13 @@ final todoDetailProvider =
   );
 });
 
-// ============================================================================
-// NOTIFICATION SERVICE PROVIDER (No changes needed)
-// ============================================================================
-
+// Notification Service Provider
 final notificationServiceProvider = Provider((ref) => NotificationService());
 
-// ============================================================================
-// OPTIMIZED TODO ACTIONS: Reduced Unnecessary Invalidations
-// ============================================================================
-
+// Todo actions
 class TodoActions {
   final Ref ref;
   TodoActions(this.ref);
-
-  /// Helper to invalidate only the base provider (not filtered providers)
-  /// Filtered providers will automatically update via their dependencies
-  void _invalidateTodos() {
-    logger.d('🔄 TodoActions: Invalidating baseTodosProvider only');
-    ref.invalidate(baseTodosProvider);
-    // Note: No need to invalidate todosProvider - it will update automatically
-  }
 
   Future<void> createTodo(
     String title,
@@ -249,6 +132,7 @@ class TodoActions {
     final repository = ref.read(todoRepositoryProvider);
     final syncNotifier = ref.read(syncStateProvider.notifier);
 
+    // Start sync
     syncNotifier.startSync();
 
     final result = await repository.createTodo(
@@ -264,62 +148,105 @@ class TodoActions {
       locationRadius: locationRadius,
     );
 
+    // Use isRight/isLeft pattern for proper async handling
     if (result.isLeft()) {
       final failure = result.getLeft().toNullable();
-      logger.e('❌ TodoActions: Failed to create todo - $failure');
+      logger.e('❌ TodoActions: Failed to create todo');
+      logger.e('   Error: $failure');
       syncNotifier.syncFailed('$failure', shouldRetry: true);
       throw Exception('${'db_save_failed'.tr()}: $failure');
     }
 
     final todoId = result.getRight().toNullable()!;
     logger.d('✅ TodoActions: Todo created with ID: $todoId');
+    logger.d('   Title: $title');
+    logger.d('   Due Date: $dueDate');
+    logger.d('   Notification Time: $notificationTime');
+    logger.d('   Recurrence Rule: $recurrenceRule');
 
-    // Schedule notification if needed
+    // Schedule notification if notificationTime is set
     if (notificationTime != null) {
       try {
         final notificationService = ref.read(notificationServiceProvider);
+        final now = DateTime.now();
+        final difference = notificationTime.difference(now);
+
+        logger.d('📅 TodoActions: Scheduling notification for todo $todoId');
+        logger.d('   Title: $title');
+        logger.d('   Notification Time: $notificationTime');
+        logger.d('   Current Time: $now');
+        logger.d('   Time until notification: ${difference.inMinutes} minutes');
+
         await notificationService.scheduleNotification(
           id: todoId,
           title: 'todo_reminder'.tr(),
           body: title,
           scheduledDate: notificationTime,
         );
-        logger.d('✅ TodoActions: Notification scheduled');
-      } catch (e) {
-        logger.d('⚠️ TodoActions: Failed to schedule notification: $e');
+
+        // Verify scheduling
+        final pending = await notificationService.getPendingNotifications();
+        final thisNotification = pending.where((n) => n.id == todoId).firstOrNull;
+
+        if (thisNotification != null) {
+          logger.d('✅ TodoActions: Notification verified in pending list');
+          logger.d('   Pending notifications count: ${pending.length}');
+        } else {
+          logger.d('⚠️ TodoActions: Notification not found in pending list!');
+        }
+      } catch (e, stackTrace) {
+        logger.d('❌ TodoActions: Failed to schedule notification: $e');
+        logger.d('   Stack trace: $stackTrace');
+        // Don't throw - allow todo creation to succeed even if notification fails
       }
+    } else {
+      logger.d('ℹ️ TodoActions: No notification time set');
     }
 
-    // Generate recurring instances if needed
+    // Generate recurring instances if this is a recurring todo
     if (recurrenceRule != null) {
       try {
+        logger.d('🔄 TodoActions: Generating recurring instances for todo $todoId');
         final recurringService = ref.read(recurringTodoServiceProvider);
+
+        // Fetch the created todo to pass to the service
         final todoResult = await repository.getTodoById(todoId);
         if (todoResult.isRight()) {
           final todo = todoResult.getRight().toNullable()!;
           await recurringService.generateInstancesForNewMaster(todo);
-          logger.d('✅ TodoActions: Recurring instances generated');
+          logger.d('✅ TodoActions: Recurring instances generated successfully');
+        } else {
+          logger.e('❌ TodoActions: Failed to fetch created todo for recurring instance generation');
         }
-      } catch (e) {
-        logger.e('❌ TodoActions: Failed to generate recurring instances: $e');
+      } catch (e, stackTrace) {
+        logger.e('❌ TodoActions: Failed to generate recurring instances',
+          error: e, stackTrace: stackTrace);
+        // Don't throw - allow todo creation to succeed even if instance generation fails
       }
     }
 
+    // Sync success
     await syncNotifier.syncSuccess();
-    _invalidateTodos();
+
+    ref.invalidate(todosProvider);
+
+    // Update home screen widget
     _updateWidget();
   }
 
+  /// Helper method to update home screen widget
   void _updateWidget() {
     try {
       final widgetService = ref.read(widgetServiceProvider);
       widgetService.updateWidget();
-      logger.d('📱 TodoActions: Widget updated');
+      logger.d('📱 TodoActions: Home screen widget updated');
     } catch (e) {
       logger.d('⚠️ TodoActions: Failed to update widget: $e');
     }
   }
 
+  /// Update a todo
+  /// For recurring todo instances, this should be called after showing RecurringEditDialog
   Future<void> updateTodo(
     Todo todo, {
     RecurringEditMode? recurringEditMode,
@@ -327,12 +254,18 @@ class TodoActions {
     final repository = ref.read(todoRepositoryProvider);
     final syncNotifier = ref.read(syncStateProvider.notifier);
 
+    // Start sync
     syncNotifier.startSync();
 
-    // Handle recurring todo instances
+    // Check if this is a recurring todo instance (has parentRecurringTodoId)
     if (todo.parentRecurringTodoId != null && recurringEditMode != null) {
+      logger.d('🔄 TodoActions: Updating recurring todo instance');
+      logger.d('   Mode: $recurringEditMode');
+
       switch (recurringEditMode) {
         case RecurringEditMode.thisOnly:
+          // Edit this instance only - detach from series by removing parent link
+          logger.d('   Detaching from series');
           final detachedTodo = Todo(
             id: todo.id,
             title: todo.title,
@@ -343,8 +276,8 @@ class TodoActions {
             completedAt: todo.completedAt,
             dueDate: todo.dueDate,
             notificationTime: todo.notificationTime,
-            recurrenceRule: null,
-            parentRecurringTodoId: null,
+            recurrenceRule: null, // Remove recurrence rule
+            parentRecurringTodoId: null, // Detach from series
           );
           final result = await repository.updateTodo(detachedTodo);
           await result.fold(
@@ -353,8 +286,9 @@ class TodoActions {
               throw Exception(failure);
             },
             (_) async {
+              logger.d('✅ TodoActions: Instance detached and updated');
               await syncNotifier.syncSuccess();
-              _invalidateTodos();
+              ref.invalidate(todosProvider);
               ref.invalidate(todoDetailProvider(todo.id));
               _updateWidget();
             },
@@ -362,34 +296,43 @@ class TodoActions {
           break;
 
         case RecurringEditMode.thisAndFuture:
-          // Update master and regenerate future instances
+          // Edit this and future instances - update the master todo
+          logger.d('   Updating master and future instances');
+
+          // First, get the master todo
           final masterResult = await repository.getTodoById(todo.parentRecurringTodoId!);
           await masterResult.fold(
             (failure) async {
+              logger.e('❌ TodoActions: Failed to fetch master todo');
               syncNotifier.syncFailed('$failure', shouldRetry: true);
               throw Exception('${'master_todo_fetch_failed'.tr()}: $failure');
             },
             (masterTodo) async {
+              // Update the master with the changes from this instance
               final updatedMaster = masterTodo.copyWith(
                 title: todo.title,
                 description: todo.description,
                 categoryId: todo.categoryId,
                 dueDate: todo.dueDate,
                 notificationTime: todo.notificationTime,
+                // Keep the recurrence rule from master
               );
 
               final result = await repository.updateTodo(updatedMaster);
               await result.fold(
                 (failure) async {
+                  logger.e('❌ TodoActions: Failed to update master todo');
                   syncNotifier.syncFailed('$failure', shouldRetry: true);
                   throw Exception('${'master_todo_update_failed'.tr()}: $failure');
                 },
                 (_) async {
-                  // Delete and regenerate future instances
+                  logger.d('✅ TodoActions: Master todo updated');
+
+                  // Delete all future instances (they will be regenerated)
                   final allTodosResult = await repository.getTodos();
                   await allTodosResult.fold(
                     (failure) {
-                      logger.e('❌ Failed to fetch todos for cleanup');
+                      logger.e('❌ TodoActions: Failed to fetch todos for cleanup');
                     },
                     (allTodos) async {
                       final futureInstances = allTodos.where((t) =>
@@ -400,17 +343,20 @@ class TodoActions {
                          t.dueDate!.isAtSameMomentAs(todo.dueDate!))
                       ).toList();
 
+                      logger.d('   Deleting ${futureInstances.length} future instances');
                       for (final instance in futureInstances) {
                         await repository.deleteTodo(instance.id);
                       }
 
+                      // Regenerate instances
                       final recurringService = ref.read(recurringTodoServiceProvider);
                       await recurringService.generateInstancesForNewMaster(updatedMaster);
+                      logger.d('✅ TodoActions: Future instances regenerated');
                     },
                   );
 
                   await syncNotifier.syncSuccess();
-                  _invalidateTodos();
+                  ref.invalidate(todosProvider);
                   ref.invalidate(todoDetailProvider(todo.id));
                   _updateWidget();
                 },
@@ -420,7 +366,8 @@ class TodoActions {
           break;
       }
     } else {
-      // Regular todo update
+      // Regular todo update (non-recurring or master todo)
+      logger.d('📝 TodoActions: Updating regular todo');
       final result = await repository.updateTodo(todo);
       await result.fold(
         (failure) async {
@@ -428,8 +375,9 @@ class TodoActions {
           throw Exception(failure);
         },
         (_) async {
+          logger.d('✅ TodoActions: Todo updated successfully');
           await syncNotifier.syncSuccess();
-          _invalidateTodos();
+          ref.invalidate(todosProvider);
           ref.invalidate(todoDetailProvider(todo.id));
           _updateWidget();
         },
@@ -437,6 +385,8 @@ class TodoActions {
     }
   }
 
+  /// Delete a todo
+  /// For recurring todo instances, this should be called after showing RecurringDeleteDialog
   Future<void> deleteTodo(
     int id, {
     RecurringDeleteMode? recurringDeleteMode,
@@ -445,30 +395,45 @@ class TodoActions {
     final notificationService = ref.read(notificationServiceProvider);
     final syncNotifier = ref.read(syncStateProvider.notifier);
 
+    logger.d('🗑️ TodoActions: Attempting to delete todo $id');
+
+    // Start sync
     syncNotifier.startSync();
 
+    // First, fetch the todo to check if it's a recurring instance
     final todoResult = await repository.getTodoById(id);
     await todoResult.fold(
       (failure) async {
+        logger.e('❌ TodoActions: Failed to fetch todo for deletion');
         syncNotifier.syncFailed('$failure', shouldRetry: true);
         throw Exception('${'todo_fetch_failed'.tr()}: $failure');
       },
       (todo) async {
-        // Handle recurring todo instances
+        // Check if this is a recurring todo instance
         if (todo.parentRecurringTodoId != null && recurringDeleteMode != null) {
+          logger.d('🔄 TodoActions: Deleting recurring todo instance');
+          logger.d('   Mode: $recurringDeleteMode');
+
           switch (recurringDeleteMode) {
             case RecurringDeleteMode.thisOnly:
+              // Delete only this instance
+              logger.d('   Deleting this instance only');
               await _deleteSingleTodo(id, notificationService, repository, syncNotifier);
               break;
 
             case RecurringDeleteMode.thisAndFuture:
+              // Delete this and all future instances
+              logger.d('   Deleting this and future instances');
+
               final allTodosResult = await repository.getTodos();
               await allTodosResult.fold(
                 (failure) async {
+                  logger.e('❌ TodoActions: Failed to fetch todos');
                   syncNotifier.syncFailed('$failure', shouldRetry: true);
                   throw Exception('${'todos_fetch_failed'.tr()}: $failure');
                 },
                 (allTodos) async {
+                  // Find all future instances including this one
                   final instancesToDelete = allTodos.where((t) =>
                     t.parentRecurringTodoId == todo.parentRecurringTodoId &&
                     t.dueDate != null &&
@@ -477,6 +442,7 @@ class TodoActions {
                      t.dueDate!.isAtSameMomentAs(todo.dueDate!))
                   ).toList();
 
+                  logger.d('   Deleting ${instancesToDelete.length} instances');
                   for (final instance in instancesToDelete) {
                     await _deleteSingleTodo(instance.id, notificationService, repository, syncNotifier);
                   }
@@ -485,68 +451,94 @@ class TodoActions {
               break;
 
             case RecurringDeleteMode.entireSeries:
+              // Delete master and all instances
+              logger.d('   Deleting entire series');
+
               final allTodosResult = await repository.getTodos();
               await allTodosResult.fold(
                 (failure) async {
+                  logger.e('❌ TodoActions: Failed to fetch todos');
                   syncNotifier.syncFailed('$failure', shouldRetry: true);
                   throw Exception('${'todos_fetch_failed'.tr()}: $failure');
                 },
                 (allTodos) async {
+                  // Find all instances
                   final allInstances = allTodos.where((t) =>
                     t.parentRecurringTodoId == todo.parentRecurringTodoId
                   ).toList();
 
+                  // Delete all instances
+                  logger.d('   Deleting ${allInstances.length} instances');
                   for (final instance in allInstances) {
                     await _deleteSingleTodo(instance.id, notificationService, repository, syncNotifier);
                   }
 
+                  // Delete the master todo
+                  logger.d('   Deleting master todo ${todo.parentRecurringTodoId}');
                   await _deleteSingleTodo(todo.parentRecurringTodoId!, notificationService, repository, syncNotifier);
                 },
               );
               break;
           }
         } else {
+          // Regular todo deletion (non-recurring or master todo)
+          logger.d('📝 TodoActions: Deleting regular todo');
           await _deleteSingleTodo(id, notificationService, repository, syncNotifier);
         }
 
+        // Sync success
         await syncNotifier.syncSuccess();
-        _invalidateTodos();
+        ref.invalidate(todosProvider);
         _updateWidget();
       },
     );
   }
 
+  /// Helper method to delete a single todo with notification and attachment cleanup
   Future<void> _deleteSingleTodo(
     int id,
     NotificationService notificationService,
     dynamic repository,
     SyncStateNotifier syncNotifier,
   ) async {
+    // Cancel notification before deleting todo
     try {
       await notificationService.cancelNotification(id);
-      logger.d('✅ Notification cancelled for todo $id');
+      logger.d('✅ TodoActions: Notification cancelled for todo $id');
     } catch (e) {
-      logger.d('⚠️ Failed to cancel notification: $e');
+      logger.d('⚠️ TodoActions: Failed to cancel notification: $e');
+      // Continue with deletion even if notification cancel fails
     }
 
+    // Delete attachments from Supabase Storage before deleting todo
     try {
       final attachmentService = ref.read(attachmentServiceProvider);
       final deleteResult = await attachmentService.deleteFilesByTodoId(id);
       deleteResult.fold(
-        (failure) => logger.d('⚠️ Failed to delete attachments: $failure'),
-        (_) => logger.d('✅ Attachments deleted'),
+        (failure) {
+          logger.d('⚠️ TodoActions: Failed to delete attachments for todo $id: $failure');
+          // Continue with todo deletion even if attachment deletion fails
+        },
+        (_) {
+          logger.d('✅ TodoActions: Attachments deleted for todo $id');
+        },
       );
     } catch (e) {
-      logger.d('⚠️ Error deleting attachments: $e');
+      logger.d('⚠️ TodoActions: Error deleting attachments: $e');
+      // Continue with todo deletion even if attachment deletion fails
     }
 
     final result = await repository.deleteTodo(id);
     result.fold(
       (failure) {
+        logger.e('❌ TodoActions: Failed to delete todo $id');
+        logger.e('   Error: $failure');
         syncNotifier.syncFailed('$failure', shouldRetry: true);
         throw Exception('${'db_delete_failed'.tr()}: $failure');
       },
-      (_) => logger.d('✅ Todo deleted: $id'),
+      (_) {
+        logger.d('✅ TodoActions: Todo deleted successfully: $id');
+      },
     );
   }
 
@@ -554,55 +546,90 @@ class TodoActions {
     final repository = ref.read(todoRepositoryProvider);
     final syncNotifier = ref.read(syncStateProvider.notifier);
 
+    // Start sync
     syncNotifier.startSync();
 
+    // First, fetch the todo to check if it's a recurring instance
     final todoResult = await repository.getTodoById(id);
-    return todoResult.fold(
-      (failure) {
+    await todoResult.fold(
+      (failure) async {
+        logger.e('❌ TodoActions: Failed to fetch todo for toggle completion');
         syncNotifier.syncFailed('$failure', shouldRetry: true);
         throw Exception('${'todo_fetch_failed'.tr()}: $failure');
       },
       (todo) async {
+        // Toggle the completion status
         final result = await repository.toggleCompletion(id);
-        return result.fold(
-          (failure) {
+        await result.fold(
+          (failure) async {
+            logger.e('❌ TodoActions: Failed to toggle completion');
             syncNotifier.syncFailed('$failure', shouldRetry: true);
             throw Exception(failure);
           },
           (_) async {
-            // Generate next recurring instance if needed
+            logger.d('✅ TodoActions: Todo completion toggled: $id');
+
+            // If this is a recurring instance being completed, generate next instances
             if (!todo.isCompleted && todo.parentRecurringTodoId != null) {
+              logger.d('🔄 TodoActions: Recurring instance completed, regenerating instances');
+
               try {
+                // Fetch the master todo
                 final masterResult = await repository.getTodoById(todo.parentRecurringTodoId!);
-                masterResult.fold(
-                  (failure) => logger.e('❌ Failed to fetch master todo'),
+                await masterResult.fold(
+                  (failure) {
+                    logger.e('❌ TodoActions: Failed to fetch master todo');
+                  },
                   (masterTodo) async {
+                    // Regenerate instances for the master todo
                     final recurringService = ref.read(recurringTodoServiceProvider);
-                    await recurringService.generateInstancesForNewMaster(masterTodo);
+                    final allTodosResult = await repository.getTodos();
+
+                    await allTodosResult.fold(
+                      (failure) {
+                        logger.e('❌ TodoActions: Failed to fetch todos for regeneration');
+                      },
+                      (allTodos) async {
+                        await recurringService.generateInstancesForNewMaster(masterTodo);
+                        logger.d('✅ TodoActions: Next recurring instances generated');
+                      },
+                    );
                   },
                 );
-              } catch (e) {
-                logger.e('❌ Failed to generate next recurring instance: $e');
+              } catch (e, stackTrace) {
+                logger.e('❌ TodoActions: Failed to generate next recurring instance',
+                  error: e, stackTrace: stackTrace);
+                // Don't throw - allow completion to succeed even if generation fails
               }
             }
 
+            // Sync success
             await syncNotifier.syncSuccess();
-            _invalidateTodos();
+            ref.invalidate(todosProvider);
             ref.invalidate(todoDetailProvider(id));
             _updateWidget();
           },
         );
       },
-    ) as Future<void>;
+    );
   }
 
-  Future<void> rescheduleTodo(int id, DateTime newDate) async {
+  /// Reschedule a todo to a new date
+  /// Maintains the original time, only changes the date
+  Future<void> rescheduleTodo(
+    int id,
+    DateTime newDate,
+  ) async {
     final repository = ref.read(todoRepositoryProvider);
     final notificationService = ref.read(notificationServiceProvider);
 
+    logger.d('📅 TodoActions: Rescheduling todo $id to $newDate');
+
+    // Fetch the current todo
     final todoResult = await repository.getTodoById(id);
-    return todoResult.fold(
+    await todoResult.fold(
       (failure) {
+        logger.e('❌ TodoActions: Failed to fetch todo for rescheduling');
         throw Exception('${'todo_fetch_failed'.tr()}: $failure');
       },
       (todo) async {
@@ -610,6 +637,7 @@ class TodoActions {
           throw Exception('cannot_reschedule_without_due_date'.tr());
         }
 
+        // Keep the original time, change only the date
         final originalTime = TimeOfDay(
           hour: todo.dueDate!.hour,
           minute: todo.dueDate!.minute,
@@ -622,54 +650,71 @@ class TodoActions {
           originalTime.minute,
         );
 
+        // Calculate new notification time if it exists
         DateTime? newNotificationTime;
         if (todo.notificationTime != null && todo.dueDate != null) {
+          // Calculate the time difference between notification and due date
           final difference = todo.dueDate!.difference(todo.notificationTime!);
+          // Apply the same difference to the new due date
           newNotificationTime = newDueDate.subtract(difference);
         }
 
+        // Update the todo
         final updatedTodo = todo.copyWith(
           dueDate: newDueDate,
           notificationTime: newNotificationTime,
         );
 
+        logger.d('   New due date: $newDueDate');
+        logger.d('   New notification time: $newNotificationTime');
+
         final result = await repository.updateTodo(updatedTodo);
-        return result.fold(
+        await result.fold(
           (failure) {
+            logger.e('❌ TodoActions: Failed to reschedule todo');
             throw Exception('${'reschedule_failed'.tr()}: $failure');
           },
           (_) async {
+            logger.d('✅ TodoActions: Todo rescheduled successfully');
+
+            // Update notification if it exists
             if (newNotificationTime != null) {
               try {
+                // Cancel old notification
                 await notificationService.cancelNotification(id);
+                // Schedule new notification
                 await notificationService.scheduleNotification(
                   id: id,
                   title: 'todo_reminder'.tr(),
                   body: todo.title,
                   scheduledDate: newNotificationTime,
                 );
+                logger.d('✅ TodoActions: Notification rescheduled');
               } catch (e) {
-                logger.e('❌ Failed to reschedule notification: $e');
+                logger.e('❌ TodoActions: Failed to reschedule notification: $e');
+                // Don't throw - allow reschedule to succeed even if notification fails
               }
             }
 
-            _invalidateTodos();
+            ref.invalidate(todosProvider);
             ref.invalidate(todoDetailProvider(id));
             _updateWidget();
           },
         );
       },
-    ) as Future<void>;
+    );
   }
 
+  /// Delete all completed todos
   Future<int> deleteCompletedTodos() async {
     final repository = ref.read(todoRepositoryProvider);
+
     final result = await repository.deleteCompletedTodos();
 
     return result.fold(
       (failure) => throw Exception('Failed to delete completed todos'),
       (count) {
-        _invalidateTodos();
+        ref.invalidate(todosProvider);
         _updateWidget();
         return count;
       },
@@ -682,10 +727,13 @@ class TodoActions {
 
     result.fold(
       (failure) {
+        logger.e('❌ TodoActions: Failed to update todo positions');
+        logger.e('   Error: $failure');
         throw Exception('${'position_update_failed'.tr()}: $failure');
       },
       (_) {
-        _invalidateTodos();
+        logger.d('✅ TodoActions: Todo positions updated successfully');
+        ref.invalidate(todosProvider);
       },
     );
   }
