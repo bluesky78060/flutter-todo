@@ -155,40 +155,47 @@ class WidgetConfigScreen extends ConsumerWidget {
           borderRadius: BorderRadius.circular(8),
           color: isSelected ? AppColors.primaryBlue.withOpacity(0.05) : null,
         ),
-        child: Row(
-          children: [
-            Radio<WidgetViewType>(
-              value: viewType,
-              groupValue: isSelected ? viewType : null,
-              onChanged: (value) {
-                if (value != null) {
-                  ref.read(updateWidgetViewTypeProvider(value));
-                }
-              },
-              activeColor: AppColors.primaryBlue,
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                          fontWeight: FontWeight.w600,
-                        ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    description,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Colors.grey[600],
-                        ),
-                  ),
-                ],
+        child: SizedBox(
+          width: double.infinity,
+          child: Row(
+            children: [
+              Radio<WidgetViewType>(
+                value: viewType,
+                groupValue: isSelected ? viewType : null,
+                onChanged: (value) {
+                  if (value != null) {
+                    ref.read(updateWidgetViewTypeProvider(value));
+                  }
+                },
+                activeColor: AppColors.primaryBlue,
               ),
-            ),
-          ],
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                            fontWeight: FontWeight.w600,
+                          ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      description,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: Colors.grey[600],
+                          ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
