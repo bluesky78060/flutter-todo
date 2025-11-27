@@ -493,5 +493,15 @@
   "last_sync": "Last sync",
   "sync_failed": "Sync failed",
   "retry": "Retry",
-  "syncing": "Syncing..."
+  "syncing": "Syncing...",
+
+  "widget_settings": "Widget Settings",
+  "widget_settings_desc": "Customize home screen widget",
+  "widget_enabled": "Widget Enabled",
+  "widget_disabled": "Widget Disabled",
+  "widget_view_type": "Widget View Type",
+  "widget_today_tasks": "Today's Tasks",
+  "widget_today_tasks_desc": "Shows today's incomplete tasks",
+  "widget_calendar": "Calendar View",
+  "widget_calendar_desc": "Shows this month's tasks"
 }

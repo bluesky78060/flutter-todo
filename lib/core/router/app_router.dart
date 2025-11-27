@@ -15,6 +15,7 @@ import 'package:todo_app/presentation/screens/calendar_screen.dart';
 import 'package:todo_app/presentation/screens/settings_screen.dart';
 // import 'package:todo_app/presentation/screens/test_login_screen.dart'; // Development only
 import 'package:todo_app/presentation/screens/admin_dashboard_screen.dart';
+import 'package:todo_app/presentation/screens/widget_config_screen.dart';
 import 'package:todo_app/core/utils/app_logger.dart';
 
 final goRouterProvider = Provider<GoRouter>((ref) {
@@ -143,6 +144,11 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         path: '/admin-dashboard',
         name: 'admin-dashboard',
         builder: (context, state) => const AdminDashboardScreen(),
+      ),
+      GoRoute(
+        path: '/widget-config',
+        name: 'widget-config',
+        builder: (context, state) => const WidgetConfigScreen(),
       ),
       // GoRoute(
       //   path: '/theme-preview',

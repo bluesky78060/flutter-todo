@@ -170,6 +170,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   _buildCategoryCard(),
                   const SizedBox(height: 32),
 
+                  // Widget Settings
+                  _buildSectionHeader('widget_settings'.tr()),
+                  const SizedBox(height: 12),
+                  _buildWidgetCard(),
+                  const SizedBox(height: 32),
+
                   // Geofencing Settings
                   _buildSectionHeader('geofencing_settings'.tr()),
                   const SizedBox(height: 12),
@@ -969,6 +975,60 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         ),
         onTap: () {
           context.push('/categories');
+        },
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+      ),
+    );
+  }
+
+  Widget _buildWidgetCard() {
+    final isDarkMode = ref.watch(isDarkModeProvider);
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.getCard(isDarkMode),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.2),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: ListTile(
+        leading: Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: AppColors.getInput(isDarkMode),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: const Icon(
+            FluentIcons.device_desktop_24_regular,
+            color: AppColors.primaryBlue,
+          ),
+        ),
+        title: Text(
+          'widget_settings'.tr(),
+          style: TextStyle(
+            color: AppColors.getText(isDarkMode),
+            fontSize: 16,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        subtitle: Text(
+          'widget_settings_desc'.tr(),
+          style: TextStyle(
+            color: AppColors.getTextSecondary(isDarkMode),
+            fontSize: 14,
+          ),
+        ),
+        trailing: Icon(
+          FluentIcons.chevron_right_24_regular,
+          color: AppColors.getTextSecondary(isDarkMode),
+        ),
+        onTap: () {
+          context.push('/widget-config');
         },
         contentPadding:
             const EdgeInsets.symmetric(horizontal: 20, vertical: 8),

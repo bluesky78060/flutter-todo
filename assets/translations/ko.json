@@ -493,5 +493,15 @@
   "last_sync": "마지막 동기화",
   "sync_failed": "동기화 실패",
   "retry": "재시도",
-  "syncing": "동기화 중..."
+  "syncing": "동기화 중...",
+
+  "widget_settings": "위젯 설정",
+  "widget_settings_desc": "홈 화면 위젯 커스터마이즈",
+  "widget_enabled": "위젯 활성화",
+  "widget_disabled": "위젯 비활성화",
+  "widget_view_type": "위젯 표시 유형",
+  "widget_today_tasks": "오늘의 할일",
+  "widget_today_tasks_desc": "오늘의 미완료 할일 표시",
+  "widget_calendar": "달력 보기",
+  "widget_calendar_desc": "이번 달 할일 표시"
 }
