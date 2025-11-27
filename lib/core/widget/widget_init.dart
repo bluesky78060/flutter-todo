@@ -2,10 +2,12 @@ import 'package:flutter/foundation.dart';
 
 /// Initialize widget system on app startup
 /// home_widget package handles widget registration automatically
-/// No explicit initialization needed - just ensure the plugin is added to pubspec.yaml
+/// Widget is registered via AndroidManifest.xml BroadcastReceiver declarations
 Future<void> initializeWidgetSystem() async {
   try {
     print('✅ Widget system ready (home_widget plugin initialized)');
+    print('📱 Widget receivers registered via AndroidManifest.xml');
+    print('🔧 Widget data can be updated via WidgetService.updateWidget()');
   } catch (e) {
     print('⚠️ Error in widget initialization: $e');
   }
