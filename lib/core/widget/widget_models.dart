@@ -76,8 +76,8 @@ class TodoListData with _$TodoListData {
     required DateTime lastUpdated,
   }) = _TodoListData;
 
-  factory TodoListData.fromJson(Map<String, dynamic> json) =>
-      _$TodoListDataFromJson(json);
+  const TodoListData._();
+
 
   /// Generate today's todo data from todos
   static TodoListData fromTodos(List<TodoEntity> todos) {
@@ -117,15 +117,6 @@ class TodoListData with _$TodoListData {
   /// Get display todos (max 5 for widget)
   List<TodoEntity> getDisplayTodos({int maxItems = 5}) {
     return todos.take(maxItems).toList();
-  }
-
-  /// Check if all tasks are completed
-  bool get isAllCompleted => pendingCount == 0 && todos.isNotEmpty;
-
-  /// Get progress percentage
-  double get progressPercentage {
-    if (todos.isEmpty) return 0.0;
-    return completedCount / todos.length;
   }
 
   /// Get formatted date string

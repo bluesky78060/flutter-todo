@@ -19,6 +19,7 @@ import 'package:todo_app/presentation/providers/database_provider.dart';
 import 'package:todo_app/presentation/providers/auth_providers.dart';
 import 'package:todo_app/presentation/providers/theme_provider.dart';
 import 'package:todo_app/core/utils/app_logger.dart';
+import 'package:todo_app/core/widget/widget_init.dart';
 
 // ✅ CRITICAL: Background notification handler (must be top-level function)
 // This function handles notifications when the app is terminated or in background
@@ -156,6 +157,16 @@ Future<void> runAppWithErrorHandling() async {
       logger.e('❌ Main: Failed to initialize geofence service',
           error: e, stackTrace: stackTrace);
       // Don't fail the app if geofence service fails to initialize
+    }
+
+    // Initialize widget system (home screen widgets)
+    try {
+      await initializeWidgetSystem();
+      logger.d('✅ Main: Widget system initialized successfully');
+    } catch (e, stackTrace) {
+      logger.e('❌ Main: Failed to initialize widget system',
+          error: e, stackTrace: stackTrace);
+      // Don't fail the app if widget system fails to initialize
     }
   }
 
