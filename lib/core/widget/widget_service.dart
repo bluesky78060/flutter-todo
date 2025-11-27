@@ -216,20 +216,35 @@ class WidgetService {
       // Save view type
       await HomeWidget.saveWidgetData<String>('view_type', 'todo_list');
 
-      // Get top 5 pending todos to display (already filtered and sorted by TodoListData)
-      final displayTodos = todoData.todos.take(5).toList();
+      // Get top 4 todos to display (reduced for new dark theme design)
+      final displayTodos = todoData.todos.take(4).toList();
 
       print('   Todos to display: ${displayTodos.length}');
 
       // Save todo items with keys that Kotlin widget expects
-      for (int i = 0; i < 5; i++) {
+      for (int i = 0; i < 4; i++) {
         if (i < displayTodos.length) {
           final todo = displayTodos[i];
-          print('   Saving todo ${i + 1}: ${todo.title}');
+          print('   Saving todo ${i + 1}: ${todo.title} (id: ${todo.id}, completed: ${todo.isCompleted})');
+
+          // Save todo text
           await HomeWidget.saveWidgetData<String>(
             'todo_${i + 1}_text',
             todo.title,
           );
+
+          // Save todo ID for toggle action
+          await HomeWidget.saveWidgetData<String>(
+            'todo_${i + 1}_id',
+            todo.id.toString(),
+          );
+
+          // Save completed status
+          await HomeWidget.saveWidgetData<bool>(
+            'todo_${i + 1}_completed',
+            todo.isCompleted,
+          );
+
           // Format time if available
           String timeStr = '';
           if (todo.notificationTime != null) {
@@ -237,7 +252,13 @@ class WidgetService {
             timeStr = '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
           } else if (todo.dueDate != null) {
             final date = todo.dueDate!;
-            timeStr = '${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
+            // Show date if not today
+            final now = DateTime.now();
+            if (date.year != now.year || date.month != now.month || date.day != now.day) {
+              timeStr = '${date.month}/${date.day}';
+            } else if (date.hour != 0 || date.minute != 0) {
+              timeStr = '${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
+            }
           }
           await HomeWidget.saveWidgetData<String>(
             'todo_${i + 1}_time',
@@ -247,6 +268,8 @@ class WidgetService {
           // Clear unused slots
           await HomeWidget.saveWidgetData<String?>('todo_${i + 1}_text', null);
           await HomeWidget.saveWidgetData<String>('todo_${i + 1}_time', '');
+          await HomeWidget.saveWidgetData<String>('todo_${i + 1}_id', '');
+          await HomeWidget.saveWidgetData<bool>('todo_${i + 1}_completed', false);
         }
       }
 
