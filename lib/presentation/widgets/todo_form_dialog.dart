@@ -530,6 +530,85 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
     }
   }
 
+  void _previewImage(File file) {
+    final isDarkMode = ref.read(isDarkModeProvider);
+    final fileName = file.path.split('/').last;
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: AppColors.getCard(isDarkMode),
+          title: Text(
+            'view_attachment'.tr(),
+            style: TextStyle(
+              color: AppColors.getText(isDarkMode),
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    color: AppColors.getInput(isDarkMode),
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: Image.file(
+                      file,
+                      fit: BoxFit.cover,
+                      width: double.infinity,
+                      height: 300,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Container(
+                          width: double.infinity,
+                          height: 300,
+                          color: AppColors.getInput(isDarkMode),
+                          child: Center(
+                            child: Icon(
+                              FluentIcons.image_24_regular,
+                              color: AppColors.getTextSecondary(isDarkMode),
+                              size: 48,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  fileName,
+                  style: TextStyle(
+                    color: AppColors.getText(isDarkMode),
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(
+                'close'.tr(),
+                style: TextStyle(color: AppColors.primaryBlue),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   Future<void> _selectNotificationTime() async {
     if (!mounted) return;
 
@@ -1480,6 +1559,26 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
                               ),
                             ),
                             const SizedBox(width: 8),
+                            // Preview button (for images, show in gallery)
+                            if (isImage)
+                              Container(
+                                decoration: BoxDecoration(
+                                  color: AppColors.primaryBlue.withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: IconButton(
+                                  onPressed: () => _previewImage(file),
+                                  icon: Icon(
+                                    FluentIcons.eye_24_regular,
+                                    color: AppColors.primaryBlue,
+                                    size: 18,
+                                  ),
+                                  padding: const EdgeInsets.all(4),
+                                  constraints: const BoxConstraints(),
+                                  tooltip: 'view_attachment'.tr(),
+                                ),
+                              ),
+                            if (isImage) const SizedBox(width: 4),
                             // Delete button with confirmation
                             Container(
                               decoration: BoxDecoration(
