@@ -234,7 +234,33 @@
 |------|------|---------|---------|
 | **4.2 드래그 앤 드롭 정렬** | ✅ 완료 | ReorderableListView, position 필드 | 완료됨 |
 | **4.3 테마 커스터마이징** | 🟡 예정 | 색상 선택, 폰트 크기, 미리보기 | 6-8시간 |
-| **4.4 홈 화면 위젯** | 🟢 예정 | Android/iOS 위젯, 토글 기능 | 3-5일 |
+| **4.4 홈 화면 위젯 고급 기능** | 🔴 예정 | 삼성 스타일 인터랙티브 위젯 | 1-2주 |
+
+#### 🔴 4.4 홈 화면 위젯 고급 기능 (Samsung Style Interactive Widget)
+**우선순위**: High - 사용자 경험 대폭 향상
+**예상 작업 시간**: 1-2주
+
+**현재 상태**:
+- 기본 위젯 구현됨 (할일 리스트, 캘린더)
+- 테마 지원 (light, dark, transparent, blue, purple)
+- 월 네비게이션 (캘린더 위젯)
+
+**요청된 기능** (삼성 리마인더/캘린더 스타일):
+- [ ] 일자별 할일 그룹 표시 (오늘, 내일, 이번 주 등)
+- [ ] 위젯에서 직접 완료 체크박스 토글
+- [ ] 위젯에서 직접 할일 삭제 (스와이프 또는 버튼)
+- [ ] + 버튼으로 DoDo 앱 할일 추가 화면 바로 열기
+- [ ] 완료 진행률 표시 (예: "4개 중 2개 완료")
+- [ ] 다가오는 이벤트 섹션 (캘린더 위젯)
+
+**기술 요구사항**:
+- `RemoteViewsService` + `RemoteViewsFactory` (동적 ListView)
+- `PendingIntent` per item (개별 아이템 클릭 처리)
+- `BroadcastReceiver` (위젯 버튼 액션 처리)
+- `MethodChannel` (Flutter ↔ Native 데이터 동기화)
+- Configuration Activity (위젯 추가 시 설정)
+
+**참고 문서**: `claudedocs/WIDGET_ADVANCED_IMPLEMENTATION.md`
 
 ### 5. 협업 및 공유
 
