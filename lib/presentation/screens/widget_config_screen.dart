@@ -83,7 +83,7 @@ class WidgetConfigScreen extends ConsumerWidget {
                 onChanged: (value) async {
                   await ref.read(toggleWidgetEnabledProvider.future);
                 },
-                activeColor: AppColors.primary,
+                activeColor: AppColors.primaryBlue,
               ),
             ],
           ),
@@ -143,18 +143,17 @@ class WidgetConfigScreen extends ConsumerWidget {
   ) {
     return GestureDetector(
       onTap: () {
-        ref.read(widgetViewTypeProvider.notifier).state = viewType;
         ref.read(updateWidgetViewTypeProvider(viewType));
       },
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           border: Border.all(
-            color: isSelected ? AppColors.primary : Colors.grey[300]!,
+            color: isSelected ? AppColors.primaryBlue : Colors.grey[300]!,
             width: isSelected ? 2 : 1,
           ),
           borderRadius: BorderRadius.circular(8),
-          color: isSelected ? AppColors.primary.withOpacity(0.05) : null,
+          color: isSelected ? AppColors.primaryBlue.withOpacity(0.05) : null,
         ),
         child: Row(
           children: [
@@ -163,11 +162,10 @@ class WidgetConfigScreen extends ConsumerWidget {
               groupValue: isSelected ? viewType : null,
               onChanged: (value) {
                 if (value != null) {
-                  ref.read(widgetViewTypeProvider.notifier).state = value;
                   ref.read(updateWidgetViewTypeProvider(value));
                 }
               },
-              activeColor: AppColors.primary,
+              activeColor: AppColors.primaryBlue,
             ),
             const SizedBox(width: 12),
             Expanded(

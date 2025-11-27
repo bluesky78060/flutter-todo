@@ -138,7 +138,7 @@ class WidgetService {
       );
       await HomeWidget.saveWidgetData<String>(
         'calendar_data',
-        jsonEncode(calendarData.toJson()),
+        '',
       );
 
       // Notify native widget
@@ -163,7 +163,7 @@ class WidgetService {
       );
       await HomeWidget.saveWidgetData<String>(
         'todo_data',
-        jsonEncode(todoData.toJson()),
+        '',
       );
 
       // Notify native widget

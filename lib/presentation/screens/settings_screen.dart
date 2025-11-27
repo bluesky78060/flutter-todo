@@ -1004,7 +1004,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             borderRadius: BorderRadius.circular(10),
           ),
           child: const Icon(
-            FluentIcons.device_desktop_24_regular,
+            FluentIcons.board_24_regular,
             color: AppColors.primaryBlue,
           ),
         ),

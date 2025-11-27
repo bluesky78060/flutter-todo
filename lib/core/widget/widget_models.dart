@@ -62,6 +62,15 @@ class CalendarData {
   /// Check if day is fully completed
   bool isCompletedDay(int day) => completedDays.contains(day);
 
+  /// Convert to JSON for storage
+  Map<String, dynamic> toJson() => {
+        'month': month.toIso8601String(),
+        'dayTaskCounts': dayTaskCounts,
+        'daysWithTasks': daysWithTasks,
+        'completedDays': completedDays,
+        'lastUpdated': lastUpdated.toIso8601String(),
+      };
+
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -142,6 +151,15 @@ class TodoListData {
   String getFormattedDate() {
     return '${date.month}/${date.day}';
   }
+
+  /// Convert to JSON for storage
+  Map<String, dynamic> toJson() => {
+        'date': date.toIso8601String(),
+        'todos': todos.map((t) => {'title': t.title}).toList(),
+        'completedCount': completedCount,
+        'pendingCount': pendingCount,
+        'lastUpdated': lastUpdated.toIso8601String(),
+      };
 
   @override
   bool operator ==(Object other) =>

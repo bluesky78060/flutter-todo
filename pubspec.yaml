@@ -126,7 +126,7 @@ dependencies:
   flutter_dotenv: ^5.1.0
 
   # Home Screen Widget
-  home_widget: ^0.5.0
+  home_widget: ^0.8.1
 
 dev_dependencies:
   flutter_test:
