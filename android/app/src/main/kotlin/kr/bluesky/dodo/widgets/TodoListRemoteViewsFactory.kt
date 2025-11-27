@@ -141,26 +141,29 @@ class TodoListRemoteViewsFactory(
             val prefs = context.getSharedPreferences("FlutterSharedPreferences", Context.MODE_PRIVATE)
 
             // Load todo data from SharedPreferences
-            // Data format: "todo_{index}_id", "todo_{index}_title", etc.
-            var index = 1
-            while (index <= 20) {
-                val id = prefs.getString("todo_${index}_id", null) ?: break
-                val title = prefs.getString("todo_${index}_title", null) ?: break
-                val time = prefs.getString("todo_${index}_time", "")
-                val isCompleted = prefs.getBoolean("todo_${index}_completed", false)
-                val dateGroup = prefs.getString("todo_${index}_date_group", "오늘") ?: "오늘"
+            // Data format: "todo_{index}_text", "todo_{index}_time"
+            // (matches what WidgetService._updateTodoListWidget() saves)
+            for (index in 1..5) {
+                val title = prefs.getString("todo_${index}_text", null) ?: continue
+                val time = prefs.getString("todo_${index}_time", "") ?: ""
+
+                // Generate ID from index (since Flutter doesn't save ID in SharedPreferences)
+                val id = "todo_$index"
+
+                android.util.Log.d("TodoListRemoteViewsFactory", "Loaded todo $index: $title (time: $time)")
 
                 todoItems.add(
                     TodoItemData(
                         id = id,
                         title = title,
-                        time = time,
-                        isCompleted = isCompleted,
-                        dateGroup = dateGroup
+                        time = if (time.isEmpty()) null else time,
+                        isCompleted = false, // Widget only shows pending todos
+                        dateGroup = "오늘"
                     )
                 )
-                index++
             }
+
+            android.util.Log.d("TodoListRemoteViewsFactory", "Total todos loaded: ${todoItems.size}")
         } catch (e: Exception) {
             android.util.Log.e("TodoListRemoteViewsFactory", "Error loading todo data", e)
         }
