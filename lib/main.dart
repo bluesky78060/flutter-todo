@@ -20,6 +20,7 @@ import 'package:todo_app/presentation/providers/auth_providers.dart';
 import 'package:todo_app/presentation/providers/theme_provider.dart';
 import 'package:todo_app/core/utils/app_logger.dart';
 import 'package:todo_app/core/widget/widget_init.dart';
+import 'package:todo_app/core/services/widget_method_channel.dart';
 
 // ✅ CRITICAL: Background notification handler (must be top-level function)
 // This function handles notifications when the app is terminated or in background
@@ -199,6 +200,18 @@ class MyApp extends ConsumerStatefulWidget {
 }
 
 class _MyAppState extends ConsumerState<MyApp> {
+  @override
+  void initState() {
+    super.initState();
+    // Setup widget MethodChannel for handling widget actions (toggle/delete)
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Future.delayed(const Duration(milliseconds: 500), () {
+        WidgetMethodChannelHandler.setupMethodChannel(ref);
+        logger.d('✅ Widget MethodChannel setup completed');
+      });
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     // Generate recurring todo instances AFTER authentication

@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_item_container"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:paddingTop="4dp"
+    android:paddingBottom="4dp">
+
+    <!-- Checkbox / Completion indicator -->
+    <TextView
+        android:id="@+id/widget_item_checkbox"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_gravity="center_vertical"
+        android:layout_marginEnd="12dp"
+        android:text=""
+        android:textSize="18sp"
+        android:gravity="center"
+        android:textColor="#BDBDBD"
+        android:background="@android:drawable/editbox_background"
+        android:clickable="true"
+        android:focusable="true" />
+
+    <!-- Todo title -->
+    <TextView
+        android:id="@+id/widget_item_title"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:layout_gravity="center_vertical"
+        android:text="Todo"
+        android:textColor="#212121"
+        android:textSize="14sp"
+        android:maxLines="1"
+        android:ellipsize="end" />
+
+    <!-- Todo time (optional) -->
+    <TextView
+        android:id="@+id/widget_item_time"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:text=""
+        android:textColor="#757575"
+        android:textSize="11sp" />
+
+    <!-- Delete button -->
+    <TextView
+        android:id="@+id/widget_item_delete"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_gravity="center_vertical"
+        android:text="✕"
+        android:textSize="16sp"
+        android:gravity="center"
+        android:textColor="#757575"
+        android:clickable="true"
+        android:focusable="true" />
+</LinearLayout>

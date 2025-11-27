@@ -14,9 +14,38 @@ class MainActivity: FlutterActivity() {
     private val DEVICE_INFO_CHANNEL = "kr.bluesky.dodo/device_info"
     private val SYSTEM_PROPS_CHANNEL = "kr.bluesky.dodo/system_properties"
     private val SAMSUNG_INFO_CHANNEL = "kr.bluesky.dodo/samsung_info"
+    private val WIDGET_CHANNEL = "kr.bluesky.dodo/widget"
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+
+        // Store FlutterEngine for WidgetActionReceiver to use
+        kr.bluesky.dodo.widgets.WidgetActionReceiver.setFlutterEngine(flutterEngine)
+
+        // Widget action channel
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, WIDGET_CHANNEL).setMethodCallHandler { call, result ->
+            when (call.method) {
+                "toggleTodo" -> {
+                    val todoId = call.argument<String>("todo_id")
+                    if (todoId != null) {
+                        // Call your Flutter widget toggle handler
+                        result.success(true)
+                    } else {
+                        result.error("INVALID_ARGS", "todo_id is required", null)
+                    }
+                }
+                "deleteTodo" -> {
+                    val todoId = call.argument<String>("todo_id")
+                    if (todoId != null) {
+                        // Call your Flutter widget delete handler
+                        result.success(true)
+                    } else {
+                        result.error("INVALID_ARGS", "todo_id is required", null)
+                    }
+                }
+                else -> result.notImplemented()
+            }
+        }
 
         // Battery optimization channel
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, BATTERY_CHANNEL).setMethodCallHandler { call, result ->

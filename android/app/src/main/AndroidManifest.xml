@@ -106,6 +106,12 @@
                 android:resource="@xml/widget_todo_list_info" />
         </receiver>
 
+        <!-- RemoteViewsService for dynamic widget list -->
+        <service
+            android:name=".widgets.TodoListRemoteViewsService"
+            android:exported="false"
+            android:permission="android.permission.BIND_REMOTEVIEWS" />
+
         <!-- Home Widget: Calendar Widget -->
         <receiver
             android:name=".widgets.TodoCalendarWidget"
@@ -118,6 +124,17 @@
             <meta-data
                 android:name="android.appwidget.provider"
                 android:resource="@xml/widget_calendar_info" />
+        </receiver>
+
+        <!-- Widget Action Receiver for handling widget button actions -->
+        <receiver
+            android:name=".widgets.WidgetActionReceiver"
+            android:exported="false"
+            android:enabled="true">
+            <intent-filter>
+                <action android:name="kr.bluesky.dodo.widget.TOGGLE_TODO"/>
+                <action android:name="kr.bluesky.dodo.widget.DELETE_TODO"/>
+            </intent-filter>
         </receiver>
     </application>
     <!-- Required to query activities that can process text, see:
