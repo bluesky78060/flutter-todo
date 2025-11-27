@@ -1,11 +1,69 @@
 # DoDo 앱 출시 노트
 
-## 최신 버전: 1.0.14+42 🚀
+## 최신 버전: 1.0.15+43 🚀 (개발 중)
 
-**최종 업데이트**: 2025년 11월 26일
-**현재 상태**: Google Play에 배포됨
+**최종 업데이트**: 2025년 11월 27일
+**현재 상태**: 오프라인 모드 기능 개발 완료
 **패키지 이름**: kr.bluesky.dodo
 **플랫폼**: Android 6.0 (API 23) 이상, iOS 11.0 이상, Web
+
+---
+
+## 버전 1.0.15+43 - 오프라인 모드 및 동기화 개선 📡
+
+**개발 완료일**: 2025년 11월 27일
+
+### 신규 기능 ✨
+
+#### 오프라인 모드 개선 (2.2 완료)
+- ✅ **네트워크 연결 상태 모니터링**
+  - connectivity_plus 패키지 통합
+  - 실시간 온라인/오프라인 감지
+  - 크로스 플랫폼 지원 (Android, iOS, Web)
+
+- ✅ **오프라인 배너 UI**
+  - 오프라인 상태 시 주황색 전체 너비 배너 표시
+  - 아이콘 및 상세 메시지 ("변경사항은 로컬에 저장됩니다")
+
+- ✅ **동기화 상태 표시**
+  - 마지막 동기화 시간 표시 ("방금 전", "3분 전", "어제" 등)
+  - 동기화 진행 중: 회전 아이콘
+  - 동기화 성공: 초록색 체크마크
+  - 동기화 실패: 빨간색 오류 아이콘
+
+- ✅ **자동 재시도 로직**
+  - 점진적 재시도 지연: 5초 → 15초 → 30초
+  - 최대 3회 재시도 시도
+  - 수동 재시도 버튼 제공
+
+- ✅ **앱바 연결 상태 위젯**
+  - 헤더에 연결/동기화 상태 표시
+  - 마지막 동기화 시간 툴팁
+  - 상태별 색상 코딩 (초록/주황/빨강)
+
+- ✅ **TodoActions 통합**
+  - 생성/수정/삭제/완료 시 동기화 상태 콜백
+  - 에러 발생 시 자동 재시도 트리거
+  - SharedPreferences에 마지막 동기화 시간 저장
+
+- ✅ **다국어 지원**
+  - 8개 새로운 번역 키 추가 (한국어/영어)
+  - offline_mode, sync_failed, retry 등
+
+**생성된 파일**:
+- `lib/core/services/connectivity_service.dart` - 네트워크 상태 감지 서비스
+- `lib/presentation/providers/connectivity_provider.dart` - 연결/동기화 상태 관리
+- `lib/presentation/widgets/offline_banner.dart` - 오프라인 배너 및 동기화 UI
+
+**기술 세부사항**:
+- Riverpod 3.x Notifier 패턴 사용
+- SyncState 상태 머신 (idle, syncing, success, failed)
+- Stream 기반 반응형 연결 모니터링
+- ProgressIndicator 및 FluentIcons 활용
+
+**커밋 정보**:
+- 커밋: a247fe1 - feat: Implement offline mode with sync status and retry logic
+- 푸시 날짜: 2025-11-27
 
 ---
 
