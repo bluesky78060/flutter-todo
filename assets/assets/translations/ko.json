@@ -529,5 +529,14 @@
   "day_wed": "수",
   "day_thu": "목",
   "day_fri": "금",
-  "day_sat": "토"
+  "day_sat": "토",
+
+  "max_attachments_reached": "최대 첨부파일 개수({count}개)에 도달했습니다",
+  "attachment_size_too_large": "파일 크기가 최대 제한(10 MB)을 초과합니다",
+  "delete_attachment": "첨부파일 삭제",
+  "confirm_delete_attachment": "이 첨부파일을 삭제하시겠습니까?",
+  "download_attachment": "다운로드",
+  "view_attachment": "보기",
+  "attachment_downloading": "다운로드 중...",
+  "attachment_download_failed": "첨부파일 다운로드 실패"
 }
