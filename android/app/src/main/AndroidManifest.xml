@@ -91,6 +91,34 @@
             android:name="com.dexterous.flutterlocalnotifications.ActionBroadcastReceiver"
             android:exported="false"
             android:enabled="true" />
+
+        <!-- Home Widget: Today's Todo List Widget -->
+        <receiver
+            android:name="com.dodo.todo_app.widgets.TodoListWidget"
+            android:exported="true"
+            android:enabled="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE"/>
+                <action android:name="es.antonborri.home_widget.HomeWidgetProvider"/>
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_todo_list_info" />
+        </receiver>
+
+        <!-- Home Widget: Calendar Widget -->
+        <receiver
+            android:name="com.dodo.todo_app.widgets.TodoCalendarWidget"
+            android:exported="true"
+            android:enabled="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE"/>
+                <action android:name="es.antonborri.home_widget.HomeWidgetProvider"/>
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_calendar_info" />
+        </receiver>
     </application>
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility and
