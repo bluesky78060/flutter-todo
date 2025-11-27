@@ -1,0 +1,1103 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DoDo 앱 - 초보자를 위한 완벽 가이드</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 60px 40px;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        header p {
+            font-size: 1.1em;
+            opacity: 0.95;
+        }
+
+        .breadcrumb {
+            background: #f5f5f5;
+            padding: 15px 40px;
+            font-size: 0.9em;
+            color: #666;
+            border-bottom: 1px solid #eee;
+        }
+
+        .breadcrumb a {
+            color: #667eea;
+            text-decoration: none;
+            cursor: pointer;
+            margin: 0 5px;
+        }
+
+        .breadcrumb a:hover {
+            text-decoration: underline;
+        }
+
+        nav {
+            background: white;
+            position: sticky;
+            top: 0;
+            border-bottom: 1px solid #eee;
+            z-index: 100;
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            overflow-x: auto;
+            padding: 0;
+            max-width: 100%;
+        }
+
+        nav li {
+            flex-shrink: 0;
+        }
+
+        nav a {
+            display: block;
+            padding: 15px 20px;
+            color: #666;
+            text-decoration: none;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+
+        nav a:hover,
+        nav a.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+            background: #f9f9f9;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        section {
+            margin-bottom: 60px;
+            display: none;
+        }
+
+        section.active {
+            display: block;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #667eea;
+            font-size: 2em;
+        }
+
+        h3 {
+            color: #764ba2;
+            margin-top: 25px;
+            margin-bottom: 15px;
+            font-size: 1.4em;
+        }
+
+        h4 {
+            color: #667eea;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
+        p, li {
+            margin-bottom: 12px;
+            font-size: 1em;
+        }
+
+        strong {
+            color: #764ba2;
+        }
+
+        ul, ol {
+            margin-left: 30px;
+            margin-bottom: 15px;
+        }
+
+        li {
+            margin-bottom: 10px;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 25px 0;
+        }
+
+        .feature-card {
+            background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            transition: all 0.3s;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.1);
+        }
+
+        .feature-card h4 {
+            margin-top: 0;
+            color: #667eea;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            overflow-x: auto;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-weight: 600;
+        }
+
+        tr:hover {
+            background: #f9f9f9;
+        }
+
+        .code-block {
+            background: #f5f5f5;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            overflow-x: auto;
+            font-size: 0.9em;
+            line-height: 1.4;
+        }
+
+        .step {
+            background: linear-gradient(135deg, #667eea10 0%, #764ba210 100%);
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .step strong {
+            display: block;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
+        .tip {
+            background: linear-gradient(135deg, #fff5e6 0%, #ffe8cc 100%);
+            padding: 15px;
+            border-left: 4px solid #ffb800;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+
+        .tip::before {
+            content: "💡 ";
+            font-weight: bold;
+        }
+
+        .warning {
+            background: linear-gradient(135deg, #ffe6e6 0%, #ffcccc 100%);
+            padding: 15px;
+            border-left: 4px solid #ff4444;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+
+        .warning::before {
+            content: "⚠️ ";
+            font-weight: bold;
+        }
+
+        .success {
+            background: linear-gradient(135deg, #e6ffe6 0%, #ccffcc 100%);
+            padding: 15px;
+            border-left: 4px solid #44ff44;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+
+        .success::before {
+            content: "✅ ";
+            font-weight: bold;
+        }
+
+        .faq-item {
+            background: #f9f9f9;
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .faq-item strong {
+            color: #667eea;
+            display: block;
+            margin-bottom: 8px;
+            font-size: 1.05em;
+        }
+
+        .contact-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 8px;
+            text-align: center;
+            margin: 30px 0;
+        }
+
+        .contact-box a {
+            color: white;
+            text-decoration: underline;
+            font-weight: bold;
+        }
+
+        footer {
+            background: #f5f5f5;
+            padding: 30px 40px;
+            text-align: center;
+            color: #666;
+            border-top: 1px solid #ddd;
+            font-size: 0.9em;
+        }
+
+        .emoji {
+            font-size: 1.2em;
+            margin-right: 5px;
+        }
+
+        .box {
+            background: #f0f0f0;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+            border: 1px solid #ddd;
+        }
+
+        .scroll-top {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: #667eea;
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: 99;
+            font-size: 1.5em;
+        }
+
+        .scroll-top.show {
+            opacity: 0.8;
+        }
+
+        .scroll-top:hover {
+            opacity: 1;
+        }
+
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 1.8em;
+            }
+
+            header {
+                padding: 40px 20px;
+            }
+
+            .content {
+                padding: 20px;
+            }
+
+            nav ul {
+                flex-wrap: nowrap;
+                overflow-x: auto;
+            }
+
+            nav a {
+                padding: 12px 15px;
+                font-size: 0.9em;
+            }
+
+            .feature-grid {
+                grid-template-columns: 1fr;
+            }
+
+            h2 {
+                font-size: 1.5em;
+            }
+
+            h3 {
+                font-size: 1.2em;
+            }
+
+            table {
+                font-size: 0.9em;
+            }
+
+            th, td {
+                padding: 8px;
+            }
+
+            .scroll-top {
+                width: 40px;
+                height: 40px;
+                font-size: 1.2em;
+                bottom: 20px;
+                right: 20px;
+            }
+        }
+
+        .emoji-list {
+            font-size: 2em;
+            line-height: 1.8;
+        }
+
+        .highlight {
+            background: #fff3cd;
+            padding: 2px 6px;
+            border-radius: 3px;
+            color: #856404;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🚀 DoDo 앱</h1>
+            <p>초보자를 위한 완벽 가이드</p>
+            <p style="margin-top: 10px; font-size: 0.9em;">당신의 일상을 더 효율적으로 관리해주는 스마트 할 일 관리 앱</p>
+        </header>
+
+        <div class="breadcrumb">
+            📍 현재 보고 있는 페이지 |
+            <a onclick="showSection('intro')">처음부터</a>
+        </div>
+
+        <nav>
+            <ul id="navMenu">
+                <li><a class="nav-link active" data-section="intro" onclick="showSection('intro')">소개</a></li>
+                <li><a class="nav-link" data-section="features" onclick="showSection('features')">주요 기능</a></li>
+                <li><a class="nav-link" data-section="started" onclick="showSection('started')">시작하기</a></li>
+                <li><a class="nav-link" data-section="usage" onclick="showSection('usage')">사용 방법</a></li>
+                <li><a class="nav-link" data-section="advanced" onclick="showSection('advanced')">고급 기능</a></li>
+                <li><a class="nav-link" data-section="faq" onclick="showSection('faq')">자주 묻는 질문</a></li>
+                <li><a class="nav-link" data-section="contact" onclick="showSection('contact')">지원</a></li>
+            </ul>
+        </nav>
+
+        <div class="content">
+            <!-- Section 1: Introduction -->
+            <section id="intro" class="active">
+                <h2>📱 DoDo 앱이란?</h2>
+
+                <p>DoDo는 다음을 도와주는 <strong>스마트한 할 일 관리 앱</strong>입니다:</p>
+
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <h4>✅ 할 일 관리</h4>
+                        <p>할 일을 쉽게 추가하고 완료 체크</p>
+                    </div>
+                    <div class="feature-card">
+                        <h4>📅 일정 관리</h4>
+                        <p>마감일 설정 및 자동 알림</p>
+                    </div>
+                    <div class="feature-card">
+                        <h4>🔔 알림 기능</h4>
+                        <p>잊지 말아야 할 일을 시간에 맞춰</p>
+                    </div>
+                    <div class="feature-card">
+                        <h4>📸 파일 첨부</h4>
+                        <p>사진이나 문서를 할 일과 함께 저장</p>
+                    </div>
+                    <div class="feature-card">
+                        <h4>🌐 클라우드 동기화</h4>
+                        <p>여러 기기에서 같은 할 일 목록 사용</p>
+                    </div>
+                    <div class="feature-card">
+                        <h4>📊 통계 기능</h4>
+                        <p>내 생산성을 한눈에 볼 수 있음</p>
+                    </div>
+                </div>
+
+                <h3>🎯 DoDo의 특징</h3>
+                <ul>
+                    <li>완전 무료 - 광고 없음</li>
+                    <li>간단한 인터페이스 - 누구나 쉽게 사용</li>
+                    <li>강력한 기능 - 복잡한 일도 관리 가능</li>
+                    <li>안전한 보안 - 당신의 데이터는 안전</li>
+                    <li>24시간 고객 지원</li>
+                </ul>
+
+                <div class="tip">
+                    DoDo는 "할 일을 하고 싶은 욕구(Do)"를 뜻하는 이름입니다. 더 많은 일을 완료하고 싶은 당신을 위해 만들어졌습니다!
+                </div>
+            </section>
+
+            <!-- Section 2: Features -->
+            <section id="features">
+                <h2>🎯 주요 기능</h2>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>기능</th>
+                            <th>설명</th>
+                            <th>활용 예</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>📝 할 일 CRUD</td>
+                            <td>할 일 추가, 수정, 삭제</td>
+                            <td>"운동하기", "보고서 작성"</td>
+                        </tr>
+                        <tr>
+                            <td>🏷️ 카테고리</td>
+                            <td>일, 생활, 취미 등으로 분류</td>
+                            <td>일과 생활을 구분해서 관리</td>
+                        </tr>
+                        <tr>
+                            <td>🔁 반복 설정</td>
+                            <td>매일, 매주, 매월 반복</td>
+                            <td>"매일 운동", "매주 청소"</td>
+                        </tr>
+                        <tr>
+                            <td>📌 서브태스크</td>
+                            <td>큰 일을 작은 단계로 분해</td>
+                            <td>프로젝트를 세부 작업으로 분할</td>
+                        </tr>
+                        <tr>
+                            <td>⏰ 알림 설정</td>
+                            <td>예정 시간에 자동 알림</td>
+                            <td>중요한 일을 빠뜨리지 않음</td>
+                        </tr>
+                        <tr>
+                            <td>🤐 스누즈</td>
+                            <td>알림을 나중에 받기</td>
+                            <td>"5분 후 다시 알림"</td>
+                        </tr>
+                        <tr>
+                            <td>📍 위치 알림</td>
+                            <td>특정 장소에서 알림</td>
+                            <td>"카페에 도착하면 알림"</td>
+                        </tr>
+                        <tr>
+                            <td>📁 파일 첨부</td>
+                            <td>이미지, PDF, 문서 저장</td>
+                            <td>"회의록.pdf" 함께 저장</td>
+                        </tr>
+                        <tr>
+                            <td>🔄 오프라인 모드</td>
+                            <td>인터넷 없이도 사용</td>
+                            <td>비행기 타면서도 작업 가능</td>
+                        </tr>
+                        <tr>
+                            <td>📊 통계</td>
+                            <td>생산성 분석</td>
+                            <td>"이번 주 완료율: 85%"</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <!-- Section 3: Getting Started -->
+            <section id="started">
+                <h2>🚀 시작하기</h2>
+
+                <h3>1️⃣ 앱 다운로드 및 설치</h3>
+
+                <h4>Android 사용자</h4>
+                <div class="step">
+                    <strong>Step 1: Google Play Store 열기</strong>
+                    <p>당신의 Android 휴대폰에서 Google Play Store 앱을 엽니다.</p>
+                </div>
+
+                <div class="step">
+                    <strong>Step 2: "DoDo" 검색하기</strong>
+                    <p>검색창에 "DoDo 할 일 관리" 입력</p>
+                </div>
+
+                <div class="step">
+                    <strong>Step 3: 설치 버튼 클릭</strong>
+                    <p>파란색 "설치" 버튼을 탭합니다.</p>
+                </div>
+
+                <div class="step">
+                    <strong>Step 4: 설치 완료</strong>
+                    <p>설치가 완료될 때까지 기다린 후 "열기" 버튼을 탭합니다.</p>
+                </div>
+
+                <h4>iOS 사용자</h4>
+                <div class="step">
+                    <strong>Step 1: App Store 열기</strong>
+                    <p>당신의 iPhone에서 App Store를 엽니다.</p>
+                </div>
+
+                <div class="step">
+                    <strong>Step 2: "DoDo" 검색하기</strong>
+                    <p>검색 탭에서 "DoDo 할 일 관리" 입력</p>
+                </div>
+
+                <div class="step">
+                    <strong>Step 3: 다운로드</strong>
+                    <p>구름 아이콘을 탭하여 다운로드합니다.</p>
+                </div>
+
+                <div class="step">
+                    <strong>Step 4: Face ID/Touch ID 인증</strong>
+                    <p>생체 인증으로 설치를 확인합니다.</p>
+                </div>
+
+                <h3>2️⃣ 계정 만들기</h3>
+
+                <h4>⭐⭐⭐ 추천: Google로 가입 (가장 쉬움)</h4>
+                <div class="step">
+                    <strong>Step 1: "Google로 로그인" 클릭</strong>
+                    <p>화면에 보이는 파란색 버튼을 탭합니다.</p>
+                </div>
+
+                <div class="step">
+                    <strong>Step 2: 자신의 Google 계정 선택</strong>
+                    <p>이미 로그인한 계정이 있다면 바로 선택할 수 있습니다.</p>
+                </div>
+
+                <div class="step">
+                    <strong>Step 3: "허용" 클릭</strong>
+                    <p>DoDo에 접근할 권한을 허용합니다.</p>
+                </div>
+
+                <div class="success">자동으로 DoDo 계정이 생성됩니다! 어려울 것이 없습니다!</div>
+
+                <h4>이메일로 가입</h4>
+                <div class="step">
+                    <strong>Step 1: "이메일로 가입하기" 클릭</strong>
+                    <p>Google 버튼 아래의 다른 옵션을 선택합니다.</p>
+                </div>
+
+                <div class="step">
+                    <strong>Step 2: 이메일 입력</strong>
+                    <p>자주 사용하는 이메일 (예: myemail@gmail.com)</p>
+                </div>
+
+                <div class="step">
+                    <strong>Step 3: 비밀번호 설정</strong>
+                    <p>8글자 이상, 숫자 포함 권장</p>
+                </div>
+
+                <div class="step">
+                    <strong>Step 4: "가입" 클릭</strong>
+                    <p>계정이 생성되고 자동으로 로그인됩니다.</p>
+                </div>
+
+                <div class="tip">자주 사용하는 이메일을 사용하세요. 나중에 다른 기기에서도 같은 이메일로 로그인할 수 있습니다!</div>
+
+                <h3>3️⃣ 첫 할 일 추가하기</h3>
+
+                <p>로그인하면 <span class="highlight">할 일 목록 화면</span>이 보입니다. 이제 첫 번째 할 일을 추가해봅시다!</p>
+
+                <div class="box">
+                    <p><strong>화면 하단의 파란 "+" 버튼 또는 상단의 "새 할 일 추가"를 클릭하세요!</strong></p>
+                </div>
+
+                <h4>단계별 진행</h4>
+                <div class="step">
+                    <strong>Step 1: 제목 입력 (필수)</strong>
+                    <p>예: "운동하기", "보고서 작성", "장보기"</p>
+                </div>
+
+                <div class="step">
+                    <strong>Step 2: 설명 입력 (선택사항)</strong>
+                    <p>예: "30분 조깅", "월요일까지 제출"</p>
+                </div>
+
+                <div class="step">
+                    <strong>Step 3: 추가 설정</strong>
+                    <ul>
+                        <li>🏷️ 카테고리 - "건강" 선택</li>
+                        <li>📅 마감일 - "2025-12-10" 선택</li>
+                        <li>⏰ 알림 시간 - "오후 6:00" 선택</li>
+                        <li>🔁 반복 - "매일" 또는 "매주 목요일"</li>
+                    </ul>
+                </div>
+
+                <div class="step">
+                    <strong>Step 4: "저장" 버튼 클릭</strong>
+                    <p>할 일이 목록에 추가됩니다!</p>
+                </div>
+
+                <div class="success">축하합니다! 첫 번째 할 일을 생성했습니다! 이제 DoDo를 사용할 준비가 완료되었습니다!</div>
+            </section>
+
+            <!-- Section 4: Usage -->
+            <section id="usage">
+                <h2>💡 일상 사용법</h2>
+
+                <h3>📋 할 일 완료하기</h3>
+                <div class="code-block">
+                1. 할 일 목록에서 항목을 찾기
+                2. 왼쪽의 체크박스 ☐ 클릭
+                3. ✅로 변하면서 완료됨!
+                </div>
+                <div class="tip">완료한 할 일은 자동으로 통계에 반영됩니다!</div>
+
+                <h3>✏️ 할 일 수정하기</h3>
+                <div class="code-block">
+                1. 수정하려는 할 일을 길게 누르거나 탭
+                2. "수정" 또는 "편집" 메뉴 선택
+                3. 원하는 내용 변경
+                4. "저장" 클릭
+                </div>
+
+                <h3>🗑️ 할 일 삭제하기</h3>
+                <div class="code-block">
+                1. 삭제할 할 일을 길게 누르기
+                2. "삭제" 또는 "휴지통" 아이콘 클릭
+                3. 확인 창에서 "삭제" 다시 클릭
+                4. 할 일이 삭제됨
+                </div>
+                <div class="warning">삭제된 할 일은 복구할 수 없습니다!</div>
+
+                <h3>🏷️ 카테고리 관리하기</h3>
+                <p>카테고리는 할 일을 <strong>분류하는 방법</strong>입니다.</p>
+
+                <h4>카테고리 만들기</h4>
+                <div class="code-block">
+                1. 설정 또는 메뉴에서 "카테고리" 클릭
+                2. "새 카테고리" 또는 "+" 버튼 클릭
+                3. 카테고리 이름 입력 (예: "일", "생활", "취미")
+                4. 색상 선택 (선택사항)
+                5. "생성" 또는 "추가" 클릭
+                </div>
+
+                <h4>추천 카테고리</h4>
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <h4>📊 일</h4>
+                        <p>업무 관련</p>
+                    </div>
+                    <div class="feature-card">
+                        <h4>🏠 생활</h4>
+                        <p>청소, 요리, 장보기</p>
+                    </div>
+                    <div class="feature-card">
+                        <h4>💪 건강</h4>
+                        <p>운동, 식단</p>
+                    </div>
+                    <div class="feature-card">
+                        <h4>🎮 취미</h4>
+                        <p>게임, 독서, 영화</p>
+                    </div>
+                    <div class="feature-card">
+                        <h4>🎓 공부</h4>
+                        <p>학습, 숙제</p>
+                    </div>
+                </div>
+
+                <h3>🔔 알림 설정하기</h3>
+                <p>알림은 <strong>정해진 시간에 자동으로 알려줍니다</strong>.</p>
+
+                <h4>알림 시간 설정</h4>
+                <div class="code-block">
+                1. 할 일 추가/수정 화면에서 "알림 시간" 탭
+                2. 시간 선택 (예: "오후 3:00")
+                3. "확인" 또는 "저장" 클릭
+                4. 그 시간이 되면 핸드폰이 울립니다!
+                </div>
+
+                <h4>알림 스누즈 (잠깐 미루기)</h4>
+                <div class="code-block">
+                화면의 "스누즈" 또는 "5분 후" 버튼 클릭
+                → 5분, 10분, 30분, 1시간 등 선택 가능
+                </div>
+
+                <h3>📍 위치 기반 알림</h3>
+                <p>"특정 장소에 가면 알림이 울린다"는 뜻입니다.</p>
+
+                <h4>위치 알림 설정</h4>
+                <div class="code-block">
+                1. 할 일 추가/수정 화면에서 "위치" 탭
+                2. 지도에서 위치 검색
+                   - "카페 근처" → 검색
+                   - "회사" → 검색
+                3. 원하는 위치 선택
+                4. 반경 설정 (기본값: 500m)
+                5. "저장" 클릭
+                </div>
+
+                <h4>활용 예</h4>
+                <ul>
+                    <li>회사에 도착하면 "오늘 할 일 확인" 알림</li>
+                    <li>마트 근처에 가면 "장보기" 알림</li>
+                    <li>카페에 도착하면 "커피 주문" 알림</li>
+                </ul>
+
+                <h3>🔄 반복 설정하기</h3>
+                <p><strong>같은 일을 자동으로 반복</strong>할 수 있습니다.</p>
+
+                <div class="code-block">
+                1. 할 일 추가 화면에서 "반복" 탭
+                2. 반복 주기 선택:
+                   - 매일 (아침마다 운동)
+                   - 매주 월요일 (주간 회의)
+                   - 매월 10일 (월급일)
+                   - 커스텀 (자신만의 패턴)
+                3. "저장" 클릭
+                </div>
+
+                <h3>📎 파일 첨부하기</h3>
+                <p>할 일과 함께 <strong>사진이나 파일을 저장</strong>할 수 있습니다.</p>
+
+                <div class="code-block">
+                1. 할 일 추가/수정 화면에서 "파일" 또는 "📎" 아이콘
+                2. 선택 옵션:
+                   - 📷 카메라 - 사진 찍기
+                   - 🖼️ 갤러리 - 저장된 사진 선택
+                   - 📄 파일 - 문서/PDF 선택
+                3. 파일 선택 후 "확인" 클릭
+                4. "저장" 클릭
+                </div>
+
+                <h4>활용 예</h4>
+                <ul>
+                    <li>영수증 사진 - "물품 구매" 할 일에 첨부</li>
+                    <li>회의록 PDF - "회의 참석" 할 일에 첨부</li>
+                    <li>찍은 사진 - "사진 편집" 할 일에 첨부</li>
+                </ul>
+
+                <h3>📊 통계 보기</h3>
+                <p>당신의 <strong>생산성을 한눈에 볼 수 있습니다</strong>.</p>
+
+                <div class="code-block">
+                1. 앱 메인 화면의 "통계" 또는 "📊" 탭 클릭
+                2. 이번 주 완료 현황 확인
+                3. 요일별 완료율 확인
+                4. 카테고리별 진행 상황 확인
+                </div>
+
+                <h4>보이는 정보</h4>
+                <ul>
+                    <li>📈 <strong>이번 주 완료율</strong> - 몇 개 완료했는지</li>
+                    <li>📊 <strong>카테고리별 진행</strong> - 어느 분야에서 잘하고 있는지</li>
+                    <li>🔄 <strong>요일별 패턴</strong> - 언제 가장 생산성이 높은지</li>
+                    <li>⭐ <strong>현재 스트릭</strong> - 며칠 연속으로 완료했는지</li>
+                </ul>
+
+                <h3>🌐 여러 기기에서 동기화</h3>
+                <p><strong>스마트폰, 태블릿, 컴퓨터에서 같은 할 일 목록을 사용</strong>할 수 있습니다!</p>
+
+                <div class="box">
+                    <p><strong>동기화 원리:</strong></p>
+                    <p>핸드폰 ←→ 클라우드 ←→ 컴퓨터</p>
+                    <p style="font-size: 0.9em; color: #666;">(자동 동기화)</p>
+                </div>
+
+                <h4>다른 기기에서 로그인</h4>
+                <div class="code-block">
+                1. 다른 기기에서 DoDo 앱 설치
+                2. "로그인" 선택
+                3. 같은 이메일/Google 계정으로 로그인
+                4. 자동으로 모든 할 일이 나타남!
+                </div>
+            </section>
+
+            <!-- Section 5: Advanced Features -->
+            <section id="advanced">
+                <h2>🎓 고급 기능</h2>
+
+                <p>원하는 사람들을 위한 고급 기능들입니다. 이 기능들은 선택사항이므로 필요할 때만 사용하면 됩니다.</p>
+
+                <h3>🎯 프로젝트 관리</h3>
+                <p>큰 프로젝트를 작은 단계(서브태스크)로 나누기</p>
+
+                <div class="box">
+                    <strong>예: "웹사이트 만들기"</strong>
+                    <ul style="margin-left: 20px; margin-top: 10px;">
+                        <li>✅ 디자인 만들기</li>
+                        <li>⏳ 데이터베이스 설정하기</li>
+                        <li>⏳ 코드 작성하기</li>
+                        <li>⏳ 테스트 및 배포하기</li>
+                    </ul>
+                </div>
+
+                <h3>📈 생산성 분석</h3>
+                <p>통계 기능을 활용해 자신의 생산성 패턴을 이해하고 개선할 수 있습니다.</p>
+
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <h4>📊 주간 분석</h4>
+                        <p>이번 주에 몇 개를 완료했는지 확인</p>
+                    </div>
+                    <div class="feature-card">
+                        <h4>📅 월간 분석</h4>
+                        <p>이번 달 생산성 추이 확인</p>
+                    </div>
+                    <div class="feature-card">
+                        <h4>🎯 카테고리 분석</h4>
+                        <p>어느 분야를 가장 잘 관리하는지 확인</p>
+                    </div>
+                </div>
+
+                <h3>👥 협업 기능 (향후)</h3>
+                <p>다른 사람과 할 일을 공유하고 함께 작업할 수 있습니다. (준비 중)</p>
+
+                <div class="box">
+                    <p><strong>예:</strong></p>
+                    <ul>
+                        <li>팀 프로젝트 공유</li>
+                        <li>가족 할 일 목록</li>
+                        <li>실시간 협업</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Section 6: FAQ -->
+            <section id="faq">
+                <h2>🆘 자주 묻는 질문</h2>
+
+                <div class="faq-item">
+                    <strong>Q: 로그인할 수 없어요</strong>
+                    <p>다음을 확인하세요:</p>
+                    <ul>
+                        <li>이메일 주소/비밀번호가 맞는지 확인</li>
+                        <li>인터넷 연결 확인</li>
+                        <li>앱을 완전히 종료했다가 다시 실행</li>
+                        <li>"비밀번호 찾기" 사용</li>
+                    </ul>
+                </div>
+
+                <div class="faq-item">
+                    <strong>Q: 모든 할 일이 사라졌어요</strong>
+                    <p>다음을 시도하세요:</p>
+                    <ul>
+                        <li>앱 다시 시작</li>
+                        <li>로그아웃 후 다시 로그인</li>
+                        <li>인터넷 연결 확인</li>
+                        <li>고객 지원팀에 연락</li>
+                    </ul>
+                </div>
+
+                <div class="faq-item">
+                    <strong>Q: 다른 기기에서 할 일이 안 보여요</strong>
+                    <p>다음을 확인하세요:</p>
+                    <ul>
+                        <li>같은 이메일로 로그인했는지 확인</li>
+                        <li>인터넷에 연결되어 있는지 확인</li>
+                        <li>앱을 새로고침 또는 다시 시작</li>
+                        <li>몇 분 기다렸다가 다시 확인 (동기화 시간)</li>
+                    </ul>
+                </div>
+
+                <div class="faq-item">
+                    <strong>Q: 알림이 안 들려요</strong>
+                    <p>다음을 확인하세요:</p>
+                    <ul>
+                        <li>휴대폰 설정 → 알림 → DoDo에서 알림 허용 확인</li>
+                        <li>소리 설정 확인 (무음 모드 아닌지)</li>
+                        <li>배터리 절약 모드 확인</li>
+                        <li>앱 권한 설정 확인</li>
+                    </ul>
+                </div>
+
+                <div class="faq-item">
+                    <strong>Q: 파일을 첨부할 수 없어요</strong>
+                    <p>다음을 확인하세요:</p>
+                    <ul>
+                        <li>저장 공간 충분한지 확인</li>
+                        <li>파일 크기 확인 (너무 크면 안 됨)</li>
+                        <li>앱 권한 설정 확인</li>
+                        <li>파일 형식 확인 (일반적인 형식 사용)</li>
+                    </ul>
+                </div>
+
+                <div class="faq-item">
+                    <strong>Q: 데이터를 백업할 수 있나요?</strong>
+                    <p>네, 가능합니다!</p>
+                    <ul>
+                        <li>클라우드 동기화가 자동 백업입니다</li>
+                        <li>같은 계정으로 로그인하면 모든 데이터 복구됨</li>
+                        <li>수동 내보내기 기능도 있습니다 (설정 → 내보내기)</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Section 7: Contact & Support -->
+            <section id="contact">
+                <h2>📞 고객 지원</h2>
+
+                <p>도움이 필요하신가요? 우리가 도와드리겠습니다!</p>
+
+                <div class="contact-box">
+                    <h3 style="color: white; margin-top: 0;">📧 이메일 지원</h3>
+                    <p style="font-size: 1.1em; margin: 20px 0;">
+                        <strong>bluesky78060@gmail.com</strong>
+                    </p>
+                    <p>24시간 내 답변 (평일 기준)</p>
+                </div>
+
+                <h3>🐛 버그 신고</h3>
+                <p>발견한 버그를 알려주세요:</p>
+                <ul>
+                    <li>자세한 설명 포함</li>
+                    <li>스크린샷 첨부</li>
+                    <li>사용 중인 기기 정보</li>
+                </ul>
+
+                <h3>💬 피드백</h3>
+                <p>더 좋은 DoDo를 위해 의견을 주세요:</p>
+                <ul>
+                    <li>새로운 기능 제안</li>
+                    <li>사용성 개선 의견</li>
+                    <li>UI/UX 개선 아이디어</li>
+                </ul>
+
+                <h3>⭐ 앱 평가</h3>
+                <p>DoDo가 도움이 되셨다면:</p>
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <h4>⭐⭐⭐⭐⭐</h4>
+                        <p>Play Store / App Store에서 별점 5개 주기</p>
+                    </div>
+                    <div class="feature-card">
+                        <h4>📢</h4>
+                        <p>친구에게 추천하기</p>
+                    </div>
+                </div>
+
+                <div class="success">감사합니다! 여러분의 지원이 DoDo를 더 나은 앱으로 만들어줍니다!</div>
+            </section>
+        </div>
+
+        <footer>
+            <p><strong>DoDo 앱 - 초보자를 위한 완벽 가이드</strong></p>
+            <p>문서 작성: 2025년 11월 27일 | 최신 업데이트: 2025년 11월 27일</p>
+            <p>지원 언어: 한국어, 영어</p>
+            <p>© 2025 DoDo. 모든 권리 보유.</p>
+            <p style="margin-top: 20px; font-size: 0.9em; color: #999;">
+                이 가이드는 초보자를 위해 만들어졌습니다. 더 자세한 정보는 고객 지원팀에 문의하세요.
+            </p>
+        </footer>
+    </div>
+
+    <div class="scroll-top" id="scrollTop" onclick="scrollToTop()">↑</div>
+
+    <script>
+        // Navigation
+        function showSection(sectionId) {
+            // Hide all sections
+            const sections = document.querySelectorAll('section');
+            sections.forEach(section => section.classList.remove('active'));
+
+            // Show selected section
+            const selectedSection = document.getElementById(sectionId);
+            if (selectedSection) {
+                selectedSection.classList.add('active');
+            }
+
+            // Update nav links
+            const navLinks = document.querySelectorAll('.nav-link');
+            navLinks.forEach(link => link.classList.remove('active'));
+            const activeLink = document.querySelector(`[data-section="${sectionId}"]`);
+            if (activeLink) {
+                activeLink.classList.add('active');
+            }
+
+            // Scroll to top
+            window.scrollTo(0, 0);
+        }
+
+        // Scroll to Top Button
+        const scrollTopBtn = document.getElementById('scrollTop');
+        window.addEventListener('scroll', () => {
+            if (window.pageYOffset > 300) {
+                scrollTopBtn.classList.add('show');
+            } else {
+                scrollTopBtn.classList.remove('show');
+            }
+        });
+
+        function scrollToTop() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Smooth scroll for internal links
+        document.querySelectorAll('a[onclick*="showSection"]').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const sectionId = link.getAttribute('data-section');
+                if (sectionId) {
+                    showSection(sectionId);
+                }
+            });
+        });
+
+        // Set initial active state
+        window.addEventListener('load', () => {
+            showSection('intro');
+        });
+    </script>
+</body>
+</html>
