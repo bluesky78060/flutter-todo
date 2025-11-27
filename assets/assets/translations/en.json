@@ -539,5 +539,6 @@
   "view_attachment": "View",
   "attachment_downloading": "Downloading...",
   "attachment_download_failed": "Failed to download attachment",
-  "attachment_deleted": "Attachment deleted"
+  "attachment_deleted": "Attachment deleted",
+  "close": "Close"
 }
