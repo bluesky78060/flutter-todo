@@ -7,9 +7,7 @@ import android.content.Context
 import android.content.Intent
 import android.widget.Toast
 import io.flutter.embedding.engine.FlutterEngine
-import io.flutter.embedding.engine.dart.DartExecutor
-import io.flutter.view.FlutterMain
-import kr.bluesky.dodo.MainActivity
+import io.flutter.plugin.common.MethodChannel
 
 /**
  * BroadcastReceiver for handling widget button actions
@@ -93,18 +91,30 @@ class WidgetActionReceiver : BroadcastReceiver() {
         }
 
         try {
-            val channel = io.flutter.plugin.common.MethodChannel(
+            val channel = MethodChannel(
                 flutterEngine!!.dartExecutor.binaryMessenger,
                 METHOD_CHANNEL_NAME
             )
 
-            channel.invokeMethod(method, arguments) { result ->
-                if (result is Boolean) {
-                    callback(result)
-                } else {
+            channel.invokeMethod(method, arguments, object : MethodChannel.Result {
+                override fun success(result: Any?) {
+                    if (result is Boolean) {
+                        callback(result)
+                    } else {
+                        callback(true)
+                    }
+                }
+
+                override fun error(errorCode: String, errorMessage: String?, errorDetails: Any?) {
+                    android.util.Log.e(TAG, "Flutter method error: $errorCode - $errorMessage")
                     callback(false)
                 }
-            }
+
+                override fun notImplemented() {
+                    android.util.Log.w(TAG, "Flutter method not implemented: $method")
+                    callback(false)
+                }
+            })
         } catch (e: Exception) {
             android.util.Log.e(TAG, "Error calling Flutter method: $method", e)
             callback(false)

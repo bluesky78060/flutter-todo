@@ -99,12 +99,13 @@ class PerformanceMetrics {
   }
 }
 
-/// 성능 모니터링 Notifier
-class PerformanceMonitorNotifier extends StateNotifier<PerformanceMetrics?> {
-  PerformanceMonitorNotifier() : super(null);
-
+/// 성능 모니터링 Notifier (Riverpod 3.0 호환)
+class PerformanceMonitorNotifier extends Notifier<PerformanceMetrics?> {
   /// 성능 측정 시작
   final Map<String, Stopwatch> _stopwatches = {};
+
+  @override
+  PerformanceMetrics? build() => null;
 
   void startMeasurement(String label) {
     _stopwatches[label] = Stopwatch()..start();
@@ -163,6 +164,6 @@ class PerformanceMonitorNotifier extends StateNotifier<PerformanceMetrics?> {
 
 /// 성능 모니터링 Provider
 final performanceMonitorProvider =
-    StateNotifierProvider<PerformanceMonitorNotifier, PerformanceMetrics?>(
-  (ref) => PerformanceMonitorNotifier(),
+    NotifierProvider<PerformanceMonitorNotifier, PerformanceMetrics?>(
+  PerformanceMonitorNotifier.new,
 );

@@ -203,11 +203,11 @@ class _MyAppState extends ConsumerState<MyApp> {
   @override
   void initState() {
     super.initState();
-    // Setup widget MethodChannel for handling widget actions (toggle/delete)
+    // 위젯 MethodChannel 리스너 설정 (위젯 버튼 클릭 처리)
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Future.delayed(const Duration(milliseconds: 500), () {
-        WidgetMethodChannelHandler.setupMethodChannel(ref);
-        logger.d('✅ Widget MethodChannel setup completed');
+        WidgetMethodChannelHandler.setupMethodChannelListener();
+        logger.d('✅ 위젯 MethodChannel 리스너 등록 완료');
       });
     });
   }
