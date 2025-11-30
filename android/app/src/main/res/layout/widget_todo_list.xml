@@ -56,8 +56,8 @@
             android:paddingEnd="4dp" />
     </LinearLayout>
 
-    <!-- Divider -->
-    <View
+    <!-- Divider (using TextView since View is not allowed in RemoteViews) -->
+    <TextView
         android:layout_width="match_parent"
         android:layout_height="1dp"
         android:background="#444444" />
@@ -93,7 +93,8 @@
                 android:layout_height="wrap_content"
                 android:text=""
                 android:textColor="#FFFFFF"
-                android:textSize="15sp"
+                android:textSize="16sp"
+                android:textStyle="bold"
                 android:maxLines="1"
                 android:ellipsize="end" />
 
@@ -103,7 +104,7 @@
                 android:layout_height="wrap_content"
                 android:text=""
                 android:textColor="#888888"
-                android:textSize="12sp"
+                android:textSize="11sp"
                 android:paddingTop="2dp" />
         </LinearLayout>
     </LinearLayout>
@@ -137,7 +138,8 @@
                 android:layout_height="wrap_content"
                 android:text=""
                 android:textColor="#FFFFFF"
-                android:textSize="15sp"
+                android:textSize="16sp"
+                android:textStyle="bold"
                 android:maxLines="1"
                 android:ellipsize="end" />
 
@@ -147,7 +149,7 @@
                 android:layout_height="wrap_content"
                 android:text=""
                 android:textColor="#888888"
-                android:textSize="12sp"
+                android:textSize="11sp"
                 android:paddingTop="2dp" />
         </LinearLayout>
     </LinearLayout>
@@ -181,7 +183,8 @@
                 android:layout_height="wrap_content"
                 android:text=""
                 android:textColor="#FFFFFF"
-                android:textSize="15sp"
+                android:textSize="16sp"
+                android:textStyle="bold"
                 android:maxLines="1"
                 android:ellipsize="end" />
 
@@ -191,52 +194,9 @@
                 android:layout_height="wrap_content"
                 android:text=""
                 android:textColor="#888888"
-                android:textSize="12sp"
+                android:textSize="11sp"
                 android:paddingTop="2dp" />
         </LinearLayout>
     </LinearLayout>
 
-    <!-- Todo Item 4 -->
-    <LinearLayout
-        android:id="@+id/widget_todo_4_container"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:paddingTop="6dp"
-        android:paddingBottom="6dp">
-
-        <ImageView
-            android:id="@+id/widget_todo_4_checkbox"
-            android:layout_width="22dp"
-            android:layout_height="22dp"
-            android:layout_marginEnd="12dp"
-            android:src="@drawable/widget_checkbox_unchecked" />
-
-        <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="vertical">
-
-            <TextView
-                android:id="@+id/widget_todo_4_text"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text=""
-                android:textColor="#FFFFFF"
-                android:textSize="15sp"
-                android:maxLines="1"
-                android:ellipsize="end" />
-
-            <TextView
-                android:id="@+id/widget_todo_4_time"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text=""
-                android:textColor="#888888"
-                android:textSize="12sp"
-                android:paddingTop="2dp" />
-        </LinearLayout>
-    </LinearLayout>
 </LinearLayout>

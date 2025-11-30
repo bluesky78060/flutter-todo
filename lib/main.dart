@@ -175,15 +175,23 @@ Future<void> runAppWithErrorHandling() async {
 
   logger.d('✅ Main: SharedPreferences loaded, starting app');
 
+  // Create ProviderContainer manually to pass to WidgetMethodChannelHandler
+  final container = ProviderContainer(
+    overrides: [
+      sharedPreferencesProvider.overrideWithValue(prefs),
+    ],
+  );
+
+  // Set container for widget method channel
+  WidgetMethodChannelHandler.setProviderContainer(container);
+
   runApp(
     EasyLocalization(
       supportedLocales: const [Locale('en'), Locale('ko')],
       path: 'assets/translations',
       fallbackLocale: const Locale('en'),
-      child: ProviderScope(
-        overrides: [
-          sharedPreferencesProvider.overrideWithValue(prefs),
-        ],
+      child: UncontrolledProviderScope(
+        container: container,
         child: const MyApp(),
       ),
     ),

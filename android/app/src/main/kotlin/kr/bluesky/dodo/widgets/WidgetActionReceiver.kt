@@ -1,26 +1,28 @@
 package kr.bluesky.dodo.widgets
 
-import android.app.PendingIntent
 import android.appwidget.AppWidgetManager
 import android.content.BroadcastReceiver
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.database.sqlite.SQLiteDatabase
 import android.widget.Toast
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
+import java.io.File
 
 /**
  * BroadcastReceiver for handling widget button actions
  * Processes TOGGLE_TODO and DELETE_TODO actions from widget items
- * Routes actions to Flutter via MethodChannel
+ * Works in background without opening the app by directly modifying SQLite database
  */
 class WidgetActionReceiver : BroadcastReceiver() {
 
     companion object {
         private const val TAG = "WidgetActionReceiver"
         private const val METHOD_CHANNEL_NAME = "kr.bluesky.dodo/widget"
-        private const val METHOD_TOGGLE_TODO = "toggleTodo"
-        private const val METHOD_DELETE_TODO = "deleteTodo"
+        private const val PREFS_NAME = "HomeWidgetPreferences"
+        private const val DATABASE_NAME = "app_database.sqlite"
 
         private var flutterEngine: FlutterEngine? = null
 
@@ -31,107 +33,238 @@ class WidgetActionReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {
         val action = intent.action ?: return
-        val todoId = intent.getStringExtra("todo_id") ?: return
-        val widgetId = intent.getIntExtra("widget_id", -1)
 
-        android.util.Log.d(TAG, "Action received: $action, TodoId: $todoId, WidgetId: $widgetId")
+        android.util.Log.d(TAG, "Action received: $action")
 
         when (action) {
             "kr.bluesky.dodo.widget.TOGGLE_TODO" -> {
-                toggleTodo(context, todoId, widgetId)
+                val todoId = intent.getStringExtra("todo_id") ?: ""
+                val todoIndex = intent.getIntExtra("todo_index", -1)
+                val widgetId = intent.getIntExtra("widget_id", -1)
+                android.util.Log.d(TAG, "Toggle todo - id: $todoId, index: $todoIndex, widgetId: $widgetId")
+                toggleTodoInBackground(context, todoId, todoIndex, widgetId)
             }
             "kr.bluesky.dodo.widget.DELETE_TODO" -> {
+                val todoId = intent.getStringExtra("todo_id") ?: ""
+                val widgetId = intent.getIntExtra("widget_id", -1)
+                android.util.Log.d(TAG, "Delete todo - id: $todoId, widgetId: $widgetId")
                 deleteTodo(context, todoId, widgetId)
             }
         }
     }
 
-    private fun toggleTodo(context: Context, todoId: String, widgetId: Int) {
-        android.util.Log.d(TAG, "Toggling todo: $todoId")
-
-        // Route to Flutter via MethodChannel
-        callFlutterMethod(METHOD_TOGGLE_TODO, mapOf("todo_id" to todoId)) { success ->
-            if (success) {
-                // Update widget display
-                refreshWidget(context, widgetId)
-                showToast(context, "✓ Todo toggled")
-            } else {
-                showToast(context, "Failed to toggle todo")
+    /**
+     * Toggle todo completion directly in SQLite database without opening the app
+     */
+    private fun toggleTodoInBackground(context: Context, todoId: String, todoIndex: Int, widgetId: Int) {
+        try {
+            if (todoId.isEmpty()) {
+                android.util.Log.w(TAG, "Empty todoId, cannot toggle")
+                Toast.makeText(context, "오류: 할일 ID가 없습니다", Toast.LENGTH_SHORT).show()
+                return
             }
+
+            val todoIdInt = todoId.toIntOrNull()
+            if (todoIdInt == null) {
+                android.util.Log.e(TAG, "Invalid todoId: $todoId")
+                Toast.makeText(context, "오류: 잘못된 할일 ID", Toast.LENGTH_SHORT).show()
+                return
+            }
+
+            android.util.Log.d(TAG, "Toggling todo: id=$todoId, index=$todoIndex")
+
+            // Get current state from SharedPreferences and toggle it
+            // Note: This app uses Supabase as primary storage, not local SQLite
+            // So we just update SharedPreferences and notify Flutter for Supabase sync
+            val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            val currentState = prefs.getBoolean("todo_${todoIndex}_completed", false)
+            val newState = !currentState
+
+            // Update SharedPreferences immediately for widget UI
+            prefs.edit().putBoolean("todo_${todoIndex}_completed", newState).apply()
+            android.util.Log.d(TAG, "SharedPreferences updated: todo_${todoIndex}_completed = $newState")
+
+            // Try to notify Flutter if engine is available (for Supabase sync)
+            var flutterNotified = false
+            if (flutterEngine != null) {
+                try {
+                    val channel = MethodChannel(
+                        flutterEngine!!.dartExecutor.binaryMessenger,
+                        METHOD_CHANNEL_NAME
+                    )
+                    channel.invokeMethod("toggleTodo", mapOf("todo_id" to todoId))
+                    android.util.Log.d(TAG, "Notified Flutter for todo: $todoId")
+                    flutterNotified = true
+                    // Flutter will handle widget refresh after Supabase sync
+                    // Show immediate feedback
+                    val message = if (newState) "✓ 완료!" else "↩ 미완료"
+                    Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                    return // Let Flutter handle everything
+                } catch (e: Exception) {
+                    android.util.Log.w(TAG, "Could not notify Flutter (app may be closed): ${e.message}")
+                }
+            }
+
+            // Flutter not available - update locally and refresh widget
+            android.util.Log.d(TAG, "Flutter not available, updating locally")
+
+            // Also try to update local SQLite if available (for offline support)
+            val dbUpdated = toggleTodoInDatabase(context, todoIdInt)
+            android.util.Log.d(TAG, "Database update result: $dbUpdated")
+
+            // Refresh all TodoListWidgets (only when Flutter is not handling it)
+            refreshAllWidgets(context)
+
+            // Show feedback
+            val message = if (newState) "✓ 완료!" else "↩ 미완료"
+            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+
+            // Inform user to sync in app when opening
+            if (dbUpdated == null) {
+                android.util.Log.w(TAG, "Todo toggled only in widget UI. Sync will happen when app opens.")
+            }
+
+        } catch (e: Exception) {
+            android.util.Log.e(TAG, "Error toggling todo", e)
+            Toast.makeText(context, "오류가 발생했습니다", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    /**
+     * Toggle todo completion in SQLite database
+     * Returns the new isCompleted state, or null if failed
+     */
+    private fun toggleTodoInDatabase(context: Context, todoId: Int): Boolean? {
+        var db: SQLiteDatabase? = null
+        try {
+            // Get database path (Flutter uses getApplicationDocumentsDirectory which maps to app_flutter folder)
+            // On Android, this is dataDir/app_flutter/, not filesDir
+            val dbPath = File(context.dataDir, "app_flutter/$DATABASE_NAME")
+            android.util.Log.d(TAG, "Database path: ${dbPath.absolutePath}")
+
+            if (!dbPath.exists()) {
+                android.util.Log.e(TAG, "Database file does not exist")
+                return null
+            }
+
+            // Open database in read-write mode with WAL support
+            // Drift uses WAL mode by default, so we need to enable it when opening
+            db = SQLiteDatabase.openDatabase(
+                dbPath.absolutePath,
+                null,
+                SQLiteDatabase.OPEN_READWRITE or SQLiteDatabase.ENABLE_WRITE_AHEAD_LOGGING
+            )
+
+            // Enable WAL mode to read uncommitted data from WAL file
+            db.enableWriteAheadLogging()
+
+            // Force WAL checkpoint to ensure all data is visible
+            // This merges WAL file content into the main database
+            try {
+                val checkpointCursor = db.rawQuery("PRAGMA wal_checkpoint(PASSIVE)", null)
+                if (checkpointCursor.moveToFirst()) {
+                    val busy = checkpointCursor.getInt(0)
+                    val log = checkpointCursor.getInt(1)
+                    val checkpointed = checkpointCursor.getInt(2)
+                    android.util.Log.d(TAG, "WAL checkpoint: busy=$busy, log=$log, checkpointed=$checkpointed")
+                }
+                checkpointCursor.close()
+            } catch (e: Exception) {
+                android.util.Log.w(TAG, "WAL checkpoint failed: ${e.message}")
+            }
+
+            // First, check how many todos exist
+            val countCursor = db.rawQuery("SELECT COUNT(*) FROM todos", null)
+            if (countCursor.moveToFirst()) {
+                val totalTodos = countCursor.getInt(0)
+                android.util.Log.d(TAG, "Total todos in database: $totalTodos")
+            }
+            countCursor.close()
+
+            // Get current state
+            val cursor = db.rawQuery(
+                "SELECT is_completed FROM todos WHERE id = ?",
+                arrayOf(todoId.toString())
+            )
+
+            if (!cursor.moveToFirst()) {
+                cursor.close()
+                android.util.Log.e(TAG, "Todo not found: $todoId (check if WAL is preventing read)")
+                // List some existing todo IDs for debugging
+                val listCursor = db.rawQuery("SELECT id, title FROM todos LIMIT 5", null)
+                while (listCursor.moveToNext()) {
+                    android.util.Log.d(TAG, "Existing todo: id=${listCursor.getInt(0)}, title=${listCursor.getString(1)}")
+                }
+                listCursor.close()
+                return null
+            }
+
+            val currentState = cursor.getInt(0) == 1
+            cursor.close()
+
+            val newState = !currentState
+            val newStateInt = if (newState) 1 else 0
+
+            // Update completion state
+            val completedAt = if (newState) {
+                System.currentTimeMillis()
+            } else {
+                null
+            }
+
+            val result = if (completedAt != null) {
+                db.execSQL(
+                    "UPDATE todos SET is_completed = ?, completed_at = ? WHERE id = ?",
+                    arrayOf(newStateInt, completedAt, todoId)
+                )
+                true
+            } else {
+                db.execSQL(
+                    "UPDATE todos SET is_completed = ?, completed_at = NULL WHERE id = ?",
+                    arrayOf(newStateInt, todoId)
+                )
+                true
+            }
+
+            android.util.Log.d(TAG, "Updated todo $todoId: isCompleted=$newState")
+            return newState
+
+        } catch (e: Exception) {
+            android.util.Log.e(TAG, "Database error: ${e.message}", e)
+            return null
+        } finally {
+            db?.close()
         }
     }
 
     private fun deleteTodo(context: Context, todoId: String, widgetId: Int) {
         android.util.Log.d(TAG, "Deleting todo: $todoId")
 
-        // Route to Flutter via MethodChannel
-        callFlutterMethod(METHOD_DELETE_TODO, mapOf("todo_id" to todoId)) { success ->
-            if (success) {
-                // Update widget display
-                refreshWidget(context, widgetId)
-                showToast(context, "✓ Todo deleted")
-            } else {
-                showToast(context, "Failed to delete todo")
-            }
-        }
+        // For delete, we need to open the app since it requires database modification
+        Toast.makeText(context, "앱에서 삭제해주세요", Toast.LENGTH_SHORT).show()
     }
 
-    private fun callFlutterMethod(
-        method: String,
-        arguments: Map<String, Any>,
-        callback: (Boolean) -> Unit
-    ) {
-        // If Flutter engine is not initialized yet, start the app
-        if (flutterEngine == null) {
-            android.util.Log.w(TAG, "Flutter engine not initialized, will be set when app starts")
-            // For now, we'll handle this via intent routing to MainActivity
-            // The MainActivity will set the FlutterEngine when it's ready
-            callback(false)
-            return
-        }
-
-        try {
-            val channel = MethodChannel(
-                flutterEngine!!.dartExecutor.binaryMessenger,
-                METHOD_CHANNEL_NAME
-            )
-
-            channel.invokeMethod(method, arguments, object : MethodChannel.Result {
-                override fun success(result: Any?) {
-                    if (result is Boolean) {
-                        callback(result)
-                    } else {
-                        callback(true)
-                    }
-                }
-
-                override fun error(errorCode: String, errorMessage: String?, errorDetails: Any?) {
-                    android.util.Log.e(TAG, "Flutter method error: $errorCode - $errorMessage")
-                    callback(false)
-                }
-
-                override fun notImplemented() {
-                    android.util.Log.w(TAG, "Flutter method not implemented: $method")
-                    callback(false)
-                }
-            })
-        } catch (e: Exception) {
-            android.util.Log.e(TAG, "Error calling Flutter method: $method", e)
-            callback(false)
-        }
-    }
-
-    private fun refreshWidget(context: Context, widgetId: Int) {
+    /**
+     * Refresh all TodoListWidget instances
+     */
+    private fun refreshAllWidgets(context: Context) {
         try {
             val appWidgetManager = AppWidgetManager.getInstance(context)
-            appWidgetManager.notifyAppWidgetViewDataChanged(intArrayOf(widgetId), android.R.id.list)
-            android.util.Log.d(TAG, "Widget refreshed: $widgetId")
-        } catch (e: Exception) {
-            android.util.Log.e(TAG, "Error refreshing widget", e)
-        }
-    }
+            val componentName = ComponentName(context, TodoListWidget::class.java)
+            val widgetIds = appWidgetManager.getAppWidgetIds(componentName)
 
-    private fun showToast(context: Context, message: String) {
-        Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+            android.util.Log.d(TAG, "Refreshing ${widgetIds.size} widgets")
+
+            // Send update broadcast to refresh widgets
+            val updateIntent = Intent(context, TodoListWidget::class.java).apply {
+                action = AppWidgetManager.ACTION_APPWIDGET_UPDATE
+                putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, widgetIds)
+            }
+            context.sendBroadcast(updateIntent)
+
+            android.util.Log.d(TAG, "Widget refresh broadcast sent")
+        } catch (e: Exception) {
+            android.util.Log.e(TAG, "Error refreshing widgets", e)
+        }
     }
 }

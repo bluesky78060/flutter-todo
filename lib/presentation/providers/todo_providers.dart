@@ -230,18 +230,25 @@ class TodoActions {
 
     ref.invalidate(todosProvider);
 
-    // Update home screen widget
-    _updateWidget();
+    // Update home screen widget (await for immediate sync)
+    await _updateWidget();
   }
 
   /// Helper method to update home screen widget
-  void _updateWidget() {
+  /// Now returns Future and must be awaited for immediate sync
+  Future<void> _updateWidget() async {
+    print('📱 [WIDGET] TodoActions._updateWidget() CALLED');
+    logger.d('📱 TodoActions: _updateWidget() called');
     try {
       final widgetService = ref.read(widgetServiceProvider);
-      widgetService.updateWidget();
-      logger.d('📱 TodoActions: Home screen widget updated');
+      print('📱 [WIDGET] widgetServiceProvider read SUCCESS, calling updateWidget()...');
+      logger.d('📱 TodoActions: widgetServiceProvider read success');
+      await widgetService.updateWidget();
+      print('📱 [WIDGET] Widget update COMPLETED successfully');
+      logger.d('📱 TodoActions: Home screen widget updated successfully');
     } catch (e) {
-      logger.d('⚠️ TodoActions: Failed to update widget: $e');
+      print('📱 [WIDGET] Widget update ERROR: $e');
+      logger.e('⚠️ TodoActions: Failed to update widget: $e');
     }
   }
 
@@ -290,7 +297,7 @@ class TodoActions {
               await syncNotifier.syncSuccess();
               ref.invalidate(todosProvider);
               ref.invalidate(todoDetailProvider(todo.id));
-              _updateWidget();
+              await _updateWidget();
             },
           );
           break;
@@ -358,7 +365,7 @@ class TodoActions {
                   await syncNotifier.syncSuccess();
                   ref.invalidate(todosProvider);
                   ref.invalidate(todoDetailProvider(todo.id));
-                  _updateWidget();
+                  await _updateWidget();
                 },
               );
             },
@@ -379,7 +386,7 @@ class TodoActions {
           await syncNotifier.syncSuccess();
           ref.invalidate(todosProvider);
           ref.invalidate(todoDetailProvider(todo.id));
-          _updateWidget();
+          await _updateWidget();
         },
       );
     }
@@ -489,7 +496,7 @@ class TodoActions {
         // Sync success
         await syncNotifier.syncSuccess();
         ref.invalidate(todosProvider);
-        _updateWidget();
+        await _updateWidget();
       },
     );
   }
@@ -607,7 +614,7 @@ class TodoActions {
             await syncNotifier.syncSuccess();
             ref.invalidate(todosProvider);
             ref.invalidate(todoDetailProvider(id));
-            _updateWidget();
+            await _updateWidget();
           },
         );
       },
@@ -698,7 +705,7 @@ class TodoActions {
 
             ref.invalidate(todosProvider);
             ref.invalidate(todoDetailProvider(id));
-            _updateWidget();
+            await _updateWidget();
           },
         );
       },
@@ -711,11 +718,11 @@ class TodoActions {
 
     final result = await repository.deleteCompletedTodos();
 
-    return result.fold(
+    return await result.fold(
       (failure) => throw Exception('Failed to delete completed todos'),
-      (count) {
+      (count) async {
         ref.invalidate(todosProvider);
-        _updateWidget();
+        await _updateWidget();
         return count;
       },
     );

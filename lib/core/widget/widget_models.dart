@@ -22,7 +22,7 @@ class CalendarData {
     required this.lastUpdated,
   });
 
-  /// Generate calendar data from todos
+  /// Generate calendar data from todos (filtered to current month)
   static CalendarData fromTodos(
     List<Todo> todos,
     DateTime month,
@@ -31,9 +31,15 @@ class CalendarData {
     final Set<int> daysWithTasks = {};
     final Set<int> completedDays = {};
 
+    // Filter todos for the current month only
+    final currentYear = month.year;
+    final currentMonth = month.month;
+
     for (final todo in todos) {
       final dueDate = todo.dueDate;
-      if (dueDate != null) {
+      if (dueDate != null &&
+          dueDate.year == currentYear &&
+          dueDate.month == currentMonth) {
         final day = dueDate.day;
         dayTaskCounts[day] = (dayTaskCounts[day] ?? 0) + 1;
         daysWithTasks.add(day);
@@ -107,13 +113,27 @@ class TodoListData {
     required this.lastUpdated,
   });
 
-  /// Generate todo data from todos (shows all pending todos for widget)
+  /// Generate todo data from todos (shows only today's pending todos for widget)
   static TodoListData fromTodos(List<Todo> todos) {
     final today = DateTime.now();
+    final todayStart = DateTime(today.year, today.month, today.day);
+    final todayEnd = todayStart.add(const Duration(days: 1));
 
-    // For widget: show all pending (not completed) todos, not just today's
-    // This is more useful for users who want to see their task list
-    final pendingTodos = todos.where((todo) => !todo.isCompleted).toList();
+    // For widget: show only today's pending (not completed) todos
+    // Include: 1) todos with dueDate today, 2) todos without dueDate but created today
+    final pendingTodos = todos.where((todo) {
+      if (todo.isCompleted) return false;
+
+      // Case 1: Has due date - check if it's today
+      if (todo.dueDate != null) {
+        return todo.dueDate!.isAfter(todayStart.subtract(const Duration(seconds: 1))) &&
+               todo.dueDate!.isBefore(todayEnd);
+      }
+
+      // Case 2: No due date - check if created today
+      return todo.createdAt.isAfter(todayStart.subtract(const Duration(seconds: 1))) &&
+             todo.createdAt.isBefore(todayEnd);
+    }).toList();
 
     // Sort by due date (earliest first), then by notification time, then by created date
     pendingTodos.sort((a, b) {

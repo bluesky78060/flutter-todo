@@ -49,8 +49,13 @@ class _CustomTodoItemState extends ConsumerState<CustomTodoItem>
     super.dispose();
   }
 
-  String _formatDueDate(DateTime date) {
+  String _formatDueDate(DateTime date, {bool checkAllDay = false}) {
     final local = date.toLocal();
+    // Check if this is an all-day event (time is 00:00)
+    final isAllDay = checkAllDay && local.hour == 0 && local.minute == 0;
+    if (isAllDay) {
+      return '${local.year}-${local.month.toString().padLeft(2, '0')}-${local.day.toString().padLeft(2, '0')} (${'all_day'.tr()})';
+    }
     return '${local.year}-${local.month.toString().padLeft(2, '0')}-${local.day.toString().padLeft(2, '0')} ${local.hour.toString().padLeft(2, '0')}:${local.minute.toString().padLeft(2, '0')}';
   }
 
@@ -162,7 +167,7 @@ class _CustomTodoItemState extends ConsumerState<CustomTodoItem>
                                 SizedBox(width: 6),
                                 Flexible(
                                   child: Text(
-                                    _formatDueDate(widget.todo.dueDate!),
+                                    _formatDueDate(widget.todo.dueDate!, checkAllDay: true),
                                     style: TextStyle(
                                       color: AppColors.primaryBlue,
                                       fontSize: 12,

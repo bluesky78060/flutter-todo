@@ -296,6 +296,30 @@ class SupabaseTodoDataSource {
     }).toList();
   }
 
+  // Parse DateTime from Supabase as UTC and convert to local time
+  // Supabase stores timestamps as UTC but returns them without timezone info
+  DateTime? _parseUtcDateTime(String? dateString) {
+    if (dateString == null) return null;
+    // Parse as UTC, then convert to local time for display
+    final parsed = DateTime.parse(dateString);
+    // If already has timezone info (ends with Z or +/-), it's handled correctly
+    // If not, we need to treat it as UTC
+    if (dateString.endsWith('Z') || dateString.contains('+') || RegExp(r'-\d{2}:\d{2}$').hasMatch(dateString)) {
+      return parsed.toLocal();
+    }
+    // No timezone info - treat as UTC
+    return DateTime.utc(
+      parsed.year,
+      parsed.month,
+      parsed.day,
+      parsed.hour,
+      parsed.minute,
+      parsed.second,
+      parsed.millisecond,
+      parsed.microsecond,
+    ).toLocal();
+  }
+
   // Convert JSON to Todo entity
   Todo _todoFromJson(Map<String, dynamic> json) {
     return Todo(
@@ -304,22 +328,14 @@ class SupabaseTodoDataSource {
       description: json['description'] as String? ?? '',
       isCompleted: json['is_completed'] as bool? ?? false,
       categoryId: json['category_id'] as int?,
-      createdAt: DateTime.parse(json['created_at'] as String),
-      completedAt: json['completed_at'] != null
-          ? DateTime.parse(json['completed_at'] as String)
-          : null,
-      dueDate: json['due_date'] != null
-          ? DateTime.parse(json['due_date'] as String)
-          : null,
-      notificationTime: json['notification_time'] != null
-          ? DateTime.parse(json['notification_time'] as String)
-          : null,
+      createdAt: _parseUtcDateTime(json['created_at'] as String) ?? DateTime.now(),
+      completedAt: _parseUtcDateTime(json['completed_at'] as String?),
+      dueDate: _parseUtcDateTime(json['due_date'] as String?),
+      notificationTime: _parseUtcDateTime(json['notification_time'] as String?),
       recurrenceRule: json['recurrence_rule'] as String?,
       parentRecurringTodoId: json['parent_recurring_todo_id'] as int?,
       snoozeCount: json['snooze_count'] as int? ?? 0,
-      lastSnoozeTime: json['last_snooze_time'] != null
-          ? DateTime.parse(json['last_snooze_time'] as String)
-          : null,
+      lastSnoozeTime: _parseUtcDateTime(json['last_snooze_time'] as String?),
       locationLatitude: (json['location_latitude'] as num?)?.toDouble(),
       locationLongitude: (json['location_longitude'] as num?)?.toDouble(),
       locationName: json['location_name'] as String?,

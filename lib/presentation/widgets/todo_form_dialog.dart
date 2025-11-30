@@ -20,6 +20,7 @@ import 'package:todo_app/presentation/widgets/recurring_edit_dialog.dart';
 import 'package:todo_app/presentation/widgets/location_picker_dialog.dart';
 import 'package:todo_app/core/services/geofence_workmanager_service.dart';
 import 'package:todo_app/core/services/attachment_service.dart';
+import 'package:todo_app/presentation/providers/widget_provider.dart';
 
 class TodoFormDialog extends ConsumerStatefulWidget {
   final Todo? existingTodo; // null = create mode, not null = edit mode
@@ -37,6 +38,7 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
   DateTime? _selectedNotificationTime;
   int? _selectedCategoryId;
   String? _recurrenceRule;
+  bool _isAllDay = false; // 하루 종일 옵션
 
   // Location fields
   double? _locationLatitude;
@@ -68,6 +70,12 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
       _locationLongitude = todo.locationLongitude;
       _locationName = todo.locationName;
       _locationRadius = todo.locationRadius;
+      // Detect all-day event: dueDate exists and time is 00:00
+      if (todo.dueDate != null &&
+          todo.dueDate!.hour == 0 &&
+          todo.dueDate!.minute == 0) {
+        _isAllDay = true;
+      }
     }
   }
 
@@ -106,7 +114,21 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
 
     if (pickedDate == null || !mounted) return;
 
-    // Step 2: Select time using Cupertino wheel picker
+    // If all-day is selected, set time to 00:00 and skip time picker
+    if (_isAllDay) {
+      setState(() {
+        _selectedDueDate = DateTime(
+          pickedDate.year,
+          pickedDate.month,
+          pickedDate.day,
+          0,
+          0,
+        );
+      });
+      return;
+    }
+
+    // Step 2: Select time using Cupertino wheel picker (only when not all-day)
     final now = DateTime.now();
     TimeOfDay initialTime = TimeOfDay.fromDateTime(_selectedDueDate ?? now.add(const Duration(minutes: 1)));
 
@@ -182,7 +204,10 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
     );
   }
 
-  String _formatDueDate(DateTime date) {
+  String _formatDueDate(DateTime date, {bool isAllDay = false}) {
+    if (isAllDay) {
+      return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')} (${'all_day'.tr()})';
+    }
     return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')} ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
   }
 
@@ -810,6 +835,15 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
 
         // Invalidate todosProvider to refresh the list immediately
         ref.invalidate(todosProvider);
+
+        // Update home screen widget after todo creation
+        try {
+          final widgetService = ref.read(widgetServiceProvider);
+          await widgetService.updateWidget();
+          print('[TodoFormDialog] Widget updated after todo creation');
+        } catch (e) {
+          print('[TodoFormDialog] Widget update error: $e');
+        }
       }
 
       // Upload attachments for edited todo
@@ -1183,23 +1217,25 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
                           size: 20,
                         ),
                         const SizedBox(width: 12),
-                        Text(
-                          _selectedDueDate != null
-                              ? _formatDueDate(_selectedDueDate!)
-                              : 'select_due_date'.tr(),
-                          style: TextStyle(
-                            color: _selectedDueDate != null
-                                ? AppColors.getText(isDarkMode)
-                                : AppColors.getTextSecondary(isDarkMode),
-                            fontSize: 16,
+                        Expanded(
+                          child: Text(
+                            _selectedDueDate != null
+                                ? _formatDueDate(_selectedDueDate!, isAllDay: _isAllDay)
+                                : 'select_due_date'.tr(),
+                            style: TextStyle(
+                              color: _selectedDueDate != null
+                                  ? AppColors.getText(isDarkMode)
+                                  : AppColors.getTextSecondary(isDarkMode),
+                              fontSize: 16,
+                            ),
                           ),
                         ),
-                        const Spacer(),
                         if (_selectedDueDate != null)
                           IconButton(
                             onPressed: () {
                               setState(() {
                                 _selectedDueDate = null;
+                                _isAllDay = false;
                               });
                             },
                             icon: Icon(
@@ -1212,6 +1248,56 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
                           ),
                       ],
                     ),
+                  ),
+                ),
+                // All Day Toggle
+                const SizedBox(height: 12),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 10,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.getInput(isDarkMode),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        FluentIcons.clock_24_regular,
+                        color: AppColors.getTextSecondary(isDarkMode),
+                        size: 20,
+                      ),
+                      const SizedBox(width: 12),
+                      Text(
+                        'all_day'.tr(),
+                        style: TextStyle(
+                          color: AppColors.getText(isDarkMode),
+                          fontSize: 16,
+                        ),
+                      ),
+                      const Spacer(),
+                      Switch(
+                        value: _isAllDay,
+                        onChanged: (value) {
+                          setState(() {
+                            _isAllDay = value;
+                            // If turning on all-day and date is already selected, reset time to 00:00
+                            if (value && _selectedDueDate != null) {
+                              _selectedDueDate = DateTime(
+                                _selectedDueDate!.year,
+                                _selectedDueDate!.month,
+                                _selectedDueDate!.day,
+                                0,
+                                0,
+                              );
+                            }
+                          });
+                        },
+                        activeColor: AppColors.primaryBlue,
+                        activeTrackColor: AppColors.primaryBlue.withOpacity(0.5),
+                      ),
+                    ],
                   ),
                 ),
               ],
