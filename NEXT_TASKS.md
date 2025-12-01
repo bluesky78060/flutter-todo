@@ -13,7 +13,7 @@
 |-------|------|--------|---------|
 | **Phase 1** | ✅ 완료 | 100% | 2025-11-06 ~ 2025-11-17 |
 | **Phase 2** | ✅ 완료 | 100% | 2025-11-17 ~ 2025-11-27 |
-| **Phase 3** | 🔄 진행 중 | 57% (4/7) | 2025-11-28 ~ 2025-12-31 |
+| **Phase 3** | 🔄 진행 중 | 71% (5/7) | 2025-11-28 ~ 2025-12-31 |
 | **Phase 4** | 📋 계획 | 0% | 2026-01-01 이후 |
 
 ---
@@ -21,7 +21,7 @@
 ## 🎯 Phase 3 (현재) - 데이터 관리 및 UX 개선
 
 **기간**: 2025-12-01 ~ 2025-12-31
-**진행 상황**: 4/7 완료 (57%)
+**진행 상황**: 5/7 완료 (71%)
 
 ### ✅ 완료된 항목
 
@@ -80,15 +80,25 @@
   - Record 타입: `(String fileName, Uint8List bytes)`
   - 플랫폼 감지: `import 'package:flutter/foundation.dart' show kIsWeb`
 
-#### 5. 알림 우선순위 설정
-- **예상 시간**: 4-6시간
-- **우선순위**: 🟡 Medium
-- **기능**:
-  - [ ] Priority 필드 추가 (Drift 마이그레이션)
-  - [ ] 알림 채널 설정
-  - [ ] 우선순위 기반 정렬 UI
-  - [ ] 스누즈 시 우선순위 고려
-- **관련 파일**: `todo.dart`, `notification_service.dart`, 마이그레이션 파일
+#### 5. 알림 우선순위 설정 ✅
+- **완료일**: 2025-12-02
+- **커밋**: 930a475
+- **구현 내용**:
+  - Priority 필드 추가 (low, medium, high): TEXT 타입
+  - Drift 데이터베이스 마이그레이션 v12
+  - Priority 상수 클래스 생성: `priority_constants.dart`
+  - Todo 엔티티 업데이트: copyWith, updateTodoFromCompanion
+  - 번역 키 추가: notification_priority, priority_low/medium/high, priority_label
+- **신규 파일**: `lib/core/constants/priority_constants.dart`
+- **수정 파일**: `todo.dart`, `app_database.dart`, 번역 파일들 (en.json, ko.json)
+- **기술 상세**:
+  - Priority: TEXT 컬럼, 기본값 'medium'
+  - 우선순위 순서: high(3) > medium(2) > low(1)
+  - 유틸리티 메서드: compare, toInt, fromInt, getDisplayName
+- **다음 단계**:
+  - [ ] 알림 채널 설정 (notification_service.dart)
+  - [ ] UI에 priority 선택 위젯 추가 (todo_form_dialog.dart)
+  - [ ] 우선순위 기반 정렬 (todo_list_screen.dart)
 
 #### 6. 테마 커스터마이징 (색상 선택, 폰트 크기)
 - **예상 시간**: 6-8시간
@@ -191,6 +201,7 @@
 
 | 버전 | 날짜 | 주요 변경사항 |
 |------|------|--------------|
+| 1.0.17+52 | 2025-12-02 | 알림 우선순위 설정 (low/medium/high) - Phase 3 Item 5 완료 |
 | 1.0.18+51 | 2025-12-01 | 웹 플랫폼 파일 업로드 지원 (kIsWeb 기반) |
 | 1.0.18+50 | 2025-12-01 | 웹 플랫폼 파일 업로드 지원 (초안) |
 | 1.0.17+49 | 2025-12-01 | 통계 Phase 2 (월간 추이) |
