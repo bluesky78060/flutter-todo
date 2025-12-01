@@ -268,6 +268,18 @@ class StatisticsScreen extends ConsumerWidget {
           if (stats.categoryStats.isNotEmpty)
             const SizedBox(height: 16),
 
+          // Monthly Analysis Card (12-month trend)
+          _MonthlyAnalysisCard(stats: stats),
+          const SizedBox(height: 16),
+
+          // Weekly Pattern Card (day of week analysis)
+          _WeeklyPatternCard(stats: stats),
+          const SizedBox(height: 16),
+
+          // Insights Card (auto-generated insights)
+          _InsightsCard(stats: stats),
+          const SizedBox(height: 16),
+
           // Today's Statistics
           _TodayStatisticsCard(stats: stats),
           const SizedBox(height: 16),
@@ -343,6 +355,23 @@ class StatisticsScreen extends ConsumerWidget {
       }).length;
 
       monthlyCompletions[3 - i] = count; // Reverse order (oldest first)
+    }
+
+    // Yearly completion data (last 12 months)
+    final yearlyCompletions = <int, int>{};
+    for (int i = 0; i < 12; i++) {
+      final monthStart = DateTime(today.year, today.month - i, 1);
+      final monthEnd = (i == 0)
+          ? today.add(const Duration(days: 1))
+          : DateTime(today.year, today.month - i + 1, 1);
+
+      final count = todos.where((t) {
+        if (t.completedAt == null) return false;
+        final completedLocal = t.completedAt!.toLocal();
+        return completedLocal.isAfter(monthStart) && completedLocal.isBefore(monthEnd);
+      }).length;
+
+      yearlyCompletions[11 - i] = count; // Reverse order (oldest first)
     }
 
     // Calculate streak (consecutive days with at least 1 completion)
@@ -453,6 +482,7 @@ class StatisticsScreen extends ConsumerWidget {
       dailyCompletions: dailyCompletions,
       dailyCompletionsNamed: dailyCompletionsNamed,
       monthlyCompletions: monthlyCompletions,
+      yearlyCompletions: yearlyCompletions,
       avgCompletionHours: avgCompletionHours,
       mostProductiveDay: mostProductiveDay,
       streak: streak,
@@ -475,6 +505,7 @@ class _StatisticsData {
   final Map<int, int> dailyCompletions;
   final Map<String, int> dailyCompletionsNamed;
   final Map<int, int> monthlyCompletions;
+  final Map<int, int> yearlyCompletions; // 12 months data
   final double avgCompletionHours;
   final String mostProductiveDay;
   final int streak;
@@ -493,6 +524,7 @@ class _StatisticsData {
     required this.dailyCompletions,
     required this.dailyCompletionsNamed,
     required this.monthlyCompletions,
+    required this.yearlyCompletions,
     required this.avgCompletionHours,
     required this.mostProductiveDay,
     required this.streak,
@@ -1650,6 +1682,678 @@ class _CategoryAnalysisCard extends ConsumerWidget {
               ],
             );
           }).toList(),
+        ],
+      ),
+    );
+  }
+}
+
+// Monthly Analysis Card with Annual Trend Line Chart
+class _MonthlyAnalysisCard extends ConsumerWidget {
+  final _StatisticsData stats;
+
+  const _MonthlyAnalysisCard({required this.stats});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isDarkMode = ref.watch(isDarkModeProvider);
+
+    // Get month labels for last 12 months
+    final now = DateTime.now();
+    final monthLabels = <String>[];
+    for (int i = 11; i >= 0; i--) {
+      final monthDate = DateTime(now.year, now.month - i, 1);
+      monthLabels.add('${monthDate.month.toString().padLeft(2, '0')}월');
+    }
+
+    // Calculate statistics
+    final yearlyValues = stats.yearlyCompletions.values.toList();
+    final maxValue = yearlyValues.isNotEmpty ? yearlyValues.reduce((a, b) => a > b ? a : b) : 0;
+    final avgValue = yearlyValues.isNotEmpty ? (yearlyValues.fold<int>(0, (a, b) => a + b) / yearlyValues.length).round() : 0;
+    final totalYear = yearlyValues.fold<int>(0, (a, b) => a + b);
+
+    // Find trend
+    final firstHalf = yearlyValues.sublist(0, 6).fold<int>(0, (a, b) => a + b);
+    final secondHalf = yearlyValues.sublist(6).fold<int>(0, (a, b) => a + b);
+    final trend = secondHalf > firstHalf ? '↑' : (secondHalf < firstHalf ? '↓' : '→');
+
+    // Find best and worst months
+    int bestMonth = 0, worstMonth = 0;
+    int bestValue = 0, worstValue = yearlyValues.isNotEmpty ? yearlyValues[0] : 0;
+    for (int i = 0; i < yearlyValues.length; i++) {
+      if (yearlyValues[i] > bestValue) {
+        bestValue = yearlyValues[i];
+        bestMonth = i;
+      }
+      if (yearlyValues[i] < worstValue) {
+        worstValue = yearlyValues[i];
+        worstMonth = i;
+      }
+    }
+
+    // Build line chart data
+    final lineChartSpots = <FlSpot>[];
+    for (int i = 0; i < yearlyValues.length; i++) {
+      lineChartSpots.add(FlSpot(i.toDouble(), yearlyValues[i].toDouble()));
+    }
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: AppColors.getCard(isDarkMode),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: AppColors.getBorder(isDarkMode),
+          width: 1,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '월간 추이 분석',
+                    style: TextStyle(
+                      color: AppColors.getText(isDarkMode),
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '지난 12개월 완료 추이',
+                    style: TextStyle(
+                      color: AppColors.getTextSecondary(isDarkMode),
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: AppColors.primaryBlue.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  trend,
+                  style: const TextStyle(
+                    color: AppColors.primaryBlue,
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+
+          // Statistics Summary
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '연간 총합',
+                    style: TextStyle(
+                      color: AppColors.getTextSecondary(isDarkMode),
+                      fontSize: 12,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '$totalYear개',
+                    style: TextStyle(
+                      color: AppColors.getText(isDarkMode),
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '월평균',
+                    style: TextStyle(
+                      color: AppColors.getTextSecondary(isDarkMode),
+                      fontSize: 12,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '$avgValue개',
+                    style: TextStyle(
+                      color: AppColors.getText(isDarkMode),
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '최고기록',
+                    style: TextStyle(
+                      color: AppColors.getTextSecondary(isDarkMode),
+                      fontSize: 12,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '${monthLabels[bestMonth]} $bestValue개',
+                    style: TextStyle(
+                      color: AppColors.successGreen,
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+
+          // Line Chart
+          if (lineChartSpots.isNotEmpty)
+            SizedBox(
+              height: 200,
+              child: LineChart(
+                LineChartData(
+                  gridData: FlGridData(
+                    show: true,
+                    drawVerticalLine: false,
+                    horizontalInterval: maxValue > 0 ? (maxValue / 4).ceil().toDouble() : 10,
+                    getDrawingHorizontalLine: (value) {
+                      return FlLine(
+                        color: AppColors.getBorder(isDarkMode),
+                        strokeWidth: 0.5,
+                      );
+                    },
+                  ),
+                  titlesData: FlTitlesData(
+                    show: true,
+                    rightTitles: AxisTitles(
+                      sideTitles: SideTitles(showTitles: false),
+                    ),
+                    topTitles: AxisTitles(
+                      sideTitles: SideTitles(showTitles: false),
+                    ),
+                    bottomTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        interval: 1,
+                        getTitlesWidget: (value, meta) {
+                          final index = value.toInt();
+                          if (index < 0 || index >= monthLabels.length) return const Text('');
+                          return Padding(
+                            padding: const EdgeInsets.only(top: 8),
+                            child: Text(
+                              monthLabels[index],
+                              style: TextStyle(
+                                color: AppColors.getTextSecondary(isDarkMode),
+                                fontSize: 10,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                    leftTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        interval: maxValue > 0 ? (maxValue / 4).ceil().toDouble() : 10,
+                        getTitlesWidget: (value, meta) {
+                          return Text(
+                            value.toInt().toString(),
+                            style: TextStyle(
+                              color: AppColors.getTextSecondary(isDarkMode),
+                              fontSize: 10,
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                  borderData: FlBorderData(
+                    show: true,
+                    border: Border(
+                      left: BorderSide(
+                        color: AppColors.getBorder(isDarkMode),
+                        width: 1,
+                      ),
+                      bottom: BorderSide(
+                        color: AppColors.getBorder(isDarkMode),
+                        width: 1,
+                      ),
+                    ),
+                  ),
+                  minX: 0,
+                  maxX: (yearlyValues.length - 1).toDouble(),
+                  minY: 0,
+                  maxY: maxValue > 0 ? maxValue.toDouble() : 10,
+                  lineBarsData: [
+                    LineChartBarData(
+                      spots: lineChartSpots,
+                      isCurved: true,
+                      color: AppColors.primaryBlue,
+                      barWidth: 2,
+                      isStrokeCapRound: true,
+                      dotData: FlDotData(
+                        show: true,
+                        getDotPainter: (spot, percent, barData, index) {
+                          final isSpecial = index == bestMonth || index == worstMonth;
+                          return FlDotCirclePainter(
+                            radius: isSpecial ? 4 : 3,
+                            color: isSpecial
+                                ? (index == bestMonth ? AppColors.successGreen : AppColors.dangerRed)
+                                : AppColors.primaryBlue,
+                            strokeWidth: 0,
+                          );
+                        },
+                      ),
+                      belowBarData: BarAreaData(
+                        show: true,
+                        gradient: LinearGradient(
+                          colors: [
+                            AppColors.primaryBlue.withValues(alpha: 0.3),
+                            AppColors.primaryBlue.withValues(alpha: 0.0),
+                          ],
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                        ),
+                      ),
+                    ),
+                  ],
+                  lineTouchData: LineTouchData(
+                    handleBuiltInTouches: true,
+                    touchTooltipData: LineTouchTooltipData(
+                      getTooltipItems: (List<LineBarSpot> touchedBarSpots) {
+                        return touchedBarSpots.map((barSpot) {
+                          return LineTooltipItem(
+                            '${monthLabels[barSpot.x.toInt()]}\n${barSpot.y.toInt()}개',
+                            TextStyle(
+                              color: AppColors.getText(isDarkMode),
+                              fontWeight: FontWeight.bold,
+                            ),
+                          );
+                        }).toList();
+                      },
+                    ),
+                  ),
+                ),
+              ),
+            ),
+
+          // Average line indicator
+          if (avgValue > 0) ...[
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Container(
+                  width: 8,
+                  height: 2,
+                  color: AppColors.accentOrange,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  '평균선: $avgValue개',
+                  style: TextStyle(
+                    color: AppColors.getTextSecondary(isDarkMode),
+                    fontSize: 11,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+// Weekly Pattern Card - Shows day-by-day completion patterns
+class _WeeklyPatternCard extends ConsumerWidget {
+  final _StatisticsData stats;
+  const _WeeklyPatternCard({required this.stats});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isDarkMode = ref.watch(isDarkModeProvider);
+
+    // Get completion counts for each day of week
+    final days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+    final dayCompletions = <String, int>{};
+    int maxCompletions = 0;
+
+    for (final day in days) {
+      final count = stats.dailyCompletionsNamed[day] ?? 0;
+      dayCompletions[day] = count;
+      if (count > maxCompletions) {
+        maxCompletions = count;
+      }
+    }
+
+    // Get most productive day
+    String mostProductiveDay = stats.mostProductiveDay;
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.getCard(isDarkMode),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header
+          Text(
+            'weekly_pattern'.tr(),
+            style: TextStyle(
+              color: AppColors.getText(isDarkMode),
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          Text(
+            'weekly_pattern_subtitle'.tr(),
+            style: TextStyle(
+              color: AppColors.getTextSecondary(isDarkMode),
+              fontSize: 12,
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          // Day bars
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: List.generate(7, (index) {
+              final day = days[index];
+              final count = dayCompletions[day] ?? 0;
+              final maxHeight = 80.0;
+              final barHeight = maxCompletions > 0
+                  ? (count / maxCompletions) * maxHeight
+                  : 0.0;
+              final isDayMostProductive = day == mostProductiveDay;
+
+              return Expanded(
+                child: Column(
+                  children: [
+                    Container(
+                      height: barHeight + 20,
+                      margin: const EdgeInsets.symmetric(horizontal: 4),
+                      decoration: BoxDecoration(
+                        color: isDayMostProductive
+                            ? const Color(0xFF4CAF50)
+                            : AppColors.primaryBlue,
+                        borderRadius: const BorderRadius.vertical(
+                          top: Radius.circular(8),
+                        ),
+                      ),
+                      child: isDayMostProductive
+                          ? Align(
+                              alignment: Alignment.topCenter,
+                              child: Padding(
+                                padding: const EdgeInsets.only(top: 4),
+                                child: Icon(
+                                  FluentIcons.star_24_filled,
+                                  color: Colors.white,
+                                  size: 14,
+                                ),
+                              ),
+                            )
+                          : null,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      '${'${day}_short'.tr()}\n$count',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: isDayMostProductive
+                            ? const Color(0xFF4CAF50)
+                            : AppColors.getText(isDarkMode),
+                        fontSize: 10,
+                        fontWeight: isDayMostProductive
+                            ? FontWeight.bold
+                            : FontWeight.normal,
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }),
+          ),
+          const SizedBox(height: 16),
+
+          // Stats
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: AppColors.getBackground(isDarkMode),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'most_productive_day'.tr(),
+                      style: TextStyle(
+                        color: AppColors.getTextSecondary(isDarkMode),
+                        fontSize: 11,
+                      ),
+                    ),
+                    Text(
+                      mostProductiveDay.tr(),
+                      style: TextStyle(
+                        color: AppColors.getText(isDarkMode),
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      'peak_day_count'.tr(),
+                      style: TextStyle(
+                        color: AppColors.getTextSecondary(isDarkMode),
+                        fontSize: 11,
+                      ),
+                    ),
+                    Text(
+                      '$maxCompletions',
+                      style: TextStyle(
+                        color: const Color(0xFF4CAF50),
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// Insights Card - Auto-generated insights about productivity
+class _InsightsCard extends ConsumerWidget {
+  final _StatisticsData stats;
+  const _InsightsCard({required this.stats});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isDarkMode = ref.watch(isDarkModeProvider);
+
+    // Generate insights
+    final insights = <String>[];
+
+    // Insight 1: Most productive day
+    if (stats.mostProductiveDay.isNotEmpty) {
+      insights.add('insight_productive_day|${stats.mostProductiveDay}');
+    }
+
+    // Insight 2: Overall completion rate
+    final completionRate = stats.completionRate.toStringAsFixed(0);
+    if (stats.completionRate >= 70) {
+      insights.add('insight_excellent|$completionRate');
+    } else if (stats.completionRate >= 50) {
+      insights.add('insight_good|$completionRate');
+    } else if (stats.completionRate > 0) {
+      insights.add('insight_fair|$completionRate');
+    }
+
+    // Insight 3: Streak
+    if (stats.streak > 0) {
+      insights.add('insight_streak|${stats.streak}');
+    }
+
+    // Insight 4: Best day record
+    if (stats.bestDayCount > 5) {
+      insights.add('insight_best_day|${stats.bestDayCount}');
+    }
+
+    // Insight 5: Completion time
+    if (stats.avgCompletionHours > 0) {
+      final hours = stats.avgCompletionHours.toStringAsFixed(1);
+      insights.add('insight_completion_time|$hours');
+    }
+
+    // Fallback insight if no insights generated
+    if (insights.isEmpty) {
+      insights.add('insight_start_tracking');
+    }
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.getCard(isDarkMode),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header
+          Text(
+            'insights_title'.tr(),
+            style: TextStyle(
+              color: AppColors.getText(isDarkMode),
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          Text(
+            'insights_subtitle'.tr(),
+            style: TextStyle(
+              color: AppColors.getTextSecondary(isDarkMode),
+              fontSize: 12,
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          // Insights list
+          Column(
+            children: List.generate(
+              insights.length,
+              (index) {
+                final insight = insights[index];
+                final parts = insight.split('|');
+                final key = parts[0];
+                final value = parts.length > 1 ? parts[1] : '';
+
+                String insightText = '';
+                IconData? insightIcon;
+                Color? insightColor;
+
+                switch (key) {
+                  case 'insight_productive_day':
+                    insightText = '${'insight_productive_day_text'.tr()} ${value.tr()} 💪';
+                    insightIcon = FluentIcons.star_24_filled;
+                    insightColor = const Color(0xFFFFD700);
+                    break;
+                  case 'insight_excellent':
+                    insightText = '${'insight_excellent_text'.tr()} $value% 🎉';
+                    insightIcon = FluentIcons.checkmark_circle_24_filled;
+                    insightColor = const Color(0xFF4CAF50);
+                    break;
+                  case 'insight_good':
+                    insightText = '${'insight_good_text'.tr()} $value% ✨';
+                    insightIcon = FluentIcons.triangle_24_filled;
+                    insightColor = AppColors.primaryBlue;
+                    break;
+                  case 'insight_fair':
+                    insightText = '${'insight_fair_text'.tr()} $value% 💪';
+                    insightIcon = FluentIcons.arrow_up_24_filled;
+                    insightColor = const Color(0xFFFFA500);
+                    break;
+                  case 'insight_streak':
+                    insightText = '${'insight_streak_text'.tr()} $value ${'days'.tr()} 🔥';
+                    insightIcon = FluentIcons.fire_24_filled;
+                    insightColor = const Color(0xFFFF5722);
+                    break;
+                  case 'insight_best_day':
+                    insightText = '${'insight_best_day_text'.tr()} $value ${'tasks'.tr()} 🚀';
+                    insightIcon = FluentIcons.rocket_24_filled;
+                    insightColor = AppColors.primaryBlue;
+                    break;
+                  case 'insight_completion_time':
+                    insightText = '${'insight_completion_time_text'.tr()} $value ${'hours'.tr()} ⏱️';
+                    insightIcon = FluentIcons.timer_24_filled;
+                    insightColor = const Color(0xFF9C27B0);
+                    break;
+                  case 'insight_start_tracking':
+                    insightText = 'insight_start_tracking_text'.tr();
+                    insightIcon = FluentIcons.lightbulb_24_regular;
+                    insightColor = AppColors.primaryBlue;
+                    break;
+                }
+
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: Row(
+                    children: [
+                      if (insightIcon != null)
+                        Icon(
+                          insightIcon,
+                          color: insightColor ?? AppColors.primaryBlue,
+                          size: 18,
+                        ),
+                      if (insightIcon != null) const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          insightText,
+                          style: TextStyle(
+                            color: AppColors.getText(isDarkMode),
+                            fontSize: 13,
+                            height: 1.5,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ),
         ],
       ),
     );

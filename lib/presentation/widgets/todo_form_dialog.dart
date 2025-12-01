@@ -363,7 +363,7 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text(sizeError),
+                content: Text(sizeError.tr()),
                 backgroundColor: Colors.red,
                 duration: const Duration(seconds: 4),
               ),
@@ -413,7 +413,7 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text(sizeError),
+                content: Text(sizeError.tr()),
                 backgroundColor: Colors.red,
                 duration: const Duration(seconds: 4),
               ),
@@ -463,7 +463,7 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text(sizeError),
+                content: Text(sizeError.tr()),
                 backgroundColor: Colors.red,
                 duration: const Duration(seconds: 4),
               ),

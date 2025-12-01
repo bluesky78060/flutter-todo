@@ -231,13 +231,11 @@ class AttachmentService {
   }
 
   /// Validate file size (max 10MB)
-  /// Returns error message if invalid, null if valid
+  /// Returns localization key 'attachment_size_too_large' if invalid, null if valid
   String? validateFileSize(File file) {
     final fileSize = getFileSize(file);
     if (fileSize > maxFileSizeBytes) {
-      final maxSizeMB = maxFileSizeBytes ~/ (1024 * 1024);
-      final fileSizeMB = (fileSize / (1024 * 1024)).toStringAsFixed(1);
-      return 'File size ($fileSizeMB MB) exceeds the maximum limit ($maxSizeMB MB)';
+      return 'attachment_size_too_large';
     }
     return null;
   }
