@@ -1,6 +1,6 @@
 # 향후 추가 기능 및 개선 사항
 
-현재 버전: **1.0.14+42** (Google Play 배포됨)
+현재 버전: **1.0.15+47** (데이터 내보내기 기능 추가)
 최종 업데이트: **2025-12-01**
 
 ## 우선순위 분류
@@ -11,6 +11,26 @@
 ---
 
 ## ✅ 완료된 작업 (Completed)
+
+### 2025-12-01 - 데이터 내보내기 (CSV, PDF) 기능 구현 ✨
+- ✅ **데이터 내보내기 (CSV, PDF) 기능**
+  - **목표**: 사용자가 모든 할 일 데이터를 CSV 또는 PDF 형식으로 내보내고 공유할 수 있도록 하는 기능
+  - **구현 내용**:
+    - CSV 내보내기: 스프레드시트 형식 (ID, 제목, 설명, 상태, 마감일, 카테고리, 생성일)
+    - PDF 내보내기: 스타일링된 문서 (헤더, 요약, 테이블)
+    - 파일 공유: Android/iOS 기본 공유 메뉴 통합
+    - 다국화: 한국어/영어 모두 지원
+    - UTF-8 인코딩: 한글 완벽 지원
+  - **신규 파일**:
+    - `lib/core/services/export_service.dart` (303줄): CSV/PDF 생성 로직
+    - `lib/presentation/providers/export_provider.dart` (25줄): Riverpod 상태 관리
+  - **수정 파일**:
+    - `lib/presentation/screens/settings_screen.dart`: 설정 UI 추가
+    - `pubspec.yaml`: csv, pdf 의존성 추가
+    - `assets/translations/ko.json`, `en.json`: 다국화 문자열 추가
+  - **테스트**: ✅ Debug APK 빌드 성공, 모든 컴파일 에러 해결
+  - **버전**: 1.0.15+47
+  - **커밋**: e3b3251 (feat: 데이터 내보내기 (CSV, PDF) 기능 구현)
 
 ### 2025-12-01 (심야) - Phase 5 리팩토링
 - ✅ **todo_list_screen.dart 리팩토링 Phase 5: 다이얼로그 헬퍼 함수 추출**
@@ -561,8 +581,6 @@
 - [ ] 개별 파일 삭제 UI
 - [ ] 다운로드 버튼 추가
 - [ ] 웹 플랫폼 파일 업로드 지원
-- [ ] 비디오 뷰어
-- [ ] 오디오 플레이어
 
 **참고 문서**: `TASKS.md`, `SUPABASE_STORAGE_SETUP.md`
 

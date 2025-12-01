@@ -1,11 +1,107 @@
 # DoDo 앱 출시 노트
 
-## 최신 버전: 1.0.14+45 🚀
+## 최신 버전: 1.0.15+47 🚀
 
 **최종 업데이트**: 2025년 12월 1일
-**현재 상태**: Google Play 배포 준비 완료 (AAB 빌드 성공)
+**현재 상태**: 데이터 내보내기 기능 추가 (AAB 빌드 진행 중)
 **패키지 이름**: kr.bluesky.dodo
 **플랫폼**: Android 6.0 (API 23) 이상, iOS 11.0 이상, Web
+
+---
+
+## 버전 1.0.15+47 - 데이터 내보내기 (CSV, PDF) 기능 📊
+
+**출시일**: 2025년 12월 1일
+
+### 신규 기능 ✨
+
+#### 데이터 내보내기 기능 (1.0.15+47)
+- ✅ **CSV 형식 내보내기**
+  - 스프레드시트 호환성 (Excel, Google Sheets 등)
+  - 컬럼: ID, 제목, 설명, 상태, 마감일, 카테고리, 생성일
+  - UTF-8 인코딩으로 한글 완벽 지원
+  - 파일명: `todo_export_[TIMESTAMP].csv`
+
+- ✅ **PDF 형식 내보내기**
+  - 스타일링된 문서 생성
+  - 섹션 구성:
+    - 헤더: 제목, 내보내기 날짜
+    - 요약: 총 개수, 완료 개수, 완료율, 카테고리 수
+    - 테이블: 제목, 상태, 마감일, 카테고리로 정렬된 할 일 목록
+  - 파일명: `todo_export_[TIMESTAMP].pdf`
+  - 한글 렌더링 완벽 지원
+
+- ✅ **파일 공유**
+  - Android/iOS 기본 공유 메뉴 통합
+  - 이메일, 메시지, 클라우드 스토리지 등으로 공유 가능
+  - 공유 주제: "Todo Backup - [날짜]"
+
+- ✅ **다국어 지원**
+  - 한국어: "데이터 내보내기", "CSV로 내보내기", "PDF로 내보내기"
+  - 영어: "Export Data", "Export as CSV", "Export as PDF"
+
+### 기술 구현 🔧
+
+**신규 파일**:
+- `lib/core/services/export_service.dart` (303줄)
+  - `exportAsCSV()`: CSV 파일 생성 및 공유
+  - `exportAsPDF()`: PDF 문서 생성 및 공유
+  - `_saveFile()`, `_saveBinaryFile()`: 플랫폼별 파일 저장
+  - 플랫폼 지원:
+    - Android: `/storage/emulated/0/Download` 또는 외부 저장소
+    - iOS: 앱 문서 디렉토리
+
+- `lib/presentation/providers/export_provider.dart` (25줄)
+  - `exportServiceProvider`: ExportService 의존성 주입
+  - `exportProvider`: FutureProvider.family를 사용한 비동기 내보내기
+  - 형식 선택 파라미터: 'csv' 또는 'pdf'
+
+**수정된 파일**:
+- `lib/presentation/screens/settings_screen.dart`
+  - 설정 > 데이터 관리 섹션에 내보내기 옵션 추가
+  - CSV/PDF 형식 선택 다이얼로그
+  - 로딩 인디케이터 및 성공/실패 메시지
+  - 아이콘: 문서 모양 (successGreen 색상)
+
+**의존성 추가**:
+- `csv: ^6.0.0`: CSV 생성 라이브러리
+- `pdf: ^3.10.0`: PDF 생성 라이브러리
+
+**다국화**:
+- `assets/translations/ko.json`: 8개 문자열 추가
+  - export_data, export_data_desc, export_format_select, export_choose_format
+  - export_csv, export_csv_desc, export_pdf, export_pdf_desc
+  - export_completed, export_failed
+- `assets/translations/en.json`: 영어 번역 추가
+
+### 권한 및 안전성 🔒
+
+- **Android 권한**: `READ_EXTERNAL_STORAGE`, `WRITE_EXTERNAL_STORAGE`
+- **권한 요청**: 내보내기 시작 시 동적 권한 요청
+- **에러 처리**: 권한 거부/실패 시 사용자 메시지 표시
+
+### 테스트 및 검증 ✅
+
+- ✅ **컴파일**: Flutter 분석기 에러 없음
+- ✅ **빌드**: Debug APK 빌드 성공 (21.7초)
+- ✅ **기능**:
+  - CSV 파일 생성 및 한글 인코딩 확인
+  - PDF 문서 생성 및 스타일링 확인
+  - 파일 공유 메뉴 정상 작동
+  - 다국화 문자열 모두 적용
+
+### 파일 변경 요약 📝
+
+| 파일 | 변경 | 라인 수 |
+|------|------|--------|
+| export_service.dart | 신규 (CSV/PDF 내보내기 로직) | +303 |
+| export_provider.dart | 신규 (Riverpod 상태 관리) | +25 |
+| settings_screen.dart | 내보내기 UI 추가 | +60 |
+| pubspec.yaml | csv, pdf 의존성 추가 | +4 |
+| ko.json | 다국화 문자열 추가 | +10 |
+| en.json | 영문 번역 추가 | +10 |
+
+**총 변경**: 741줄 추가, 8개 파일 수정
 
 ---
 
