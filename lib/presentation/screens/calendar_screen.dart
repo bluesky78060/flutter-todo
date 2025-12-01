@@ -60,8 +60,12 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
           _holidays = holidays;
           _holidayInfoList = holidayInfo;
         });
-        // Update holiday info for selected day if it's in this month
-        _updateHolidayForSelectedDay();
+        // Only update holiday info if the selected day is actually in this month
+        if (_selectedDay != null &&
+            _selectedDay!.year == year &&
+            _selectedDay!.month == month) {
+          _updateHolidayForSelectedDay();
+        }
       }
     } catch (e) {
       print('Failed to load holidays: $e');
@@ -178,8 +182,18 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                   _updateHolidayForSelectedDay();
                 },
                 onPageChanged: (focusedDay) {
-                  _focusedDay = focusedDay;
+                  setState(() {
+                    _focusedDay = focusedDay;
+                  });
                   _loadHolidaysForMonth(focusedDay.year, focusedDay.month);
+                  // Clear holiday info when changing months (unless selected day is in this month)
+                  if (_selectedDay == null ||
+                      _selectedDay!.year != focusedDay.year ||
+                      _selectedDay!.month != focusedDay.month) {
+                    setState(() {
+                      _holidayInfoForSelectedDay = null;
+                    });
+                  }
                 },
                 eventLoader: (day) => _getEventsForDay(day, todos),
                 calendarBuilders: CalendarBuilders(
