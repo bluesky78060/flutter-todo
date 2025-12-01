@@ -279,7 +279,13 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
 
     final isDarkMode = ref.read(isDarkModeProvider);
 
-    // Show attachment source selection
+    // On web, directly open file picker (camera/gallery not available)
+    if (kIsWeb) {
+      await _pickFile();
+      return;
+    }
+
+    // Show attachment source selection for mobile platforms
     await showModalBottomSheet(
       context: context,
       backgroundColor: AppColors.getCard(isDarkMode),
