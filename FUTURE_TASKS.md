@@ -481,7 +481,63 @@
 
 ## 🚧 진행 중 작업 (In Progress)
 
-**현재**: 없음 - 모든 주요 기능 완료됨
+### 📅 다국가 휴일 지원 아키텍처 설계 (Design Phase)
+**상태**: 🟡 Design Document 완료, 구현 대기
+**우선순위**: Medium
+**예상 기간**: 5-7일 (5개 Phase)
+
+**개요**:
+- 사용자가 Settings에서 휴일 표시 국가 선택 가능
+- 선택된 국가의 휴일만 달력에 표시
+- Factory 패턴으로 새 국가 쉽게 추가 가능
+
+**설계 내용**:
+- ✅ `HolidayService` 추상 인터페이스 설계
+- ✅ `HolidayRegion` Enum (한국, 미국, 일본, 영국)
+- ✅ Factory 패턴 구현 계획
+- ✅ Riverpod Provider 상태 관리 설계
+- ✅ Settings UI 및 Calendar 통합 설계
+- ✅ SharedPreferences 영속성 설계
+
+**기술 문서**: `claudedocs/MULTI_COUNTRY_HOLIDAY_SUPPORT.md` (작성 완료)
+
+**구현 Phase**:
+1. **Phase 1** (1-2일): 기초 구조
+   - [ ] `holiday_service.dart` - 추상 인터페이스
+   - [ ] `holiday_region.dart` - Enum 정의
+   - [ ] `holiday_service_factory.dart` - Factory 패턴
+   - [ ] 기존 `KoreanHolidayService` 인터페이스 상속
+
+2. **Phase 2** (1-2일): 추가 국가 구현
+   - [ ] `us_holiday_service.dart` - 미국 휴일
+   - [ ] `japan_holiday_service.dart` - 일본 휴일
+   - [ ] `uk_holiday_service.dart` - 영국 휴일
+
+3. **Phase 3** (1일): Riverpod 통합
+   - [ ] `settings_providers.dart` - Provider 추가
+   - [ ] SharedPreferences 영속성
+   - [ ] 앱 시작 시 설정 로드
+
+4. **Phase 4** (1-2일): UI 구현
+   - [ ] Settings 화면 - 국가 선택 UI
+   - [ ] Calendar 화면 - 동적 휴일 표시
+   - [ ] 다국화 문자열 추가 (en.json, ko.json)
+
+5. **Phase 5** (1일): 완성 및 검증
+   - [ ] 모든 국가별 휴일 테스트
+   - [ ] 성능 검증 (캐싱)
+   - [ ] Release APK 빌드 및 기기 테스트
+
+**성능 최적화**:
+- 월별 캐시: ~3KB (7년)
+- 싱글톤 서비스 인스턴스
+- 국가 변경 시에만 새로운 호출
+
+**확장성**:
+- 새 국가 추가: 새 Service 클래스 생성 + Factory 수정만 필요
+- API 기반 방식으로 나중에 전환 가능 (Nager.Date 등)
+
+**테스트 난이도**: 낮음 (모의 데이터 사용)
 
 ---
 
