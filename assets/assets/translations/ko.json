@@ -109,6 +109,8 @@
   "this_week_statistics": "이번 주 통계",
   "completed_count": "{count}개 완료",
   "category_analysis": "카테고리 분석",
+  "completion_by_category": "카테고리별 완료율",
+  "uncategorized": "카테고리 미지정",
   "incomplete": "미완료",
   "time_analysis": "시간 분석",
   "avg_completion_time": "평균 완료 시간",
@@ -641,5 +643,15 @@
   "day_thu": "목",
   "day_fri": "금",
   "day_sat": "토",
-  "day_sun": "일"
+  "day_sun": "일",
+  "export_data": "데이터 내보내기",
+  "export_data_desc": "CSV 또는 PDF로 내보내기",
+  "export_format_select": "내보내기 형식 선택",
+  "export_choose_format": "원하는 형식을 선택하세요",
+  "export_csv": "CSV로 내보내기",
+  "export_csv_desc": "스프레드시트 형식",
+  "export_pdf": "PDF로 내보내기",
+  "export_pdf_desc": "문서 형식",
+  "export_completed": "내보내기 완료되었습니다",
+  "export_failed": "내보내기에 실패했습니다"
 }
