@@ -225,6 +225,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
             if (_holidayInfoList.isNotEmpty)
               Container(
                 margin: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+                height: 200,
                 decoration: BoxDecoration(
                   color: AppColors.getCard(isDarkMode),
                   borderRadius: BorderRadius.circular(16),
@@ -233,7 +234,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Padding(
-                      padding: const EdgeInsets.all(16),
+                      padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
                       child: Row(
                         children: [
                           Icon(
@@ -246,16 +247,22 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                             'holidays_this_month'.tr(),
                             style: TextStyle(
                               color: AppColors.getText(isDarkMode),
-                              fontSize: 16,
+                              fontSize: 15,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
                         ],
                       ),
                     ),
-                    ...?_holidayInfoList.isEmpty
-                        ? null
-                        : _holidayInfoList.map((holiday) => _buildHolidayItem(holiday, isDarkMode)).toList(),
+                    Expanded(
+                      child: ListView.builder(
+                        padding: EdgeInsets.zero,
+                        itemCount: _holidayInfoList.length,
+                        itemBuilder: (context, index) {
+                          return _buildHolidayItem(_holidayInfoList[index], isDarkMode);
+                        },
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -514,8 +521,8 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
         : holiday.nameEn;
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      padding: const EdgeInsets.all(12),
+      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
         color: isSelected
             ? AppColors.primaryBlue.withValues(alpha: 0.15)
@@ -533,8 +540,8 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
         children: [
           // Day circle
           Container(
-            width: 40,
-            height: 40,
+            width: 36,
+            height: 36,
             decoration: BoxDecoration(
               color: AppColors.accentOrange.withValues(alpha: 0.2),
               shape: BoxShape.circle,
@@ -545,20 +552,20 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                 style: TextStyle(
                   color: AppColors.accentOrange,
                   fontWeight: FontWeight.bold,
-                  fontSize: 14,
+                  fontSize: 12,
                 ),
               ),
             ),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 10),
           // Holiday name only
           Expanded(
             child: Text(
               name,
               style: TextStyle(
                 color: AppColors.getText(isDarkMode),
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
               ),
             ),
           ),
