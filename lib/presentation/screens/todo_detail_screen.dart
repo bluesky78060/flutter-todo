@@ -949,6 +949,7 @@ class _AttachmentsSection extends ConsumerWidget {
                   return _AttachmentItem(
                     attachment: attachment,
                     isDarkMode: isDarkMode,
+                    todoId: todoId,
                     onTap: () {
                       if (attachment.mimeType.startsWith('image/')) {
                         // Show image viewer for images
@@ -1029,15 +1030,17 @@ class _AttachmentsSection extends ConsumerWidget {
   }
 }
 
-class _AttachmentItem extends StatelessWidget {
+class _AttachmentItem extends ConsumerWidget {
   final attachment_entity.Attachment attachment;
   final bool isDarkMode;
   final VoidCallback onTap;
+  final int todoId;
 
   const _AttachmentItem({
     required this.attachment,
     required this.isDarkMode,
     required this.onTap,
+    required this.todoId,
   });
 
   IconData _getFileIcon() {
@@ -1069,51 +1072,131 @@ class _AttachmentItem extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(8),
-      child: Container(
-        decoration: BoxDecoration(
-          color: AppColors.getBackground(isDarkMode),
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Stack(
+      children: [
+        InkWell(
+          onTap: onTap,
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(
-            color: AppColors.getTextSecondary(isDarkMode).withValues(alpha: 0.2),
+          child: Container(
+            decoration: BoxDecoration(
+              color: AppColors.getBackground(isDarkMode),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: AppColors.getTextSecondary(isDarkMode).withValues(alpha: 0.2),
+              ),
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  _getFileIcon(),
+                  color: AppColors.primaryBlue,
+                  size: 40,
+                ),
+                const SizedBox(height: 8),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                  child: Text(
+                    attachment.fileName,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: AppColors.getText(isDarkMode),
+                      fontSize: 11,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  _formatFileSize(attachment.fileSize),
+                  style: TextStyle(
+                    color: AppColors.getTextSecondary(isDarkMode),
+                    fontSize: 9,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              _getFileIcon(),
-              color: AppColors.primaryBlue,
-              size: 40,
-            ),
-            const SizedBox(height: 8),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 4),
-              child: Text(
-                attachment.fileName,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: AppColors.getText(isDarkMode),
-                  fontSize: 11,
-                ),
+        // Delete button overlay
+        Positioned(
+          top: 4,
+          right: 4,
+          child: GestureDetector(
+            onTap: () => _showDeleteConfirmation(context, ref),
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.red.withValues(alpha: 0.9),
+                shape: BoxShape.circle,
+              ),
+              padding: const EdgeInsets.all(4),
+              child: const Icon(
+                FluentIcons.dismiss_24_filled,
+                color: Colors.white,
+                size: 16,
               ),
             ),
-            const SizedBox(height: 4),
-            Text(
-              _formatFileSize(attachment.fileSize),
-              style: TextStyle(
-                color: AppColors.getTextSecondary(isDarkMode),
-                fontSize: 9,
-              ),
-            ),
-          ],
+          ),
         ),
+      ],
+    );
+  }
+
+  void _showDeleteConfirmation(BuildContext context, WidgetRef ref) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('delete_attachment'.tr()),
+        content: Text('confirm_delete_attachment'.tr(namedArgs: {'fileName': attachment.fileName})),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('cancel'.tr()),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _deleteAttachment(context, ref);
+            },
+            child: Text(
+              'delete'.tr(),
+              style: const TextStyle(color: Colors.red),
+            ),
+          ),
+        ],
       ),
     );
+  }
+
+  Future<void> _deleteAttachment(BuildContext context, WidgetRef ref) async {
+    try {
+      final actions = ref.read(attachmentActionsProvider);
+      await actions.deleteAttachment(
+        attachment.id,
+        todoId,
+        attachment.storagePath,
+      );
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('attachment_deleted_successfully'.tr(namedArgs: {'fileName': attachment.fileName})),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('failed_to_delete_attachment'.tr(namedArgs: {'error': e.toString()})),
+            duration: const Duration(seconds: 2),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 }

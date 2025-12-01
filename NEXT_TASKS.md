@@ -13,7 +13,7 @@
 |-------|------|--------|---------|
 | **Phase 1** | ✅ 완료 | 100% | 2025-11-06 ~ 2025-11-17 |
 | **Phase 2** | ✅ 완료 | 100% | 2025-11-17 ~ 2025-11-27 |
-| **Phase 3** | 🔄 진행 중 | 42% (3/7) | 2025-11-28 ~ 2025-12-31 |
+| **Phase 3** | 🔄 진행 중 | 57% (4/7) | 2025-11-28 ~ 2025-12-31 |
 | **Phase 4** | 📋 계획 | 0% | 2026-01-01 이후 |
 
 ---
@@ -21,7 +21,7 @@
 ## 🎯 Phase 3 (현재) - 데이터 관리 및 UX 개선
 
 **기간**: 2025-12-01 ~ 2025-12-31
-**진행 상황**: 3/7 완료 (42%)
+**진행 상황**: 4/7 완료 (57%)
 
 ### ✅ 완료된 항목
 
@@ -61,15 +61,24 @@
 
 ### 📋 진행 예정 항목
 
-#### 4. 첨부파일 개선 (개별 삭제, 웹 플랫폼 지원)
-- **예상 시간**: 4-6시간
+#### 4. 첨부파일 개선 (개별 삭제, 웹 플랫폼 지원) ✅
+- **완료일**: 2025-12-01
+- **커밋**: 웹 플랫폼 파일 업로드 지원 구현
 - **우선순위**: 🟡 Medium
-- **기능**:
-  - [ ] 개별 첨부파일 삭제 UI/로직
-  - [ ] 웹 플랫폼 파일 업로드 지원 (kIsWeb 기반)
-  - [ ] 파일 다운로드 개선
-- **관련 파일**: `todo_form_dialog.dart`, `attachment_service.dart`, 번역 파일들
-- **참고**: 웹 지원을 위해 `image_picker` → `file_picker` 전환 필요
+- **구현 내용**:
+  - [x] 개별 첨부파일 삭제 UI/로직 (이전 완료)
+  - [x] 웹 플랫폼 파일 업로드 지원 (kIsWeb 기반)
+  - [x] 파일 바이트 처리 방식 (웹용 pickFileWithBytes, uploadFileFromBytes)
+  - [x] 플랫폼별 분기 처리
+- **수정 파일**:
+  - `lib/core/services/attachment_service.dart` (uploadFile, uploadFileFromBytes, pickFileWithBytes 메서드 추가)
+  - `lib/presentation/widgets/todo_form_dialog.dart` (_pickFile 메서드 kIsWeb 기반 대폭 재작성)
+  - `assets/translations/en.json`, `assets/translations/ko.json` (번역 키 추가)
+- **기술 상세**:
+  - 웹 플랫폼: `FilePicker.platform.pickFiles(withData: true)` + `uploadBinary()`
+  - 모바일 플랫폼: 기존 `File` 객체 + `upload()`
+  - Record 타입: `(String fileName, Uint8List bytes)`
+  - 플랫폼 감지: `import 'package:flutter/foundation.dart' show kIsWeb`
 
 #### 5. 알림 우선순위 설정
 - **예상 시간**: 4-6시간
@@ -182,7 +191,8 @@
 
 | 버전 | 날짜 | 주요 변경사항 |
 |------|------|--------------|
-| 1.0.18+50 | 2025-12-01 | 웹 플랫폼 파일 업로드 지원 |
+| 1.0.18+51 | 2025-12-01 | 웹 플랫폼 파일 업로드 지원 (kIsWeb 기반) |
+| 1.0.18+50 | 2025-12-01 | 웹 플랫폼 파일 업로드 지원 (초안) |
 | 1.0.17+49 | 2025-12-01 | 통계 Phase 2 (월간 추이) |
 | 1.0.16+48 | 2025-12-01 | 통계 Phase 1 (카테고리 분석) |
 | 1.0.15+47 | 2025-12-01 | 데이터 내보내기 (CSV, PDF) |

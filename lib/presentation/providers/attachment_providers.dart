@@ -49,3 +49,46 @@ final attachmentListProvider =
     (attachments) => attachments,
   );
 });
+
+/// Provides attachment action methods (delete, etc).
+final attachmentActionsProvider = Provider((ref) {
+  return AttachmentActions(ref);
+});
+
+/// Service class for attachment-related actions.
+class AttachmentActions {
+  final Ref ref;
+
+  AttachmentActions(this.ref);
+
+  /// Delete an attachment by ID.
+  ///
+  /// This removes the file from Supabase Storage and deletes the metadata from local database.
+  Future<void> deleteAttachment(int attachmentId, int todoId, String storagePath) async {
+    final service = ref.read(attachmentServiceProvider);
+    final localRepo = ref.read(attachmentLocalRepositoryProvider);
+
+    // Delete from Supabase Storage first
+    final serviceResult = await service.deleteFile(storagePath);
+
+    await serviceResult.fold(
+      (failure) async {
+        throw Exception('Failed to delete file from storage: $failure');
+      },
+      (_) async {
+        // Then delete from local database
+        final dbResult = await localRepo.deleteAttachment(attachmentId);
+
+        await dbResult.fold(
+          (failure) async {
+            throw Exception('Failed to delete attachment metadata: $failure');
+          },
+          (_) async {
+            // Invalidate the attachment list provider to refresh the UI
+            ref.invalidate(attachmentListProvider(todoId));
+          },
+        );
+      },
+    );
+  }
+}

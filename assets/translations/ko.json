@@ -537,7 +537,9 @@
   "max_attachments_reached": "최대 첨부파일 개수({count}개)에 도달했습니다",
   "attachment_size_too_large": "파일 크기가 최대 제한(10 MB)을 초과합니다",
   "delete_attachment": "첨부파일 삭제",
-  "confirm_delete_attachment": "이 첨부파일을 삭제하시겠습니까?",
+  "confirm_delete_attachment": "{fileName}을(를) 삭제하시겠습니까?",
+  "attachment_deleted_successfully": "{fileName}이(가) 삭제되었습니다",
+  "failed_to_delete_attachment": "첨부파일 삭제 실패: {error}",
   "download_attachment": "다운로드",
   "view_attachment": "보기",
   "attachment_downloading": "다운로드 중...",
@@ -683,5 +685,6 @@
   "insight_best_day_text": "최고 기록:",
   "insight_completion_time_text": "평균 완료 시간:",
   "insight_start_tracking_text": "작업을 추가하면 인사이트를 확인할 수 있어요!",
-  "hours": "시간"
+  "hours": "시간",
+  "file_selected": "{fileName} 선택됨"
 }

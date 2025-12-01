@@ -537,7 +537,9 @@
   "max_attachments_reached": "Maximum number of attachments ({count}) reached",
   "attachment_size_too_large": "File size exceeds the maximum limit (10 MB)",
   "delete_attachment": "Delete Attachment",
-  "confirm_delete_attachment": "Do you want to delete this attachment?",
+  "confirm_delete_attachment": "Do you want to delete {fileName}?",
+  "attachment_deleted_successfully": "{fileName} has been deleted",
+  "failed_to_delete_attachment": "Failed to delete attachment: {error}",
   "download_attachment": "Download",
   "view_attachment": "View",
   "attachment_downloading": "Downloading...",
@@ -683,5 +685,6 @@
   "insight_best_day_text": "Best record:",
   "insight_completion_time_text": "Average completion time:",
   "insight_start_tracking_text": "Start creating tasks to see your insights!",
-  "hours": "hours"
+  "hours": "hours",
+  "file_selected": "{fileName} selected"
 }

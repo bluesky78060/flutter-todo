@@ -1,4 +1,6 @@
 import 'dart:io';
+import 'dart:typed_data';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:fpdart/fpdart.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:file_picker/file_picker.dart';
@@ -59,7 +61,7 @@ class AttachmentService {
     }
   }
 
-  /// Pick any file type
+  /// Pick any file type (works for both mobile and web)
   Future<Either<Failure, File>> pickFile() async {
     try {
       final FilePickerResult? result = await FilePicker.platform.pickFiles(
@@ -83,7 +85,36 @@ class AttachmentService {
     }
   }
 
-  /// Upload file to Supabase Storage
+  /// Pick file with bytes (for web platform compatibility)
+  /// Returns file info and bytes instead of File object
+  Future<Either<Failure, (String fileName, Uint8List bytes)>> pickFileWithBytes() async {
+    try {
+      final FilePickerResult? result = await FilePicker.platform.pickFiles(
+        type: FileType.any,
+        allowMultiple: false,
+        withData: true, // 웹 플랫폼에서 파일 바이트 포함
+      );
+
+      if (result == null || result.files.isEmpty) {
+        return const Left(CacheFailure('No file selected'));
+      }
+
+      final file = result.files.first;
+      final fileName = file.name;
+      final bytes = file.bytes;
+
+      if (bytes == null) {
+        return const Left(CacheFailure('Failed to read file data'));
+      }
+
+      return Right((fileName, bytes));
+    } catch (e) {
+      print('Error picking file with bytes: $e');
+      return Left(CacheFailure(e.toString()));
+    }
+  }
+
+  /// Upload file to Supabase Storage (works for both mobile and web)
   /// Returns storage path: {user_id}/{todo_id}/{filename}
   Future<Either<Failure, String>> uploadFile({
     required File file,
@@ -102,19 +133,69 @@ class AttachmentService {
 
       print('Uploading file to: $storagePath');
 
-      await _supabase.storage.from(bucketName).upload(
+      if (kIsWeb) {
+        // 웹 플랫폼: 파일 바이트 읽기
+        final bytes = await file.readAsBytes();
+        await _supabase.storage.from(bucketName).uploadBinary(
+              storagePath,
+              bytes,
+              fileOptions: FileOptions(
+                upsert: false,
+                contentType: _getMimeType(fileName),
+              ),
+            );
+      } else {
+        // 모바일 플랫폼: File 객체 직접 업로드
+        await _supabase.storage.from(bucketName).upload(
+              storagePath,
+              file,
+              fileOptions: FileOptions(
+                upsert: false,
+                contentType: _getMimeType(file.path),
+              ),
+            );
+      }
+
+      print('File uploaded successfully: $storagePath');
+      return Right(storagePath);
+    } catch (e) {
+      print('Error uploading file: $e');
+      return Left(ServerFailure(e.toString()));
+    }
+  }
+
+  /// Upload binary data to Supabase Storage (for web platform)
+  /// Returns storage path: {user_id}/{todo_id}/{filename}
+  Future<Either<Failure, String>> uploadFileFromBytes({
+    required Uint8List bytes,
+    required String fileName,
+    required int todoId,
+  }) async {
+    try {
+      final userId = _supabase.auth.currentUser?.id;
+      if (userId == null) {
+        return const Left(AuthFailure('User not authenticated'));
+      }
+
+      final timestamp = DateTime.now().millisecondsSinceEpoch;
+      final uniqueFileName = '${timestamp}_$fileName';
+      final storagePath = '$userId/$todoId/$uniqueFileName';
+
+      print('Uploading file (bytes) to: $storagePath');
+
+      await _supabase.storage.from(bucketName).uploadBinary(
             storagePath,
-            file,
+            bytes,
             fileOptions: FileOptions(
               upsert: false,
-              contentType: _getMimeType(file.path),
+              contentType: _getMimeType(fileName),
             ),
           );
 
       print('File uploaded successfully: $storagePath');
       return Right(storagePath);
     } catch (e) {
-      print('Error uploading file: $e');
+      print('Error uploading file (bytes): $e');
       return Left(ServerFailure(e.toString()));
     }
   }

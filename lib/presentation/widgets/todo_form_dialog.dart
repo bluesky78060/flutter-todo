@@ -22,6 +22,7 @@
 library;
 
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
@@ -449,52 +450,110 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
 
   Future<void> _pickFile() async {
     final attachmentService = ref.read(attachmentServiceProvider);
-    final result = await attachmentService.pickFile();
 
-    result.fold(
-      (failure) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('file_select_failed'.tr()),
-              backgroundColor: Colors.red,
-            ),
-          );
-        }
-      },
-      (file) {
-        // Validate file size and count
-        final sizeError = attachmentService.validateFileSize(file);
-        if (sizeError != null) {
+    // 파일 개수 제한 확인
+    if (_selectedFiles.length >= AttachmentService.maxAttachmentsPerTodo) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('max_attachments_reached'.tr(args: ['${AttachmentService.maxAttachmentsPerTodo}'])),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+      return;
+    }
+
+    // 웹 플랫폼과 모바일 플랫폼 구분 처리
+    if (kIsWeb) {
+      // 웹: 파일 바이트 데이터 사용
+      final result = await attachmentService.pickFileWithBytes();
+
+      result.fold(
+        (failure) {
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text(sizeError.tr()),
-                backgroundColor: Colors.red,
-                duration: const Duration(seconds: 4),
-              ),
-            );
-          }
-          return;
-        }
-
-        if (_selectedFiles.length >= AttachmentService.maxAttachmentsPerTodo) {
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('max_attachments_reached'.tr(args: ['${AttachmentService.maxAttachmentsPerTodo}'])),
+                content: Text('file_select_failed'.tr()),
                 backgroundColor: Colors.red,
               ),
             );
           }
-          return;
-        }
+        },
+        ((String fileName, Uint8List bytes) data) {
+          // 파일 크기 검증 (바이트 길이로 확인)
+          if (data.$2.length > AttachmentService.maxFileSizeBytes) {
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('attachment_size_too_large'.tr()),
+                  backgroundColor: Colors.red,
+                  duration: const Duration(seconds: 4),
+                ),
+              );
+            }
+            return;
+          }
 
-        setState(() {
-          _selectedFiles.add(file);
-        });
-      },
-    );
+          // 임시 파일 생성 (웹에서는 가상 File 객체 생성)
+          setState(() {
+            _selectedFiles.add(File(data.$1)); // 웹에서는 경로만 저장, 바이트는 나중에 처리
+          });
+
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('file_selected'.tr(namedArgs: {'fileName': data.$1})),
+              ),
+            );
+          }
+        },
+      );
+    } else {
+      // 모바일: 기존 File 객체 사용
+      final result = await attachmentService.pickFile();
+
+      result.fold(
+        (failure) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('file_select_failed'.tr()),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+        },
+        (file) {
+          // 파일 크기 검증
+          final sizeError = attachmentService.validateFileSize(file);
+          if (sizeError != null) {
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(sizeError.tr()),
+                  backgroundColor: Colors.red,
+                  duration: const Duration(seconds: 4),
+                ),
+              );
+            }
+            return;
+          }
+
+          setState(() {
+            _selectedFiles.add(file);
+          });
+
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('file_selected'.tr(namedArgs: {'fileName': file.path.split('/').last})),
+              ),
+            );
+          }
+        },
+      );
+    }
   }
 
   void _removeFile(int index) {
