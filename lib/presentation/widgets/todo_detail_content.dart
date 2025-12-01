@@ -36,6 +36,8 @@ import 'package:todo_app/domain/entities/attachment.dart' as attachment_entity;
 import 'package:todo_app/presentation/widgets/image_viewer_dialog.dart';
 import 'package:todo_app/presentation/widgets/pdf_viewer_dialog.dart';
 import 'package:todo_app/presentation/widgets/text_viewer_dialog.dart';
+import 'package:path_provider/path_provider.dart';
+import 'dart:io';
 
 /// Reusable content widget for displaying todo details.
 ///
@@ -1109,7 +1111,7 @@ class _AttachmentsSection extends ConsumerWidget {
   }
 }
 
-class _AttachmentItem extends StatelessWidget {
+class _AttachmentItem extends StatefulWidget {
   final attachment_entity.Attachment attachment;
   final bool isDarkMode;
   final VoidCallback onTap;
@@ -1120,18 +1122,25 @@ class _AttachmentItem extends StatelessWidget {
     required this.onTap,
   });
 
+  @override
+  State<_AttachmentItem> createState() => _AttachmentItemState();
+}
+
+class _AttachmentItemState extends State<_AttachmentItem> {
+  bool _isDownloading = false;
+
   IconData _getFileIcon() {
-    if (attachment.mimeType.startsWith('image/')) {
+    if (widget.attachment.mimeType.startsWith('image/')) {
       return FluentIcons.image_24_filled;
-    } else if (attachment.mimeType.startsWith('video/')) {
+    } else if (widget.attachment.mimeType.startsWith('video/')) {
       return FluentIcons.video_24_filled;
-    } else if (attachment.mimeType.contains('pdf')) {
+    } else if (widget.attachment.mimeType.contains('pdf')) {
       return FluentIcons.document_pdf_24_filled;
-    } else if (attachment.mimeType.contains('word') ||
-               attachment.mimeType.contains('document')) {
+    } else if (widget.attachment.mimeType.contains('word') ||
+               widget.attachment.mimeType.contains('document')) {
       return FluentIcons.document_24_filled;
-    } else if (attachment.mimeType.contains('excel') ||
-               attachment.mimeType.contains('spreadsheet')) {
+    } else if (widget.attachment.mimeType.contains('excel') ||
+               widget.attachment.mimeType.contains('spreadsheet')) {
       return FluentIcons.document_table_24_filled;
     } else {
       return FluentIcons.document_24_regular;
@@ -1148,52 +1157,149 @@ class _AttachmentItem extends StatelessWidget {
     }
   }
 
+  Future<void> _downloadFile() async {
+    setState(() => _isDownloading = true);
+
+    try {
+      // 다운로드 디렉토리 가져오기
+      final Directory downloadsDir = await getDownloadsDirectory() ??
+          Directory('/storage/emulated/0/Download');
+
+      if (!await downloadsDir.exists()) {
+        await downloadsDir.create(recursive: true);
+      }
+
+      final String filePath =
+          '${downloadsDir.path}/${widget.attachment.fileName}';
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('attachment_downloading'.tr()),
+            duration: const Duration(seconds: 1),
+          ),
+        );
+      }
+
+      // 파일을 다운로드 디렉토리로 복사
+      final File sourceFile = File(widget.attachment.storagePath);
+
+      // 임시 파일에서 다운로드 디렉토리로 복사
+      await sourceFile.copy(filePath);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'downloaded_to'.tr(namedArgs: {'path': widget.attachment.fileName}),
+            ),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      print('[AttachmentDownload] Error: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('attachment_download_failed'.tr()),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isDownloading = false);
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(8),
-      child: Container(
-        decoration: BoxDecoration(
-          color: AppColors.getBackground(isDarkMode),
+    return Stack(
+      children: [
+        InkWell(
+          onTap: widget.onTap,
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(
-            color: AppColors.getTextSecondary(isDarkMode).withValues(alpha: 0.2),
+          child: Container(
+            decoration: BoxDecoration(
+              color: AppColors.getBackground(widget.isDarkMode),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: AppColors.getTextSecondary(widget.isDarkMode)
+                    .withValues(alpha: 0.2),
+              ),
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  _getFileIcon(),
+                  color: AppColors.primaryBlue,
+                  size: 40,
+                ),
+                const SizedBox(height: 8),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                  child: Text(
+                    widget.attachment.fileName,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: AppColors.getText(widget.isDarkMode),
+                      fontSize: 11,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  _formatFileSize(widget.attachment.fileSize),
+                  style: TextStyle(
+                    color: AppColors.getTextSecondary(widget.isDarkMode),
+                    fontSize: 9,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              _getFileIcon(),
-              color: AppColors.primaryBlue,
-              size: 40,
+        // 다운로드 버튼
+        Positioned(
+          top: 4,
+          right: 4,
+          child: Container(
+            decoration: BoxDecoration(
+              color: AppColors.primaryBlue.withValues(alpha: 0.9),
+              borderRadius: BorderRadius.circular(20),
             ),
-            const SizedBox(height: 8),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 4),
-              child: Text(
-                attachment.fileName,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: AppColors.getText(isDarkMode),
-                  fontSize: 11,
-                ),
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              _formatFileSize(attachment.fileSize),
-              style: TextStyle(
-                color: AppColors.getTextSecondary(isDarkMode),
-                fontSize: 9,
-              ),
-            ),
-          ],
+            child: _isDownloading
+                ? const SizedBox(
+                    width: 32,
+                    height: 32,
+                    child: Padding(
+                      padding: EdgeInsets.all(6),
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor:
+                            AlwaysStoppedAnimation<Color>(Colors.white),
+                      ),
+                    ),
+                  )
+                : IconButton(
+                    onPressed: _downloadFile,
+                    icon: const Icon(
+                      FluentIcons.arrow_download_24_regular,
+                      color: Colors.white,
+                      size: 16,
+                    ),
+                    padding: const EdgeInsets.all(4),
+                    constraints: const BoxConstraints(),
+                    tooltip: 'download_attachment'.tr(),
+                  ),
+          ),
         ),
-      ),
+      ],
     );
   }
 }

@@ -543,6 +543,7 @@
   "attachment_downloading": "다운로드 중...",
   "attachment_download_failed": "첨부파일 다운로드 실패",
   "attachment_deleted": "첨부파일이 삭제되었습니다",
+  "downloaded_to": "다운로드 완료: {path}",
   "close": "닫기",
   "all_day": "하루 종일",
   "all_day_event": "종일 일정",

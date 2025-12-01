@@ -543,6 +543,7 @@
   "attachment_downloading": "Downloading...",
   "attachment_download_failed": "Failed to download attachment",
   "attachment_deleted": "Attachment deleted",
+  "downloaded_to": "Download complete: {path}",
   "close": "Close",
   "all_day": "All Day",
   "all_day_event": "All-day event",
