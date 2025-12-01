@@ -396,6 +396,7 @@
   "count_items": "{count} items",
   "select_date_message": "Select a date",
   "no_todos_for_date": "No todos for this date",
+  "holidays_this_month": "Holidays This Month",
 
   "searching": "Searching: \"{query}\"",
   "places_found": "{count} places found",

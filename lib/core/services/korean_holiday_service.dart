@@ -1,8 +1,26 @@
+/// Holiday info model for displaying holiday details
+class HolidayInfo {
+  final int day;
+  final String nameKo;
+  final String nameEn;
+  final String descriptionKo;
+  final String descriptionEn;
+
+  HolidayInfo({
+    required this.day,
+    required this.nameKo,
+    required this.nameEn,
+    required this.descriptionKo,
+    required this.descriptionEn,
+  });
+}
+
 /// Service to provide Korean public holidays
 /// Uses hardcoded data for fixed holidays and calculated lunar dates
 class KoreanHolidayService {
   // Cache holidays to avoid recalculation
   static final Map<String, Set<int>> _holidayCache = {};
+  static final Map<String, List<HolidayInfo>> _holidayInfoCache = {};
 
   /// Get holidays for a specific month
   /// Returns a Set of day numbers that are holidays
@@ -173,5 +191,279 @@ class KoreanHolidayService {
   static Future<bool> isHoliday(int year, int month, int day) async {
     final holidays = await getHolidaysForMonth(year, month);
     return holidays.contains(day);
+  }
+
+  /// Get holiday information (name and description) for a specific month
+  static Future<List<HolidayInfo>> getHolidayInfoForMonth(int year, int month) async {
+    final cacheKey = '$year-$month';
+
+    if (_holidayInfoCache.containsKey(cacheKey)) {
+      return _holidayInfoCache[cacheKey]!;
+    }
+
+    final List<HolidayInfo> holidayList = [];
+    final fixedHolidays = _getFixedHolidayInfo(year);
+    final lunarHolidays = _getLunarHolidayInfo(year);
+
+    // Add fixed holidays for this month
+    for (final holiday in fixedHolidays) {
+      final holidayDay = holiday['day'] as int;
+      if (holidayDay ~/ 100 == month) {
+        final day = holidayDay % 100;
+        holidayList.add(HolidayInfo(
+          day: day,
+          nameKo: holiday['nameKo'] as String,
+          nameEn: holiday['nameEn'] as String,
+          descriptionKo: holiday['descriptionKo'] as String,
+          descriptionEn: holiday['descriptionEn'] as String,
+        ));
+      }
+    }
+
+    // Add lunar holidays for this month
+    for (final holiday in lunarHolidays) {
+      if (holiday['year'] == year && holiday['month'] == month) {
+        holidayList.add(HolidayInfo(
+          day: holiday['day'] as int,
+          nameKo: holiday['nameKo'] as String,
+          nameEn: holiday['nameEn'] as String,
+          descriptionKo: holiday['descriptionKo'] as String,
+          descriptionEn: holiday['descriptionEn'] as String,
+        ));
+      }
+    }
+
+    // Sort by day
+    holidayList.sort((a, b) => a.day.compareTo(b.day));
+
+    _holidayInfoCache[cacheKey] = holidayList;
+    return holidayList;
+  }
+
+  /// Get fixed Korean holidays with descriptions
+  static List<Map<String, dynamic>> _getFixedHolidayInfo(int year) {
+    return [
+      {
+        'day': 0101,
+        'nameKo': '신정',
+        'nameEn': "New Year's Day",
+        'descriptionKo': '새해 첫날을 기념하는 날',
+        'descriptionEn': 'Celebration of the first day of the new year',
+      },
+      {
+        'day': 0301,
+        'nameKo': '삼일절',
+        'nameEn': 'Independence Movement Day',
+        'descriptionKo': '1919년 3월 1일 독립운동을 기념하는 날',
+        'descriptionEn': 'Commemorates the 1919 independence movement',
+      },
+      {
+        'day': 0505,
+        'nameKo': '어린이날',
+        'nameEn': "Children's Day",
+        'descriptionKo': '어린이의 인격을 존중하고 그 행복을 도모하기 위해 지정한 날',
+        'descriptionEn': 'A day to celebrate and respect children',
+      },
+      {
+        'day': 0606,
+        'nameKo': '현충일',
+        'nameEn': 'Memorial Day',
+        'descriptionKo': '국가를 위해 헌신한 분들을 추도하는 날',
+        'descriptionEn': 'Day of remembrance for those who died for the nation',
+      },
+      {
+        'day': 0815,
+        'nameKo': '광복절',
+        'nameEn': 'Liberation Day',
+        'descriptionKo': '1945년 8월 15일 한국 독립을 기념하는 날',
+        'descriptionEn': 'Celebrates Korean independence on August 15, 1945',
+      },
+      {
+        'day': 1003,
+        'nameKo': '개천절',
+        'nameEn': 'National Foundation Day',
+        'descriptionKo': '단군왕검이 고조선을 건국한 것을 기념하는 날',
+        'descriptionEn': 'Commemorates the founding of Gojoseon by Dangun',
+      },
+      {
+        'day': 1009,
+        'nameKo': '한글날',
+        'nameEn': 'Hangul Day',
+        'descriptionKo': '한글 창제를 기념하고 우리 글 한글의 우수성을 기리는 날',
+        'descriptionEn': 'Celebrates the creation and excellence of Hangul',
+      },
+      {
+        'day': 1225,
+        'nameKo': '성탄절',
+        'nameEn': 'Christmas',
+        'descriptionKo': '예수 그리스도의 탄생을 축하하는 날',
+        'descriptionEn': 'Celebrates the birth of Jesus Christ',
+      },
+    ];
+  }
+
+  /// Get lunar holidays with descriptions for specific years
+  static List<Map<String, dynamic>> _getLunarHolidayInfo(int year) {
+    const Map<int, List<Map<String, dynamic>>> lunarInfo = {
+      2024: [
+        {
+          'year': 2024,
+          'month': 2,
+          'day': 9,
+          'nameKo': '설날',
+          'nameEn': 'Lunar New Year',
+          'descriptionKo': '음력 1월 1일, 한 해를 시작하는 명절',
+          'descriptionEn': 'First day of Lunar calendar, Korean New Year celebration',
+        },
+        {
+          'year': 2024,
+          'month': 2,
+          'day': 10,
+          'nameKo': '설날',
+          'nameEn': 'Lunar New Year',
+          'descriptionKo': '음력 1월 1일, 한 해를 시작하는 명절',
+          'descriptionEn': 'First day of Lunar calendar, Korean New Year celebration',
+        },
+        {
+          'year': 2024,
+          'month': 2,
+          'day': 11,
+          'nameKo': '설날',
+          'nameEn': 'Lunar New Year',
+          'descriptionKo': '음력 1월 1일, 한 해를 시작하는 명절',
+          'descriptionEn': 'First day of Lunar calendar, Korean New Year celebration',
+        },
+        {
+          'year': 2024,
+          'month': 2,
+          'day': 12,
+          'nameKo': '설날 대체공휴일',
+          'nameEn': 'Lunar New Year (Alternative)',
+          'descriptionKo': '설날이 주말과 겹칠 때 지정되는 대체 공휴일',
+          'descriptionEn': 'Alternative holiday when Lunar New Year overlaps weekend',
+        },
+        {
+          'year': 2024,
+          'month': 5,
+          'day': 15,
+          'nameKo': '부처님오신날',
+          'nameEn': "Buddha's Birthday",
+          'descriptionKo': '불교의 창시자 석가모니 부처님의 탄생을 기념하는 명절',
+          'descriptionEn': 'Celebrates the birth of Buddha',
+        },
+        {
+          'year': 2024,
+          'month': 9,
+          'day': 16,
+          'nameKo': '추석',
+          'nameEn': 'Chuseok',
+          'descriptionKo': '음력 8월 15일, 가을 추수를 감사하는 명절',
+          'descriptionEn': 'Harvest festival celebrated on 15th day of lunar August',
+        },
+        {
+          'year': 2024,
+          'month': 9,
+          'day': 17,
+          'nameKo': '추석',
+          'nameEn': 'Chuseok',
+          'descriptionKo': '음력 8월 15일, 가을 추수를 감사하는 명절',
+          'descriptionEn': 'Harvest festival celebrated on 15th day of lunar August',
+        },
+        {
+          'year': 2024,
+          'month': 9,
+          'day': 18,
+          'nameKo': '추석',
+          'nameEn': 'Chuseok',
+          'descriptionKo': '음력 8월 15일, 가을 추수를 감사하는 명절',
+          'descriptionEn': 'Harvest festival celebrated on 15th day of lunar August',
+        },
+      ],
+      2025: [
+        {
+          'year': 2025,
+          'month': 1,
+          'day': 28,
+          'nameKo': '설날',
+          'nameEn': 'Lunar New Year',
+          'descriptionKo': '음력 1월 1일, 한 해를 시작하는 명절',
+          'descriptionEn': 'First day of Lunar calendar, Korean New Year celebration',
+        },
+        {
+          'year': 2025,
+          'month': 1,
+          'day': 29,
+          'nameKo': '설날',
+          'nameEn': 'Lunar New Year',
+          'descriptionKo': '음력 1월 1일, 한 해를 시작하는 명절',
+          'descriptionEn': 'First day of Lunar calendar, Korean New Year celebration',
+        },
+        {
+          'year': 2025,
+          'month': 1,
+          'day': 30,
+          'nameKo': '설날',
+          'nameEn': 'Lunar New Year',
+          'descriptionKo': '음력 1월 1일, 한 해를 시작하는 명절',
+          'descriptionEn': 'First day of Lunar calendar, Korean New Year celebration',
+        },
+        {
+          'year': 2025,
+          'month': 5,
+          'day': 5,
+          'nameKo': '부처님오신날',
+          'nameEn': "Buddha's Birthday",
+          'descriptionKo': '불교의 창시자 석가모니 부처님의 탄생을 기념하는 명절',
+          'descriptionEn': 'Celebrates the birth of Buddha',
+        },
+        {
+          'year': 2025,
+          'month': 5,
+          'day': 6,
+          'nameKo': '부처님오신날 대체공휴일',
+          'nameEn': "Buddha's Birthday (Alternative)",
+          'descriptionKo': '부처님오신날이 어린이날과 겹칠 때 지정되는 대체 공휴일',
+          'descriptionEn': 'Alternative holiday for Buddha\'s Birthday',
+        },
+        {
+          'year': 2025,
+          'month': 10,
+          'day': 5,
+          'nameKo': '추석',
+          'nameEn': 'Chuseok',
+          'descriptionKo': '음력 8월 15일, 가을 추수를 감사하는 명절',
+          'descriptionEn': 'Harvest festival celebrated on 15th day of lunar August',
+        },
+        {
+          'year': 2025,
+          'month': 10,
+          'day': 6,
+          'nameKo': '추석',
+          'nameEn': 'Chuseok',
+          'descriptionKo': '음력 8월 15일, 가을 추수를 감사하는 명절',
+          'descriptionEn': 'Harvest festival celebrated on 15th day of lunar August',
+        },
+        {
+          'year': 2025,
+          'month': 10,
+          'day': 7,
+          'nameKo': '추석',
+          'nameEn': 'Chuseok',
+          'descriptionKo': '음력 8월 15일, 가을 추수를 감사하는 명절',
+          'descriptionEn': 'Harvest festival celebrated on 15th day of lunar August',
+        },
+        {
+          'year': 2025,
+          'month': 10,
+          'day': 8,
+          'nameKo': '추석 대체공휴일',
+          'nameEn': 'Chuseok (Alternative)',
+          'descriptionKo': '추석이 주말과 겹칠 때 지정되는 대체 공휴일',
+          'descriptionEn': 'Alternative holiday when Chuseok overlaps weekend',
+        },
+      ],
+    };
+
+    return lunarInfo[year] ?? [];
   }
 }

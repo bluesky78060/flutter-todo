@@ -20,7 +20,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:todo_app/core/theme/app_colors.dart';
-import 'package:todo_app/core/services/korean_holiday_service.dart';
+import 'package:todo_app/core/services/korean_holiday_service.dart' as holiday_service;
 import 'package:todo_app/domain/entities/todo.dart';
 import 'package:todo_app/presentation/providers/todo_providers.dart';
 import 'package:todo_app/presentation/providers/theme_provider.dart';
@@ -37,23 +37,27 @@ class CalendarScreen extends ConsumerStatefulWidget {
 }
 
 class _CalendarScreenState extends ConsumerState<CalendarScreen> {
-  DateTime _focusedDay = DateTime.now();
-  DateTime? _selectedDay;
+  late DateTime _focusedDay;
+  late DateTime? _selectedDay;
   Set<int> _holidays = {};
+  List<holiday_service.HolidayInfo> _holidayInfoList = [];
 
   @override
   void initState() {
     super.initState();
+    _focusedDay = DateTime.now();
     _selectedDay = _focusedDay;
     _loadHolidaysForMonth(_focusedDay.year, _focusedDay.month);
   }
 
   Future<void> _loadHolidaysForMonth(int year, int month) async {
     try {
-      final holidays = await KoreanHolidayService.getHolidaysForMonth(year, month);
+      final holidays = await holiday_service.KoreanHolidayService.getHolidaysForMonth(year, month);
+      final holidayInfo = await holiday_service.KoreanHolidayService.getHolidayInfoForMonth(year, month);
       if (mounted) {
         setState(() {
           _holidays = holidays;
+          _holidayInfoList = holidayInfo;
         });
       }
     } catch (e) {
@@ -216,6 +220,45 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                 ),
               ),
             ),
+
+            // Holiday list for this month
+            if (_holidayInfoList.isNotEmpty)
+              Container(
+                margin: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+                decoration: BoxDecoration(
+                  color: AppColors.getCard(isDarkMode),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Row(
+                        children: [
+                          Icon(
+                            FluentIcons.gift_24_filled,
+                            color: AppColors.accentOrange,
+                            size: 20,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            'holidays_this_month'.tr(),
+                            style: TextStyle(
+                              color: AppColors.getText(isDarkMode),
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    ...?_holidayInfoList.isEmpty
+                        ? null
+                        : _holidayInfoList.map((holiday) => _buildHolidayItem(holiday, isDarkMode)).toList(),
+                  ],
+                ),
+              ),
 
             // Selected day's todos
             if (_selectedDay != null) ...[
@@ -454,5 +497,92 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
     );
 
     return cell;
+  }
+
+  /// Build individual holiday item widget
+  Widget _buildHolidayItem(
+    holiday_service.HolidayInfo holiday,
+    bool isDarkMode,
+  ) {
+    // Check if this day is selected
+    final isSelected = _selectedDay != null &&
+        _selectedDay!.day == holiday.day;
+
+    // Get bilingual content
+    final name = context.locale.languageCode == 'ko'
+        ? holiday.nameKo
+        : holiday.nameEn;
+    final description = context.locale.languageCode == 'ko'
+        ? holiday.descriptionKo
+        : holiday.descriptionEn;
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: isSelected
+            ? AppColors.primaryBlue.withValues(alpha: 0.15)
+            : AppColors.getBackground(isDarkMode),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: isSelected
+              ? AppColors.primaryBlue
+              : AppColors.textGray.withValues(alpha: 0.2),
+          width: isSelected ? 2 : 1,
+        ),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Day circle
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: AppColors.accentOrange.withValues(alpha: 0.2),
+              shape: BoxShape.circle,
+            ),
+            child: Center(
+              child: Text(
+                '${holiday.day}',
+                style: TextStyle(
+                  color: AppColors.accentOrange,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          // Holiday info
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  name,
+                  style: TextStyle(
+                    color: AppColors.getText(isDarkMode),
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  description,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: AppColors.textGray.withValues(alpha: 0.7),
+                    fontSize: 12,
+                    height: 1.4,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
