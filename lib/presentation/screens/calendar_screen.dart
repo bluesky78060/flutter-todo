@@ -141,8 +141,8 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                     return _buildCalendarDay(day, isHoliday, isDarkMode, isWeekend, false);
                   },
                   outsideBuilder: (context, day, focusedDay) {
-                    final isHoliday = _holidays.contains(day.day);
-                    return _buildCalendarDay(day, isHoliday, isDarkMode, false, true);
+                    // Don't show holiday markers for days outside the focused month
+                    return _buildCalendarDay(day, false, isDarkMode, false, true);
                   },
                   todayBuilder: (context, day, focusedDay) {
                     final isHoliday = _holidays.contains(day.day);
@@ -508,13 +508,10 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
     final isSelected = _selectedDay != null &&
         _selectedDay!.day == holiday.day;
 
-    // Get bilingual content
+    // Get bilingual content (only name, no description)
     final name = context.locale.languageCode == 'ko'
         ? holiday.nameKo
         : holiday.nameEn;
-    final description = context.locale.languageCode == 'ko'
-        ? holiday.descriptionKo
-        : holiday.descriptionEn;
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -532,7 +529,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
         ),
       ),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           // Day circle
           Container(
@@ -554,31 +551,15 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
             ),
           ),
           const SizedBox(width: 12),
-          // Holiday info
+          // Holiday name only
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  name,
-                  style: TextStyle(
-                    color: AppColors.getText(isDarkMode),
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  description,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: AppColors.textGray.withValues(alpha: 0.7),
-                    fontSize: 12,
-                    height: 1.4,
-                  ),
-                ),
-              ],
+            child: Text(
+              name,
+              style: TextStyle(
+                color: AppColors.getText(isDarkMode),
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
         ],
