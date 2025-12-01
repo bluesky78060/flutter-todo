@@ -109,6 +109,8 @@
   "this_week_statistics": "This Week",
   "completed_count": "{count} completed",
   "category_analysis": "Category Analysis",
+  "completion_by_category": "Completion by Category",
+  "uncategorized": "Uncategorized",
   "incomplete": "Incomplete",
   "time_analysis": "Time Analysis",
   "avg_completion_time": "Avg Completion Time",

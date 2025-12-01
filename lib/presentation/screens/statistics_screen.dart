@@ -22,6 +22,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:todo_app/core/theme/app_colors.dart';
 import 'package:todo_app/domain/entities/todo.dart';
+import 'package:todo_app/presentation/providers/category_providers.dart';
 import 'package:todo_app/presentation/providers/database_provider.dart';
 import 'package:todo_app/presentation/providers/theme_provider.dart';
 import 'package:todo_app/presentation/screens/settings_screen.dart';
@@ -43,6 +44,7 @@ class StatisticsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final isDarkMode = ref.watch(isDarkModeProvider);
     final todosAsync = ref.watch(allTodosProvider);
+    final categoriesAsync = ref.watch(categoriesProvider);
 
     return Scaffold(
       backgroundColor: AppColors.getBackground(isDarkMode),
@@ -94,7 +96,10 @@ class StatisticsScreen extends ConsumerWidget {
                     child: Material(
                       color: Colors.transparent,
                       child: InkWell(
-                        onTap: () => ref.invalidate(allTodosProvider),
+                        onTap: () {
+                          ref.invalidate(allTodosProvider);
+                          ref.invalidate(categoriesProvider);
+                        },
                         borderRadius: BorderRadius.circular(12),
                         child: const SizedBox(
                           width: 48,
@@ -116,8 +121,36 @@ class StatisticsScreen extends ConsumerWidget {
             Expanded(
               child: todosAsync.when(
                 data: (todos) {
-                  final stats = _calculateStatistics(todos);
-                  return _buildStatisticsContent(stats);
+                  return categoriesAsync.when(
+                    data: (categories) {
+                      final stats = _calculateStatistics(todos, categories);
+                      return _buildStatisticsContent(stats);
+                    },
+                    loading: () => const Center(
+                      child: CircularProgressIndicator(
+                        color: AppColors.primaryBlue,
+                      ),
+                    ),
+                    error: (error, _) => Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(
+                            FluentIcons.error_circle_24_regular,
+                            size: 48,
+                            color: Colors.red,
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            '${'error'.tr()}: $error',
+                            style: TextStyle(
+                              color: AppColors.getTextSecondary(isDarkMode),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
                 },
                 loading: () => const Center(
                   child: CircularProgressIndicator(
@@ -229,6 +262,12 @@ class StatisticsScreen extends ConsumerWidget {
           _MonthlyLineChartCard(stats: stats),
           const SizedBox(height: 16),
 
+          // Category Analysis Card
+          if (stats.categoryStats.isNotEmpty)
+            _CategoryAnalysisCard(stats: stats),
+          if (stats.categoryStats.isNotEmpty)
+            const SizedBox(height: 16),
+
           // Today's Statistics
           _TodayStatisticsCard(stats: stats),
           const SizedBox(height: 16),
@@ -240,7 +279,7 @@ class StatisticsScreen extends ConsumerWidget {
     );
   }
 
-  _StatisticsData _calculateStatistics(List<Todo> todos) {
+  _StatisticsData _calculateStatistics(List<Todo> todos, List<dynamic> categories) {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final weekStart = today.subtract(Duration(days: today.weekday - 1));
@@ -365,6 +404,44 @@ class StatisticsScreen extends ConsumerWidget {
       }
     });
 
+    // Calculate category statistics
+    final categoryStats = <String, _CategoryStats>{};
+    for (final category in categories) {
+      final categoryName = category.name as String;
+      final categoryId = category.id as int;
+
+      final todosInCategory = todos.where((t) => t.categoryId == categoryId).toList();
+      final totalInCategory = todosInCategory.length;
+      final completedInCategory = todosInCategory.where((t) => t.isCompleted).length;
+      final completionRateCategory = totalInCategory > 0
+        ? (completedInCategory / totalInCategory * 100)
+        : 0.0;
+
+      if (totalInCategory > 0) {
+        categoryStats[categoryName] = _CategoryStats(
+          categoryName: categoryName,
+          totalCount: totalInCategory,
+          completedCount: completedInCategory,
+          completionRate: completionRateCategory,
+        );
+      }
+    }
+
+    // Add uncategorized todos
+    final uncategorizedTodos = todos.where((t) => t.categoryId == null).toList();
+    if (uncategorizedTodos.isNotEmpty) {
+      final totalUncategorized = uncategorizedTodos.length;
+      final completedUncategorized = uncategorizedTodos.where((t) => t.isCompleted).length;
+      final completionRateUncategorized = (completedUncategorized / totalUncategorized * 100);
+
+      categoryStats['uncategorized'] = _CategoryStats(
+        categoryName: 'uncategorized'.tr(),
+        totalCount: totalUncategorized,
+        completedCount: completedUncategorized,
+        completionRate: completionRateUncategorized,
+      );
+    }
+
     return _StatisticsData(
       totalTodos: totalTodos,
       completedTodos: completedTodos,
@@ -381,6 +458,7 @@ class StatisticsScreen extends ConsumerWidget {
       streak: streak,
       bestDayCount: bestDayCount,
       bestDayDate: bestDayDate,
+      categoryStats: categoryStats,
     );
   }
 }
@@ -402,6 +480,7 @@ class _StatisticsData {
   final int streak;
   final int bestDayCount;
   final String bestDayDate;
+  final Map<String, _CategoryStats> categoryStats; // Category-based statistics
 
   _StatisticsData({
     required this.totalTodos,
@@ -419,6 +498,22 @@ class _StatisticsData {
     required this.streak,
     required this.bestDayCount,
     required this.bestDayDate,
+    required this.categoryStats,
+  });
+}
+
+/// Category statistics for individual categories
+class _CategoryStats {
+  final String categoryName;
+  final int totalCount;
+  final int completedCount;
+  final double completionRate;
+
+  _CategoryStats({
+    required this.categoryName,
+    required this.totalCount,
+    required this.completedCount,
+    required this.completionRate,
   });
 }
 
@@ -1403,6 +1498,159 @@ class _NavItem extends ConsumerWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+// Category Analysis Card with Horizontal Bar Chart
+class _CategoryAnalysisCard extends ConsumerWidget {
+  final _StatisticsData stats;
+
+  const _CategoryAnalysisCard({required this.stats});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isDarkMode = ref.watch(isDarkModeProvider);
+
+    // Sort categories by completion rate (highest first)
+    final sortedCategories = stats.categoryStats.values.toList()
+      ..sort((a, b) => b.completionRate.compareTo(a.completionRate));
+
+    // Limit to top 5 categories
+    final displayCategories = sortedCategories.length > 5
+      ? sortedCategories.sublist(0, 5)
+      : sortedCategories;
+
+    // Get color for each bar (use success green for high completion, accent orange for medium, red for low)
+    Color getColorForRate(double rate) {
+      if (rate >= 75) return AppColors.successGreen;
+      if (rate >= 50) return AppColors.accentOrange;
+      return AppColors.dangerRed;
+    }
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: AppColors.getCard(isDarkMode),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: AppColors.getBorder(isDarkMode),
+          width: 1,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'category_analysis'.tr(),
+                    style: TextStyle(
+                      color: AppColors.getText(isDarkMode),
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'completion_by_category'.tr(),
+                    style: TextStyle(
+                      color: AppColors.getTextSecondary(isDarkMode),
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: AppColors.successGreen.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  '${displayCategories.length}/${stats.categoryStats.length}',
+                  style: const TextStyle(
+                    color: AppColors.successGreen,
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+
+          // Category Bars
+          ...displayCategories.asMap().entries.map((entry) {
+            final index = entry.key;
+            final category = entry.value;
+            final isLast = index == displayCategories.length - 1;
+
+            return Column(
+              children: [
+                // Category name and percentage
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        category.categoryName,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: AppColors.getText(isDarkMode),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      '${category.completionRate.toStringAsFixed(1)}%',
+                      style: TextStyle(
+                        color: getColorForRate(category.completionRate),
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+
+                // Progress bar
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(4),
+                  child: LinearProgressIndicator(
+                    minHeight: 6,
+                    value: category.completionRate / 100,
+                    backgroundColor: AppColors.getBorder(isDarkMode),
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      getColorForRate(category.completionRate),
+                    ),
+                  ),
+                ),
+
+                // Completed/Total count
+                const SizedBox(height: 4),
+                Text(
+                  '${category.completedCount}/${category.totalCount} completed',
+                  style: TextStyle(
+                    color: AppColors.getTextSecondary(isDarkMode),
+                    fontSize: 10,
+                  ),
+                ),
+
+                if (!isLast) const SizedBox(height: 12),
+              ],
+            );
+          }).toList(),
+        ],
       ),
     );
   }

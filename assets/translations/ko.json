@@ -109,6 +109,8 @@
   "this_week_statistics": "이번 주 통계",
   "completed_count": "{count}개 완료",
   "category_analysis": "카테고리 분석",
+  "completion_by_category": "카테고리별 완료율",
+  "uncategorized": "카테고리 미지정",
   "incomplete": "미완료",
   "time_analysis": "시간 분석",
   "avg_completion_time": "평균 완료 시간",
