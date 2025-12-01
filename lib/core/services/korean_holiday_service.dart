@@ -269,6 +269,13 @@ class KoreanHolidayService {
         'descriptionEn': 'Commemorates the 1919 independence movement',
       },
       {
+        'day': 0302,
+        'nameKo': '삼일절 대체공휴일',
+        'nameEn': 'Independence Movement Day (Alternative)',
+        'descriptionKo': '삼일절이 주말과 겹칠 때 지정되는 대체 공휴일',
+        'descriptionEn': 'Alternative holiday when Independence Movement Day overlaps weekend',
+      },
+      {
         'day': 0505,
         'nameKo': '어린이날',
         'nameEn': "Children's Day",
