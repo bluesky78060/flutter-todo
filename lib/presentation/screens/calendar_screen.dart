@@ -41,6 +41,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
   late DateTime? _selectedDay;
   Set<int> _holidays = {};
   List<holiday_service.HolidayInfo> _holidayInfoList = [];
+  holiday_service.HolidayInfo? _holidayInfoForSelectedDay;
 
   @override
   void initState() {
@@ -59,9 +60,54 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
           _holidays = holidays;
           _holidayInfoList = holidayInfo;
         });
+        // Update holiday info for selected day if it's in this month
+        _updateHolidayForSelectedDay();
       }
     } catch (e) {
       print('Failed to load holidays: $e');
+    }
+  }
+
+  /// Update _holidayInfoForSelectedDay based on current _selectedDay
+  void _updateHolidayForSelectedDay() {
+    if (_selectedDay == null) {
+      setState(() {
+        _holidayInfoForSelectedDay = null;
+      });
+      return;
+    }
+
+    // Check if selected day is in the current month
+    if (_selectedDay!.year == _focusedDay.year &&
+        _selectedDay!.month == _focusedDay.month) {
+      // Search for holiday info for this day
+      holiday_service.HolidayInfo? holidayForDay;
+      for (final holiday in _holidayInfoList) {
+        if (holiday.day == _selectedDay!.day) {
+          holidayForDay = holiday;
+          break;
+        }
+      }
+      setState(() {
+        _holidayInfoForSelectedDay = holidayForDay;
+      });
+    } else {
+      // Selected day is in a different month, need to load holidays for that month
+      _loadHolidaysForMonth(_selectedDay!.year, _selectedDay!.month).then((_) {
+        // After loading, search for the holiday
+        holiday_service.HolidayInfo? holidayForDay;
+        for (final holiday in _holidayInfoList) {
+          if (holiday.day == _selectedDay!.day) {
+            holidayForDay = holiday;
+            break;
+          }
+        }
+        if (mounted) {
+          setState(() {
+            _holidayInfoForSelectedDay = holidayForDay;
+          });
+        }
+      });
     }
   }
 
@@ -128,6 +174,8 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                     _selectedDay = selectedDay;
                     _focusedDay = focusedDay;
                   });
+                  // Load holiday info for the selected day
+                  _updateHolidayForSelectedDay();
                 },
                 onPageChanged: (focusedDay) {
                   _focusedDay = focusedDay;
@@ -221,92 +269,74 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
               ),
             ),
 
-            // Holiday list for this month
-            if (_holidayInfoList.isNotEmpty)
-              Container(
-                margin: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-                height: 200,
-                decoration: BoxDecoration(
-                  color: AppColors.getCard(isDarkMode),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-                      child: Row(
-                        children: [
-                          Icon(
-                            FluentIcons.gift_24_filled,
-                            color: AppColors.accentOrange,
-                            size: 20,
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            'holidays_this_month'.tr(),
-                            style: TextStyle(
-                              color: AppColors.getText(isDarkMode),
-                              fontSize: 15,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Expanded(
-                      child: ListView.builder(
-                        padding: EdgeInsets.zero,
-                        itemCount: _holidayInfoList.length,
-                        itemBuilder: (context, index) {
-                          return _buildHolidayItem(_holidayInfoList[index], isDarkMode);
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
             // Selected day's todos
             if (_selectedDay != null) ...[
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                child: Row(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Icon(
-                      FluentIcons.calendar_24_filled,
-                      color: AppColors.primaryBlue,
-                      size: 20,
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      'year_month_day'.tr(namedArgs: {
-                        'year': '${_selectedDay!.year}',
-                        'month': '${_selectedDay!.month}',
-                        'day': '${_selectedDay!.day}'
-                      }),
-                      style: TextStyle(
-                        color: AppColors.getText(isDarkMode),
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: AppColors.primaryBlue.withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(
-                        'count_items'.tr(namedArgs: {'count': '${_getTodosForDay(_selectedDay!, todos).length}'}),
-                        style: const TextStyle(
+                    Row(
+                      children: [
+                        const Icon(
+                          FluentIcons.calendar_24_filled,
                           color: AppColors.primaryBlue,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
+                          size: 20,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          'year_month_day'.tr(namedArgs: {
+                            'year': '${_selectedDay!.year}',
+                            'month': '${_selectedDay!.month}',
+                            'day': '${_selectedDay!.day}'
+                          }),
+                          style: TextStyle(
+                            color: AppColors.getText(isDarkMode),
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: AppColors.primaryBlue.withValues(alpha: 0.2),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            'count_items'.tr(namedArgs: {'count': '${_getTodosForDay(_selectedDay!, todos).length}'}),
+                            style: const TextStyle(
+                              color: AppColors.primaryBlue,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    // Show holiday info if selected day is a holiday
+                    if (_holidayInfoForSelectedDay != null)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 8),
+                        child: Row(
+                          children: [
+                            Icon(
+                              FluentIcons.gift_24_filled,
+                              color: AppColors.accentOrange,
+                              size: 16,
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              _holidayInfoForSelectedDay!.nameKo,
+                              style: TextStyle(
+                                color: AppColors.accentOrange,
+                                fontSize: 13,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                    ),
                   ],
                 ),
               ),
@@ -506,71 +536,4 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
     return cell;
   }
 
-  /// Build individual holiday item widget
-  Widget _buildHolidayItem(
-    holiday_service.HolidayInfo holiday,
-    bool isDarkMode,
-  ) {
-    // Check if this day is selected
-    final isSelected = _selectedDay != null &&
-        _selectedDay!.day == holiday.day;
-
-    // Get bilingual content (only name, no description)
-    final name = context.locale.languageCode == 'ko'
-        ? holiday.nameKo
-        : holiday.nameEn;
-
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: isSelected
-            ? AppColors.primaryBlue.withValues(alpha: 0.15)
-            : AppColors.getBackground(isDarkMode),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: isSelected
-              ? AppColors.primaryBlue
-              : AppColors.textGray.withValues(alpha: 0.2),
-          width: isSelected ? 2 : 1,
-        ),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          // Day circle
-          Container(
-            width: 36,
-            height: 36,
-            decoration: BoxDecoration(
-              color: AppColors.accentOrange.withValues(alpha: 0.2),
-              shape: BoxShape.circle,
-            ),
-            child: Center(
-              child: Text(
-                '${holiday.day}',
-                style: TextStyle(
-                  color: AppColors.accentOrange,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 12,
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(width: 10),
-          // Holiday name only
-          Expanded(
-            child: Text(
-              name,
-              style: TextStyle(
-                color: AppColors.getText(isDarkMode),
-                fontSize: 13,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 }
