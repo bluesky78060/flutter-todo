@@ -671,6 +671,15 @@ class MockAppDatabase extends _i1.Mock implements _i3.AppDatabase {
           as _i5.Future<int>);
 
   @override
+  _i5.Future<void> batchUpdateTodoPositions(List<_i3.Todo>? todosList) =>
+      (super.noSuchMethod(
+            Invocation.method(#batchUpdateTodoPositions, [todosList]),
+            returnValue: _i5.Future<void>.value(),
+            returnValueForMissingStub: _i5.Future<void>.value(),
+          )
+          as _i5.Future<void>);
+
+  @override
   _i2.Migrator createMigrator() =>
       (super.noSuchMethod(
             Invocation.method(#createMigrator, []),

@@ -626,6 +626,18 @@ class $TodosTable extends Todos with TableInfo<$TodosTable, Todo> {
     requiredDuringInsert: false,
     defaultValue: const Constant(0),
   );
+  static const VerificationMeta _priorityMeta = const VerificationMeta(
+    'priority',
+  );
+  @override
+  late final GeneratedColumn<String> priority = GeneratedColumn<String>(
+    'priority',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('medium'),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -647,6 +659,7 @@ class $TodosTable extends Todos with TableInfo<$TodosTable, Todo> {
     locationRadius,
     locationTriggeredAt,
     position,
+    priority,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -816,6 +829,12 @@ class $TodosTable extends Todos with TableInfo<$TodosTable, Todo> {
         position.isAcceptableOrUnknown(data['position']!, _positionMeta),
       );
     }
+    if (data.containsKey('priority')) {
+      context.handle(
+        _priorityMeta,
+        priority.isAcceptableOrUnknown(data['priority']!, _priorityMeta),
+      );
+    }
     return context;
   }
 
@@ -901,6 +920,10 @@ class $TodosTable extends Todos with TableInfo<$TodosTable, Todo> {
         DriftSqlType.int,
         data['${effectivePrefix}position'],
       )!,
+      priority: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}priority'],
+      )!,
     );
   }
 
@@ -930,6 +953,7 @@ class Todo extends DataClass implements Insertable<Todo> {
   final double? locationRadius;
   final DateTime? locationTriggeredAt;
   final int position;
+  final String priority;
   const Todo({
     required this.id,
     required this.title,
@@ -950,6 +974,7 @@ class Todo extends DataClass implements Insertable<Todo> {
     this.locationRadius,
     this.locationTriggeredAt,
     required this.position,
+    required this.priority,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -997,6 +1022,7 @@ class Todo extends DataClass implements Insertable<Todo> {
       map['location_triggered_at'] = Variable<DateTime>(locationTriggeredAt);
     }
     map['position'] = Variable<int>(position);
+    map['priority'] = Variable<String>(priority);
     return map;
   }
 
@@ -1045,6 +1071,7 @@ class Todo extends DataClass implements Insertable<Todo> {
           ? const Value.absent()
           : Value(locationTriggeredAt),
       position: Value(position),
+      priority: Value(priority),
     );
   }
 
@@ -1081,6 +1108,7 @@ class Todo extends DataClass implements Insertable<Todo> {
         json['locationTriggeredAt'],
       ),
       position: serializer.fromJson<int>(json['position']),
+      priority: serializer.fromJson<String>(json['priority']),
     );
   }
   @override
@@ -1106,6 +1134,7 @@ class Todo extends DataClass implements Insertable<Todo> {
       'locationRadius': serializer.toJson<double?>(locationRadius),
       'locationTriggeredAt': serializer.toJson<DateTime?>(locationTriggeredAt),
       'position': serializer.toJson<int>(position),
+      'priority': serializer.toJson<String>(priority),
     };
   }
 
@@ -1129,6 +1158,7 @@ class Todo extends DataClass implements Insertable<Todo> {
     Value<double?> locationRadius = const Value.absent(),
     Value<DateTime?> locationTriggeredAt = const Value.absent(),
     int? position,
+    String? priority,
   }) => Todo(
     id: id ?? this.id,
     title: title ?? this.title,
@@ -1165,6 +1195,7 @@ class Todo extends DataClass implements Insertable<Todo> {
         ? locationTriggeredAt.value
         : this.locationTriggeredAt,
     position: position ?? this.position,
+    priority: priority ?? this.priority,
   );
   Todo copyWithCompanion(TodosCompanion data) {
     return Todo(
@@ -1215,6 +1246,7 @@ class Todo extends DataClass implements Insertable<Todo> {
           ? data.locationTriggeredAt.value
           : this.locationTriggeredAt,
       position: data.position.present ? data.position.value : this.position,
+      priority: data.priority.present ? data.priority.value : this.priority,
     );
   }
 
@@ -1239,7 +1271,8 @@ class Todo extends DataClass implements Insertable<Todo> {
           ..write('locationName: $locationName, ')
           ..write('locationRadius: $locationRadius, ')
           ..write('locationTriggeredAt: $locationTriggeredAt, ')
-          ..write('position: $position')
+          ..write('position: $position, ')
+          ..write('priority: $priority')
           ..write(')'))
         .toString();
   }
@@ -1265,6 +1298,7 @@ class Todo extends DataClass implements Insertable<Todo> {
     locationRadius,
     locationTriggeredAt,
     position,
+    priority,
   );
   @override
   bool operator ==(Object other) =>
@@ -1288,7 +1322,8 @@ class Todo extends DataClass implements Insertable<Todo> {
           other.locationName == this.locationName &&
           other.locationRadius == this.locationRadius &&
           other.locationTriggeredAt == this.locationTriggeredAt &&
-          other.position == this.position);
+          other.position == this.position &&
+          other.priority == this.priority);
 }
 
 class TodosCompanion extends UpdateCompanion<Todo> {
@@ -1311,6 +1346,7 @@ class TodosCompanion extends UpdateCompanion<Todo> {
   final Value<double?> locationRadius;
   final Value<DateTime?> locationTriggeredAt;
   final Value<int> position;
+  final Value<String> priority;
   const TodosCompanion({
     this.id = const Value.absent(),
     this.title = const Value.absent(),
@@ -1331,6 +1367,7 @@ class TodosCompanion extends UpdateCompanion<Todo> {
     this.locationRadius = const Value.absent(),
     this.locationTriggeredAt = const Value.absent(),
     this.position = const Value.absent(),
+    this.priority = const Value.absent(),
   });
   TodosCompanion.insert({
     this.id = const Value.absent(),
@@ -1352,6 +1389,7 @@ class TodosCompanion extends UpdateCompanion<Todo> {
     this.locationRadius = const Value.absent(),
     this.locationTriggeredAt = const Value.absent(),
     this.position = const Value.absent(),
+    this.priority = const Value.absent(),
   }) : title = Value(title),
        description = Value(description),
        createdAt = Value(createdAt);
@@ -1375,6 +1413,7 @@ class TodosCompanion extends UpdateCompanion<Todo> {
     Expression<double>? locationRadius,
     Expression<DateTime>? locationTriggeredAt,
     Expression<int>? position,
+    Expression<String>? priority,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -1398,6 +1437,7 @@ class TodosCompanion extends UpdateCompanion<Todo> {
       if (locationTriggeredAt != null)
         'location_triggered_at': locationTriggeredAt,
       if (position != null) 'position': position,
+      if (priority != null) 'priority': priority,
     });
   }
 
@@ -1421,6 +1461,7 @@ class TodosCompanion extends UpdateCompanion<Todo> {
     Value<double?>? locationRadius,
     Value<DateTime?>? locationTriggeredAt,
     Value<int>? position,
+    Value<String>? priority,
   }) {
     return TodosCompanion(
       id: id ?? this.id,
@@ -1443,6 +1484,7 @@ class TodosCompanion extends UpdateCompanion<Todo> {
       locationRadius: locationRadius ?? this.locationRadius,
       locationTriggeredAt: locationTriggeredAt ?? this.locationTriggeredAt,
       position: position ?? this.position,
+      priority: priority ?? this.priority,
     );
   }
 
@@ -1510,6 +1552,9 @@ class TodosCompanion extends UpdateCompanion<Todo> {
     if (position.present) {
       map['position'] = Variable<int>(position.value);
     }
+    if (priority.present) {
+      map['priority'] = Variable<String>(priority.value);
+    }
     return map;
   }
 
@@ -1534,7 +1579,8 @@ class TodosCompanion extends UpdateCompanion<Todo> {
           ..write('locationName: $locationName, ')
           ..write('locationRadius: $locationRadius, ')
           ..write('locationTriggeredAt: $locationTriggeredAt, ')
-          ..write('position: $position')
+          ..write('position: $position, ')
+          ..write('priority: $priority')
           ..write(')'))
         .toString();
   }
@@ -3330,6 +3376,7 @@ typedef $$TodosTableCreateCompanionBuilder =
       Value<double?> locationRadius,
       Value<DateTime?> locationTriggeredAt,
       Value<int> position,
+      Value<String> priority,
     });
 typedef $$TodosTableUpdateCompanionBuilder =
     TodosCompanion Function({
@@ -3352,6 +3399,7 @@ typedef $$TodosTableUpdateCompanionBuilder =
       Value<double?> locationRadius,
       Value<DateTime?> locationTriggeredAt,
       Value<int> position,
+      Value<String> priority,
     });
 
 final class $$TodosTableReferences
@@ -3508,6 +3556,11 @@ class $$TodosTableFilterComposer extends Composer<_$AppDatabase, $TodosTable> {
 
   ColumnFilters<int> get position => $composableBuilder(
     column: $table.position,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get priority => $composableBuilder(
+    column: $table.priority,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -3684,6 +3737,11 @@ class $$TodosTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get priority => $composableBuilder(
+    column: $table.priority,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   $$CategoriesTableOrderingComposer get categoryId {
     final $$CategoriesTableOrderingComposer composer = $composerBuilder(
       composer: this,
@@ -3796,6 +3854,9 @@ class $$TodosTableAnnotationComposer
 
   GeneratedColumn<int> get position =>
       $composableBuilder(column: $table.position, builder: (column) => column);
+
+  GeneratedColumn<String> get priority =>
+      $composableBuilder(column: $table.priority, builder: (column) => column);
 
   $$CategoriesTableAnnotationComposer get categoryId {
     final $$CategoriesTableAnnotationComposer composer = $composerBuilder(
@@ -3922,6 +3983,7 @@ class $$TodosTableTableManager
                 Value<double?> locationRadius = const Value.absent(),
                 Value<DateTime?> locationTriggeredAt = const Value.absent(),
                 Value<int> position = const Value.absent(),
+                Value<String> priority = const Value.absent(),
               }) => TodosCompanion(
                 id: id,
                 title: title,
@@ -3942,6 +4004,7 @@ class $$TodosTableTableManager
                 locationRadius: locationRadius,
                 locationTriggeredAt: locationTriggeredAt,
                 position: position,
+                priority: priority,
               ),
           createCompanionCallback:
               ({
@@ -3964,6 +4027,7 @@ class $$TodosTableTableManager
                 Value<double?> locationRadius = const Value.absent(),
                 Value<DateTime?> locationTriggeredAt = const Value.absent(),
                 Value<int> position = const Value.absent(),
+                Value<String> priority = const Value.absent(),
               }) => TodosCompanion.insert(
                 id: id,
                 title: title,
@@ -3984,6 +4048,7 @@ class $$TodosTableTableManager
                 locationRadius: locationRadius,
                 locationTriggeredAt: locationTriggeredAt,
                 position: position,
+                priority: priority,
               ),
           withReferenceMapper: (p0) => p0
               .map(

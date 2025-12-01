@@ -686,5 +686,11 @@
   "insight_completion_time_text": "Average completion time:",
   "insight_start_tracking_text": "Start creating tasks to see your insights!",
   "hours": "hours",
-  "file_selected": "{fileName} selected"
+  "file_selected": "{fileName} selected",
+
+  "notification_priority": "Notification Priority",
+  "priority_low": "Low",
+  "priority_medium": "Medium",
+  "priority_high": "High",
+  "priority_label": "Priority"
 }

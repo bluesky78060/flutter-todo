@@ -77,6 +77,9 @@ class Todo {
   /// Order position for drag-and-drop sorting within a category.
   final int position;
 
+  /// Notification priority level: low, medium, high.
+  final String priority;
+
   /// Creates a new [Todo] instance.
   const Todo({
     required this.id,
@@ -97,6 +100,7 @@ class Todo {
     this.locationName,
     this.locationRadius,
     this.position = 0,
+    this.priority = 'medium',
   });
 
   /// Creates a copy of this todo with the given fields replaced.
@@ -119,6 +123,7 @@ class Todo {
     String? locationName,
     double? locationRadius,
     int? position,
+    String? priority,
   }) {
     return Todo(
       id: id ?? this.id,
@@ -139,6 +144,7 @@ class Todo {
       locationName: locationName ?? this.locationName,
       locationRadius: locationRadius ?? this.locationRadius,
       position: position ?? this.position,
+      priority: priority ?? this.priority,
     );
   }
 }

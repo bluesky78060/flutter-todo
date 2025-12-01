@@ -38,6 +38,7 @@ class Todos extends Table {
   RealColumn get locationRadius => real().nullable()(); // Geofence radius in meters
   DateTimeColumn get locationTriggeredAt => dateTime().nullable()(); // Last time geofence notification was triggered
   IntColumn get position => integer().withDefault(const Constant(0))(); // Order position for drag and drop sorting
+  TextColumn get priority => text().withDefault(const Constant('medium'))(); // Priority level: low, medium, high
 }
 
 // Users Table (for Auth)
@@ -79,7 +80,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 11;
+  int get schemaVersion => 12;
 
   @override
   MigrationStrategy get migration {
@@ -132,6 +133,10 @@ class AppDatabase extends _$AppDatabase {
           // Migrate DateTime columns from INTEGER (unix timestamp) to TEXT (ISO 8601)
           // This preserves timezone information and fixes UTC/local time issues
           await _migrateDateTimeColumnsToText(migrator);
+        }
+        if (from < 12) {
+          // Add priority column for notification priority levels
+          await migrator.addColumn(todos, todos.priority);
         }
       },
     );
@@ -327,6 +332,7 @@ class AppDatabase extends _$AppDatabase {
           locationRadius: todo.locationRadius.present ? todo.locationRadius.value : null,
           locationTriggeredAt: todo.locationTriggeredAt.present ? todo.locationTriggeredAt.value : null,
           position: todo.position.present ? todo.position.value : 0,
+          priority: todo.priority.present ? todo.priority.value : 'medium',
         ),
       );
     }
