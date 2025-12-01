@@ -2116,77 +2116,61 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         const SizedBox(height: 20),
 
         // Interval labels
-        SizedBox(
-          height: 50,
-          child: SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: List.generate(
-                intervals.length,
-                (index) {
-                  final minutes = intervals[index];
-                  final isSelected = _geofencingIntervalMinutes == minutes;
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: List.generate(
+              intervals.length,
+              (index) {
+                final minutes = intervals[index];
+                final isSelected = _geofencingIntervalMinutes == minutes;
 
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
-                    child: GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          _geofencingIntervalMinutes = minutes;
-                          // Update geofencing interval if enabled
-                          if (_geofencingEnabled) {
-                            GeofenceWorkManagerService.startMonitoring(
-                              intervalMinutes: minutes,
-                            );
-                          }
-                        });
-                      },
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Container(
-                            width: 40,
-                            height: 40,
-                            decoration: BoxDecoration(
-                              color: isSelected
-                                  ? AppColors.primaryBlue
-                                  : AppColors.getInput(isDarkMode),
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: isSelected
-                                    ? AppColors.primaryBlue
-                                    : AppColors.getBorder(isDarkMode),
-                                width: 2,
-                              ),
-                            ),
-                            child: Center(
-                              child: Text(
-                                '$minutes',
-                                style: TextStyle(
-                                  color: isSelected
-                                      ? Colors.white
-                                      : AppColors.getTextSecondary(isDarkMode),
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
+                return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  child: GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        _geofencingIntervalMinutes = minutes;
+                        // Update geofencing interval if enabled
+                        if (_geofencingEnabled) {
+                          GeofenceWorkManagerService.startMonitoring(
+                            intervalMinutes: minutes,
+                          );
+                        }
+                      });
+                    },
+                    child: Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: isSelected
+                            ? AppColors.primaryBlue
+                            : AppColors.getInput(isDarkMode),
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: isSelected
+                              ? AppColors.primaryBlue
+                              : AppColors.getBorder(isDarkMode),
+                          width: 2,
+                        ),
+                      ),
+                      child: Center(
+                        child: Text(
+                          '$minutes',
+                          style: TextStyle(
+                            color: isSelected
+                                ? Colors.white
+                                : AppColors.getTextSecondary(isDarkMode),
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
                           ),
-                          const SizedBox(height: 4),
-                          Text(
-                            minutes == 1 ? '분' : '분',
-                            style: TextStyle(
-                              color: AppColors.getTextSecondary(isDarkMode),
-                              fontSize: 10,
-                            ),
-                          ),
-                        ],
+                        ),
                       ),
                     ),
-                  );
-                },
-              ),
+                  ),
+                );
+              },
             ),
           ),
         ),

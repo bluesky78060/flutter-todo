@@ -407,6 +407,19 @@ class AppDatabase extends _$AppDatabase {
     final allAttachments = await getAttachmentsByTodoId(todoId);
     return allAttachments.fold<int>(0, (sum, a) => sum + a.fileSize);
   }
+
+  // Batch update todo positions (performance optimization)
+  Future<void> batchUpdateTodoPositions(List<Todo> todosList) async {
+    await batch((batch) {
+      for (final todo in todosList) {
+        batch.update(
+          todos,
+          TodosCompanion(position: Value(todo.position ?? 0)),
+          where: (tbl) => tbl.id.equals(todo.id),
+        );
+      }
+    });
+  }
 }
 
 LazyDatabase _openConnection() {

@@ -1,9 +1,10 @@
-/// Statistics screen showing todo completion analytics.
+/// Statistics screen showing todo completion analytics with charts.
 ///
 /// Features:
-/// - Completion rate percentage
-/// - Total, completed, and pending todo counts
-/// - Visual progress indicators
+/// - Completion rate percentage with pie chart
+/// - Weekly trend bar chart (fl_chart)
+/// - Monthly line chart for long-term trends
+/// - Streak counter (consecutive completion days)
 /// - Category-based statistics
 /// - Time-based analytics (daily/weekly/monthly)
 ///
@@ -15,6 +16,7 @@
 library;
 
 import 'package:easy_localization/easy_localization.dart' hide TextDirection;
+import 'package:fl_chart/fl_chart.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -211,20 +213,24 @@ class StatisticsScreen extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Overall Progress Card
+          // Overall Progress Card with Pie Chart
           _OverallProgressCard(stats: stats),
+          const SizedBox(height: 16),
+
+          // Streak and Productivity Card
+          _StreakCard(stats: stats),
+          const SizedBox(height: 16),
+
+          // Weekly Bar Chart Card
+          _WeeklyBarChartCard(stats: stats),
+          const SizedBox(height: 16),
+
+          // Monthly Line Chart Card
+          _MonthlyLineChartCard(stats: stats),
           const SizedBox(height: 16),
 
           // Today's Statistics
           _TodayStatisticsCard(stats: stats),
-          const SizedBox(height: 16),
-
-          // Weekly Statistics
-          _WeeklyStatisticsCard(stats: stats),
-          const SizedBox(height: 16),
-
-          // Category Breakdown
-          _CategoryBreakdownCard(stats: stats),
           const SizedBox(height: 16),
 
           // Time-based Statistics
@@ -266,8 +272,9 @@ class StatisticsScreen extends ConsumerWidget {
       return t.completedAt!.isAfter(weekStart);
     }).length;
 
-    // Daily completion data for the week
-    final dailyCompletions = <String, int>{};
+    // Daily completion data for the week (numeric values for chart)
+    final dailyCompletions = <int, int>{};
+    final dailyCompletionsNamed = <String, int>{};
     final dayKeys = ['monday'.tr(), 'tuesday'.tr(), 'wednesday'.tr(), 'thursday'.tr(), 'friday'.tr(), 'saturday'.tr(), 'sunday'.tr()];
 
     for (int i = 0; i < 7; i++) {
@@ -281,8 +288,61 @@ class StatisticsScreen extends ConsumerWidget {
         return t.completedAt!.isAfter(dayStart) && t.completedAt!.isBefore(dayEnd);
       }).length;
 
-      dailyCompletions[dayKey] = count;
+      dailyCompletions[i] = count;
+      dailyCompletionsNamed[dayKey] = count;
     }
+
+    // Monthly completion data (last 4 weeks)
+    final monthlyCompletions = <int, int>{};
+    for (int i = 0; i < 4; i++) {
+      final weekStartDate = today.subtract(Duration(days: today.weekday - 1 + (i * 7)));
+      final weekEndDate = weekStartDate.add(const Duration(days: 7));
+
+      final count = todos.where((t) {
+        if (t.completedAt == null) return false;
+        return t.completedAt!.isAfter(weekStartDate) && t.completedAt!.isBefore(weekEndDate);
+      }).length;
+
+      monthlyCompletions[3 - i] = count; // Reverse order (oldest first)
+    }
+
+    // Calculate streak (consecutive days with at least 1 completion)
+    int streak = 0;
+    DateTime checkDate = today;
+    while (true) {
+      final dayStart = DateTime(checkDate.year, checkDate.month, checkDate.day);
+      final dayEnd = dayStart.add(const Duration(days: 1));
+
+      final hasCompletion = todos.any((t) {
+        if (t.completedAt == null) return false;
+        return t.completedAt!.isAfter(dayStart) && t.completedAt!.isBefore(dayEnd);
+      });
+
+      if (hasCompletion) {
+        streak++;
+        checkDate = checkDate.subtract(const Duration(days: 1));
+      } else {
+        break;
+      }
+    }
+
+    // Best day (highest single-day completions ever)
+    final Map<String, int> allDayCompletions = {};
+    for (final todo in todos) {
+      if (todo.completedAt != null) {
+        final dateKey = '${todo.completedAt!.year}-${todo.completedAt!.month.toString().padLeft(2, '0')}-${todo.completedAt!.day.toString().padLeft(2, '0')}';
+        allDayCompletions[dateKey] = (allDayCompletions[dateKey] ?? 0) + 1;
+      }
+    }
+
+    int bestDayCount = 0;
+    String bestDayDate = '';
+    allDayCompletions.forEach((date, count) {
+      if (count > bestDayCount) {
+        bestDayCount = count;
+        bestDayDate = date;
+      }
+    });
 
     // Time-based statistics
     final completedWithTimes = todos.where((t) => t.isCompleted && t.completedAt != null).toList();
@@ -295,10 +355,10 @@ class StatisticsScreen extends ConsumerWidget {
       avgCompletionHours = totalHours / completedWithTimes.length;
     }
 
-    // Most productive day
+    // Most productive day of week
     String mostProductiveDay = 'monday'.tr();
     int maxCompletions = 0;
-    dailyCompletions.forEach((day, count) {
+    dailyCompletionsNamed.forEach((day, count) {
       if (count > maxCompletions) {
         maxCompletions = count;
         mostProductiveDay = day;
@@ -314,8 +374,13 @@ class StatisticsScreen extends ConsumerWidget {
       todayPending: todayPending,
       weekCompleted: weekCompleted,
       dailyCompletions: dailyCompletions,
+      dailyCompletionsNamed: dailyCompletionsNamed,
+      monthlyCompletions: monthlyCompletions,
       avgCompletionHours: avgCompletionHours,
       mostProductiveDay: mostProductiveDay,
+      streak: streak,
+      bestDayCount: bestDayCount,
+      bestDayDate: bestDayDate,
     );
   }
 }
@@ -329,9 +394,14 @@ class _StatisticsData {
   final int todayCompleted;
   final int todayPending;
   final int weekCompleted;
-  final Map<String, int> dailyCompletions;
+  final Map<int, int> dailyCompletions;
+  final Map<String, int> dailyCompletionsNamed;
+  final Map<int, int> monthlyCompletions;
   final double avgCompletionHours;
   final String mostProductiveDay;
+  final int streak;
+  final int bestDayCount;
+  final String bestDayDate;
 
   _StatisticsData({
     required this.totalTodos,
@@ -342,12 +412,17 @@ class _StatisticsData {
     required this.todayPending,
     required this.weekCompleted,
     required this.dailyCompletions,
+    required this.dailyCompletionsNamed,
+    required this.monthlyCompletions,
     required this.avgCompletionHours,
     required this.mostProductiveDay,
+    required this.streak,
+    required this.bestDayCount,
+    required this.bestDayDate,
   });
 }
 
-// Overall Progress Card
+// Overall Progress Card with Pie Chart
 class _OverallProgressCard extends ConsumerWidget {
   final _StatisticsData stats;
 
@@ -356,6 +431,8 @@ class _OverallProgressCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isDarkMode = ref.watch(isDarkModeProvider);
+    final incomplete = stats.totalTodos - stats.completedTodos;
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -398,34 +475,203 @@ class _OverallProgressCard extends ConsumerWidget {
             ],
           ),
           const SizedBox(height: 20),
+
+          // Pie Chart and Stats Row
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _StatItem(
-                label: 'total'.tr(),
-                value: '${stats.totalTodos}',
-                icon: FluentIcons.apps_list_24_regular,
+              // Pie Chart
+              SizedBox(
+                width: 100,
+                height: 100,
+                child: PieChart(
+                  PieChartData(
+                    sectionsSpace: 2,
+                    centerSpaceRadius: 25,
+                    sections: [
+                      PieChartSectionData(
+                        value: stats.completedTodos.toDouble(),
+                        title: '',
+                        color: const Color(0xFF4CAF50),
+                        radius: 22,
+                      ),
+                      PieChartSectionData(
+                        value: incomplete.toDouble(),
+                        title: '',
+                        color: isDarkMode
+                            ? Colors.white.withValues(alpha: 0.3)
+                            : const Color(0xFFE0E0E0),
+                        radius: 20,
+                      ),
+                    ],
+                  ),
+                ),
               ),
-              _StatItem(
-                label: 'completed'.tr(),
-                value: '${stats.completedTodos}',
-                icon: FluentIcons.checkmark_circle_24_regular,
+              const SizedBox(width: 20),
+
+              // Stats
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _MiniStatRow(
+                      icon: FluentIcons.apps_list_24_regular,
+                      label: 'total'.tr(),
+                      value: '${stats.totalTodos}',
+                      color: isDarkMode ? Colors.white : AppColors.textDark,
+                    ),
+                    const SizedBox(height: 8),
+                    _MiniStatRow(
+                      icon: FluentIcons.checkmark_circle_24_regular,
+                      label: 'completed'.tr(),
+                      value: '${stats.completedTodos}',
+                      color: const Color(0xFF4CAF50),
+                    ),
+                    const SizedBox(height: 8),
+                    _MiniStatRow(
+                      icon: FluentIcons.circle_24_regular,
+                      label: 'incomplete'.tr(),
+                      value: '$incomplete',
+                      color: const Color(0xFFFF9800),
+                    ),
+                  ],
+                ),
               ),
-              _StatItem(
-                label: 'completion_rate'.tr(),
-                value: '${stats.completionRate.toStringAsFixed(0)}%',
-                icon: FluentIcons.trophy_24_regular,
+
+              // Completion Rate
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  color: isDarkMode
+                      ? Colors.white.withValues(alpha: 0.2)
+                      : AppColors.primaryBlue.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Column(
+                  children: [
+                    Text(
+                      '${stats.completionRate.toStringAsFixed(0)}%',
+                      style: TextStyle(
+                        color: isDarkMode ? Colors.white : AppColors.primaryBlue,
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text(
+                      'completion_rate'.tr(),
+                      style: TextStyle(
+                        color: isDarkMode
+                            ? Colors.white.withValues(alpha: 0.7)
+                            : AppColors.textGrayDark,
+                        fontSize: 10,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
-          const SizedBox(height: 20),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(8),
-            child: LinearProgressIndicator(
-              value: stats.totalTodos > 0 ? stats.completedTodos / stats.totalTodos : 0,
-              minHeight: 8,
-              backgroundColor: isDarkMode ? Colors.white.withValues(alpha: 0.2) : AppColors.primaryBlue.withValues(alpha: 0.2),
-              valueColor: AlwaysStoppedAnimation<Color>(isDarkMode ? Colors.white : AppColors.primaryBlue),
+        ],
+      ),
+    );
+  }
+}
+
+class _MiniStatRow extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String value;
+  final Color color;
+
+  const _MiniStatRow({
+    required this.icon,
+    required this.label,
+    required this.value,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Icon(icon, color: color, size: 16),
+        const SizedBox(width: 8),
+        Text(
+          label,
+          style: TextStyle(
+            color: color.withValues(alpha: 0.8),
+            fontSize: 12,
+          ),
+        ),
+        const Spacer(),
+        Text(
+          value,
+          style: TextStyle(
+            color: color,
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// Streak Card
+class _StreakCard extends ConsumerWidget {
+  final _StatisticsData stats;
+
+  const _StreakCard({required this.stats});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isDarkMode = ref.watch(isDarkModeProvider);
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: AppColors.getCard(isDarkMode),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Row(
+        children: [
+          // Streak
+          Expanded(
+            child: _StreakItem(
+              icon: FluentIcons.fire_24_filled,
+              iconColor: const Color(0xFFFF5722),
+              title: 'current_streak'.tr(),
+              value: '${stats.streak}',
+              subtitle: 'days'.tr(),
+            ),
+          ),
+          Container(
+            width: 1,
+            height: 60,
+            color: AppColors.getBorder(isDarkMode),
+          ),
+          // Best Day
+          Expanded(
+            child: _StreakItem(
+              icon: FluentIcons.star_24_filled,
+              iconColor: const Color(0xFFFFD700),
+              title: 'best_day'.tr(),
+              value: '${stats.bestDayCount}',
+              subtitle: 'tasks'.tr(),
+            ),
+          ),
+          Container(
+            width: 1,
+            height: 60,
+            color: AppColors.getBorder(isDarkMode),
+          ),
+          // Week Total
+          Expanded(
+            child: _StreakItem(
+              icon: FluentIcons.calendar_week_start_24_filled,
+              iconColor: AppColors.primaryBlue,
+              title: 'this_week'.tr(),
+              value: '${stats.weekCompleted}',
+              subtitle: 'completed'.tr(),
             ),
           ),
         ],
@@ -434,41 +680,413 @@ class _OverallProgressCard extends ConsumerWidget {
   }
 }
 
-class _StatItem extends ConsumerWidget {
-  final String label;
-  final String value;
+class _StreakItem extends ConsumerWidget {
   final IconData icon;
+  final Color iconColor;
+  final String title;
+  final String value;
+  final String subtitle;
 
-  const _StatItem({
-    required this.label,
-    required this.value,
+  const _StreakItem({
     required this.icon,
+    required this.iconColor,
+    required this.title,
+    required this.value,
+    required this.subtitle,
   });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isDarkMode = ref.watch(isDarkModeProvider);
+
     return Column(
       children: [
-        Icon(icon, color: isDarkMode ? Colors.white.withValues(alpha: 0.8) : AppColors.primaryBlue, size: 20),
+        Icon(icon, color: iconColor, size: 24),
         const SizedBox(height: 8),
         Text(
           value,
           style: TextStyle(
-            color: isDarkMode ? Colors.white : AppColors.textDark,
+            color: AppColors.getText(isDarkMode),
             fontSize: 24,
             fontWeight: FontWeight.bold,
           ),
         ),
-        const SizedBox(height: 4),
         Text(
-          label,
+          subtitle,
           style: TextStyle(
-            color: isDarkMode ? Colors.white.withValues(alpha: 0.8) : AppColors.textGrayDark,
-            fontSize: 12,
+            color: AppColors.getTextSecondary(isDarkMode),
+            fontSize: 11,
           ),
         ),
+        const SizedBox(height: 4),
+        Text(
+          title,
+          style: TextStyle(
+            color: AppColors.getTextSecondary(isDarkMode),
+            fontSize: 10,
+          ),
+          textAlign: TextAlign.center,
+        ),
       ],
+    );
+  }
+}
+
+// Weekly Bar Chart Card
+class _WeeklyBarChartCard extends ConsumerWidget {
+  final _StatisticsData stats;
+
+  const _WeeklyBarChartCard({required this.stats});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isDarkMode = ref.watch(isDarkModeProvider);
+    final maxValue = stats.dailyCompletions.values.isEmpty
+        ? 5.0
+        : stats.dailyCompletions.values.reduce((a, b) => a > b ? a : b).toDouble();
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: AppColors.getCard(isDarkMode),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      gradient: AppColors.primaryGradient,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(
+                      FluentIcons.data_bar_horizontal_24_filled,
+                      color: Colors.white,
+                      size: 20,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Text(
+                    'weekly_trend'.tr(),
+                    style: TextStyle(
+                      color: AppColors.getText(isDarkMode),
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  gradient: AppColors.primaryGradient,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  'completed_count'.tr(namedArgs: {'count': '${stats.weekCompleted}'}),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+
+          // Bar Chart
+          SizedBox(
+            height: 180,
+            child: BarChart(
+              BarChartData(
+                alignment: BarChartAlignment.spaceAround,
+                maxY: maxValue < 1 ? 5 : maxValue + 1,
+                barTouchData: BarTouchData(
+                  enabled: true,
+                  touchTooltipData: BarTouchTooltipData(
+                    getTooltipColor: (_) => isDarkMode
+                        ? Colors.white.withValues(alpha: 0.9)
+                        : AppColors.darkCard,
+                    tooltipPadding: const EdgeInsets.all(8),
+                    tooltipMargin: 8,
+                    getTooltipItem: (group, groupIndex, rod, rodIndex) {
+                      final dayNames = ['monday'.tr(), 'tuesday'.tr(), 'wednesday'.tr(),
+                                        'thursday'.tr(), 'friday'.tr(), 'saturday'.tr(), 'sunday'.tr()];
+                      return BarTooltipItem(
+                        '${dayNames[group.x]}\n',
+                        TextStyle(
+                          color: isDarkMode ? Colors.black87 : Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                        ),
+                        children: [
+                          TextSpan(
+                            text: '${rod.toY.toInt()} ${'tasks'.tr()}',
+                            style: TextStyle(
+                              color: isDarkMode ? Colors.black54 : Colors.white70,
+                              fontSize: 11,
+                            ),
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+                ),
+                titlesData: FlTitlesData(
+                  show: true,
+                  bottomTitles: AxisTitles(
+                    sideTitles: SideTitles(
+                      showTitles: true,
+                      getTitlesWidget: (value, meta) {
+                        final shortDays = ['day_mon'.tr(), 'day_tue'.tr(), 'day_wed'.tr(),
+                                          'day_thu'.tr(), 'day_fri'.tr(), 'day_sat'.tr(), 'day_sun'.tr()];
+                        return Padding(
+                          padding: const EdgeInsets.only(top: 8),
+                          child: Text(
+                            shortDays[value.toInt()],
+                            style: TextStyle(
+                              color: AppColors.getTextSecondary(isDarkMode),
+                              fontSize: 11,
+                            ),
+                          ),
+                        );
+                      },
+                      reservedSize: 30,
+                    ),
+                  ),
+                  leftTitles: AxisTitles(
+                    sideTitles: SideTitles(
+                      showTitles: true,
+                      reservedSize: 28,
+                      getTitlesWidget: (value, meta) {
+                        if (value == value.roundToDouble()) {
+                          return Text(
+                            value.toInt().toString(),
+                            style: TextStyle(
+                              color: AppColors.getTextSecondary(isDarkMode),
+                              fontSize: 10,
+                            ),
+                          );
+                        }
+                        return const SizedBox();
+                      },
+                    ),
+                  ),
+                  topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                  rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                ),
+                gridData: FlGridData(
+                  show: true,
+                  drawVerticalLine: false,
+                  horizontalInterval: 1,
+                  getDrawingHorizontalLine: (value) => FlLine(
+                    color: AppColors.getBorder(isDarkMode).withValues(alpha: 0.3),
+                    strokeWidth: 1,
+                  ),
+                ),
+                borderData: FlBorderData(show: false),
+                barGroups: List.generate(7, (index) {
+                  final value = stats.dailyCompletions[index] ?? 0;
+                  return BarChartGroupData(
+                    x: index,
+                    barRods: [
+                      BarChartRodData(
+                        toY: value.toDouble(),
+                        gradient: value > 0 ? AppColors.primaryGradient : null,
+                        color: value == 0 ? AppColors.getInput(isDarkMode) : null,
+                        width: 20,
+                        borderRadius: const BorderRadius.vertical(top: Radius.circular(6)),
+                      ),
+                    ],
+                  );
+                }),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// Monthly Line Chart Card
+class _MonthlyLineChartCard extends ConsumerWidget {
+  final _StatisticsData stats;
+
+  const _MonthlyLineChartCard({required this.stats});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isDarkMode = ref.watch(isDarkModeProvider);
+    final maxValue = stats.monthlyCompletions.values.isEmpty
+        ? 10.0
+        : stats.monthlyCompletions.values.reduce((a, b) => a > b ? a : b).toDouble();
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: AppColors.getCard(isDarkMode),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  gradient: AppColors.primaryGradient,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(
+                  FluentIcons.data_trending_24_filled,
+                  color: Colors.white,
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Text(
+                'monthly_trend'.tr(),
+                style: TextStyle(
+                  color: AppColors.getText(isDarkMode),
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+
+          // Line Chart
+          SizedBox(
+            height: 150,
+            child: LineChart(
+              LineChartData(
+                minY: 0,
+                maxY: maxValue < 1 ? 10 : maxValue + 2,
+                lineTouchData: LineTouchData(
+                  enabled: true,
+                  touchTooltipData: LineTouchTooltipData(
+                    getTooltipColor: (_) => isDarkMode
+                        ? Colors.white.withValues(alpha: 0.9)
+                        : AppColors.darkCard,
+                    getTooltipItems: (spots) {
+                      return spots.map((spot) {
+                        final weekLabels = ['week_4_ago'.tr(), 'week_3_ago'.tr(),
+                                           'week_2_ago'.tr(), 'last_week'.tr()];
+                        return LineTooltipItem(
+                          '${weekLabels[spot.x.toInt()]}\n${spot.y.toInt()} ${'tasks'.tr()}',
+                          TextStyle(
+                            color: isDarkMode ? Colors.black87 : Colors.white,
+                            fontSize: 11,
+                          ),
+                        );
+                      }).toList();
+                    },
+                  ),
+                ),
+                titlesData: FlTitlesData(
+                  show: true,
+                  bottomTitles: AxisTitles(
+                    sideTitles: SideTitles(
+                      showTitles: true,
+                      getTitlesWidget: (value, meta) {
+                        final labels = ['4W', '3W', '2W', '1W'];
+                        if (value.toInt() < labels.length) {
+                          return Padding(
+                            padding: const EdgeInsets.only(top: 8),
+                            child: Text(
+                              labels[value.toInt()],
+                              style: TextStyle(
+                                color: AppColors.getTextSecondary(isDarkMode),
+                                fontSize: 11,
+                              ),
+                            ),
+                          );
+                        }
+                        return const SizedBox();
+                      },
+                      reservedSize: 30,
+                    ),
+                  ),
+                  leftTitles: AxisTitles(
+                    sideTitles: SideTitles(
+                      showTitles: true,
+                      reservedSize: 28,
+                      getTitlesWidget: (value, meta) {
+                        if (value == value.roundToDouble()) {
+                          return Text(
+                            value.toInt().toString(),
+                            style: TextStyle(
+                              color: AppColors.getTextSecondary(isDarkMode),
+                              fontSize: 10,
+                            ),
+                          );
+                        }
+                        return const SizedBox();
+                      },
+                    ),
+                  ),
+                  topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                  rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                ),
+                gridData: FlGridData(
+                  show: true,
+                  drawVerticalLine: false,
+                  horizontalInterval: maxValue < 5 ? 1 : (maxValue / 5).ceilToDouble(),
+                  getDrawingHorizontalLine: (value) => FlLine(
+                    color: AppColors.getBorder(isDarkMode).withValues(alpha: 0.3),
+                    strokeWidth: 1,
+                  ),
+                ),
+                borderData: FlBorderData(show: false),
+                lineBarsData: [
+                  LineChartBarData(
+                    spots: List.generate(4, (index) {
+                      final value = stats.monthlyCompletions[index] ?? 0;
+                      return FlSpot(index.toDouble(), value.toDouble());
+                    }),
+                    isCurved: true,
+                    gradient: AppColors.primaryGradient,
+                    barWidth: 3,
+                    isStrokeCapRound: true,
+                    dotData: FlDotData(
+                      show: true,
+                      getDotPainter: (spot, percent, barData, index) {
+                        return FlDotCirclePainter(
+                          radius: 4,
+                          color: Colors.white,
+                          strokeWidth: 2,
+                          strokeColor: AppColors.primaryBlue,
+                        );
+                      },
+                    ),
+                    belowBarData: BarAreaData(
+                      show: true,
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          AppColors.primaryBlue.withValues(alpha: 0.3),
+                          AppColors.primaryBlue.withValues(alpha: 0.0),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -597,269 +1215,6 @@ class _InfoCard extends ConsumerWidget {
           ),
         ],
       ),
-    );
-  }
-}
-
-// Weekly Statistics Card
-class _WeeklyStatisticsCard extends ConsumerWidget {
-  final _StatisticsData stats;
-
-  const _WeeklyStatisticsCard({required this.stats});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final isDarkMode = ref.watch(isDarkModeProvider);
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: AppColors.getCard(isDarkMode),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      gradient: AppColors.primaryGradient,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Icon(
-                      FluentIcons.calendar_week_start_24_filled,
-                      color: Colors.white,
-                      size: 20,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Text(
-                    'this_week_statistics'.tr(),
-                    style: TextStyle(
-                      color: AppColors.getText(isDarkMode),
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  gradient: AppColors.primaryGradient,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
-                  'completed_count'.tr(namedArgs: {'count': '${stats.weekCompleted}'}),
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          _DailyCompletionChart(completions: stats.dailyCompletions),
-        ],
-      ),
-    );
-  }
-}
-
-class _DailyCompletionChart extends ConsumerWidget {
-  final Map<String, int> completions;
-
-  const _DailyCompletionChart({required this.completions});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final isDarkMode = ref.watch(isDarkModeProvider);
-    final maxValue = completions.values.isEmpty ? 1 : completions.values.reduce((a, b) => a > b ? a : b).toDouble();
-    final days = ['monday'.tr(), 'tuesday'.tr(), 'wednesday'.tr(), 'thursday'.tr(), 'friday'.tr(), 'saturday'.tr(), 'sunday'.tr()];
-
-    return SizedBox(
-      height: 150,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: days.map((day) {
-          final value = completions[day] ?? 0;
-          final height = maxValue > 0 ? (value / maxValue * 100) : 0.0;
-
-          return Expanded(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 4),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  if (value > 0)
-                    Text(
-                      '$value',
-                      style: TextStyle(
-                        color: AppColors.getTextSecondary(isDarkMode),
-                        fontSize: 10,
-                      ),
-                    ),
-                  const SizedBox(height: 4),
-                  Container(
-                    height: height.clamp(20, 100),
-                    decoration: BoxDecoration(
-                      gradient: value > 0 ? AppColors.primaryGradient : null,
-                      color: value == 0 ? AppColors.getInput(isDarkMode) : null,
-                      borderRadius: const BorderRadius.vertical(top: Radius.circular(6)),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    day,
-                    style: TextStyle(
-                      color: AppColors.getTextSecondary(isDarkMode),
-                      fontSize: 12,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          );
-        }).toList(),
-      ),
-    );
-  }
-}
-
-// Category Breakdown Card
-class _CategoryBreakdownCard extends ConsumerWidget {
-  final _StatisticsData stats;
-
-  const _CategoryBreakdownCard({required this.stats});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final isDarkMode = ref.watch(isDarkModeProvider);
-    final incomplete = stats.totalTodos - stats.completedTodos;
-
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: AppColors.getCard(isDarkMode),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  gradient: AppColors.primaryGradient,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Icon(
-                  FluentIcons.data_pie_24_filled,
-                  color: Colors.white,
-                  size: 20,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Text(
-                'category_analysis'.tr(),
-                style: TextStyle(
-                  color: AppColors.getText(isDarkMode),
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          _ProgressItem(
-            label: 'completed'.tr(),
-            value: stats.completedTodos,
-            total: stats.totalTodos,
-            color: const Color(0xFF4CAF50),
-            icon: FluentIcons.checkmark_circle_24_filled,
-          ),
-          const SizedBox(height: 12),
-          _ProgressItem(
-            label: 'incomplete'.tr(),
-            value: incomplete,
-            total: stats.totalTodos,
-            color: const Color(0xFFFF9800),
-            icon: FluentIcons.circle_24_regular,
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _ProgressItem extends ConsumerWidget {
-  final String label;
-  final int value;
-  final int total;
-  final Color color;
-  final IconData icon;
-
-  const _ProgressItem({
-    required this.label,
-    required this.value,
-    required this.total,
-    required this.color,
-    required this.icon,
-  });
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final isDarkMode = ref.watch(isDarkModeProvider);
-    final percentage = total > 0 ? (value / total * 100) : 0.0;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Row(
-              children: [
-                Icon(icon, color: color, size: 20),
-                const SizedBox(width: 8),
-                Text(
-                  label,
-                  style: TextStyle(
-                    color: AppColors.getText(isDarkMode),
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
-            ),
-            Text(
-              '$value (${percentage.toStringAsFixed(0)}%)',
-              style: TextStyle(
-                color: AppColors.getTextSecondary(isDarkMode),
-                fontSize: 14,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 8),
-        ClipRRect(
-          borderRadius: BorderRadius.circular(4),
-          child: LinearProgressIndicator(
-            value: total > 0 ? value / total : 0,
-            minHeight: 8,
-            backgroundColor: AppColors.getInput(isDarkMode),
-            valueColor: AlwaysStoppedAnimation<Color>(color),
-          ),
-        ),
-      ],
     );
   }
 }

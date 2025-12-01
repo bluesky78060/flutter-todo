@@ -621,5 +621,24 @@
   "month_september": "9월",
   "month_october": "10월",
   "month_november": "11월",
-  "month_december": "12월"
+  "month_december": "12월",
+
+  "current_streak": "연속 완료",
+  "best_day": "최고 기록",
+  "this_week": "이번 주",
+  "days": "일",
+  "tasks": "개",
+  "weekly_trend": "주간 추이",
+  "monthly_trend": "월간 추이",
+  "week_4_ago": "4주 전",
+  "week_3_ago": "3주 전",
+  "week_2_ago": "2주 전",
+  "last_week": "지난 주",
+  "day_mon": "월",
+  "day_tue": "화",
+  "day_wed": "수",
+  "day_thu": "목",
+  "day_fri": "금",
+  "day_sat": "토",
+  "day_sun": "일"
 }

@@ -123,9 +123,29 @@ class TodoRepositoryImpl implements TodoRepository {
   @override
   Future<Either<Failure, Unit>> updateTodoPositions(List<entity.Todo> todos) async {
     try {
-      for (final todo in todos) {
-        await updateTodo(todo);
-      }
+      // Use batch operation for better performance (single transaction instead of N queries)
+      final dbTodos = todos.map((todo) => Todo(
+        id: todo.id,
+        title: todo.title,
+        description: todo.description,
+        isCompleted: todo.isCompleted,
+        categoryId: todo.categoryId,
+        createdAt: todo.createdAt,
+        completedAt: todo.completedAt,
+        dueDate: todo.dueDate,
+        notificationTime: todo.notificationTime,
+        recurrenceRule: todo.recurrenceRule,
+        parentRecurringTodoId: todo.parentRecurringTodoId,
+        snoozeCount: todo.snoozeCount,
+        lastSnoozeTime: todo.lastSnoozeTime,
+        locationLatitude: todo.locationLatitude,
+        locationLongitude: todo.locationLongitude,
+        locationName: todo.locationName,
+        locationRadius: todo.locationRadius,
+        position: todo.position,
+      )).toList();
+
+      await database.batchUpdateTodoPositions(dbTodos);
       return const Right(unit);
     } catch (e) {
       return Left(DatabaseFailure(e.toString()));

@@ -82,6 +82,15 @@ class _CustomTodoItemState extends ConsumerState<CustomTodoItem>
     return '${local.year}-${local.month.toString().padLeft(2, '0')}-${local.day.toString().padLeft(2, '0')} ${local.hour.toString().padLeft(2, '0')}:${local.minute.toString().padLeft(2, '0')}';
   }
 
+  // Static const values for performance optimization
+  static const _hoverAnimationDuration = Duration(milliseconds: 200);
+  static const _checkboxBorderRadius = BorderRadius.all(Radius.circular(6));
+  static const _containerBorderRadius = BorderRadius.all(Radius.circular(12));
+  static const _containerPadding = EdgeInsets.all(16);
+  static const _containerMargin = EdgeInsets.only(bottom: 8);
+  static const _hoverColor = Color(0xFF1A2936);
+  static const _hoverColorLight = Color(0xFFF0F4F8);
+
   @override
   Widget build(BuildContext context) {
     final isDarkMode = ref.watch(isDarkModeProvider);
@@ -92,22 +101,22 @@ class _CustomTodoItemState extends ConsumerState<CustomTodoItem>
         onEnter: (_) => setState(() => _isHovered = true),
         onExit: (_) => setState(() => _isHovered = false),
         child: AnimatedContainer(
-          duration: Duration(milliseconds: 200),
+          duration: _hoverAnimationDuration,
           curve: Curves.easeOut,
-          margin: EdgeInsets.only(bottom: 8),
+          margin: _containerMargin,
           transform: Matrix4.translationValues(_isHovered ? 4 : 0, 0, 0),
           child: Material(
             color: Colors.transparent,
             child: InkWell(
               onTap: widget.onTap,
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: _containerBorderRadius,
               child: Container(
-                padding: EdgeInsets.all(16),
+                padding: _containerPadding,
                 decoration: BoxDecoration(
                   color: _isHovered ?
-                    (isDarkMode ? Color(0xFF1A2936) : Color(0xFFF0F4F8)) :
+                    (isDarkMode ? _hoverColor : _hoverColorLight) :
                     AppColors.getBackground(isDarkMode),
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: _containerBorderRadius,
                 ),
                 child: Row(
                   children: [
@@ -115,7 +124,7 @@ class _CustomTodoItemState extends ConsumerState<CustomTodoItem>
                     GestureDetector(
                       onTap: widget.onToggle,
                       child: AnimatedContainer(
-                        duration: Duration(milliseconds: 200),
+                        duration: _hoverAnimationDuration,
                         width: 22,
                         height: 22,
                         decoration: BoxDecoration(
@@ -131,10 +140,10 @@ class _CustomTodoItemState extends ConsumerState<CustomTodoItem>
                                 : AppColors.getBorder(isDarkMode),
                             width: 2.5,
                           ),
-                          borderRadius: BorderRadius.circular(6),
+                          borderRadius: _checkboxBorderRadius,
                         ),
                         child: widget.todo.isCompleted
-                            ? Icon(
+                            ? const Icon(
                                 Icons.check,
                                 size: 16,
                                 color: Colors.white,
@@ -142,7 +151,7 @@ class _CustomTodoItemState extends ConsumerState<CustomTodoItem>
                             : null,
                       ),
                     ),
-                    SizedBox(width: 16),
+                    const SizedBox(width: 16),
                     // Todo Text
                     Expanded(
                       child: Column(
@@ -163,7 +172,7 @@ class _CustomTodoItemState extends ConsumerState<CustomTodoItem>
                             overflow: TextOverflow.ellipsis,
                           ),
                           if (widget.todo.description.isNotEmpty) ...[
-                            SizedBox(height: 4),
+                            const SizedBox(height: 4),
                             Text(
                               widget.todo.description,
                               style: TextStyle(
@@ -179,15 +188,15 @@ class _CustomTodoItemState extends ConsumerState<CustomTodoItem>
                             ),
                           ],
                           if (widget.todo.dueDate != null) ...[
-                            SizedBox(height: 6),
+                            const SizedBox(height: 6),
                             Row(
                               children: [
-                                Icon(
+                                const Icon(
                                   FluentIcons.calendar_clock_24_regular,
                                   color: AppColors.primaryBlue,
                                   size: 14,
                                 ),
-                                SizedBox(width: 6),
+                                const SizedBox(width: 6),
                                 Flexible(
                                   child: Text(
                                     _formatDueDate(widget.todo.dueDate!, checkAllDay: true),
@@ -204,15 +213,15 @@ class _CustomTodoItemState extends ConsumerState<CustomTodoItem>
                             ),
                           ],
                           if (widget.todo.notificationTime != null) ...[
-                            SizedBox(height: 6),
+                            const SizedBox(height: 6),
                             Row(
                               children: [
-                                Icon(
+                                const Icon(
                                   FluentIcons.alert_24_regular,
                                   color: AppColors.accentOrange,
                                   size: 14,
                                 ),
-                                SizedBox(width: 6),
+                                const SizedBox(width: 6),
                                 Flexible(
                                   child: Text(
                                     'notification_prefix'.tr(namedArgs: {
@@ -231,15 +240,15 @@ class _CustomTodoItemState extends ConsumerState<CustomTodoItem>
                             ),
                           ],
                           if (widget.todo.recurrenceRule != null && widget.todo.recurrenceRule!.isNotEmpty) ...[
-                            SizedBox(height: 6),
+                            const SizedBox(height: 6),
                             Row(
                               children: [
-                                Icon(
+                                const Icon(
                                   FluentIcons.arrow_repeat_all_24_regular,
                                   color: AppColors.primaryBlue,
                                   size: 14,
                                 ),
-                                SizedBox(width: 6),
+                                const SizedBox(width: 6),
                                 Flexible(
                                   child: Text(
                                     'recurring'.tr(),
@@ -267,7 +276,7 @@ class _CustomTodoItemState extends ConsumerState<CustomTodoItem>
                       ),
                       onPressed: widget.onDelete,
                       padding: EdgeInsets.zero,
-                      constraints: BoxConstraints(),
+                      constraints: const BoxConstraints(),
                     ),
                   ],
                 ),
