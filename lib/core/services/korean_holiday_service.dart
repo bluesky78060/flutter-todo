@@ -236,8 +236,19 @@ class KoreanHolidayService {
     // Sort by day
     holidayList.sort((a, b) => a.day.compareTo(b.day));
 
-    _holidayInfoCache[cacheKey] = holidayList;
-    return holidayList;
+    // Deduplicate holidays with the same name (keep only the first day)
+    final uniqueHolidays = <String, HolidayInfo>{};
+    for (final holiday in holidayList) {
+      if (!uniqueHolidays.containsKey(holiday.nameKo)) {
+        uniqueHolidays[holiday.nameKo] = holiday;
+      }
+    }
+
+    final deduplicatedList = uniqueHolidays.values.toList();
+    deduplicatedList.sort((a, b) => a.day.compareTo(b.day));
+
+    _holidayInfoCache[cacheKey] = deduplicatedList;
+    return deduplicatedList;
   }
 
   /// Get fixed Korean holidays with descriptions
@@ -460,6 +471,80 @@ class KoreanHolidayService {
           'nameEn': 'Chuseok (Alternative)',
           'descriptionKo': '추석이 주말과 겹칠 때 지정되는 대체 공휴일',
           'descriptionEn': 'Alternative holiday when Chuseok overlaps weekend',
+        },
+      ],
+      2026: [
+        {
+          'year': 2026,
+          'month': 2,
+          'day': 16,
+          'nameKo': '설날',
+          'nameEn': 'Lunar New Year',
+          'descriptionKo': '음력 1월 1일, 한 해를 시작하는 명절',
+          'descriptionEn': 'First day of Lunar calendar, Korean New Year celebration',
+        },
+        {
+          'year': 2026,
+          'month': 2,
+          'day': 17,
+          'nameKo': '설날',
+          'nameEn': 'Lunar New Year',
+          'descriptionKo': '음력 1월 1일, 한 해를 시작하는 명절',
+          'descriptionEn': 'First day of Lunar calendar, Korean New Year celebration',
+        },
+        {
+          'year': 2026,
+          'month': 2,
+          'day': 18,
+          'nameKo': '설날',
+          'nameEn': 'Lunar New Year',
+          'descriptionKo': '음력 1월 1일, 한 해를 시작하는 명절',
+          'descriptionEn': 'First day of Lunar calendar, Korean New Year celebration',
+        },
+        {
+          'year': 2026,
+          'month': 5,
+          'day': 24,
+          'nameKo': '부처님오신날',
+          'nameEn': "Buddha's Birthday",
+          'descriptionKo': '불교의 창시자 석가모니 부처님의 탄생을 기념하는 명절',
+          'descriptionEn': 'Celebrates the birth of Buddha',
+        },
+        {
+          'year': 2026,
+          'month': 5,
+          'day': 25,
+          'nameKo': '부처님오신날 대체공휴일',
+          'nameEn': "Buddha's Birthday (Alternative)",
+          'descriptionKo': '부처님오신날이 일요일과 겹칠 때 지정되는 대체 공휴일',
+          'descriptionEn': 'Alternative holiday for Buddha\'s Birthday',
+        },
+        {
+          'year': 2026,
+          'month': 9,
+          'day': 24,
+          'nameKo': '추석',
+          'nameEn': 'Chuseok',
+          'descriptionKo': '음력 8월 15일, 가을 추수를 감사하는 명절',
+          'descriptionEn': 'Harvest festival celebrated on 15th day of lunar August',
+        },
+        {
+          'year': 2026,
+          'month': 9,
+          'day': 25,
+          'nameKo': '추석',
+          'nameEn': 'Chuseok',
+          'descriptionKo': '음력 8월 15일, 가을 추수를 감사하는 명절',
+          'descriptionEn': 'Harvest festival celebrated on 15th day of lunar August',
+        },
+        {
+          'year': 2026,
+          'month': 9,
+          'day': 26,
+          'nameKo': '추석',
+          'nameEn': 'Chuseok',
+          'descriptionKo': '음력 8월 15일, 가을 추수를 감사하는 명절',
+          'descriptionEn': 'Harvest festival celebrated on 15th day of lunar August',
         },
       ],
     };
