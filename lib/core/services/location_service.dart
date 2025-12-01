@@ -622,7 +622,7 @@ class LocationService {
                 address: formattedAddress,
                 latitude: lat,
                 longitude: lng,
-                category: '주소',
+                category: 'Address',
               ));
             }
           }
@@ -683,7 +683,7 @@ class LocationService {
                 address: displayAddress,
                 latitude: location.latitude,
                 longitude: location.longitude,
-                category: '주소',
+                category: 'Address',
               ));
             }
           } catch (e) {

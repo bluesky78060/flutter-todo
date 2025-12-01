@@ -1,3 +1,16 @@
+/// Location-based reminder state management providers using Riverpod.
+///
+/// Provides geofence location settings for location-triggered todo reminders.
+/// Users can set up locations (home, office, etc.) to receive reminders
+/// when entering or leaving specified areas.
+///
+/// Key providers:
+/// - [locationRepositoryProvider]: Repository for location settings
+/// - [locationSettingProvider]: Location setting for a specific todo
+/// - [userLocationSettingsProvider]: All location settings for user
+/// - [activeLocationSettingsProvider]: Currently triggered locations
+library;
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:todo_app/data/datasources/remote/supabase_location_datasource.dart';
@@ -5,26 +18,28 @@ import 'package:todo_app/data/repositories/supabase_location_repository.dart';
 import 'package:todo_app/domain/entities/location_setting.dart';
 import 'package:todo_app/domain/repositories/location_repository.dart';
 
-/// Supabase 클라이언트 제공
+/// Provides the Supabase client instance (local to this file).
 final supabaseClientProvider = Provider<SupabaseClient>((ref) {
   return Supabase.instance.client;
 });
 
-/// LocationDataSource 제공
+/// Provides the location data source for Supabase operations.
 final locationDataSourceProvider =
     Provider<SupabaseLocationDataSource>((ref) {
   final client = ref.watch(supabaseClientProvider);
   return SupabaseLocationDataSource(client);
 });
 
-/// LocationRepository 제공
+/// Provides the location repository for geofence operations.
 final locationRepositoryProvider =
     Provider<LocationRepository>((ref) {
   final dataSource = ref.watch(locationDataSourceProvider);
   return SupabaseLocationRepository(dataSource);
 });
 
-/// 특정 Todo의 위치 설정 조회
+/// Provides the location setting for a specific todo.
+///
+/// Returns null if no location setting exists for the todo.
 final locationSettingProvider =
     FutureProvider.family<LocationSetting?, int>((ref, todoId) async {
   final repository = ref.watch(locationRepositoryProvider);
@@ -32,7 +47,7 @@ final locationSettingProvider =
   return result.fold((l) => null, (r) => r);
 });
 
-/// 사용자의 모든 위치 설정 조회
+/// Provides all location settings for the current user.
 final userLocationSettingsProvider =
     FutureProvider<List<LocationSetting>>((ref) async {
   final repository = ref.watch(locationRepositoryProvider);
@@ -40,7 +55,7 @@ final userLocationSettingsProvider =
   return result.fold((l) => [], (r) => r);
 });
 
-/// 활성 위치 설정 조회 (inside/entering)
+/// Provides active location settings (inside/entering states).
 final activeLocationSettingsProvider =
     FutureProvider<List<LocationSetting>>((ref) async {
   final repository = ref.watch(locationRepositoryProvider);
@@ -48,7 +63,9 @@ final activeLocationSettingsProvider =
   return result.fold((l) => [], (r) => r);
 });
 
-/// 위치 설정 생성 비동기 작업
+/// Creates a new location setting.
+///
+/// Returns the new setting's ID on success, null on failure.
 final createLocationProvider =
     FutureProvider.family<int?, LocationSettingInput>((ref, input) async {
   final repository = ref.watch(locationRepositoryProvider);
@@ -68,7 +85,9 @@ final createLocationProvider =
   return result.fold((l) => null, (r) => r);
 });
 
-/// 위치 설정 수정 비동기 작업
+/// Updates an existing location setting.
+///
+/// Returns true on success, false on failure.
 final updateLocationProvider =
     FutureProvider.family<bool, LocationSetting>((ref, setting) async {
   final repository = ref.watch(locationRepositoryProvider);
@@ -83,7 +102,9 @@ final updateLocationProvider =
   return result.isRight();
 });
 
-/// 위치 설정 삭제 비동기 작업
+/// Deletes a location setting by ID.
+///
+/// Returns true on success, false on failure.
 final deleteLocationProvider =
     FutureProvider.family<bool, int>((ref, id) async {
   final repository = ref.watch(locationRepositoryProvider);
@@ -97,7 +118,9 @@ final deleteLocationProvider =
   return result.isRight();
 });
 
-/// Geofence 상태 업데이트
+/// Updates the geofence state for a location setting.
+///
+/// States: 'outside', 'entering', 'inside', 'exiting'.
 final updateGeofenceStateProvider =
     FutureProvider.family<bool, GeofenceStateUpdate>((ref, update) async {
   final repository = ref.watch(locationRepositoryProvider);
@@ -114,7 +137,7 @@ final updateGeofenceStateProvider =
   return result.isRight();
 });
 
-/// 마지막 알림 시간 업데이트
+/// Updates the last triggered time for duplicate prevention.
 final updateTriggeredAtProvider =
     FutureProvider.family<bool, TriggeredAtUpdate>((ref, update) async {
   final repository = ref.watch(locationRepositoryProvider);
@@ -131,9 +154,9 @@ final updateTriggeredAtProvider =
   return result.isRight();
 });
 
-// ===== 헬퍼 클래스 =====
+// ===== Helper Classes =====
 
-/// 위치 설정 생성 입력값
+/// Input class for creating a new location setting.
 class LocationSettingInput {
   final int todoId;
   final double latitude;
@@ -150,10 +173,12 @@ class LocationSettingInput {
   });
 }
 
-/// Geofence 상태 업데이트 입력값
+/// Input class for updating geofence state.
 class GeofenceStateUpdate {
+  /// The location setting ID.
   final int id;
-  final String newState; // outside/entering/inside/exiting
+  /// New state: 'outside', 'entering', 'inside', or 'exiting'.
+  final String newState;
 
   GeofenceStateUpdate({
     required this.id,
@@ -161,7 +186,7 @@ class GeofenceStateUpdate {
   });
 }
 
-/// 마지막 알림 시간 업데이트 입력값
+/// Input class for updating the last triggered time.
 class TriggeredAtUpdate {
   final int id;
   final DateTime triggeredTime;

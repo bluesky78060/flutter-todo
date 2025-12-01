@@ -1,3 +1,24 @@
+/// Stylish login screen with animated background and modern UI.
+///
+/// Features:
+/// - Animated gradient background
+/// - Glassmorphic card design
+/// - Email/password authentication
+/// - Google OAuth (all platforms)
+/// - Apple Sign In (iOS/macOS)
+/// - Kakao OAuth (Korean market)
+/// - Remember me option
+/// - Sign up mode toggle
+///
+/// Platform-specific:
+/// - iOS: Shows native Apple Sign In button
+/// - Android/Web: Hides Apple Sign In
+///
+/// See also:
+/// - [LoginScreen] for standard login UI
+/// - [OAuthCallbackScreen] for OAuth completion
+library;
+
 import 'dart:io' show Platform;
 import 'dart:math' as math;
 import 'dart:ui';
@@ -12,6 +33,7 @@ import 'package:todo_app/core/utils/app_logger.dart';
 import 'package:todo_app/presentation/providers/theme_provider.dart';
 import 'package:todo_app/core/theme/app_colors.dart';
 
+/// Stylish login screen with animated UI and multiple auth options.
 class StylishLoginScreen extends ConsumerStatefulWidget {
   const StylishLoginScreen({super.key});
 

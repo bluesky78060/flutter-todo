@@ -4,9 +4,28 @@ import 'package:todo_app/core/errors/failures.dart';
 import 'package:todo_app/domain/entities/subtask.dart';
 import 'package:todo_app/domain/repositories/subtask_repository.dart';
 
+/// Remote implementation of [SubtaskRepository] using Supabase.
+///
+/// This repository handles subtask operations through Supabase,
+/// enabling cloud sync for todo checklist items.
+///
+/// Features:
+/// - CRUD operations for subtasks
+/// - Position-based ordering within a todo
+/// - Completion toggling with timestamp
+/// - Stats aggregation (total/completed counts)
+///
+/// Note: Requires authenticated user. Operations will fail if not logged in.
+///
+/// See also:
+/// - [SubtaskRepository] for the interface contract
+/// - [SubtaskRepositoryImpl] for local implementation
+/// - [Subtask] for the subtask entity
 class SupabaseSubtaskRepository implements SubtaskRepository {
+  /// The Supabase client for database operations.
   final SupabaseClient _supabaseClient;
 
+  /// Creates a [SupabaseSubtaskRepository] with the given Supabase client.
   SupabaseSubtaskRepository(this._supabaseClient);
 
   @override

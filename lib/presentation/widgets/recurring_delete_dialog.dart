@@ -1,10 +1,30 @@
+/// Recurring todo delete mode selection dialog.
+///
+/// When deleting a recurring todo instance, this dialog asks the user
+/// how the deletion should be applied.
+///
+/// Options:
+/// - [RecurringDeleteMode.thisOnly]: Delete only the current instance
+/// - [RecurringDeleteMode.thisAndFuture]: Delete this and all future instances
+/// - [RecurringDeleteMode.entireSeries]: Delete the entire series including master
+///
+/// The "entire series" option is styled as destructive (red) to indicate
+/// this is a permanent action affecting all instances.
+///
+/// Returns a [RecurringDeleteMode] value, or null if cancelled.
+///
+/// See also:
+/// - [RecurringEditDialog] for edit options on recurring todos
+/// - [TodoDetailScreen] where this dialog is triggered
+library;
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:todo_app/core/theme/app_colors.dart';
 import 'package:todo_app/presentation/providers/theme_provider.dart';
 
-/// Dialog to ask user how to delete a recurring todo instance
+/// Dialog to ask user how to delete a recurring todo instance.
 ///
 /// Options:
 /// - Delete only this instance

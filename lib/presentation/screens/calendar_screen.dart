@@ -1,3 +1,19 @@
+/// Calendar view screen for visualizing todos by date.
+///
+/// Features:
+/// - Monthly calendar view with todo markers
+/// - Date selection to filter todos
+/// - Visual indicators for todo density per day
+/// - List view of todos for selected date
+/// - Quick navigation between months
+///
+/// Uses table_calendar package for calendar rendering.
+///
+/// See also:
+/// - [todosProvider] for todo data
+/// - [TodoListScreen] for main list view
+library;
+
 import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -11,6 +27,7 @@ import 'package:todo_app/presentation/widgets/custom_todo_item.dart';
 import 'package:todo_app/presentation/widgets/recurring_delete_dialog.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 
+/// Calendar screen for date-based todo visualization.
 class CalendarScreen extends ConsumerStatefulWidget {
   const CalendarScreen({super.key});
 

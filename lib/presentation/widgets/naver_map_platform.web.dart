@@ -1,10 +1,39 @@
+/// Web platform implementation for Naver Map using JavaScript SDK.
+///
+/// This file provides the web-specific Naver Map implementation using
+/// the Naver Maps JavaScript API instead of the Flutter SDK (which
+/// doesn't support web).
+///
+/// Architecture:
+/// - Creates an HTML div element for the map container
+/// - Communicates with naver_map_bridge.js via postMessage API
+/// - Registers view factory for HtmlElementView integration
+///
+/// Message types (to JavaScript):
+/// - `naver_map_init`: Initialize map in div with center and zoom
+/// - `naver_map_update_overlays`: Update marker and circle overlay
+/// - `naver_map_move_camera`: Move map camera to position
+/// - `naver_search`: Search for places using Naver Local Search API
+///
+/// Message types (from JavaScript):
+/// - `naver_map_ready`: Map initialization complete
+/// - `naver_map_tap`: User tapped on map (lat/lng)
+/// - `naver_map_error`: Error occurred during map operation
+/// - `naver_search_result`: Search results returned
+///
+/// See also:
+/// - [naver_map_platform.dart] for mobile stub
+/// - [LocationPickerDialog] where this is used
+/// - web/naver_map_bridge.js for JavaScript implementation
+library;
+
 import 'dart:async';
 import 'dart:html' as html;
 import 'dart:ui_web' as ui_web;
 import 'package:flutter/material.dart';
 import 'package:flutter_naver_map/flutter_naver_map.dart';
 
-/// Web-specific Naver Map widget using JavaScript SDK
+/// Web-specific Naver Map widget using JavaScript SDK.
 class NaverMapWeb extends StatefulWidget {
   final NLatLng initialCenter;
   final double initialZoom;

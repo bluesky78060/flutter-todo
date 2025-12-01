@@ -1,3 +1,20 @@
+/// Pagination state management for efficient todo list rendering.
+///
+/// Implements infinite scroll pagination with configurable page sizes
+/// and preload thresholds for smooth user experience.
+///
+/// Key providers:
+/// - [paginationProvider]: Main pagination state notifier
+/// - [paginatedTodosProvider]: Currently visible paginated items
+/// - [paginationLoadingProvider]: Loading state indicator
+/// - [paginationHasMoreProvider]: More items availability check
+///
+/// Performance benefits:
+/// - Reduces initial load time for large lists
+/// - Smooth scrolling with preload threshold
+/// - Memory efficient rendering
+library;
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:todo_app/domain/entities/todo.dart';
 import 'package:todo_app/presentation/providers/todo_providers.dart';
@@ -7,18 +24,35 @@ import 'package:todo_app/core/utils/app_logger.dart';
 // PAGINATION STATE
 // ============================================================================
 
-/// Pagination configuration
+/// Configuration constants for pagination behavior.
+///
+/// Adjust these values based on device performance and UX requirements.
 class PaginationConfig {
-  static const int pageSize = 20; // 한 페이지에 표시할 아이템 수
-  static const int preloadThreshold = 5; // 남은 아이템 수가 이 이하면 다음 페이지 로드
+  /// Number of items to load per page.
+  static const int pageSize = 20;
+
+  /// Number of remaining items before triggering next page load.
+  static const int preloadThreshold = 5;
 }
 
-/// Pagination 상태 관리
+/// Immutable state class for pagination tracking.
+///
+/// Tracks the current pagination position, loading state,
+/// and whether more items are available.
 class PaginationState {
+  /// Current page number (0-indexed).
   final int currentPage;
+
+  /// Number of items per page.
   final int pageSize;
+
+  /// Whether a page load is in progress.
   final bool isLoading;
+
+  /// Whether more pages are available.
   final bool hasMore;
+
+  /// Accumulated loaded items.
   final List<Todo> items;
 
   const PaginationState({
@@ -52,6 +86,22 @@ class PaginationState {
 // PAGINATION NOTIFIER
 // ============================================================================
 
+/// Notifier for managing pagination state and page loading.
+///
+/// Handles automatic preloading when approaching list end,
+/// manual page loading, and state reset for filter changes.
+///
+/// Usage:
+/// ```dart
+/// // Load next page manually
+/// ref.read(paginationProvider.notifier).loadNextPage();
+///
+/// // Check and auto-load based on scroll position
+/// ref.read(paginationProvider.notifier).checkAndLoadMore(visibleItemCount: 15);
+///
+/// // Reset on filter change
+/// ref.read(paginationProvider.notifier).reset();
+/// ```
 class PaginationNotifier extends Notifier<PaginationState> {
   @override
   PaginationState build() {
@@ -66,13 +116,15 @@ class PaginationNotifier extends Notifier<PaginationState> {
     );
   }
 
-  /// 초기 페이지 로드
+  /// Loads the initial page of data.
   void _loadInitial() {
     loadNextPage(reset: true);
   }
 
-  /// 다음 페이지 로드
-  /// [reset]이 true면 처음부터 시작
+  /// Loads the next page of items.
+  ///
+  /// [reset] if true, clears existing items and loads from page 0.
+  /// Skips if already loading or no more items available.
   void loadNextPage({bool reset = false}) {
     if (state.isLoading) {
       logger.d('⏳ PaginationNotifier: Already loading, skipping');
@@ -134,7 +186,9 @@ class PaginationNotifier extends Notifier<PaginationState> {
     }
   }
 
-  /// 리스트 리셋 (필터 변경 등으로 인해 필요할 때)
+  /// Resets pagination state and reloads from the beginning.
+  ///
+  /// Call this when filters change or data needs to be refreshed.
   void reset() {
     state = const PaginationState(
       currentPage: 0,
@@ -146,7 +200,10 @@ class PaginationNotifier extends Notifier<PaginationState> {
     _loadInitial();
   }
 
-  /// 스크롤 위치 확인하여 자동 로드 (리스트 끝에 가까워지면)
+  /// Checks scroll position and triggers auto-load if near list end.
+  ///
+  /// [visibleItemCount] the number of items currently visible on screen.
+  /// Loads next page when remaining items fall below [PaginationConfig.preloadThreshold].
   void checkAndLoadMore({required int visibleItemCount}) {
     if (!state.isLoading && state.hasMore) {
       final remainingItems = state.items.length - visibleItemCount;
@@ -157,13 +214,13 @@ class PaginationNotifier extends Notifier<PaginationState> {
     }
   }
 
-  /// Get loading indicator visibility
+  /// Whether a loading indicator should be shown.
   bool get isLoadingMore => state.isLoading;
 
-  /// Get current page number
+  /// Current page number (0-indexed).
   int get currentPageNumber => state.currentPage;
 
-  /// Get total loaded items
+  /// Total number of items loaded across all pages.
   int get totalLoadedItems => state.items.length;
 }
 
@@ -171,23 +228,32 @@ class PaginationNotifier extends Notifier<PaginationState> {
 // PROVIDERS
 // ============================================================================
 
-/// Pagination 상태 관리 Provider
+/// Main pagination state provider.
+///
+/// Manages page loading, state tracking, and automatic preloading.
 final paginationProvider = NotifierProvider<PaginationNotifier, PaginationState>(
   PaginationNotifier.new,
 );
 
-/// 현재 표시되는 아이템들 Provider
+/// Provides the currently loaded and paginated todo items.
+///
+/// UI should use this provider for list rendering instead of [todosProvider]
+/// when pagination is enabled.
 final paginatedTodosProvider = Provider<List<Todo>>((ref) {
   final paginationState = ref.watch(paginationProvider);
   return paginationState.items;
 });
 
-/// Pagination 로딩 상태 Provider
+/// Provides the current loading state for pagination.
+///
+/// Use this to show/hide loading indicators at list bottom.
 final paginationLoadingProvider = Provider<bool>((ref) {
   return ref.watch(paginationProvider).isLoading;
 });
 
-/// 더 불러올 아이템이 있는지 확인 Provider
+/// Indicates whether more items are available to load.
+///
+/// Use this to conditionally render "load more" UI elements.
 final paginationHasMoreProvider = Provider<bool>((ref) {
   return ref.watch(paginationProvider).hasMore;
 });

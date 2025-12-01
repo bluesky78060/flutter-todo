@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -361,7 +362,7 @@ class NotificationService {
         styleInformation: BigTextStyleInformation(
           body,
           contentTitle: title,
-          summaryText: '할일 알림',
+          summaryText: 'notification_todo_reminder'.tr(),
         ),
         // 알림바에 계속 표시
         ongoing: false,
@@ -643,8 +644,8 @@ class NotificationService {
 
       // Format distance message
       final distanceText = distance < 1000
-          ? '${distance.toStringAsFixed(0)}m 이내'
-          : '${(distance / 1000).toStringAsFixed(1)}km 이내';
+          ? 'notification_within_meters'.tr(namedArgs: {'distance': distance.toStringAsFixed(0)})
+          : 'notification_within_km'.tr(namedArgs: {'distance': (distance / 1000).toStringAsFixed(1)});
 
       final androidDetails = AndroidNotificationDetails(
         'todo_notifications_v3',
@@ -664,7 +665,7 @@ class NotificationService {
         styleInformation: BigTextStyleInformation(
           '$body\n\n📍 $distanceText',
           contentTitle: '📍 $title',
-          summaryText: '위치 알림',
+          summaryText: 'notification_location_reminder'.tr(),
         ),
         ongoing: false,
         onlyAlertOnce: false,

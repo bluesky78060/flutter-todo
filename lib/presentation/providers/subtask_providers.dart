@@ -1,3 +1,15 @@
+/// Subtask state management providers using Riverpod.
+///
+/// Provides subtask (checklist item) data access and CRUD operations
+/// with local-first sync strategy.
+///
+/// Key providers:
+/// - [subtaskRepositoryProvider]: Local repository for subtasks
+/// - [remoteSubtaskRepositoryProvider]: Remote Supabase repository
+/// - [subtaskListProvider]: List of subtasks for a specific todo
+/// - [subtaskActionsProvider]: CRUD operations for subtasks
+library;
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:todo_app/data/repositories/subtask_repository_impl.dart';
@@ -7,19 +19,22 @@ import 'package:todo_app/domain/repositories/subtask_repository.dart';
 import 'package:todo_app/presentation/providers/auth_providers.dart';
 import 'package:todo_app/presentation/providers/database_provider.dart';
 
-// Local Subtask Repository Provider
+/// Provides the local subtask repository for offline operations.
 final subtaskRepositoryProvider = Provider<SubtaskRepository>((ref) {
   final database = ref.watch(localDatabaseProvider);
   return SubtaskRepositoryImpl(database);
 });
 
-// Remote Subtask Repository Provider
+/// Provides the remote Supabase subtask repository for cloud sync.
 final remoteSubtaskRepositoryProvider = Provider<SubtaskRepository>((ref) {
   final supabase = Supabase.instance.client;
   return SupabaseSubtaskRepository(supabase);
 });
 
-// Subtask List Provider for specific Todo
+/// Provides subtasks for a specific todo.
+///
+/// Uses remote repository for authenticated users with local fallback,
+/// or local-only for unauthenticated users.
 final subtaskListProvider =
     FutureProvider.family<List<entity.Subtask>, int>((ref, todoId) async {
   // Check if user is authenticated
@@ -53,7 +68,9 @@ final subtaskListProvider =
   );
 });
 
-// Subtask Stats Provider
+/// Provides completion statistics for a todo's subtasks.
+///
+/// Returns a map with 'total' and 'completed' counts.
 final subtaskStatsProvider =
     FutureProvider.family<Map<String, int>, int>((ref, todoId) async {
   final localRepo = ref.read(subtaskRepositoryProvider);
@@ -61,9 +78,13 @@ final subtaskStatsProvider =
   return result.getOrElse((l) => {'total': 0, 'completed': 0});
 });
 
-// Subtask Actions Provider
+/// Provides the [SubtaskActions] instance for subtask operations.
 final subtaskActionsProvider = Provider((ref) => SubtaskActions(ref));
 
+/// Action class for subtask CRUD operations.
+///
+/// Implements local-first sync strategy: writes to local first,
+/// then syncs to remote if user is authenticated.
 class SubtaskActions {
   final Ref _ref;
 

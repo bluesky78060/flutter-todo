@@ -1,3 +1,14 @@
+/// Authentication state management providers using Riverpod.
+///
+/// Provides reactive authentication state through Supabase auth streams,
+/// with support for local development mode using mock users.
+///
+/// Providers:
+/// - [currentUserProvider]: Stream of current authenticated user
+/// - [isAuthenticatedProvider]: Boolean indicating auth status
+/// - [authActionsProvider]: Login, register, and logout actions
+library;
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:todo_app/core/errors/failures.dart';
@@ -6,7 +17,13 @@ import 'package:todo_app/presentation/providers/database_provider.dart';
 import 'package:todo_app/core/utils/app_logger.dart';
 import 'package:todo_app/core/config/dev_config.dart';
 
-// Stream-based Current User Provider that listens to Supabase auth state changes
+/// Provides a stream of the current authenticated user.
+///
+/// Listens to Supabase auth state changes and automatically updates
+/// when the user logs in, logs out, or their session changes.
+///
+/// In local dev mode ([DevConfig.enableLocalDevMode]), returns a mock user
+/// for testing without Supabase connectivity.
 final currentUserProvider = StreamProvider<domain.AuthUser?>((ref) async* {
   // Check if local dev mode is enabled
   if (DevConfig.enableLocalDevMode) {
@@ -69,7 +86,9 @@ final currentUserProvider = StreamProvider<domain.AuthUser?>((ref) async* {
   }
 });
 
-// Auth state provider
+/// Provides a boolean indicating whether a user is currently authenticated.
+///
+/// Derives from [currentUserProvider] for reactive updates.
 final isAuthenticatedProvider = Provider<bool>((ref) {
   final userAsync = ref.watch(currentUserProvider);
   return userAsync.when(
@@ -79,7 +98,10 @@ final isAuthenticatedProvider = Provider<bool>((ref) {
   );
 });
 
-// Auth actions
+/// Action class for authentication operations.
+///
+/// Provides methods for login, registration, and logout.
+/// Returns error messages on failure, null on success.
 class AuthActions {
   final Ref ref;
   AuthActions(this.ref);
@@ -129,4 +151,5 @@ class AuthActions {
   }
 }
 
+/// Provides the [AuthActions] instance for authentication operations.
 final authActionsProvider = Provider((ref) => AuthActions(ref));

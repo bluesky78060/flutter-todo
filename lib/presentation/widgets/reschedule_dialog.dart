@@ -1,3 +1,19 @@
+/// Todo due date rescheduling dialog.
+///
+/// Provides quick options to reschedule a todo's due date.
+///
+/// Options:
+/// - [RescheduleOption.today]: Move due date to today
+/// - [RescheduleOption.tomorrow]: Move due date to tomorrow
+/// - [RescheduleOption.custom]: Open date picker for custom date
+///
+/// Returns a [RescheduleOption] indicating user's choice, or null if cancelled.
+///
+/// See also:
+/// - [TodoDetailScreen] for reschedule trigger
+/// - [todoActionsProvider] for updating the todo
+library;
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -5,6 +21,7 @@ import 'package:todo_app/core/theme/app_colors.dart';
 import 'package:todo_app/presentation/providers/theme_provider.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 
+/// Reschedule option choices for due date modification.
 enum RescheduleOption {
   today,
   tomorrow,

@@ -1,16 +1,68 @@
+/// A location-based reminder setting entity for geofence notifications.
+///
+/// LocationSetting enables users to receive todo reminders when they
+/// enter or exit a specified geographic area. The geofence is defined
+/// by coordinates (latitude/longitude) and a radius in meters.
+///
+/// Geofence states:
+/// - `'outside'`: User is outside the geofence area (default)
+/// - `'inside'`: User is within the geofence area
+/// - `'triggered'`: Notification has been triggered
+///
+/// Example:
+/// ```dart
+/// final locationSetting = LocationSetting(
+///   id: 1,
+///   userId: 'user-uuid',
+///   todoId: 42,
+///   latitude: 37.5665,
+///   longitude: 126.9780,
+///   radius: 100,
+///   locationName: 'Home',
+///   geofenceState: 'outside',
+///   createdAt: DateTime.now(),
+///   updatedAt: DateTime.now(),
+/// );
+/// ```
+///
+/// See also:
+/// - [Todo] for the associated todo entity
+/// - [LocationRepository] for persistence operations
 class LocationSetting {
+  /// Unique identifier for the location setting.
   final int id;
+
+  /// The UUID of the user who owns this setting.
   final String userId;
+
+  /// The ID of the todo this location setting is associated with.
   final int todoId;
+
+  /// Latitude coordinate of the geofence center.
   final double latitude;
+
+  /// Longitude coordinate of the geofence center.
   final double longitude;
+
+  /// Geofence radius in meters.
   final int radius;
+
+  /// Human-readable name for the location (e.g., "Home", "Office").
   final String? locationName;
+
+  /// Current geofence state: 'outside', 'inside', or 'triggered'.
   final String geofenceState;
+
+  /// When the geofence notification was last triggered.
   final DateTime? triggeredAt;
+
+  /// When this setting was created.
   final DateTime createdAt;
+
+  /// When this setting was last updated.
   final DateTime updatedAt;
 
+  /// Creates a new [LocationSetting] instance.
   const LocationSetting({
     required this.id,
     required this.userId,

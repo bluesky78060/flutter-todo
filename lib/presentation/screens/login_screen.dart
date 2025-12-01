@@ -1,3 +1,23 @@
+/// Authentication screen with email/password and OAuth login options.
+///
+/// Features:
+/// - Email/password sign in and sign up
+/// - Google OAuth authentication
+/// - Kakao OAuth authentication (Korean market)
+/// - Form validation with error feedback
+/// - Loading states during authentication
+/// - Platform-specific OAuth redirect handling
+///
+/// OAuth Configuration:
+/// - Web: Uses current URL + `/oauth-callback` for redirects
+/// - Mobile: Uses platform-specific deep links via Supabase SDK
+///
+/// See also:
+/// - [OAuthCallbackScreen] for handling OAuth redirects
+/// - [authNotifierProvider] for auth state management
+/// - [SupabaseConfig] for backend configuration
+library;
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -7,6 +27,7 @@ import 'package:todo_app/core/theme/app_colors.dart';
 import 'package:todo_app/core/utils/app_logger.dart';
 import 'package:todo_app/presentation/providers/theme_provider.dart';
 
+/// Login screen with email/password and OAuth options.
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
 

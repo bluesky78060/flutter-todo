@@ -1,13 +1,48 @@
+/// A file attachment entity associated with a todo.
+///
+/// Attachments allow users to add files (images, documents, PDFs, etc.)
+/// to their todos. The file content is stored in Supabase Storage, while
+/// this entity holds the metadata.
+///
+/// Example:
+/// ```dart
+/// final attachment = Attachment(
+///   id: 1,
+///   todoId: 42,
+///   fileName: 'receipt.pdf',
+///   filePath: '/local/path/receipt.pdf',
+///   fileSize: 102400,
+///   mimeType: 'application/pdf',
+///   storagePath: 'user-uuid/42/receipt.pdf',
+///   createdAt: DateTime.now(),
+/// );
+/// ```
 class Attachment {
+  /// Unique identifier for the attachment.
   final int id;
+
+  /// The ID of the todo this attachment belongs to.
   final int todoId;
+
+  /// The original filename.
   final String fileName;
-  final String filePath; // Local file path (if stored locally)
-  final int fileSize; // File size in bytes
-  final String mimeType; // MIME type (e.g., image/jpeg, application/pdf)
-  final String storagePath; // Full path in Supabase Storage: {user_id}/{todo_id}/{filename}
+
+  /// Local file path (if stored locally).
+  final String filePath;
+
+  /// File size in bytes.
+  final int fileSize;
+
+  /// MIME type (e.g., "image/jpeg", "application/pdf").
+  final String mimeType;
+
+  /// Full path in Supabase Storage: `{user_id}/{todo_id}/{filename}`.
+  final String storagePath;
+
+  /// When the attachment was created.
   final DateTime createdAt;
 
+  /// Creates a new [Attachment] instance.
   const Attachment({
     required this.id,
     required this.todoId,
@@ -19,6 +54,7 @@ class Attachment {
     required this.createdAt,
   });
 
+  /// Creates a copy of this attachment with the given fields replaced.
   Attachment copyWith({
     int? id,
     int? todoId,
@@ -41,24 +77,24 @@ class Attachment {
     );
   }
 
-  // Helper method to check if this is an image
+  /// Whether this attachment is an image file.
   bool get isImage => mimeType.startsWith('image/');
 
-  // Helper method to check if this is a PDF
+  /// Whether this attachment is a PDF file.
   bool get isPdf => mimeType == 'application/pdf';
 
-  // Helper method to check if this is a document
+  /// Whether this attachment is a document (Word, Excel, etc.).
   bool get isDocument => mimeType.contains('document') ||
                           mimeType.contains('msword') ||
                           mimeType.contains('officedocument');
 
-  // Helper method to get file extension from filename
+  /// The file extension extracted from the filename.
   String get fileExtension {
     final parts = fileName.split('.');
     return parts.length > 1 ? parts.last.toLowerCase() : '';
   }
 
-  // Helper method to format file size
+  /// Human-readable formatted file size (e.g., "1.5 MB", "256 KB").
   String get formattedFileSize {
     if (fileSize < 1024) {
       return '$fileSize B';

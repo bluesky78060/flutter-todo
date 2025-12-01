@@ -1,14 +1,49 @@
+/// Performance monitoring providers for app diagnostics.
+///
+/// Tracks key performance metrics including load times, memory usage,
+/// and provides performance grades with actionable recommendations.
+///
+/// Key providers:
+/// - [performanceMonitorProvider]: Main performance notifier
+///
+/// Metrics tracked:
+/// - Todo list load time (target: <500ms)
+/// - Filter change latency (target: <10ms)
+/// - Image load time (target: <100ms)
+/// - Memory usage (target: <200MB)
+///
+/// See also:
+/// - [PerformanceMetrics] for metric data structure
+/// - [paginationProvider] for list performance optimization
+library;
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:todo_app/core/utils/app_logger.dart';
 
-/// 성능 모니터링 데이터 클래스
+/// Data class containing performance measurements.
+///
+/// Provides summary reports, performance grades (A-D), and
+/// actionable recommendations based on measured values.
 class PerformanceMetrics {
-  final int todoLoadTime; // 밀리초
-  final int filterChangeLatency; // 밀리초
-  final int imageLoadTime; // 밀리초
+  /// Time to load todo list in milliseconds.
+  final int todoLoadTime;
+
+  /// Time to apply filter changes in milliseconds.
+  final int filterChangeLatency;
+
+  /// Time to load images in milliseconds.
+  final int imageLoadTime;
+
+  /// Current memory usage in megabytes.
   final int memoryUsageMB;
+
+  /// When metrics were captured.
   final DateTime timestamp;
+
+  /// Number of todos loaded.
   final int totalTodosLoaded;
+
+  /// Number of images in cache.
   final int cachedImagesCount;
 
   const PerformanceMetrics({
@@ -21,7 +56,7 @@ class PerformanceMetrics {
     required this.cachedImagesCount,
   });
 
-  /// 성능 요약
+  /// Generates a formatted performance summary report.
   String getSummary() {
     return '''
 성능 모니터링 리포트
@@ -37,16 +72,16 @@ class PerformanceMetrics {
 ''';
   }
 
-  /// 성능 평가
+  /// Returns a letter grade (A-D) based on overall performance score.
   String getPerformanceGrade() {
     final score = _calculateScore();
-    if (score >= 90) return '🟢 우수 (A)';
-    if (score >= 75) return '🟡 양호 (B)';
-    if (score >= 60) return '🔴 보통 (C)';
-    return '⚠️ 미흡 (D)';
+    if (score >= 90) return '🟢 Excellent (A)';
+    if (score >= 75) return '🟡 Good (B)';
+    if (score >= 60) return '🔴 Fair (C)';
+    return '⚠️ Poor (D)';
   }
 
-  /// 성능 점수 계산 (0-100)
+  /// Calculates performance score from 0-100 based on metrics.
   int _calculateScore() {
     int score = 100;
 
@@ -69,65 +104,79 @@ class PerformanceMetrics {
     return score.clamp(0, 100);
   }
 
-  /// 성능 권장사항
+  /// Returns actionable recommendations based on current metrics.
   List<String> getRecommendations() {
     final recommendations = <String>[];
 
     if (todoLoadTime > 500) {
-      recommendations.add('⚠️ 할일 로드 시간이 깁니다. 데이터베이스 쿼리 최적화를 검토하세요.');
+      recommendations.add('⚠️ Todo load time is slow. Consider optimizing database queries.');
     }
 
     if (filterChangeLatency > 10) {
-      recommendations.add('✅ 필터 변경 레이턴시가 양호합니다. (이미 최적화됨)');
+      recommendations.add('✅ Filter change latency is good. (Already optimized)');
     } else if (filterChangeLatency > 50) {
-      recommendations.add('⚠️ 필터 변경이 느립니다. Provider 최적화를 검토하세요.');
+      recommendations.add('⚠️ Filter changes are slow. Consider Provider optimization.');
     }
 
     if (imageLoadTime > 200) {
-      recommendations.add('⚠️ 이미지 로드가 느립니다. 이미지 캐싱 상태를 확인하세요.');
+      recommendations.add('⚠️ Image loading is slow. Check image caching status.');
     } else {
-      recommendations.add('✅ 이미지 로드 성능이 우수합니다.');
+      recommendations.add('✅ Image load performance is excellent.');
     }
 
     if (memoryUsageMB > 250) {
-      recommendations.add('⚠️ 메모리 사용량이 높습니다. 캐시 정리를 실행하세요.');
+      recommendations.add('⚠️ Memory usage is high. Run cache cleanup.');
     } else {
-      recommendations.add('✅ 메모리 사용량이 양호합니다.');
+      recommendations.add('✅ Memory usage is good.');
     }
 
     return recommendations;
   }
 }
 
-/// 성능 모니터링 Notifier (Riverpod 3.0 호환)
+/// Notifier for tracking and reporting performance metrics.
+///
+/// Supports labeled stopwatch measurements for profiling different
+/// operations and aggregates results into [PerformanceMetrics].
+///
+/// Usage:
+/// ```dart
+/// final notifier = ref.read(performanceMonitorProvider.notifier);
+/// notifier.startMeasurement('todoLoad');
+/// // ... operation ...
+/// notifier.endMeasurement('todoLoad');
+/// ```
 class PerformanceMonitorNotifier extends Notifier<PerformanceMetrics?> {
-  /// 성능 측정 시작
+  /// Active stopwatches for ongoing measurements.
   final Map<String, Stopwatch> _stopwatches = {};
 
   @override
   PerformanceMetrics? build() => null;
 
+  /// Starts a labeled stopwatch measurement.
   void startMeasurement(String label) {
     _stopwatches[label] = Stopwatch()..start();
-    logger.d('⏱️ 성능 측정 시작: $label');
+    logger.d('⏱️ Performance measurement started: $label');
   }
 
+  /// Stops a labeled stopwatch and logs the elapsed time.
   void endMeasurement(String label) {
     final stopwatch = _stopwatches[label];
     if (stopwatch != null) {
       stopwatch.stop();
       final elapsed = stopwatch.elapsedMilliseconds;
-      logger.d('⏱️ 성능 측정 완료: $label → ${elapsed}ms');
+      logger.d('⏱️ Performance measurement complete: $label → ${elapsed}ms');
       _stopwatches.remove(label);
     }
   }
 
+  /// Returns elapsed milliseconds for an active measurement.
   int getMeasurement(String label) {
     final stopwatch = _stopwatches[label];
     return stopwatch?.elapsedMilliseconds ?? 0;
   }
 
-  /// 성능 메트릭 업데이트
+  /// Updates the performance metrics state with new measurements.
   void updateMetrics({
     required int todoLoadTime,
     required int filterChangeLatency,
@@ -154,15 +203,17 @@ class PerformanceMonitorNotifier extends Notifier<PerformanceMetrics?> {
     }
   }
 
-  /// 성능 메트릭 초기화
+  /// Resets all metrics and clears active measurements.
   void reset() {
     state = null;
     _stopwatches.clear();
-    logger.d('🔄 성능 메트릭 초기화됨');
+    logger.d('🔄 Performance metrics reset');
   }
 }
 
-/// 성능 모니터링 Provider
+/// Main provider for performance monitoring.
+///
+/// Access the notifier to start/stop measurements and update metrics.
 final performanceMonitorProvider =
     NotifierProvider<PerformanceMonitorNotifier, PerformanceMetrics?>(
   PerformanceMonitorNotifier.new,

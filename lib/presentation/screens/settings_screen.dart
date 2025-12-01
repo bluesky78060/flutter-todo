@@ -1,3 +1,29 @@
+/// Application settings screen with user preferences and account management.
+///
+/// Features:
+/// - Theme settings (light/dark mode, theme preview)
+/// - Language selection (English/Korean)
+/// - Category management navigation
+/// - Widget configuration (Android only)
+/// - Backup and restore (export/import JSON)
+/// - Geofencing settings
+/// - Battery optimization settings (Samsung-specific)
+/// - Account management (user info, logout)
+/// - Admin dashboard access (for admin users)
+/// - App information (version, build)
+///
+/// Device-specific features:
+/// - Samsung One UI detection and optimization
+/// - Foldable device support
+/// - Battery optimization exemption requests
+///
+/// See also:
+/// - [ThemePreviewScreen] for theme customization
+/// - [CategoryManagementScreen] for category editing
+/// - [WidgetConfigScreen] for widget settings
+/// - [BackupActions] for data export/import
+library;
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -17,6 +43,7 @@ import 'package:todo_app/presentation/providers/theme_provider.dart';
 import 'package:todo_app/presentation/providers/todo_providers.dart';
 import 'package:todo_app/presentation/screens/theme_preview_screen.dart';
 
+/// Settings screen with app preferences and account management.
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
 

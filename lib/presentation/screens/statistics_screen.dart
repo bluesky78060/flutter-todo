@@ -1,3 +1,19 @@
+/// Statistics screen showing todo completion analytics.
+///
+/// Features:
+/// - Completion rate percentage
+/// - Total, completed, and pending todo counts
+/// - Visual progress indicators
+/// - Category-based statistics
+/// - Time-based analytics (daily/weekly/monthly)
+///
+/// Accessed from main screen header or settings.
+///
+/// See also:
+/// - [allTodosProvider] for unfiltered todo data
+/// - [TodoListScreen] for main list view
+library;
+
 import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
@@ -8,7 +24,7 @@ import 'package:todo_app/presentation/providers/database_provider.dart';
 import 'package:todo_app/presentation/providers/theme_provider.dart';
 import 'package:todo_app/presentation/screens/settings_screen.dart';
 
-// Provider for all todos (unfiltered)
+/// Provider for all todos (unfiltered) for statistics calculation.
 final allTodosProvider = FutureProvider<List<Todo>>((ref) async {
   final repository = ref.watch(todoRepositoryProvider);
   final result = await repository.getTodos();

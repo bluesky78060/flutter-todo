@@ -12,6 +12,7 @@ import es.antonborri.home_widget.HomeWidgetProvider
 import kr.bluesky.dodo.R
 import kr.bluesky.dodo.MainActivity
 import android.util.Log
+import java.util.Calendar
 
 /**
  * Today's Todo List Widget - Using HomeWidgetProvider (home_widget 0.8.1)
@@ -19,7 +20,9 @@ import android.util.Log
  * - Multiple themes: light, dark, transparent, blue, purple
  * - Add button to open app with add todo action
  * - Checkbox to toggle todo completion
- * - Click on todo to open app
+ * - Delete button to remove todo
+ * - Date group labels (Today, Tomorrow, This Week, etc.)
+ * - Progress indicator (X/Y completed)
  */
 class TodoListWidget : HomeWidgetProvider() {
 
@@ -31,6 +34,14 @@ class TodoListWidget : HomeWidgetProvider() {
         const val THEME_TRANSPARENT = "transparent"
         const val THEME_BLUE = "blue"
         const val THEME_PURPLE = "purple"
+
+        // Date group constants
+        const val GROUP_OVERDUE = "overdue"
+        const val GROUP_TODAY = "today"
+        const val GROUP_TOMORROW = "tomorrow"
+        const val GROUP_THIS_WEEK = "this_week"
+        const val GROUP_NEXT_WEEK = "next_week"
+        const val GROUP_LATER = "later"
     }
 
     override fun onUpdate(
@@ -81,6 +92,26 @@ class TodoListWidget : HomeWidgetProvider() {
         // NOTE: Container click to open app is removed per user request
         // Only the + (add) button will open the app now
 
+        // Get progress data
+        val completedCount = widgetData.getInt("todo_completed_count", 0)
+        val totalCount = widgetData.getInt("todo_total_count", 0)
+
+        // Update progress display
+        val progressViewId = R.id.widget_progress
+        if (totalCount > 0) {
+            val progressText = context.getString(R.string.widget_progress_format, completedCount, totalCount)
+            views.setTextViewText(progressViewId, progressText)
+            views.setViewVisibility(progressViewId, android.view.View.VISIBLE)
+            // Apply theme color to progress text
+            val (_, _, timeColor) = getTextColors(theme)
+            views.setTextColor(progressViewId, timeColor)
+        } else {
+            views.setViewVisibility(progressViewId, android.view.View.GONE)
+        }
+
+        // Track previous group to show headers only when group changes
+        var previousGroup = ""
+
         // Load and display todos (3 items - today's todos only)
         try {
             for (index in 1..3) {
@@ -88,6 +119,7 @@ class TodoListWidget : HomeWidgetProvider() {
                 val todoTime = widgetData.getString("todo_${index}_time", "") ?: ""
                 val todoId = widgetData.getString("todo_${index}_id", "") ?: ""
                 val isCompleted = widgetData.getBoolean("todo_${index}_completed", false)
+                val todoGroup = widgetData.getString("todo_${index}_group", "") ?: ""
 
                 val textViewId = context.resources.getIdentifier(
                     "widget_todo_${index}_text", "id", context.packageName
@@ -101,11 +133,29 @@ class TodoListWidget : HomeWidgetProvider() {
                 val containerId = context.resources.getIdentifier(
                     "widget_todo_${index}_container", "id", context.packageName
                 )
+                val groupViewId = context.resources.getIdentifier(
+                    "widget_todo_${index}_group", "id", context.packageName
+                )
 
                 if (todoText != null && todoText.isNotEmpty()) {
                     // Show the container
                     if (containerId != 0) {
                         views.setViewVisibility(containerId, android.view.View.VISIBLE)
+                    }
+
+                    // Show date group label if different from previous
+                    if (groupViewId != 0) {
+                        if (todoGroup.isNotEmpty() && todoGroup != previousGroup) {
+                            val groupLabel = getGroupLabel(context, todoGroup)
+                            views.setTextViewText(groupViewId, groupLabel)
+                            views.setViewVisibility(groupViewId, android.view.View.VISIBLE)
+                            // Apply theme color to group label
+                            val groupColor = getGroupColor(theme)
+                            views.setTextColor(groupViewId, groupColor)
+                            previousGroup = todoGroup
+                        } else {
+                            views.setViewVisibility(groupViewId, android.view.View.GONE)
+                        }
                     }
 
                     // Get theme-appropriate colors
@@ -155,11 +205,14 @@ class TodoListWidget : HomeWidgetProvider() {
                         views.setOnClickPendingIntent(checkboxId, togglePendingIntent)
                     }
 
-                    Log.d(TAG, "Updated todo $index: $todoText (time: $todoTime, completed: $isCompleted)")
+                    Log.d(TAG, "Updated todo $index: $todoText (time: $todoTime, completed: $isCompleted, group: $todoGroup)")
                 } else {
-                    // Hide empty todo items
+                    // Hide empty todo items and their group labels
                     if (containerId != 0) {
                         views.setViewVisibility(containerId, android.view.View.GONE)
+                    }
+                    if (groupViewId != 0) {
+                        views.setViewVisibility(groupViewId, android.view.View.GONE)
                     }
                 }
             }
@@ -207,6 +260,35 @@ class TodoListWidget : HomeWidgetProvider() {
             else -> Color.parseColor("#888888")
         }
         views.setTextColor(R.id.widget_menu_button, menuColor)
+    }
+
+    /**
+     * Get localized group label text
+     */
+    private fun getGroupLabel(context: Context, group: String): String {
+        return when (group) {
+            GROUP_OVERDUE -> context.getString(R.string.widget_group_overdue)
+            GROUP_TODAY -> context.getString(R.string.widget_group_today)
+            GROUP_TOMORROW -> context.getString(R.string.widget_group_tomorrow)
+            GROUP_THIS_WEEK -> context.getString(R.string.widget_group_this_week)
+            GROUP_NEXT_WEEK -> context.getString(R.string.widget_group_next_week)
+            GROUP_LATER -> context.getString(R.string.widget_group_later)
+            else -> group
+        }
+    }
+
+    /**
+     * Get group label color based on theme
+     */
+    private fun getGroupColor(theme: String): Int {
+        return when (theme) {
+            THEME_LIGHT -> Color.parseColor("#0288D1")      // Light blue
+            THEME_TRANSPARENT -> Color.parseColor("#4FC3F7") // Cyan
+            THEME_DARK -> Color.parseColor("#4FC3F7")        // Cyan
+            THEME_BLUE -> Color.parseColor("#81D4FA")        // Light blue
+            THEME_PURPLE -> Color.parseColor("#CE93D8")      // Light purple
+            else -> Color.parseColor("#4FC3F7")
+        }
     }
 
     /**

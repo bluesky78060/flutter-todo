@@ -9,10 +9,34 @@ import 'package:todo_app/domain/entities/category.dart' as entity;
 import 'package:todo_app/domain/entities/todo.dart' as entity;
 import 'package:todo_app/domain/repositories/category_repository.dart';
 
+/// Local-first implementation of [CategoryRepository].
+///
+/// This repository implements a local-first sync strategy:
+/// 1. Reads from local Drift database for immediate response
+/// 2. Syncs with Supabase in the background when available
+/// 3. Falls back to local-only mode when offline
+///
+/// The sync strategy ensures:
+/// - Fast reads from local cache
+/// - Data persistence across sessions
+/// - Eventual consistency with remote database
+///
+/// See also:
+/// - [CategoryRepository] for the interface contract
+/// - [SupabaseCategoryDataSource] for remote operations
+/// - [AppDatabase] for local storage
 class CategoryRepositoryImpl implements CategoryRepository {
+  /// The local Drift database for offline storage.
   final AppDatabase database;
+
+  /// Optional Supabase data source for remote sync.
+  ///
+  /// Will be null when user is not authenticated.
   final SupabaseCategoryDataSource? supabaseDataSource;
 
+  /// Creates a [CategoryRepositoryImpl] with local database and optional Supabase client.
+  ///
+  /// The [supabaseClient] is used to create a [SupabaseCategoryDataSource] for sync.
   CategoryRepositoryImpl(this.database, [SupabaseClient? supabaseClient])
       : supabaseDataSource = supabaseClient != null
             ? SupabaseCategoryDataSource(supabaseClient)

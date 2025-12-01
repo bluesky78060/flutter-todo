@@ -27,7 +27,7 @@ class TodoListRemoteViewsFactory(
         val title: String,
         val time: String?,
         val isCompleted: Boolean,
-        val dateGroup: String // "오늘", "내일", "이번 주", "다음 주"
+        val dateGroup: String // "Today", "Tomorrow", "This Week", "Next Week"
     )
 
     override fun onCreate() {
@@ -158,7 +158,7 @@ class TodoListRemoteViewsFactory(
                         title = title,
                         time = if (time.isEmpty()) null else time,
                         isCompleted = false, // Widget only shows pending todos
-                        dateGroup = "오늘"
+                        dateGroup = "Today"
                     )
                 )
             }

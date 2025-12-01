@@ -5,9 +5,28 @@ import 'package:todo_app/data/datasources/remote/supabase_attachment_datasource.
 import 'package:todo_app/domain/entities/attachment.dart';
 import 'package:todo_app/domain/repositories/attachment_repository.dart';
 
+/// Remote implementation of [AttachmentRepository] using Supabase.
+///
+/// This repository handles attachment operations through Supabase,
+/// storing metadata in the database and files in Supabase Storage.
+///
+/// Features:
+/// - Cloud persistence of attachment metadata
+/// - Integration with Supabase Storage for file storage
+/// - User-scoped attachments via RLS policies
+///
+/// Note: Requires authenticated user. File uploads to Supabase Storage
+/// should be done separately before calling [createAttachment].
+///
+/// See also:
+/// - [AttachmentRepository] for the interface contract
+/// - [AttachmentRepositoryImpl] for local implementation
+/// - [SupabaseAttachmentDataSource] for underlying operations
 class SupabaseAttachmentRepository implements AttachmentRepository {
+  /// The Supabase data source for attachment operations.
   final SupabaseAttachmentDataSource dataSource;
 
+  /// Creates a [SupabaseAttachmentRepository] with the given [dataSource].
   SupabaseAttachmentRepository(this.dataSource);
 
   @override

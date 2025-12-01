@@ -285,15 +285,25 @@ class WidgetService {
       print('📱 WidgetService: Updating todo list widget (with shared data)');
       print('   Today\'s todos count: ${todoData.todos.length}');
 
-      // Get top 3 todos to display (only today's todos)
-      final displayTodos = todoData.todos.take(3).toList();
+      // Calculate progress (completed / total for today)
+      final todayTodos = _getTodayTodos(todos);
+      final completedCount = todayTodos.where((t) => t.isCompleted).length;
+      final totalCount = todayTodos.length;
+
+      // Sort and categorize todos by date group
+      final sortedTodos = _sortTodosByDateGroup(todos.where((t) => !t.isCompleted).toList());
+
+      // Get top 3 todos to display
+      final displayTodos = sortedTodos.take(3).toList();
 
       // Prepare all widget data in parallel
       final List<Future<void>> todoFutures = [
         HomeWidget.saveWidgetData<String>('view_type', 'todo_list'),
+        HomeWidget.saveWidgetData<int>('todo_completed_count', completedCount),
+        HomeWidget.saveWidgetData<int>('todo_total_count', totalCount),
       ];
 
-      // Save todo items (3 items max)
+      // Save todo items (3 items max) with date group info
       for (int i = 0; i < 3; i++) {
         if (i < displayTodos.length) {
           final todo = displayTodos[i];
@@ -310,11 +320,16 @@ class WidgetService {
               timeStr = '${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
             }
           }
+
+          // Get date group for this todo
+          final dateGroup = _getDateGroup(todo.dueDate);
+
           todoFutures.addAll([
             HomeWidget.saveWidgetData<String>('todo_${i + 1}_text', todo.title),
             HomeWidget.saveWidgetData<String>('todo_${i + 1}_id', todo.id.toString()),
             HomeWidget.saveWidgetData<bool>('todo_${i + 1}_completed', todo.isCompleted),
             HomeWidget.saveWidgetData<String>('todo_${i + 1}_time', timeStr),
+            HomeWidget.saveWidgetData<String>('todo_${i + 1}_group', dateGroup),
           ]);
         } else {
           todoFutures.addAll([
@@ -322,6 +337,7 @@ class WidgetService {
             HomeWidget.saveWidgetData<String>('todo_${i + 1}_time', ''),
             HomeWidget.saveWidgetData<String>('todo_${i + 1}_id', ''),
             HomeWidget.saveWidgetData<bool>('todo_${i + 1}_completed', false),
+            HomeWidget.saveWidgetData<String>('todo_${i + 1}_group', ''),
           ]);
         }
       }
@@ -337,6 +353,105 @@ class WidgetService {
       print('✅ Todo list widget updated');
     } catch (e) {
       print('❌ Error updating todo list widget: $e');
+    }
+  }
+
+  /// Get todos for today only
+  List<Todo> _getTodayTodos(List<Todo> todos) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final tomorrow = today.add(const Duration(days: 1));
+
+    return todos.where((todo) {
+      if (todo.dueDate == null) return false;
+      final dueDate = DateTime(todo.dueDate!.year, todo.dueDate!.month, todo.dueDate!.day);
+      return dueDate.isAtSameMomentAs(today) || (dueDate.isAfter(today) && dueDate.isBefore(tomorrow));
+    }).toList();
+  }
+
+  /// Sort todos by date group (overdue first, then today, tomorrow, etc.)
+  List<Todo> _sortTodosByDateGroup(List<Todo> todos) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+
+    // Separate todos by group
+    final overdue = <Todo>[];
+    final todayTodos = <Todo>[];
+    final tomorrowTodos = <Todo>[];
+    final thisWeekTodos = <Todo>[];
+    final nextWeekTodos = <Todo>[];
+    final laterTodos = <Todo>[];
+    final noDueDateTodos = <Todo>[];
+
+    for (final todo in todos) {
+      if (todo.dueDate == null) {
+        noDueDateTodos.add(todo);
+        continue;
+      }
+
+      final dueDate = DateTime(todo.dueDate!.year, todo.dueDate!.month, todo.dueDate!.day);
+      final tomorrow = today.add(const Duration(days: 1));
+      final endOfWeek = today.add(Duration(days: 7 - today.weekday));
+      final endOfNextWeek = endOfWeek.add(const Duration(days: 7));
+
+      if (dueDate.isBefore(today)) {
+        overdue.add(todo);
+      } else if (dueDate.isAtSameMomentAs(today)) {
+        todayTodos.add(todo);
+      } else if (dueDate.isAtSameMomentAs(tomorrow)) {
+        tomorrowTodos.add(todo);
+      } else if (dueDate.isBefore(endOfWeek) || dueDate.isAtSameMomentAs(endOfWeek)) {
+        thisWeekTodos.add(todo);
+      } else if (dueDate.isBefore(endOfNextWeek) || dueDate.isAtSameMomentAs(endOfNextWeek)) {
+        nextWeekTodos.add(todo);
+      } else {
+        laterTodos.add(todo);
+      }
+    }
+
+    // Sort each group by due date
+    overdue.sort((a, b) => (a.dueDate ?? now).compareTo(b.dueDate ?? now));
+    todayTodos.sort((a, b) => (a.dueDate ?? now).compareTo(b.dueDate ?? now));
+    tomorrowTodos.sort((a, b) => (a.dueDate ?? now).compareTo(b.dueDate ?? now));
+    thisWeekTodos.sort((a, b) => (a.dueDate ?? now).compareTo(b.dueDate ?? now));
+    nextWeekTodos.sort((a, b) => (a.dueDate ?? now).compareTo(b.dueDate ?? now));
+    laterTodos.sort((a, b) => (a.dueDate ?? now).compareTo(b.dueDate ?? now));
+
+    // Combine in order
+    return [
+      ...overdue,
+      ...todayTodos,
+      ...tomorrowTodos,
+      ...thisWeekTodos,
+      ...nextWeekTodos,
+      ...laterTodos,
+      ...noDueDateTodos,
+    ];
+  }
+
+  /// Get date group string for a todo
+  String _getDateGroup(DateTime? dueDate) {
+    if (dueDate == null) return '';
+
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final dueDateOnly = DateTime(dueDate.year, dueDate.month, dueDate.day);
+    final tomorrow = today.add(const Duration(days: 1));
+    final endOfWeek = today.add(Duration(days: 7 - today.weekday));
+    final endOfNextWeek = endOfWeek.add(const Duration(days: 7));
+
+    if (dueDateOnly.isBefore(today)) {
+      return 'overdue';
+    } else if (dueDateOnly.isAtSameMomentAs(today)) {
+      return 'today';
+    } else if (dueDateOnly.isAtSameMomentAs(tomorrow)) {
+      return 'tomorrow';
+    } else if (dueDateOnly.isBefore(endOfWeek) || dueDateOnly.isAtSameMomentAs(endOfWeek)) {
+      return 'this_week';
+    } else if (dueDateOnly.isBefore(endOfNextWeek) || dueDateOnly.isAtSameMomentAs(endOfNextWeek)) {
+      return 'next_week';
+    } else {
+      return 'later';
     }
   }
 

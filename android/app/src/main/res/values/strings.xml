@@ -23,4 +23,17 @@
     <string name="widget_day_fri">Fri</string>
     <string name="widget_day_sat">Sat</string>
     <string name="widget_day_sun">Sun</string>
+
+    <!-- Date group strings -->
+    <string name="widget_group_today">Today</string>
+    <string name="widget_group_tomorrow">Tomorrow</string>
+    <string name="widget_group_this_week">This Week</string>
+    <string name="widget_group_next_week">Next Week</string>
+    <string name="widget_group_later">Later</string>
+    <string name="widget_group_overdue">Overdue</string>
+
+    <!-- Progress strings -->
+    <string name="widget_progress_format">%d/%d completed</string>
+    <string name="widget_no_tasks">No tasks</string>
+    <string name="widget_delete_confirm">Deleted</string>
 </resources>

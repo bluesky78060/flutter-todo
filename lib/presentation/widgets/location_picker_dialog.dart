@@ -1,3 +1,30 @@
+/// Location picker dialog for geofence-based reminders.
+///
+/// Provides an interactive map interface for selecting a location and
+/// configuring a geofence radius for location-based todo reminders.
+///
+/// Features:
+/// - Naver Map integration (native SDK on mobile, JavaScript SDK on web)
+/// - Place search with autocomplete via Naver Local Search API
+/// - Current location detection
+/// - Interactive marker placement by tapping on map
+/// - Configurable geofence radius (50m - 1000m)
+/// - Address reverse geocoding
+///
+/// Returns a [LocationPickerResult] containing:
+/// - Latitude and longitude coordinates
+/// - Location name (user input or from search)
+/// - Geofence radius in meters
+///
+/// Platform handling:
+/// - Mobile (iOS/Android): Uses flutter_naver_map package
+/// - Web: Uses JavaScript SDK via naver_map_platform.web.dart
+///
+/// See also:
+/// - [TodoFormDialog] where location picker is triggered
+/// - [GeofenceWorkManagerService] for background geofence monitoring
+library;
+
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -10,7 +37,7 @@ import 'package:todo_app/presentation/providers/theme_provider.dart';
 import 'package:todo_app/presentation/widgets/naver_map_platform.dart'
     if (dart.library.html) 'package:todo_app/presentation/widgets/naver_map_platform.web.dart';
 
-/// Result returned when location is selected
+/// Result returned when location is selected from the picker.
 class LocationPickerResult {
   final double latitude;
   final double longitude;
@@ -103,7 +130,7 @@ class _LocationPickerDialogState extends ConsumerState<LocationPickerDialog> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('검색 중: "$query"'),
+            content: Text('Searching: "$query"'),
             duration: const Duration(seconds: 1),
             backgroundColor: Colors.blue,
           ),
@@ -123,7 +150,7 @@ class _LocationPickerDialogState extends ConsumerState<LocationPickerDialog> {
         // Show result count
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('${results.length}개 장소 찾음'),
+            content: Text('${results.length} places found'),
             duration: const Duration(seconds: 2),
             backgroundColor: results.isEmpty ? Colors.orange : Colors.green,
           ),
@@ -137,7 +164,7 @@ class _LocationPickerDialogState extends ConsumerState<LocationPickerDialog> {
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('검색 실패: $e'),
+            content: Text('Search failed: $e'),
             duration: const Duration(seconds: 3),
             backgroundColor: Colors.red,
           ),

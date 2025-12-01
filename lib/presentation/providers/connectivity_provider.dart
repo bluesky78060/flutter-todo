@@ -1,9 +1,22 @@
+/// Connectivity and sync state management providers.
+///
+/// Handles network connectivity monitoring and data synchronization
+/// state with automatic retry logic.
+///
+/// Key providers:
+/// - [connectivityServiceProvider]: Network monitoring service
+/// - [isOnlineProvider]: Stream of online/offline status
+/// - [syncStateProvider]: Current sync operation state
+/// - [lastSyncTimeStringProvider]: Human-readable last sync time
+library;
+
 import 'dart:async';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:todo_app/core/services/connectivity_service.dart';
 import 'package:todo_app/presentation/providers/database_provider.dart';
 
-/// Connectivity service singleton provider
+/// Provides the connectivity service singleton.
 final connectivityServiceProvider = Provider<ConnectivityService>((ref) {
   final service = ConnectivityService();
   service.initialize();
@@ -11,7 +24,7 @@ final connectivityServiceProvider = Provider<ConnectivityService>((ref) {
   return service;
 });
 
-/// Network connection status stream provider
+/// Provides a stream of network connection status.
 final isOnlineProvider = StreamProvider<bool>((ref) {
   final service = ref.watch(connectivityServiceProvider);
   // Start with current status, then listen for changes
@@ -20,7 +33,9 @@ final isOnlineProvider = StreamProvider<bool>((ref) {
   });
 });
 
-/// Current online status (sync getter)
+/// Provides the current online status synchronously.
+///
+/// Assumes online during loading or error states.
 final isOnlineStateProvider = Provider<bool>((ref) {
   final asyncValue = ref.watch(isOnlineProvider);
   return asyncValue.when(
@@ -30,7 +45,7 @@ final isOnlineStateProvider = Provider<bool>((ref) {
   );
 });
 
-/// Sync status enum
+/// Sync operation status values.
 enum SyncStatus {
   idle,
   syncing,
@@ -38,7 +53,9 @@ enum SyncStatus {
   failed,
 }
 
-/// Sync state model
+/// Immutable state class for sync operations.
+///
+/// Tracks sync status, last sync time, error messages, and retry count.
 class SyncState {
   final SyncStatus status;
   final DateTime? lastSyncTime;
@@ -71,7 +88,13 @@ class SyncState {
   bool get canRetry => retryCount < 3;
 }
 
-/// Sync state notifier using Notifier (Riverpod 3.x)
+/// Notifier for managing sync state with automatic retry logic.
+///
+/// Features:
+/// - Progressive retry delays (5s, 15s, 30s)
+/// - Maximum 3 retry attempts
+/// - Persists last sync time to SharedPreferences
+/// - Manual retry support
 class SyncStateNotifier extends Notifier<SyncState> {
   Timer? _retryTimer;
   static const _lastSyncKey = 'last_sync_time';
@@ -194,14 +217,16 @@ class SyncStateNotifier extends Notifier<SyncState> {
   }
 }
 
-/// Sync state provider
+/// Provides the sync state notifier for managing sync operations.
 final syncStateProvider =
     NotifierProvider<SyncStateNotifier, SyncState>(SyncStateNotifier.new);
 
-/// Retry trigger provider (invalidated to trigger retry)
+/// Provider that triggers retry when invalidated.
 final retryTriggerProvider = Provider<int>((ref) => 0);
 
-/// Last sync time formatted string
+/// Provides a human-readable string for the last sync time.
+///
+/// Returns localized strings like "Just now", "5 minutes ago", "Yesterday".
 final lastSyncTimeStringProvider = Provider<String?>((ref) {
   final syncState = ref.watch(syncStateProvider);
   final lastSync = syncState.lastSyncTime;
@@ -212,17 +237,17 @@ final lastSyncTimeStringProvider = Provider<String?>((ref) {
   final diff = now.difference(lastSync);
 
   if (diff.inSeconds < 60) {
-    return '방금 전';
+    return 'time_just_now'.tr();
   } else if (diff.inMinutes < 60) {
-    return '${diff.inMinutes}분 전';
+    return 'time_minutes_ago'.tr(namedArgs: {'count': '${diff.inMinutes}'});
   } else if (diff.inHours < 24) {
-    return '${diff.inHours}시간 전';
+    return 'time_hours_ago'.tr(namedArgs: {'count': '${diff.inHours}'});
   } else if (diff.inDays == 1) {
-    return '어제';
+    return 'yesterday'.tr();
   } else if (diff.inDays < 7) {
-    return '${diff.inDays}일 전';
+    return 'time_days_ago'.tr(namedArgs: {'count': '${diff.inDays}'});
   } else {
     // Format as date
-    return '${lastSync.month}/${lastSync.day}';
+    return 'time_date_format'.tr(namedArgs: {'month': '${lastSync.month}', 'day': '${lastSync.day}'});
   }
 });

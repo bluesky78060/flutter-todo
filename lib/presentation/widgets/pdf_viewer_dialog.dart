@@ -1,3 +1,26 @@
+/// PDF document viewer dialog for attachment PDFs.
+///
+/// Downloads and displays PDF attachments from Supabase Storage
+/// using Syncfusion PDF viewer component.
+///
+/// Features:
+/// - Downloads PDF from Supabase Storage to temp directory
+/// - Full PDF rendering with Syncfusion Flutter PDF Viewer
+/// - Double-tap to zoom functionality
+/// - Text selection support for copying content
+/// - Loading indicator while downloading
+/// - Error display for failed loads
+/// - File info overlay (name, size)
+///
+/// Dependencies:
+/// - syncfusion_flutter_pdfviewer package
+///
+/// See also:
+/// - [ImageViewerDialog] for image attachment viewing
+/// - [TextViewerDialog] for text file viewing
+/// - [attachmentServiceProvider] for download functionality
+library;
+
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -8,6 +31,7 @@ import 'package:todo_app/domain/entities/attachment.dart' as entity;
 import 'package:path_provider/path_provider.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 
+/// Dialog for viewing PDF document attachments.
 class PdfViewerDialog extends ConsumerStatefulWidget {
   final entity.Attachment attachment;
 
@@ -106,7 +130,7 @@ class _PdfViewerDialogState extends ConsumerState<PdfViewerDialog> {
                     ),
                     const SizedBox(height: 16),
                     const Text(
-                      'PDF를 불러올 수 없습니다',
+                      'Unable to load PDF',
                       style: TextStyle(
                         color: Colors.black87,
                         fontSize: 16,

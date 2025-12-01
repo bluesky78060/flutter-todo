@@ -1,13 +1,51 @@
+/// A subtask entity representing a checklist item within a todo.
+///
+/// Subtasks allow users to break down larger todos into smaller,
+/// actionable items. Each subtask can be independently completed
+/// and reordered within its parent todo.
+///
+/// Example:
+/// ```dart
+/// final subtask = Subtask(
+///   id: 1,
+///   todoId: 42,
+///   userId: 'user-uuid',
+///   title: 'Buy milk',
+///   isCompleted: false,
+///   position: 0,
+///   createdAt: DateTime.now(),
+/// );
+/// ```
+///
+/// See also:
+/// - [Todo] for the parent entity
+/// - [SubtaskRepository] for persistence operations
 class Subtask {
+  /// Unique identifier for the subtask.
   final int id;
+
+  /// The ID of the parent todo this subtask belongs to.
   final int todoId;
+
+  /// The UUID of the user who owns this subtask.
   final String userId;
+
+  /// The title/description of the subtask.
   final String title;
+
+  /// Whether this subtask has been completed.
   final bool isCompleted;
+
+  /// Order position for drag-and-drop sorting within the todo.
   final int position;
+
+  /// When the subtask was created.
   final DateTime createdAt;
+
+  /// When the subtask was completed, if applicable.
   final DateTime? completedAt;
 
+  /// Creates a new [Subtask] instance.
   const Subtask({
     required this.id,
     required this.todoId,

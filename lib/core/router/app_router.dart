@@ -18,6 +18,28 @@ import 'package:todo_app/presentation/screens/admin_dashboard_screen.dart';
 import 'package:todo_app/presentation/screens/widget_config_screen.dart';
 import 'package:todo_app/core/utils/app_logger.dart';
 
+/// Provides the application's [GoRouter] instance with authentication-aware routing.
+///
+/// This provider configures:
+/// - **Initial location**: Starts at the login route
+/// - **Auth-based redirects**: Automatically redirects users based on authentication state
+/// - **Route guards**: Protects routes from unauthorized access
+/// - **OAuth callback handling**: Special handling for OAuth authentication flow
+///
+/// The router listens to [authNotifierProvider] for auth state changes and
+/// automatically refreshes routes when authentication status changes.
+///
+/// ## Route Structure
+/// - `/login` - Login screen (public)
+/// - `/register` - Registration screen (public)
+/// - `/oauth-callback` - OAuth callback handler (public)
+/// - `/todos` - Main todo list (protected)
+/// - `/todos/:id` - Todo detail screen (protected)
+/// - `/categories` - Category management (protected)
+/// - `/calendar` - Calendar view (protected)
+/// - `/admin-dashboard` - Admin dashboard (protected)
+/// - `/widget-config` - Widget configuration (protected)
+/// - `/dev-settings` - Development settings (public, dev only)
 final goRouterProvider = Provider<GoRouter>((ref) {
   final authNotifier = ref.watch(authNotifierProvider);
 

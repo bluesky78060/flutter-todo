@@ -1,3 +1,18 @@
+/// Original todo state management providers (backup/reference version).
+///
+/// This is the original implementation before performance optimization.
+/// Kept for reference and comparison with [todo_providers_optimized.dart].
+///
+/// Key differences from optimized version:
+/// - Filter changes trigger database queries
+/// - No client-side filtering cache
+/// - Simpler but less performant for large lists
+///
+/// See also:
+/// - [todo_providers_optimized.dart] for production version
+/// - [todo_providers.dart] for current active implementation
+library;
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -11,56 +26,68 @@ import 'package:todo_app/presentation/widgets/recurring_delete_dialog.dart';
 import 'package:todo_app/presentation/providers/attachment_providers.dart';
 import 'package:todo_app/presentation/providers/widget_provider.dart';
 
-// Todo filter state
+/// Filter options for todo list display.
 enum TodoFilter { all, pending, completed }
 
+/// Notifier for managing completion status filter.
 class TodoFilterNotifier extends Notifier<TodoFilter> {
   @override
   TodoFilter build() => TodoFilter.all;
 
+  /// Sets the filter to show all, pending, or completed todos.
   void setFilter(TodoFilter filter) {
     state = filter;
   }
 }
 
+/// Provider for completion status filter state.
 final todoFilterProvider =
     NotifierProvider<TodoFilterNotifier, TodoFilter>(TodoFilterNotifier.new);
 
-// Category filter state
+/// Notifier for managing category filter selection.
 class CategoryFilterNotifier extends Notifier<int?> {
   @override
   int? build() => null; // null means no category filter
 
+  /// Sets the category filter.
   void setCategory(int? categoryId) {
     state = categoryId;
   }
 
+  /// Clears the category filter.
   void clearCategory() {
     state = null;
   }
 }
 
+/// Provider for category filter state.
 final categoryFilterProvider =
     NotifierProvider<CategoryFilterNotifier, int?>(CategoryFilterNotifier.new);
 
-// Search query state
+/// Notifier for managing search query state.
 class SearchQueryNotifier extends Notifier<String> {
   @override
   String build() => '';
 
+  /// Sets the search query.
   void setQuery(String query) {
     state = query;
   }
 
+  /// Clears the search query.
   void clearQuery() {
     state = '';
   }
 }
 
+/// Provider for search query state.
 final searchQueryProvider =
     NotifierProvider<SearchQueryNotifier, String>(SearchQueryNotifier.new);
 
-// Todos List Provider
+/// Main todos provider - fetches filtered todos from database.
+///
+/// Note: This triggers a database query on every filter change.
+/// See [todo_providers_optimized.dart] for client-side filtering.
 final todosProvider = FutureProvider<List<Todo>>((ref) async {
   final repository = ref.watch(todoRepositoryProvider);
   final filter = ref.watch(todoFilterProvider);
@@ -109,14 +136,15 @@ final todoDetailProvider =
   );
 });
 
-// Notification Service Provider
+/// Provides the notification service for scheduling reminders.
 final notificationServiceProvider = Provider((ref) => NotificationService());
 
-// Todo actions
+/// Action class for todo CRUD operations.
 class TodoActions {
   final Ref ref;
   TodoActions(this.ref);
 
+  /// Creates a new todo with optional notification and recurrence.
   Future<void> createTodo(
     String title,
     String description,
@@ -234,7 +262,7 @@ class TodoActions {
     _updateWidget();
   }
 
-  /// Helper method to update home screen widget
+  /// Updates the home screen widget with current todo data.
   void _updateWidget() {
     try {
       final widgetService = ref.read(widgetServiceProvider);
@@ -245,8 +273,9 @@ class TodoActions {
     }
   }
 
-  /// Update a todo
-  /// For recurring todo instances, this should be called after showing RecurringEditDialog
+  /// Updates an existing todo with optional recurring mode handling.
+  ///
+  /// For recurring instances, caller should show [RecurringEditDialog] first.
   Future<void> updateTodo(
     Todo todo, {
     RecurringEditMode? recurringEditMode,
@@ -385,8 +414,9 @@ class TodoActions {
     }
   }
 
-  /// Delete a todo
-  /// For recurring todo instances, this should be called after showing RecurringDeleteDialog
+  /// Deletes a todo with optional recurring mode handling.
+  ///
+  /// For recurring instances, caller should show [RecurringDeleteDialog] first.
   Future<void> deleteTodo(
     int id, {
     RecurringDeleteMode? recurringDeleteMode,
@@ -494,7 +524,7 @@ class TodoActions {
     );
   }
 
-  /// Helper method to delete a single todo with notification and attachment cleanup
+  /// Helper to delete a single todo with notification and attachment cleanup.
   Future<void> _deleteSingleTodo(
     int id,
     NotificationService notificationService,
@@ -542,6 +572,7 @@ class TodoActions {
     );
   }
 
+  /// Toggles the completion status of a todo.
   Future<void> toggleCompletion(int id) async {
     final repository = ref.read(todoRepositoryProvider);
     final syncNotifier = ref.read(syncStateProvider.notifier);
@@ -614,8 +645,7 @@ class TodoActions {
     );
   }
 
-  /// Reschedule a todo to a new date
-  /// Maintains the original time, only changes the date
+  /// Reschedules a todo to a new date, preserving the original time.
   Future<void> rescheduleTodo(
     int id,
     DateTime newDate,
@@ -705,7 +735,7 @@ class TodoActions {
     );
   }
 
-  /// Delete all completed todos
+  /// Deletes all completed todos and returns the count deleted.
   Future<int> deleteCompletedTodos() async {
     final repository = ref.read(todoRepositoryProvider);
 
@@ -721,6 +751,7 @@ class TodoActions {
     );
   }
 
+  /// Updates the display positions of todos for drag-and-drop reordering.
   Future<void> updateTodoPositions(List<Todo> todos) async {
     final repository = ref.read(todoRepositoryProvider);
     final result = await repository.updateTodoPositions(todos);
@@ -739,4 +770,5 @@ class TodoActions {
   }
 }
 
+/// Provider for todo action operations.
 final todoActionsProvider = Provider((ref) => TodoActions(ref));

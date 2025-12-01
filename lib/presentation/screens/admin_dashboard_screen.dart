@@ -1,10 +1,29 @@
+/// Admin dashboard screen for application analytics and management.
+///
+/// Features:
+/// - Anonymized user statistics (no personal data)
+/// - Total user and todo counts
+/// - Active user metrics
+/// - System health indicators
+/// - Admin-only access control
+///
+/// Privacy:
+/// - Only aggregated, anonymized data is displayed
+/// - No individual user data is ever shown
+/// - Access restricted to users with admin role
+///
+/// See also:
+/// - [isAdminProvider] for admin role verification
+/// - [adminStatsProvider] for statistics data
+library;
+
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:todo_app/presentation/providers/admin_providers.dart';
 
-/// 관리자 대시보드 화면
-/// 익명화된 통계만 표시하며, 개인정보는 절대 노출되지 않음
+/// Admin dashboard showing anonymized application statistics.
 class AdminDashboardScreen extends ConsumerWidget {
   const AdminDashboardScreen({super.key});
 
@@ -15,7 +34,7 @@ class AdminDashboardScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('관리자 대시보드'),
+        title: Text('admin_dashboard'.tr()),
         centerTitle: true,
       ),
       body: isAdminAsync.when(
@@ -32,17 +51,17 @@ class AdminDashboardScreen extends ConsumerWidget {
                     color: Colors.grey,
                   ),
                   const SizedBox(height: 24),
-                  const Text(
-                    '접근 권한이 없습니다',
-                    style: TextStyle(
+                  Text(
+                    'access_denied'.tr(),
+                    style: const TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   const SizedBox(height: 12),
-                  const Text(
-                    '관리자만 접근할 수 있는 페이지입니다.',
-                    style: TextStyle(
+                  Text(
+                    'admin_only_page'.tr(),
+                    style: const TextStyle(
                       fontSize: 16,
                       color: Colors.grey,
                     ),
@@ -52,7 +71,7 @@ class AdminDashboardScreen extends ConsumerWidget {
                     onPressed: () {
                       context.pop();
                     },
-                    child: const Text('돌아가기'),
+                    child: Text('go_back'.tr()),
                   ),
                 ],
               ),
@@ -98,9 +117,9 @@ class AdminDashboardScreen extends ConsumerWidget {
                 color: Colors.red,
               ),
               const SizedBox(height: 24),
-              const Text(
-                '권한 확인 중 오류 발생',
-                style: TextStyle(
+              Text(
+                'permission_check_failed'.tr(),
+                style: const TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
                 ),
@@ -119,7 +138,7 @@ class AdminDashboardScreen extends ConsumerWidget {
                 onPressed: () {
                   context.pop();
                 },
-                child: const Text('돌아가기'),
+                child: Text('go_back'.tr()),
               ),
             ],
           ),
@@ -148,7 +167,7 @@ class _PrivacyNotice extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    '개인정보 보호',
+                    'privacy_protection'.tr(),
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 16,
@@ -157,7 +176,7 @@ class _PrivacyNotice extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    '이 대시보드는 익명화된 통계만 표시합니다.\n개인 식별 정보는 절대 노출되지 않습니다.',
+                    'privacy_dashboard_notice'.tr(),
                     style: TextStyle(
                       fontSize: 12,
                       color: Colors.blue.shade800,
@@ -191,9 +210,9 @@ class _UserStatisticsCard extends ConsumerWidget {
               children: [
                 Icon(Icons.people, color: Theme.of(context).primaryColor),
                 const SizedBox(width: 8),
-                const Text(
-                  '사용자 통계',
-                  style: TextStyle(
+                Text(
+                  'user_statistics'.tr(),
+                  style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                   ),
@@ -205,28 +224,28 @@ class _UserStatisticsCard extends ConsumerWidget {
               data: (stats) => Column(
                 children: [
                   _StatRow(
-                    label: '전체 사용자',
-                    value: '${stats['total_users'] ?? 0}명',
+                    label: 'total_users'.tr(),
+                    value: '${stats['total_users'] ?? 0}',
                     icon: Icons.person,
                   ),
                   const SizedBox(height: 12),
                   _StatRow(
-                    label: '최근 7일 활성 사용자',
-                    value: '${stats['active_users_7d'] ?? 0}명',
+                    label: 'active_users_7d'.tr(),
+                    value: '${stats['active_users_7d'] ?? 0}',
                     icon: Icons.trending_up,
                     color: Colors.green,
                   ),
                   const SizedBox(height: 12),
                   _StatRow(
-                    label: '최근 30일 활성 사용자',
-                    value: '${stats['active_users_30d'] ?? 0}명',
+                    label: 'active_users_30d'.tr(),
+                    value: '${stats['active_users_30d'] ?? 0}',
                     icon: Icons.calendar_today,
                     color: Colors.blue,
                   ),
                   const SizedBox(height: 12),
                   _StatRow(
-                    label: '최근 7일 신규 가입자',
-                    value: '${stats['new_users_7d'] ?? 0}명',
+                    label: 'new_users_7d'.tr(),
+                    value: '${stats['new_users_7d'] ?? 0}',
                     icon: Icons.person_add,
                     color: Colors.orange,
                   ),
@@ -265,9 +284,9 @@ class _TodoStatisticsCard extends ConsumerWidget {
               children: [
                 Icon(Icons.check_circle, color: Theme.of(context).primaryColor),
                 const SizedBox(width: 8),
-                const Text(
-                  'Todo 통계',
-                  style: TextStyle(
+                Text(
+                  'todo_statistics'.tr(),
+                  style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                   ),
@@ -281,49 +300,49 @@ class _TodoStatisticsCard extends ConsumerWidget {
                 return Column(
                   children: [
                     _StatRow(
-                      label: '전체 Todo',
-                      value: '${stats['total_todos'] ?? 0}개',
+                      label: 'total_todos'.tr(),
+                      value: '${stats['total_todos'] ?? 0}',
                       icon: Icons.list,
                     ),
                     const SizedBox(height: 12),
                     _StatRow(
-                      label: '완료된 Todo',
-                      value: '${stats['completed_todos'] ?? 0}개',
+                      label: 'completed_todos'.tr(),
+                      value: '${stats['completed_todos'] ?? 0}',
                       icon: Icons.check_circle_outline,
                       color: Colors.green,
                     ),
                     const SizedBox(height: 12),
                     _StatRow(
-                      label: '미완료 Todo',
-                      value: '${stats['pending_todos'] ?? 0}개',
+                      label: 'pending_todos'.tr(),
+                      value: '${stats['pending_todos'] ?? 0}',
                       icon: Icons.pending_outlined,
                       color: Colors.orange,
                     ),
                     const SizedBox(height: 12),
                     _StatRow(
-                      label: '완료율',
+                      label: 'completion_rate'.tr(),
                       value: '${completionRate.toStringAsFixed(1)}%',
                       icon: Icons.percent,
                       color: Colors.purple,
                     ),
                     const SizedBox(height: 12),
                     _StatRow(
-                      label: '최근 7일 생성',
-                      value: '${stats['todos_created_7d'] ?? 0}개',
+                      label: 'todos_created_7d'.tr(),
+                      value: '${stats['todos_created_7d'] ?? 0}',
                       icon: Icons.add_circle_outline,
                       color: Colors.blue,
                     ),
                     const SizedBox(height: 12),
                     _StatRow(
-                      label: '위치 설정된 Todo',
-                      value: '${stats['todos_with_location'] ?? 0}개',
+                      label: 'todos_with_location'.tr(),
+                      value: '${stats['todos_with_location'] ?? 0}',
                       icon: Icons.location_on,
                       color: Colors.red,
                     ),
                     const SizedBox(height: 12),
                     _StatRow(
-                      label: '반복 일정 Todo',
-                      value: '${stats['todos_with_recurrence'] ?? 0}개',
+                      label: 'todos_with_recurrence'.tr(),
+                      value: '${stats['todos_with_recurrence'] ?? 0}',
                       icon: Icons.repeat,
                       color: Colors.teal,
                     ),
@@ -363,9 +382,9 @@ class _CategoryStatisticsCard extends ConsumerWidget {
               children: [
                 Icon(Icons.category, color: Theme.of(context).primaryColor),
                 const SizedBox(width: 8),
-                const Text(
-                  '카테고리 통계',
-                  style: TextStyle(
+                Text(
+                  'category_statistics'.tr(),
+                  style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                   ),
@@ -382,29 +401,29 @@ class _CategoryStatisticsCard extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     _StatRow(
-                      label: '전체 카테고리',
-                      value: '${stats['total_categories'] ?? 0}개',
+                      label: 'total_categories'.tr(),
+                      value: '${stats['total_categories'] ?? 0}',
                       icon: Icons.folder,
                     ),
                     const SizedBox(height: 12),
                     _StatRow(
-                      label: '사용자당 평균',
+                      label: 'avg_categories_per_user'.tr(),
                       value: avgCategories.toStringAsFixed(1),
                       icon: Icons.person_outline,
                       color: Colors.blue,
                     ),
                     const SizedBox(height: 12),
                     _StatRow(
-                      label: '최근 7일 생성',
-                      value: '${stats['categories_created_7d'] ?? 0}개',
+                      label: 'categories_created_7d'.tr(),
+                      value: '${stats['categories_created_7d'] ?? 0}',
                       icon: Icons.add_circle_outline,
                       color: Colors.green,
                     ),
                     if (mostUsedColors.isNotEmpty) ...[
                       const SizedBox(height: 16),
-                      const Text(
-                        '인기 색상 Top 5',
-                        style: TextStyle(
+                      Text(
+                        'most_used_colors_top5'.tr(),
+                        style: const TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.bold,
                         ),
@@ -433,7 +452,7 @@ class _CategoryStatisticsCard extends ConsumerWidget {
                               ),
                               const Spacer(),
                               Text(
-                                '$count개',
+                                '$count',
                                 style: TextStyle(
                                   fontSize: 13,
                                   color: Colors.grey.shade600,
@@ -489,9 +508,9 @@ class _ActivityByHourCard extends ConsumerWidget {
               children: [
                 Icon(Icons.access_time, color: Theme.of(context).primaryColor),
                 const SizedBox(width: 8),
-                const Text(
-                  '시간대별 활동 (최근 30일)',
-                  style: TextStyle(
+                Text(
+                  'activity_by_hour'.tr(),
+                  style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                   ),
@@ -502,10 +521,10 @@ class _ActivityByHourCard extends ConsumerWidget {
             activityData.when(
               data: (data) {
                 if (data.isEmpty) {
-                  return const Padding(
-                    padding: EdgeInsets.all(24.0),
+                  return Padding(
+                    padding: const EdgeInsets.all(24.0),
                     child: Center(
-                      child: Text('데이터가 없습니다'),
+                      child: Text('no_data'.tr()),
                     ),
                   );
                 }
@@ -603,9 +622,9 @@ class _CompletionByWeekdayCard extends ConsumerWidget {
               children: [
                 Icon(Icons.calendar_month, color: Theme.of(context).primaryColor),
                 const SizedBox(width: 8),
-                const Text(
-                  '요일별 완료율 (최근 90일)',
-                  style: TextStyle(
+                Text(
+                  'completion_by_weekday'.tr(),
+                  style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                   ),
@@ -616,10 +635,10 @@ class _CompletionByWeekdayCard extends ConsumerWidget {
             completionData.when(
               data: (data) {
                 if (data.isEmpty) {
-                  return const Padding(
-                    padding: EdgeInsets.all(24.0),
+                  return Padding(
+                    padding: const EdgeInsets.all(24.0),
                     child: Center(
-                      child: Text('데이터가 없습니다'),
+                      child: Text('no_data'.tr()),
                     ),
                   );
                 }
@@ -774,7 +793,7 @@ class _ErrorWidget extends StatelessWidget {
           Icon(Icons.error_outline, color: Colors.red.shade300, size: 48),
           const SizedBox(height: 12),
           Text(
-            '데이터를 불러올 수 없습니다',
+            'data_load_failed'.tr(),
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,

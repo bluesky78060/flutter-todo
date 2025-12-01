@@ -1,3 +1,23 @@
+/// Recurrence rule configuration dialog.
+///
+/// Allows users to configure RRULE (iCalendar recurrence rule) settings
+/// for recurring todos.
+///
+/// Configuration options:
+/// - **Frequency**: Daily, weekly, monthly, yearly
+/// - **Interval**: Every N days/weeks/months/years
+/// - **Week days**: For weekly frequency, select specific days
+/// - **End condition**: No end, after N occurrences, or until date
+///
+/// Provides a live preview of the configured recurrence rule.
+///
+/// Returns the RRULE string via [onSave] callback, or null if no recurrence.
+///
+/// See also:
+/// - [RecurrenceUtils] for RRULE parsing and formatting
+/// - [TodoFormDialog] where this is used
+library;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:todo_app/core/theme/app_colors.dart';
@@ -6,7 +26,7 @@ import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:todo_app/presentation/providers/theme_provider.dart';
 
-/// Dialog for configuring recurrence settings
+/// Dialog for configuring recurrence settings with RRULE format.
 class RecurrenceSettingsDialog extends ConsumerStatefulWidget {
   final String? initialRRule;
   final Function(String? rrule) onSave;

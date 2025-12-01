@@ -1,3 +1,22 @@
+/// Todo App - Main Application Entry Point
+///
+/// A cross-platform Todo application built with Flutter featuring:
+/// - Supabase backend for authentication and data sync
+/// - Local-first architecture with offline support
+/// - Recurring todos with RRULE support
+/// - Location-based reminders (geofencing)
+/// - Home screen widgets (Android)
+/// - Multi-language support (English/Korean)
+///
+/// Package: kr.bluesky.dodo
+///
+/// Architecture:
+/// - Clean Architecture with domain/data/presentation layers
+/// - Riverpod for state management
+/// - Drift for local database
+/// - GoRouter for navigation
+library;
+
 import 'dart:async';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart' show kDebugMode, kIsWeb, defaultTargetPlatform, TargetPlatform;
@@ -22,7 +41,10 @@ import 'package:todo_app/core/utils/app_logger.dart';
 import 'package:todo_app/core/widget/widget_init.dart';
 import 'package:todo_app/core/services/widget_method_channel.dart';
 
-// ✅ CRITICAL: Background notification handler (must be top-level function)
+/// Background notification handler for when app is terminated or in background.
+///
+/// CRITICAL: This must be a top-level function for Flutter to call it.
+/// Keep it as simple as possible to avoid crashes.
 // This function handles notifications when the app is terminated or in background
 // IMPORTANT: Keep this function as simple as possible to avoid crashes
 @pragma('vm:entry-point')
@@ -32,6 +54,15 @@ void notificationTapBackground(NotificationResponse notificationResponse) {
   // Complex logic should be handled when app comes to foreground
 }
 
+/// Application entry point.
+///
+/// Initializes:
+/// 1. Flutter binding
+/// 2. Localization (EasyLocalization)
+/// 3. Naver Maps SDK (platform-specific)
+/// 4. Environment variables (.env)
+///
+/// Then calls [runAppWithErrorHandling] for remaining initialization.
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await EasyLocalization.ensureInitialized();
@@ -95,6 +126,17 @@ void main() async {
   runAppWithErrorHandling();
 }
 
+/// Runs the app with comprehensive error handling.
+///
+/// Initializes:
+/// 1. Supabase (authentication and database)
+/// 2. Notification service
+/// 3. Geofence WorkManager (mobile only)
+/// 4. Widget system (mobile only)
+/// 5. SharedPreferences
+///
+/// Creates [ProviderContainer] for Riverpod state management
+/// and runs [MyApp] with localization support.
 Future<void> runAppWithErrorHandling() async {
   // Initialize Supabase with platform-specific auth options
   try {
@@ -200,6 +242,13 @@ Future<void> runAppWithErrorHandling() async {
   logger.d('✅ Main: runApp completed');
 }
 
+/// Root application widget.
+///
+/// Configures:
+/// - Material Design 3 theming (light/dark)
+/// - GoRouter for navigation
+/// - Localization delegates
+/// - Recurring todo instance generation on authentication
 class MyApp extends ConsumerStatefulWidget {
   const MyApp({super.key});
 

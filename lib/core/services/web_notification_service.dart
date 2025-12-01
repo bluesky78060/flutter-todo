@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:html' as html;
 import 'dart:js' as js;
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
 import 'package:todo_app/core/utils/app_logger.dart';
 
@@ -249,8 +250,8 @@ class WebNotificationService {
 
     _showNotification(
       999999,
-      '테스트 알림',
-      '웹 알림이 정상적으로 작동합니다!',
+      'web_notification_test'.tr(),
+      'web_notification_test_message'.tr(),
     );
   }
 }

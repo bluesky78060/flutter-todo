@@ -4,9 +4,29 @@ import 'package:todo_app/data/datasources/remote/supabase_location_datasource.da
 import 'package:todo_app/domain/entities/location_setting.dart';
 import 'package:todo_app/domain/repositories/location_repository.dart';
 
+/// Remote implementation of [LocationRepository] using Supabase.
+///
+/// This repository handles location-based reminder settings through Supabase,
+/// enabling geofence-triggered notifications when users enter specified areas.
+///
+/// Features:
+/// - CRUD operations for location settings
+/// - Geofence state tracking (inside/outside/entering/leaving)
+/// - Trigger timestamp management for notification rate limiting
+/// - Active location settings filtering for monitoring
+///
+/// Note: Requires authenticated user. Geofence monitoring is done client-side;
+/// this repository only stores settings and state.
+///
+/// See also:
+/// - [LocationRepository] for the interface contract
+/// - [LocationSetting] for the location setting entity
+/// - [SupabaseLocationDataSource] for underlying operations
 class SupabaseLocationRepository implements LocationRepository {
+  /// The Supabase data source for location operations.
   final SupabaseLocationDataSource dataSource;
 
+  /// Creates a [SupabaseLocationRepository] with the given [dataSource].
   SupabaseLocationRepository(this.dataSource);
 
   @override

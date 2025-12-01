@@ -1,23 +1,83 @@
+/// A todo item entity representing a task to be completed.
+///
+/// This is the core domain entity for todos, containing all the information
+/// needed to represent a task including:
+/// - Basic info (title, description, completion status)
+/// - Time management (due date, notification time, recurrence)
+/// - Location-based reminders (geofence support)
+/// - Organization (category, position for sorting)
+///
+/// Example:
+/// ```dart
+/// final todo = Todo(
+///   id: 1,
+///   title: 'Buy groceries',
+///   description: 'Milk, eggs, bread',
+///   isCompleted: false,
+///   createdAt: DateTime.now(),
+///   dueDate: DateTime.now().add(Duration(days: 1)),
+/// );
+/// ```
 class Todo {
+  /// Unique identifier for the todo.
   final int id;
-  final String title;
-  final String description;
-  final bool isCompleted;
-  final int? categoryId;
-  final DateTime createdAt;
-  final DateTime? completedAt;
-  final DateTime? dueDate;
-  final DateTime? notificationTime;
-  final String? recurrenceRule; // RRULE format (e.g., "FREQ=DAILY;INTERVAL=1")
-  final int? parentRecurringTodoId; // Reference to parent recurring todo
-  final int snoozeCount; // Number of times snoozed
-  final DateTime? lastSnoozeTime; // Last time the notification was snoozed
-  final double? locationLatitude; // Location-based notification latitude
-  final double? locationLongitude; // Location-based notification longitude
-  final String? locationName; // Human-readable location name (e.g., "Home", "Office")
-  final double? locationRadius; // Geofence radius in meters (default: 100m)
-  final int position; // Order position for drag and drop sorting (per category)
 
+  /// The title/name of the todo task.
+  final String title;
+
+  /// Optional detailed description of the task.
+  final String description;
+
+  /// Whether the task has been completed.
+  final bool isCompleted;
+
+  /// The ID of the category this todo belongs to, if any.
+  final int? categoryId;
+
+  /// When the todo was created.
+  final DateTime createdAt;
+
+  /// When the todo was marked as completed, if applicable.
+  final DateTime? completedAt;
+
+  /// The due date for the task, if set.
+  final DateTime? dueDate;
+
+  /// When to send a notification reminder, if set.
+  final DateTime? notificationTime;
+
+  /// RRULE format recurrence rule (e.g., "FREQ=DAILY;INTERVAL=1").
+  ///
+  /// Uses the iCalendar RRULE specification for defining repeating patterns.
+  final String? recurrenceRule;
+
+  /// Reference to the parent recurring todo that generated this instance.
+  ///
+  /// If set, this todo is an instance of a recurring todo series.
+  final int? parentRecurringTodoId;
+
+  /// Number of times the notification has been snoozed.
+  final int snoozeCount;
+
+  /// When the notification was last snoozed.
+  final DateTime? lastSnoozeTime;
+
+  /// Latitude for location-based notification geofence.
+  final double? locationLatitude;
+
+  /// Longitude for location-based notification geofence.
+  final double? locationLongitude;
+
+  /// Human-readable location name (e.g., "Home", "Office").
+  final String? locationName;
+
+  /// Geofence radius in meters for location-based notifications (default: 100m).
+  final double? locationRadius;
+
+  /// Order position for drag-and-drop sorting within a category.
+  final int position;
+
+  /// Creates a new [Todo] instance.
   const Todo({
     required this.id,
     required this.title,
@@ -39,6 +99,7 @@ class Todo {
     this.position = 0,
   });
 
+  /// Creates a copy of this todo with the given fields replaced.
   Todo copyWith({
     int? id,
     String? title,

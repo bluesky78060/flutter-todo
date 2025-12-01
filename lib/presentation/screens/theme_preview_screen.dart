@@ -1,3 +1,18 @@
+/// Theme preview screen for comparing light and dark mode appearances.
+///
+/// Features:
+/// - Side-by-side or toggle comparison of themes
+/// - Sample todo list preview in each theme
+/// - Interactive toggle between light/dark modes
+/// - Preview of all UI elements (cards, buttons, text)
+///
+/// Accessed from settings screen theme section.
+///
+/// See also:
+/// - [themeProvider] for theme state management
+/// - [AppColors] for theme color definitions
+library;
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
@@ -5,7 +20,7 @@ import 'package:todo_app/core/theme/app_colors.dart';
 import 'package:todo_app/domain/entities/category.dart';
 import 'package:todo_app/domain/entities/todo.dart';
 
-/// 라이트/다크 모드 테마 미리보기 화면
+/// Screen for previewing light/dark theme appearances.
 class ThemePreviewScreen extends StatefulWidget {
   const ThemePreviewScreen({super.key});
 
@@ -17,24 +32,25 @@ class _ThemePreviewScreenState extends State<ThemePreviewScreen> {
   bool _isDarkMode = false;
 
   // 샘플 데이터
-  final _sampleCategory = Category(
-    id: 1,
-    userId: 'preview-user',
-    name: '업무',
-    color: '#2B8DEE',
-    createdAt: DateTime.now(),
-  );
+  late final Category _sampleCategory;
 
   late final List<Todo> _sampleTodos;
 
   @override
   void initState() {
     super.initState();
+    _sampleCategory = Category(
+      id: 1,
+      userId: 'preview-user',
+      name: 'preview_category_work'.tr(),
+      color: '#2B8DEE',
+      createdAt: DateTime.now(),
+    );
     _sampleTodos = [
       Todo(
         id: 1,
-        title: '프로젝트 기획서 작성',
-        description: '2025년 1분기 신규 프로젝트 기획안 작성',
+        title: 'preview_todo_1'.tr(),
+        description: 'preview_desc_1'.tr(),
         isCompleted: false,
         categoryId: 1,
         dueDate: DateTime.now().add(const Duration(days: 2)),
@@ -43,8 +59,8 @@ class _ThemePreviewScreenState extends State<ThemePreviewScreen> {
       ),
       Todo(
         id: 2,
-        title: '팀 회의 참석',
-        description: '주간 스프린트 리뷰 미팅',
+        title: 'preview_todo_2'.tr(),
+        description: '',
         isCompleted: true,
         categoryId: 1,
         completedAt: DateTime.now(),
@@ -52,8 +68,8 @@ class _ThemePreviewScreenState extends State<ThemePreviewScreen> {
       ),
       Todo(
         id: 3,
-        title: '코드 리뷰 요청',
-        description: 'PR #123 검토 요청',
+        title: 'preview_todo_3'.tr(),
+        description: '',
         isCompleted: false,
         categoryId: 1,
         dueDate: DateTime.now().add(const Duration(hours: 5)),
@@ -70,7 +86,7 @@ class _ThemePreviewScreenState extends State<ThemePreviewScreen> {
         backgroundColor: AppColors.getBackground(_isDarkMode),
         appBar: AppBar(
           title: Text(
-            '테마 미리보기',
+            'theme_preview'.tr(),
             style: TextStyle(
               color: AppColors.getText(_isDarkMode),
               fontWeight: FontWeight.bold,
@@ -173,7 +189,7 @@ class _ThemePreviewScreenState extends State<ThemePreviewScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  _isDarkMode ? '다크 모드' : '라이트 모드',
+                  _isDarkMode ? 'dark_mode'.tr() : 'light_mode'.tr(),
                   style: const TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
@@ -182,7 +198,7 @@ class _ThemePreviewScreenState extends State<ThemePreviewScreen> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  _isDarkMode ? '어두운 테마 활성화' : '밝은 테마 활성화',
+                  _isDarkMode ? 'dark_theme_enabled'.tr() : 'light_theme_enabled'.tr(),
                   style: TextStyle(
                     fontSize: 14,
                     color: Colors.white.withOpacity(0.9),
@@ -286,7 +302,7 @@ class _ThemePreviewScreenState extends State<ThemePreviewScreen> {
               ),
               const SizedBox(width: 12),
               Text(
-                _isDarkMode ? '다크 모드' : '라이트 모드',
+                _isDarkMode ? 'dark_mode'.tr() : 'light_mode'.tr(),
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
@@ -297,9 +313,7 @@ class _ThemePreviewScreenState extends State<ThemePreviewScreen> {
           ),
           const SizedBox(height: 12),
           Text(
-            _isDarkMode
-                ? '어두운 배경으로 눈의 피로를 줄이고 배터리를 절약할 수 있습니다.'
-                : '밝은 배경으로 더 선명하고 깔끔한 화면을 제공합니다.',
+            _isDarkMode ? 'dark_theme_enabled'.tr() : 'light_theme_enabled'.tr(),
             style: TextStyle(
               fontSize: 14,
               color: AppColors.getTextSecondary(_isDarkMode),
@@ -316,7 +330,7 @@ class _ThemePreviewScreenState extends State<ThemePreviewScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          '색상 팔레트',
+          'preview_color_palette'.tr(),
           style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
@@ -336,18 +350,18 @@ class _ThemePreviewScreenState extends State<ThemePreviewScreen> {
           ),
           child: Column(
             children: [
-              _buildColorRow('배경색', AppColors.getBackground(_isDarkMode)),
+              _buildColorRow('Background', AppColors.getBackground(_isDarkMode)),
               const SizedBox(height: 12),
-              _buildColorRow('카드 배경', AppColors.getCard(_isDarkMode)),
+              _buildColorRow('Card Background', AppColors.getCard(_isDarkMode)),
               const SizedBox(height: 12),
-              _buildColorRow('입력 필드', AppColors.getInput(_isDarkMode)),
+              _buildColorRow('Input Field', AppColors.getInput(_isDarkMode)),
               const SizedBox(height: 12),
-              _buildColorRow('테두리', AppColors.getBorder(_isDarkMode)),
+              _buildColorRow('Border', AppColors.getBorder(_isDarkMode)),
               const SizedBox(height: 12),
-              _buildColorRow('주요 텍스트', AppColors.getText(_isDarkMode)),
+              _buildColorRow('Primary Text', AppColors.getText(_isDarkMode)),
               const SizedBox(height: 12),
               _buildColorRow(
-                  '보조 텍스트', AppColors.getTextSecondary(_isDarkMode)),
+                  'Secondary Text', AppColors.getTextSecondary(_isDarkMode)),
               const SizedBox(height: 12),
               _buildColorRow('Primary Blue', AppColors.primaryBlue),
               const SizedBox(height: 12),
@@ -412,7 +426,7 @@ class _ThemePreviewScreenState extends State<ThemePreviewScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Todo 리스트 미리보기',
+          'Todo List Preview',
           style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
@@ -543,7 +557,7 @@ class _ThemePreviewScreenState extends State<ThemePreviewScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          '버튼 스타일',
+          'preview_button_styles'.tr(),
           style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
@@ -577,7 +591,7 @@ class _ThemePreviewScreenState extends State<ThemePreviewScreen> {
                     ),
                   ),
                   child: const Text(
-                    'Primary 버튼',
+                    'Primary Button',
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
@@ -600,7 +614,7 @@ class _ThemePreviewScreenState extends State<ThemePreviewScreen> {
                     ),
                   ),
                   child: const Text(
-                    'Success 버튼',
+                    'Success Button',
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
@@ -623,7 +637,7 @@ class _ThemePreviewScreenState extends State<ThemePreviewScreen> {
                     ),
                   ),
                   child: const Text(
-                    'Danger 버튼',
+                    'Danger Button',
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
@@ -649,7 +663,7 @@ class _ThemePreviewScreenState extends State<ThemePreviewScreen> {
                     ),
                   ),
                   child: const Text(
-                    'Outlined 버튼',
+                    'Outlined Button',
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
@@ -669,7 +683,7 @@ class _ThemePreviewScreenState extends State<ThemePreviewScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          '입력 필드',
+          'preview_input_fields'.tr(),
           style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
@@ -692,7 +706,7 @@ class _ThemePreviewScreenState extends State<ThemePreviewScreen> {
               // 일반 입력 필드
               TextField(
                 decoration: InputDecoration(
-                  hintText: '할 일 제목을 입력하세요',
+                  hintText: 'Enter todo title',
                   hintStyle: TextStyle(
                     color: AppColors.getTextSecondary(_isDarkMode),
                   ),
@@ -726,7 +740,7 @@ class _ThemePreviewScreenState extends State<ThemePreviewScreen> {
               // 검색 입력 필드
               TextField(
                 decoration: InputDecoration(
-                  hintText: '검색...',
+                  hintText: 'Search...',
                   hintStyle: TextStyle(
                     color: AppColors.getTextSecondary(_isDarkMode),
                   ),
@@ -769,18 +783,18 @@ class _ThemePreviewScreenState extends State<ThemePreviewScreen> {
 
   Widget _buildCategoryChipPreview() {
     final categories = [
-      ('업무', '#2B8DEE'),
-      ('개인', '#10B981'),
-      ('쇼핑', '#FF9933'),
-      ('운동', '#EF4444'),
-      ('학습', '#8B5CF6'),
+      ('preview_category_work'.tr(), '#2B8DEE'),
+      ('preview_category_personal'.tr(), '#10B981'),
+      ('preview_category_shopping'.tr(), '#FF9933'),
+      ('preview_category_exercise'.tr(), '#EF4444'),
+      ('preview_category_learning'.tr(), '#8B5CF6'),
     ];
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          '카테고리 칩',
+          'Category Chips',
           style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,

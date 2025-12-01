@@ -1,3 +1,27 @@
+/// Main todo list screen - the primary view of the application.
+///
+/// Features:
+/// - Displays todos with filtering (all/pending/completed)
+/// - Category-based filtering
+/// - Search functionality with debounce
+/// - Infinite scroll pagination
+/// - Pull-to-refresh
+/// - Swipe-to-delete with undo
+/// - Quick add via FAB
+/// - Home screen widget synchronization
+///
+/// Permissions handled on first launch:
+/// - Notifications (POST_NOTIFICATIONS on Android 13+)
+/// - Exact alarms (SCHEDULE_EXACT_ALARM on Android 12+)
+/// - Location (for geofencing features)
+/// - Battery optimization exemption (for reliable reminders)
+///
+/// See also:
+/// - [TodoFormDialog] for creating/editing todos
+/// - [CustomTodoItem] for individual todo rendering
+/// - [todosProvider] for todo data management
+library;
+
 import 'dart:async';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
@@ -29,6 +53,7 @@ import 'package:todo_app/presentation/providers/performance_monitor_provider.dar
 import 'package:todo_app/presentation/providers/image_cache_provider.dart';
 import 'package:todo_app/core/utils/app_logger.dart';
 
+/// Main screen displaying the todo list with filtering and search.
 class TodoListScreen extends ConsumerStatefulWidget {
   const TodoListScreen({super.key});
 
@@ -1573,7 +1598,7 @@ class _RecurringTodoGroupState extends ConsumerState<_RecurringTodoGroup> {
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(
-                        '$totalCount개',
+                        '$totalCount',
                         style: const TextStyle(
                           color: AppColors.primaryBlue,
                           fontSize: 12,

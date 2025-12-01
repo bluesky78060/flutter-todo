@@ -1,3 +1,21 @@
+/// Home screen widget configuration screen (Android only).
+///
+/// Features:
+/// - Enable/disable home screen widget
+/// - Select widget view type (calendar or todo list)
+/// - Preview widget appearance
+/// - Manual widget refresh
+///
+/// Widget types:
+/// - Calendar widget: Shows monthly view with todo counts
+/// - Todo list widget: Shows today's todos with checkboxes
+///
+/// See also:
+/// - [widgetServiceProvider] for widget data management
+/// - [WidgetMethodChannelHandler] for native communication
+/// - Android widget implementation in `android/app/src/main/kotlin/`
+library;
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -6,7 +24,7 @@ import 'package:todo_app/core/theme/app_colors.dart';
 import 'package:todo_app/core/widget/widget_models.dart';
 import 'package:todo_app/presentation/providers/widget_provider.dart';
 
-/// Screen for configuring home screen widget settings
+/// Screen for configuring Android home screen widget settings.
 class WidgetConfigScreen extends ConsumerWidget {
   const WidgetConfigScreen({Key? key}) : super(key: key);
 
@@ -447,6 +465,26 @@ class _WidgetThemeConfigScreenState
     );
   }
 
+  /// Get current month name from translation
+  String _getCurrentMonthName() {
+    final now = DateTime.now();
+    final monthKeys = [
+      'month_january',
+      'month_february',
+      'month_march',
+      'month_april',
+      'month_may',
+      'month_june',
+      'month_july',
+      'month_august',
+      'month_september',
+      'month_october',
+      'month_november',
+      'month_december',
+    ];
+    return tr(monthKeys[now.month - 1]);
+  }
+
   Widget _buildPreview() {
     // blue and purple themes also have dark backgrounds requiring white text
     final isDark = _selectedTheme == 'dark' ||
@@ -486,9 +524,9 @@ class _WidgetThemeConfigScreenState
               ),
             ),
             const Divider(height: 16),
-            _buildPreviewTodoItem('○  Task 1', '', textColor, subTextColor),
-            _buildPreviewTodoItem('○  Task 2', '14:00', textColor, subTextColor),
-            _buildPreviewTodoItem('○  Task 3', '', textColor, subTextColor),
+            _buildPreviewTodoItem('○  ${tr('widget_preview_task_1')}', '', textColor, subTextColor),
+            _buildPreviewTodoItem('○  ${tr('widget_preview_task_2')}', '14:00', textColor, subTextColor),
+            _buildPreviewTodoItem('○  ${tr('widget_preview_task_3')}', '', textColor, subTextColor),
             const SizedBox(height: 8),
             Center(
               child: Text(
@@ -503,6 +541,12 @@ class _WidgetThemeConfigScreenState
         ),
       );
     } else {
+      final now = DateTime.now();
+      final monthYearText = tr('widget_preview_month_year', namedArgs: {
+        'month': _getCurrentMonthName(),
+        'year': now.year.toString(),
+      });
+
       return Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
@@ -522,7 +566,7 @@ class _WidgetThemeConfigScreenState
         child: Column(
           children: [
             Text(
-              'November 2025',
+              monthYearText,
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,

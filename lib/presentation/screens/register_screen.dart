@@ -1,9 +1,24 @@
+/// User registration screen for email/password account creation.
+///
+/// Features:
+/// - Name, email, and password input
+/// - Form validation
+/// - Loading state during registration
+/// - Error feedback via snackbar
+/// - Navigation to login on success
+///
+/// See also:
+/// - [LoginScreen] for existing user sign in
+/// - [authActionsProvider] for registration logic
+library;
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:todo_app/presentation/providers/auth_providers.dart';
 
+/// Screen for new user registration.
 class RegisterScreen extends ConsumerStatefulWidget {
   const RegisterScreen({super.key});
 

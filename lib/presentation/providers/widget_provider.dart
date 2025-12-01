@@ -1,9 +1,23 @@
+/// Home screen widget state management providers using Riverpod.
+///
+/// Provides Android home screen widget functionality including:
+/// - Calendar widget with daily todo count
+/// - Todo list widget with today's tasks
+/// - Widget configuration and update management
+///
+/// Key providers:
+/// - [widgetServiceProvider]: Service for widget data and updates
+/// - [widgetConfigProvider]: Current widget configuration
+/// - [widgetCalendarDataProvider]: Calendar data for widget display
+/// - [widgetTodoListDataProvider]: Today's todos for widget display
+library;
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:todo_app/core/widget/widget_models.dart';
 import 'package:todo_app/core/widget/widget_service.dart';
 import 'package:todo_app/presentation/providers/database_provider.dart';
 
-/// Widget service provider
+/// Provides the widget service for home screen widget operations.
 final widgetServiceProvider = Provider<WidgetService>((ref) {
   final sharedPreferences = ref.watch(sharedPreferencesProvider);
   final todoRepository = ref.watch(todoRepositoryProvider);

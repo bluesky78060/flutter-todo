@@ -1,10 +1,26 @@
+/// Recurring todo edit mode selection dialog.
+///
+/// When editing a recurring todo instance, this dialog asks the user
+/// how the edit should be applied.
+///
+/// Options:
+/// - [RecurringEditMode.thisOnly]: Edit only the current instance (detach from series)
+/// - [RecurringEditMode.thisAndFuture]: Edit this and all future instances (update master)
+///
+/// Returns a [RecurringEditMode] value, or null if cancelled.
+///
+/// See also:
+/// - [RecurringDeleteDialog] for delete options on recurring todos
+/// - [TodoFormDialog] where this dialog is triggered
+library;
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:todo_app/core/theme/app_colors.dart';
 import 'package:todo_app/presentation/providers/theme_provider.dart';
 
-/// Dialog to ask user how to edit a recurring todo instance
+/// Dialog to ask user how to edit a recurring todo instance.
 ///
 /// Options:
 /// - Edit only this instance

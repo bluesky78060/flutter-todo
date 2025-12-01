@@ -1,6 +1,26 @@
+/// Notification snooze options dialog.
+///
+/// Allows users to postpone a notification reminder by a selected duration.
+///
+/// Preset options:
+/// - 5 minutes
+/// - 10 minutes
+/// - 30 minutes
+/// - 1 hour
+/// - 3 hours
+/// - Custom date/time picker
+///
+/// Returns a [Duration] representing the snooze period, or null if cancelled.
+///
+/// See also:
+/// - [NotificationService] for rescheduling notifications
+/// - [TodoDetailScreen] where snooze is triggered
+library;
+
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 
+/// Dialog presenting notification snooze duration options.
 class SnoozeDialog extends StatelessWidget {
   final VoidCallback? onDismiss;
 

@@ -5,9 +5,28 @@ import 'package:todo_app/data/datasources/local/app_database.dart';
 import 'package:todo_app/domain/entities/attachment.dart' as entity;
 import 'package:todo_app/domain/repositories/attachment_repository.dart';
 
+/// Local implementation of [AttachmentRepository] using Drift database.
+///
+/// This repository handles attachment metadata storage in the local database.
+/// The actual file content is stored on the filesystem or cloud storage.
+///
+/// Features:
+/// - Store attachment metadata (filename, size, mime type)
+/// - Associate attachments with todos
+/// - Delete attachments individually or by todo
+///
+/// Note: This implementation stores metadata only. File upload/download
+/// should be handled separately through storage services.
+///
+/// See also:
+/// - [AttachmentRepository] for the interface contract
+/// - [SupabaseAttachmentRepository] for cloud implementation
+/// - [Attachment] for the attachment entity
 class AttachmentRepositoryImpl implements AttachmentRepository {
+  /// The local Drift database.
   final AppDatabase database;
 
+  /// Creates an [AttachmentRepositoryImpl] with the given [database].
   AttachmentRepositoryImpl(this.database);
 
   @override

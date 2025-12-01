@@ -1,3 +1,23 @@
+/// Full-screen image viewer dialog for attachment images.
+///
+/// Downloads and displays image attachments from Supabase Storage
+/// with zoom and pan capabilities.
+///
+/// Features:
+/// - Downloads image from Supabase Storage to temp directory
+/// - Disk caching for improved performance on repeat views
+/// - Image optimization for memory efficiency
+/// - Interactive pinch-to-zoom with [InteractiveViewer]
+/// - Loading indicator while downloading
+/// - Error display with retry option
+/// - File info overlay (name, size)
+///
+/// See also:
+/// - [PdfViewerDialog] for PDF attachment viewing
+/// - [TextViewerDialog] for text file viewing
+/// - [attachmentServiceProvider] for download functionality
+library;
+
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -10,6 +30,7 @@ import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:todo_app/core/utils/app_logger.dart';
 
+/// Dialog for viewing image attachments with zoom support.
 class ImageViewerDialog extends ConsumerStatefulWidget {
   final entity.Attachment attachment;
 

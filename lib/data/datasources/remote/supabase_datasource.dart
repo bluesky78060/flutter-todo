@@ -4,12 +4,34 @@ import 'package:todo_app/core/utils/app_logger.dart';
 import 'package:todo_app/domain/entities/todo.dart';
 import 'package:todo_app/domain/entities/auth_user.dart' as domain;
 
+/// Remote data source for todo operations via Supabase.
+///
+/// This class handles all CRUD operations for todos in the Supabase database.
+/// Todos are user-specific and filtered by RLS (Row Level Security) policies.
+///
+/// Features:
+/// - Full CRUD operations for todos
+/// - Filtering by completion status
+/// - Search by title/description
+/// - Position-based ordering for drag-and-drop
+/// - Support for recurring todos, location-based reminders, and snooze
+///
+/// See also:
+/// - [SupabaseTodoRepository] for the repository implementation
+/// - [TodoRepository] for the repository interface
 class SupabaseTodoDataSource {
+  /// The Supabase client used for database operations.
   final SupabaseClient client;
 
+  /// Creates a new [SupabaseTodoDataSource] with the given [client].
   SupabaseTodoDataSource(this.client);
 
-  // Get all todos for current user
+  /// Retrieves all todos for the current authenticated user.
+  ///
+  /// Todos are ordered by position (ascending) for drag-and-drop support.
+  /// Returns a list of [Todo] entities.
+  ///
+  /// Throws an exception with detailed error message if the query fails.
   Future<List<Todo>> getTodos() async {
     try {
       if (kDebugMode) {
@@ -31,13 +53,13 @@ class SupabaseTodoDataSource {
 
       // Provide detailed error message
       if (e.toString().contains('permission')) {
-        throw Exception('권한 오류: Supabase RLS 정책을 확인하세요 - $e');
+        throw Exception('Permission error: Check Supabase RLS policy - $e');
       } else if (e.toString().contains('network')) {
-        throw Exception('네트워크 오류: 인터넷 연결을 확인하세요 - $e');
+        throw Exception('Network error: Check your internet connection - $e');
       } else if (e.toString().contains('column')) {
-        throw Exception('DB 스키마 오류: 컬럼이 존재하지 않습니다 - $e');
+        throw Exception('DB schema error: Column does not exist - $e');
       } else {
-        throw Exception('Supabase 쿼리 실패: ${e.toString()}');
+        throw Exception('Supabase query failed: ${e.toString()}');
       }
     }
   }
@@ -88,13 +110,13 @@ class SupabaseTodoDataSource {
 
       // Provide detailed error message
       if (e.toString().contains('permission')) {
-        throw Exception('권한 오류: Supabase RLS 정책을 확인하세요 - $e');
+        throw Exception('Permission error: Check Supabase RLS policy - $e');
       } else if (e.toString().contains('network')) {
-        throw Exception('네트워크 오류: 인터넷 연결을 확인하세요 - $e');
+        throw Exception('Network error: Check your internet connection - $e');
       } else if (e.toString().contains('column')) {
-        throw Exception('DB 스키마 오류: 컬럼이 존재하지 않습니다 - $e');
+        throw Exception('DB schema error: Column does not exist - $e');
       } else {
-        throw Exception('Supabase 쿼리 실패: ${e.toString()}');
+        throw Exception('Supabase query failed: ${e.toString()}');
       }
     }
   }
@@ -122,7 +144,7 @@ class SupabaseTodoDataSource {
     try {
       final userId = client.auth.currentUser?.id;
       if (userId == null) {
-        throw Exception('로그인이 필요합니다. 다시 로그인해주세요.');
+        throw Exception('Login required. Please log in again.');
       }
 
       // 최대 position 값을 구해서 새 position 계산
@@ -174,11 +196,11 @@ class SupabaseTodoDataSource {
 
       // Supabase 에러를 좀 더 명확하게 표시
       if (e.toString().contains('permission')) {
-        throw Exception('권한 오류: Supabase RLS 정책을 확인하세요');
+        throw Exception('Permission error: Check Supabase RLS policy');
       } else if (e.toString().contains('network')) {
-        throw Exception('네트워크 오류: 인터넷 연결을 확인하세요');
+        throw Exception('Network error: Check your internet connection');
       } else {
-        throw Exception('DB 저장 실패: ${e.toString()}');
+        throw Exception('Database save failed: ${e.toString()}');
       }
     }
   }
@@ -210,7 +232,7 @@ class SupabaseTodoDataSource {
     try {
       final userId = client.auth.currentUser?.id;
       if (userId == null) {
-        throw Exception('로그인이 필요합니다. 다시 로그인해주세요.');
+        throw Exception('Login required. Please log in again.');
       }
 
       if (kDebugMode) {
@@ -227,13 +249,13 @@ class SupabaseTodoDataSource {
 
       // Supabase 에러를 좀 더 명확하게 표시
       if (e.toString().contains('permission')) {
-        throw Exception('권한 오류: Supabase RLS 정책을 확인하세요');
+        throw Exception('Permission error: Check Supabase RLS policy');
       } else if (e.toString().contains('network')) {
-        throw Exception('네트워크 오류: 인터넷 연결을 확인하세요');
+        throw Exception('Network error: Check your internet connection');
       } else if (e.toString().contains('not found')) {
-        throw Exception('항목을 찾을 수 없습니다');
+        throw Exception('Item not found');
       } else {
-        throw Exception('DB 삭제 실패: ${e.toString()}');
+        throw Exception('Database delete failed: ${e.toString()}');
       }
     }
   }
@@ -345,12 +367,27 @@ class SupabaseTodoDataSource {
   }
 }
 
+/// Remote data source for authentication operations via Supabase.
+///
+/// This class handles all authentication operations including:
+/// - Email/password authentication
+/// - User registration
+/// - Session management
+/// - Auth state changes stream
+///
+/// See also:
+/// - [SupabaseAuthRepository] for the repository implementation
+/// - [AuthRepository] for the repository interface
 class SupabaseAuthDataSource {
+  /// The Supabase client used for authentication operations.
   final SupabaseClient client;
 
+  /// Creates a new [SupabaseAuthDataSource] with the given [client].
   SupabaseAuthDataSource(this.client);
 
-  // Get current user
+  /// Retrieves the currently authenticated user.
+  ///
+  /// Returns an [AuthUser] if logged in, null otherwise.
   Future<domain.AuthUser?> getCurrentUser() async {
     final user = client.auth.currentUser;
     if (user == null) return null;

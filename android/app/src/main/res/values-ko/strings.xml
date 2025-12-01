@@ -9,6 +9,8 @@
     <string name="widget_task_1">할 일 1</string>
     <string name="widget_task_2">할 일 2</string>
     <string name="widget_task_3">할 일 3</string>
+    <string name="widget_task_4">할 일 4</string>
+    <string name="widget_task_5">할 일 5</string>
     <string name="widget_tap_to_view">탭하여 전체 보기</string>
     <string name="widget_checkbox">○</string>
 
@@ -21,4 +23,17 @@
     <string name="widget_day_fri">금</string>
     <string name="widget_day_sat">토</string>
     <string name="widget_day_sun">일</string>
+
+    <!-- Date group strings -->
+    <string name="widget_group_today">오늘</string>
+    <string name="widget_group_tomorrow">내일</string>
+    <string name="widget_group_this_week">이번 주</string>
+    <string name="widget_group_next_week">다음 주</string>
+    <string name="widget_group_later">나중에</string>
+    <string name="widget_group_overdue">지남</string>
+
+    <!-- Progress strings -->
+    <string name="widget_progress_format">%d/%d 완료</string>
+    <string name="widget_no_tasks">할 일 없음</string>
+    <string name="widget_delete_confirm">삭제됨</string>
 </resources>

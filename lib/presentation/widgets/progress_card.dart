@@ -1,9 +1,33 @@
+/// Todo completion progress card widget.
+///
+/// Displays a visual progress indicator showing how many todos
+/// have been completed out of the total.
+///
+/// Features:
+/// - Completion count badge (completed/total)
+/// - Gradient progress bar
+/// - Shadow and card styling
+///
+/// Example:
+/// ```dart
+/// ProgressCard(
+///   completed: 5,
+///   total: 10,
+/// )
+/// ```
+///
+/// See also:
+/// - [TodoListScreen] where this is used
+/// - [StatisticsScreen] for more detailed analytics
+library;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:todo_app/core/theme/app_colors.dart';
 import 'package:todo_app/presentation/providers/theme_provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 
+/// Card widget displaying todo completion progress with a visual bar.
 class ProgressCard extends ConsumerWidget {
   final int completed;
   final int total;

@@ -1,3 +1,19 @@
+/// Todo state management providers using Riverpod.
+///
+/// This is the main provider file for todo operations, including:
+/// - Todo list filtering and search
+/// - CRUD operations with recurring todo support
+/// - Notification scheduling
+/// - Home screen widget updates
+/// - Sync state management
+///
+/// Key providers:
+/// - [todosProvider]: Filtered list of todos
+/// - [todoFilterProvider]: Current filter state (all/pending/completed)
+/// - [todoActionsProvider]: CRUD operations for todos
+/// - [notificationServiceProvider]: Notification scheduling service
+library;
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -11,22 +27,25 @@ import 'package:todo_app/presentation/widgets/recurring_delete_dialog.dart';
 import 'package:todo_app/presentation/providers/attachment_providers.dart';
 import 'package:todo_app/presentation/providers/widget_provider.dart';
 
-// Todo filter state
+/// Todo filter options for displaying todos.
 enum TodoFilter { all, pending, completed }
 
+/// Notifier for managing the current todo filter state.
 class TodoFilterNotifier extends Notifier<TodoFilter> {
   @override
   TodoFilter build() => TodoFilter.all;
 
+  /// Sets the current filter to display todos.
   void setFilter(TodoFilter filter) {
     state = filter;
   }
 }
 
+/// Provides the current todo filter state.
 final todoFilterProvider =
     NotifierProvider<TodoFilterNotifier, TodoFilter>(TodoFilterNotifier.new);
 
-// Category filter state
+/// Notifier for filtering todos by category.
 class CategoryFilterNotifier extends Notifier<int?> {
   @override
   int? build() => null; // null means no category filter
@@ -40,10 +59,11 @@ class CategoryFilterNotifier extends Notifier<int?> {
   }
 }
 
+/// Provides the current category filter (null = all categories).
 final categoryFilterProvider =
     NotifierProvider<CategoryFilterNotifier, int?>(CategoryFilterNotifier.new);
 
-// Search query state
+/// Notifier for managing the search query state.
 class SearchQueryNotifier extends Notifier<String> {
   @override
   String build() => '';
@@ -57,10 +77,18 @@ class SearchQueryNotifier extends Notifier<String> {
   }
 }
 
+/// Provides the current search query string.
 final searchQueryProvider =
     NotifierProvider<SearchQueryNotifier, String>(SearchQueryNotifier.new);
 
-// Todos List Provider
+/// Provides the filtered and searched list of todos.
+///
+/// Applies filters in order:
+/// 1. Search query (if present, overrides completion filter)
+/// 2. Completion status filter (all/pending/completed)
+/// 3. Category filter (if selected)
+///
+/// Master recurring todos are automatically hidden; only instances are shown.
 final todosProvider = FutureProvider<List<Todo>>((ref) async {
   final repository = ref.watch(todoRepositoryProvider);
   final filter = ref.watch(todoFilterProvider);
@@ -98,7 +126,9 @@ final todosProvider = FutureProvider<List<Todo>>((ref) async {
   );
 });
 
-// Todo Detail Provider
+/// Provides a single todo by its ID.
+///
+/// Uses family modifier for caching by ID.
 final todoDetailProvider =
     FutureProvider.family<Todo, int>((ref, id) async {
   final repository = ref.watch(todoRepositoryProvider);
@@ -109,10 +139,17 @@ final todoDetailProvider =
   );
 });
 
-// Notification Service Provider
+/// Provides the notification service for scheduling reminders.
 final notificationServiceProvider = Provider((ref) => NotificationService());
 
-// Todo actions
+/// Action class for todo CRUD operations.
+///
+/// Handles all todo operations including:
+/// - Create/update/delete with sync state management
+/// - Recurring todo instance management
+/// - Notification scheduling and cancellation
+/// - Attachment cleanup on deletion
+/// - Home screen widget updates
 class TodoActions {
   final Ref ref;
   TodoActions(this.ref);
@@ -746,4 +783,5 @@ class TodoActions {
   }
 }
 
+/// Provides the [TodoActions] instance for todo operations.
 final todoActionsProvider = Provider((ref) => TodoActions(ref));

@@ -1,3 +1,26 @@
+/// Todo creation and editing form dialog.
+///
+/// Provides a comprehensive form for creating new todos or editing existing ones.
+///
+/// Features:
+/// - Title and description input
+/// - Category selection with color indicators
+/// - Due date picker with all-day option
+/// - Notification time scheduling
+/// - Recurrence rule configuration (RRULE)
+/// - Location-based reminder setup with geofencing
+/// - File attachment support (camera, gallery, files)
+///
+/// Modes:
+/// - **Create mode**: Pass `existingTodo: null` (default)
+/// - **Edit mode**: Pass `existingTodo` with the todo to modify
+///
+/// See also:
+/// - [RecurrenceSettingsDialog] for recurrence configuration
+/// - [LocationPickerDialog] for geofence location selection
+/// - [todosProvider] for todo state management
+library;
+
 import 'dart:io';
 import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import 'package:flutter/foundation.dart' show kIsWeb;
@@ -22,6 +45,7 @@ import 'package:todo_app/core/services/geofence_workmanager_service.dart';
 import 'package:todo_app/core/services/attachment_service.dart';
 import 'package:todo_app/presentation/providers/widget_provider.dart';
 
+/// Dialog for creating or editing a todo item.
 class TodoFormDialog extends ConsumerStatefulWidget {
   final Todo? existingTodo; // null = create mode, not null = edit mode
 

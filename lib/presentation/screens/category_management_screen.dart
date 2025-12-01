@@ -1,3 +1,19 @@
+/// Category management screen for CRUD operations on todo categories.
+///
+/// Features:
+/// - List all categories with color indicators
+/// - Create new categories with custom colors
+/// - Edit existing category names and colors
+/// - Delete categories (with confirmation)
+/// - Color picker with predefined palette
+///
+/// Accessed from settings screen.
+///
+/// See also:
+/// - [categoriesProvider] for category data
+/// - [CategoryActions] for CRUD operations
+library;
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -9,6 +25,7 @@ import 'package:todo_app/presentation/providers/auth_providers.dart';
 import 'package:todo_app/presentation/providers/category_providers.dart';
 import 'package:todo_app/presentation/providers/theme_provider.dart';
 
+/// Screen for managing todo categories.
 class CategoryManagementScreen extends ConsumerWidget {
   const CategoryManagementScreen({super.key});
 

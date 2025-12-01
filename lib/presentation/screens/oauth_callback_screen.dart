@@ -1,3 +1,23 @@
+/// OAuth callback handling screen for completing authentication flow.
+///
+/// Features:
+/// - Handles OAuth redirect after Google/Kakao authentication
+/// - Displays loading indicator during auth state verification
+/// - Automatically redirects to todos screen on success
+/// - Redirects to login screen on failure
+///
+/// This screen is registered at `/oauth-callback` route and is
+/// the target for OAuth provider redirects.
+///
+/// Web-specific:
+/// - Receives auth tokens via URL fragment
+/// - Supabase SDK automatically processes tokens
+///
+/// See also:
+/// - [LoginScreen] for initiating OAuth flow
+/// - [authNotifierProvider] for auth state management
+library;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -5,9 +25,7 @@ import 'package:todo_app/core/constants/app_constants.dart';
 import 'package:todo_app/presentation/providers/auth_providers.dart';
 import 'package:todo_app/core/utils/app_logger.dart';
 
-/// OAuth callback landing screen
-/// This screen is shown briefly after OAuth authentication completes
-/// It checks auth state and redirects appropriately
+/// Landing screen for OAuth callback processing.
 class OAuthCallbackScreen extends ConsumerStatefulWidget {
   const OAuthCallbackScreen({super.key});
 

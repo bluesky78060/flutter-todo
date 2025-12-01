@@ -5,9 +5,26 @@ import 'package:todo_app/data/datasources/local/app_database.dart';
 import 'package:todo_app/domain/entities/subtask.dart' as entity;
 import 'package:todo_app/domain/repositories/subtask_repository.dart';
 
+/// Local implementation of [SubtaskRepository] using Drift database.
+///
+/// This repository handles all subtask operations for todos stored locally.
+/// Subtasks are checklist items within a todo that can be individually completed.
+///
+/// Features:
+/// - CRUD operations for subtasks
+/// - Position-based ordering within a todo
+/// - Completion toggling
+/// - Stats aggregation (total/completed counts)
+///
+/// See also:
+/// - [SubtaskRepository] for the interface contract
+/// - [Subtask] for the subtask entity
+/// - [AppDatabase] for the underlying database
 class SubtaskRepositoryImpl implements SubtaskRepository {
+  /// The local Drift database.
   final AppDatabase _database;
 
+  /// Creates a [SubtaskRepositoryImpl] with the given database.
   SubtaskRepositoryImpl(this._database);
 
   @override

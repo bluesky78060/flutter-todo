@@ -1,10 +1,20 @@
+/// Backup and restore state management providers using Riverpod.
+///
+/// Provides data export and import functionality for user data backup.
+/// Supports JSON file export/import with configurable import strategies.
+///
+/// Key providers:
+/// - [backupServiceFutureProvider]: Backup service instance
+/// - [backupActionsProvider]: Export and import operations
+library;
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:todo_app/core/services/backup_service.dart';
 import 'package:todo_app/presentation/providers/database_provider.dart';
 import 'package:todo_app/presentation/providers/category_providers.dart';
 
-/// Future provider for BackupService with SharedPreferences
+/// Provides the backup service for export/import operations.
 final backupServiceFutureProvider = FutureProvider<BackupService>((ref) async {
   final todoRepository = ref.watch(todoRepositoryProvider);
   final categoryRepository = ref.watch(categoryRepositoryProvider);
@@ -12,12 +22,14 @@ final backupServiceFutureProvider = FutureProvider<BackupService>((ref) async {
   return BackupService(prefs, todoRepository, categoryRepository);
 });
 
-/// Actions provider for backup operations
+/// Provides the backup actions for export/import operations.
 final backupActionsProvider = Provider<BackupActions>((ref) {
   return BackupActions(ref);
 });
 
-/// Backup actions class
+/// Action class for backup operations.
+///
+/// Provides export to JSON file and import with strategy selection.
 class BackupActions {
   final Ref _ref;
 

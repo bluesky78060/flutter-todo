@@ -1,3 +1,31 @@
+/// Optimized todo state management with client-side filtering.
+///
+/// This is the performance-optimized version of todo_providers.dart
+/// with the following improvements:
+///
+/// 1. **Base Data Caching**: Single database query for all todos,
+///    cached in [baseTodosProvider], only invalidated on CRUD operations.
+///
+/// 2. **Client-Side Filtering**: Filter operations run in memory (~1-5ms)
+///    instead of re-querying the database.
+///
+/// 3. **Layered Provider Architecture**:
+///    - [baseTodosProvider]: Raw data from database
+///    - [statusFilteredTodosProvider]: Completion status filter
+///    - [categoryFilteredTodosProvider]: Category filter
+///    - [searchResultsProvider]: Database search (only when needed)
+///    - [todosProvider]: Final smart selector
+///
+/// Performance characteristics:
+/// - Filter change: 1-5ms (in-memory)
+/// - Search: 50-200ms (database query)
+/// - CRUD: Invalidates baseTodosProvider → triggers refetch
+///
+/// See also:
+/// - [todo_providers.dart] for original implementation
+/// - [paginationProvider] for list virtualization
+library;
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -15,49 +43,61 @@ import 'package:todo_app/presentation/providers/widget_provider.dart';
 // FILTER STATE PROVIDERS (No changes - already optimal)
 // ============================================================================
 
+/// Filter options for todo list display.
 enum TodoFilter { all, pending, completed }
 
+/// Notifier for managing todo completion status filter.
 class TodoFilterNotifier extends Notifier<TodoFilter> {
   @override
   TodoFilter build() => TodoFilter.all;
 
+  /// Sets the current filter to show all, pending, or completed todos.
   void setFilter(TodoFilter filter) {
     state = filter;
   }
 }
 
+/// Provider for completion status filter state.
 final todoFilterProvider =
     NotifierProvider<TodoFilterNotifier, TodoFilter>(TodoFilterNotifier.new);
 
+/// Notifier for managing category filter selection.
 class CategoryFilterNotifier extends Notifier<int?> {
   @override
   int? build() => null;
 
+  /// Sets the category filter to show only todos in the specified category.
   void setCategory(int? categoryId) {
     state = categoryId;
   }
 
+  /// Clears the category filter to show todos from all categories.
   void clearCategory() {
     state = null;
   }
 }
 
+/// Provider for category filter state.
 final categoryFilterProvider =
     NotifierProvider<CategoryFilterNotifier, int?>(CategoryFilterNotifier.new);
 
+/// Notifier for managing search query state.
 class SearchQueryNotifier extends Notifier<String> {
   @override
   String build() => '';
 
+  /// Sets the search query for filtering todos by title/description.
   void setQuery(String query) {
     state = query;
   }
 
+  /// Clears the search query.
   void clearQuery() {
     state = '';
   }
 }
 
+/// Provider for search query state.
 final searchQueryProvider =
     NotifierProvider<SearchQueryNotifier, String>(SearchQueryNotifier.new);
 
@@ -65,9 +105,14 @@ final searchQueryProvider =
 // OPTIMIZED DATA LAYER: Base Todos Provider (Cached, No Filtering)
 // ============================================================================
 
-/// Base todos provider - fetches ALL todos once and caches them
-/// Only invalidated on CRUD operations, NOT on filter changes
-/// This is the single source of truth for todo data
+/// Base todos provider - the single source of truth for todo data.
+///
+/// Fetches ALL todos once and caches them. Only invalidated on CRUD
+/// operations, NOT on filter changes. This optimization reduces database
+/// queries from O(n) filter changes to O(1).
+///
+/// Master recurring todos are filtered out as they should not be displayed
+/// directly - only their generated instances are shown.
 final baseTodosProvider = FutureProvider<List<Todo>>((ref) async {
   final repository = ref.watch(todoRepositoryProvider);
 
@@ -99,9 +144,10 @@ final baseTodosProvider = FutureProvider<List<Todo>>((ref) async {
 // OPTIMIZED FILTERING LAYER: Client-Side Filtering (No DB Queries)
 // ============================================================================
 
-/// Filtered todos provider - applies completion status filter in memory
-/// Does NOT query database - works with cached baseTodosProvider data
-/// Performance: O(n) linear scan, ~1-5ms for typical todo lists
+/// Status-filtered todos provider - applies completion filter in memory.
+///
+/// Performance: O(n) linear scan, ~1-5ms for typical todo lists.
+/// Does NOT query database - works with cached baseTodosProvider data.
 final statusFilteredTodosProvider = Provider<AsyncValue<List<Todo>>>((ref) {
   final baseTodosAsync = ref.watch(baseTodosProvider);
   final filter = ref.watch(todoFilterProvider);
@@ -118,9 +164,10 @@ final statusFilteredTodosProvider = Provider<AsyncValue<List<Todo>>>((ref) {
   });
 });
 
-/// Category filtered todos provider - applies category filter in memory
-/// Builds on top of statusFilteredTodosProvider for progressive filtering
-/// Performance: O(n) linear scan, minimal overhead
+/// Category-filtered todos provider - applies category filter in memory.
+///
+/// Builds on top of statusFilteredTodosProvider for progressive filtering.
+/// Performance: O(n) linear scan, minimal overhead.
 final categoryFilteredTodosProvider = Provider<AsyncValue<List<Todo>>>((ref) {
   final statusFilteredAsync = ref.watch(statusFilteredTodosProvider);
   final categoryFilter = ref.watch(categoryFilterProvider);
@@ -137,9 +184,10 @@ final categoryFilteredTodosProvider = Provider<AsyncValue<List<Todo>>>((ref) {
 // SEARCH LAYER: Separate Provider for Search (DB Query Only When Needed)
 // ============================================================================
 
-/// Search results provider - queries database only when search query exists
-/// Uses debounced search query from searchQueryProvider
-/// Performance: Database query only on search, not on filter changes
+/// Search results provider - queries database only when search query exists.
+///
+/// Returns null when no search query is active, signaling to use filtered
+/// todos instead. Only performs database query when user is actively searching.
 final searchResultsProvider = FutureProvider<List<Todo>?>((ref) async {
   final repository = ref.watch(todoRepositoryProvider);
   final searchQuery = ref.watch(searchQueryProvider);
@@ -177,13 +225,16 @@ final searchResultsProvider = FutureProvider<List<Todo>?>((ref) async {
 // FINAL TODOS PROVIDER: Smart Selection Between Search and Filter
 // ============================================================================
 
-/// Main todos provider - smart selector between search results and filtered todos
-/// UI should watch this provider for the final list of todos to display
+/// Main todos provider - UI should watch this for the final todo list.
 ///
-/// Performance characteristics:
-/// - Filter change: 1-5ms (in-memory filtering only)
+/// Smart selector that chooses between:
+/// - Search results (when search query is active)
+/// - Filtered todos (when no search query)
+///
+/// Performance:
+/// - Filter change: 1-5ms (in-memory)
 /// - Search: 50-200ms (database query)
-/// - CRUD operation: Invalidates baseTodosProvider, triggers refetch
+/// - CRUD: Invalidates baseTodosProvider, triggers refetch
 final todosProvider = Provider<AsyncValue<List<Todo>>>((ref) {
   final searchResultsAsync = ref.watch(searchResultsProvider);
   final categoryFilteredAsync = ref.watch(categoryFilteredTodosProvider);
@@ -202,6 +253,7 @@ final todosProvider = Provider<AsyncValue<List<Todo>>>((ref) {
 // TODO DETAIL PROVIDER (No changes needed)
 // ============================================================================
 
+/// Provides a single todo by ID for detail view.
 final todoDetailProvider =
     FutureProvider.family<Todo, int>((ref, id) async {
   final repository = ref.watch(todoRepositoryProvider);
@@ -216,24 +268,32 @@ final todoDetailProvider =
 // NOTIFICATION SERVICE PROVIDER (No changes needed)
 // ============================================================================
 
+/// Provides the notification service for scheduling reminders.
 final notificationServiceProvider = Provider((ref) => NotificationService());
 
 // ============================================================================
 // OPTIMIZED TODO ACTIONS: Reduced Unnecessary Invalidations
 // ============================================================================
 
+/// Action class for todo CRUD operations with optimized invalidation.
+///
+/// Key optimization: Only invalidates [baseTodosProvider], allowing
+/// filtered providers to automatically update via dependency chain.
 class TodoActions {
   final Ref ref;
   TodoActions(this.ref);
 
-  /// Helper to invalidate only the base provider (not filtered providers)
-  /// Filtered providers will automatically update via their dependencies
+  /// Invalidates only the base provider, not filtered providers.
+  ///
+  /// Filtered providers automatically update via dependency chain,
+  /// so explicit invalidation would be redundant and wasteful.
   void _invalidateTodos() {
     logger.d('🔄 TodoActions: Invalidating baseTodosProvider only');
     ref.invalidate(baseTodosProvider);
-    // Note: No need to invalidate todosProvider - it will update automatically
+    // Note: todosProvider updates automatically via dependency chain
   }
 
+  /// Creates a new todo with optional notification and recurrence.
   Future<void> createTodo(
     String title,
     String description,
@@ -310,6 +370,7 @@ class TodoActions {
     _updateWidget();
   }
 
+  /// Updates the home screen widget with current todo data.
   void _updateWidget() {
     try {
       final widgetService = ref.read(widgetServiceProvider);
@@ -320,6 +381,7 @@ class TodoActions {
     }
   }
 
+  /// Updates an existing todo with optional recurring mode handling.
   Future<void> updateTodo(
     Todo todo, {
     RecurringEditMode? recurringEditMode,
@@ -437,6 +499,7 @@ class TodoActions {
     }
   }
 
+  /// Deletes a todo with optional recurring mode handling.
   Future<void> deleteTodo(
     int id, {
     RecurringDeleteMode? recurringDeleteMode,
@@ -516,6 +579,7 @@ class TodoActions {
     );
   }
 
+  /// Helper to delete a single todo with cleanup.
   Future<void> _deleteSingleTodo(
     int id,
     NotificationService notificationService,
@@ -550,6 +614,7 @@ class TodoActions {
     );
   }
 
+  /// Toggles the completion status of a todo.
   Future<void> toggleCompletion(int id) async {
     final repository = ref.read(todoRepositoryProvider);
     final syncNotifier = ref.read(syncStateProvider.notifier);
@@ -596,6 +661,7 @@ class TodoActions {
     );
   }
 
+  /// Reschedules a todo to a new date, preserving the original time.
   Future<void> rescheduleTodo(int id, DateTime newDate) async {
     final repository = ref.read(todoRepositoryProvider);
     final notificationService = ref.read(notificationServiceProvider);
@@ -662,6 +728,7 @@ class TodoActions {
     );
   }
 
+  /// Deletes all completed todos and returns the count deleted.
   Future<int> deleteCompletedTodos() async {
     final repository = ref.read(todoRepositoryProvider);
     final result = await repository.deleteCompletedTodos();
@@ -676,6 +743,7 @@ class TodoActions {
     );
   }
 
+  /// Updates the display positions of todos for drag-and-drop reordering.
   Future<void> updateTodoPositions(List<Todo> todos) async {
     final repository = ref.read(todoRepositoryProvider);
     final result = await repository.updateTodoPositions(todos);
@@ -691,4 +759,5 @@ class TodoActions {
   }
 }
 
+/// Provider for todo action operations.
 final todoActionsProvider = Provider((ref) => TodoActions(ref));

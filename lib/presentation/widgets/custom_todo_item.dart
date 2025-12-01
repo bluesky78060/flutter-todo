@@ -1,3 +1,25 @@
+/// Custom todo list item widget with animations and interactions.
+///
+/// A reusable widget displaying a single todo item in the list.
+///
+/// Features:
+/// - Animated scale-in entrance effect
+/// - Hover state with subtle slide animation
+/// - Custom checkbox with gradient fill when completed
+/// - Strike-through text decoration for completed items
+/// - Display of due date, notification time, and recurrence status
+/// - Delete button always visible
+///
+/// Callbacks:
+/// - [onToggle]: Called when checkbox is tapped
+/// - [onDelete]: Called when delete button is pressed
+/// - [onTap]: Called when item body is tapped (navigate to detail)
+///
+/// See also:
+/// - [Todo] entity for data structure
+/// - [TodoListScreen] where this widget is used
+library;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
@@ -6,6 +28,7 @@ import 'package:todo_app/presentation/providers/theme_provider.dart';
 import 'package:todo_app/domain/entities/todo.dart';
 import 'package:easy_localization/easy_localization.dart';
 
+/// Single todo item widget with animation and interaction handling.
 class CustomTodoItem extends ConsumerStatefulWidget {
   final Todo todo;
   final VoidCallback onToggle;

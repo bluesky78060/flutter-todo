@@ -1,3 +1,26 @@
+/// Plain text file viewer dialog for text attachments.
+///
+/// Downloads and displays text file attachments from Supabase Storage
+/// with selectable text and monospace formatting.
+///
+/// Features:
+/// - Downloads text file from Supabase Storage to temp directory
+/// - Reads file content as UTF-8 string
+/// - Scrollable text display with monospace font
+/// - Selectable text for copying content
+/// - Header showing filename and size
+/// - Loading indicator while downloading
+/// - Error display for failed loads or encoding issues
+///
+/// Supported file types:
+/// - .txt, .md, .json, .xml, .csv, .log, etc.
+///
+/// See also:
+/// - [ImageViewerDialog] for image attachment viewing
+/// - [PdfViewerDialog] for PDF document viewing
+/// - [attachmentServiceProvider] for download functionality
+library;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:todo_app/core/theme/app_colors.dart';
@@ -7,6 +30,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:easy_localization/easy_localization.dart';
 
+/// Dialog for viewing plain text file attachments.
 class TextViewerDialog extends ConsumerStatefulWidget {
   final entity.Attachment attachment;
 

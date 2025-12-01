@@ -44,8 +44,8 @@ class WidgetMethodChannelHandler {
               logger.w('⚠️ deleteTodo: todo_id 없음');
               return false;
             }
-            logger.d('✅ 위젯에서 할일 삭제: $todoId');
-            return true;
+            logger.d('✅ 위젯에서 할일 삭제 요청: $todoId');
+            return await _handleDeleteTodo(todoId);
 
           default:
             logger.w('❓ 알 수 없는 위젯 메서드: ${call.method}');
@@ -84,6 +84,34 @@ class WidgetMethodChannelHandler {
       return true;
     } catch (e, st) {
       logger.e('❌ 할일 토글 처리 오류: $e', stackTrace: st);
+      return false;
+    }
+  }
+
+  /// 할일 삭제 처리
+  static Future<bool> _handleDeleteTodo(String todoIdStr) async {
+    try {
+      final todoId = int.tryParse(todoIdStr);
+      if (todoId == null) {
+        logger.e('❌ 잘못된 todoId: $todoIdStr');
+        return false;
+      }
+
+      final container = _container;
+      if (container == null) {
+        logger.e('❌ ProviderContainer가 설정되지 않음');
+        return false;
+      }
+
+      // Use TodoActions to delete todo (syncs with Supabase)
+      final todoActions = container.read(todoActionsProvider);
+      await todoActions.deleteTodo(todoId);
+      logger.d('✅ 할일 삭제 완료 (Supabase 동기화 포함): $todoId');
+
+      // Note: Widget update is already called inside todoActions.deleteTodo()
+      return true;
+    } catch (e, st) {
+      logger.e('❌ 할일 삭제 처리 오류: $e', stackTrace: st);
       return false;
     }
   }

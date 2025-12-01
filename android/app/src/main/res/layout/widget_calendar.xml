@@ -237,7 +237,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="이번 달 일정"
+            android:text="Upcoming Events"
             android:textColor="#BBBBBB"
             android:textSize="13sp"
             android:textStyle="bold" />
@@ -409,7 +409,7 @@
             android:id="@+id/events_empty"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="일정이 없습니다"
+            android:text="No events"
             android:textColor="#666666"
             android:textSize="13sp"
             android:gravity="center"

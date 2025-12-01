@@ -1,3 +1,24 @@
+/// Todo detail screen showing comprehensive information about a single todo.
+///
+/// Features:
+/// - Full todo information display (title, description, dates, category)
+/// - Subtask management (add, toggle, delete checklist items)
+/// - Attachment viewing (images, PDFs, text files)
+/// - Recurrence pattern display and management
+/// - Edit functionality via [TodoFormDialog]
+/// - Reschedule and snooze actions
+/// - Notification scheduling preview
+///
+/// Navigation:
+/// - Accessed via `/todo/:id` route
+/// - Returns to todo list on back navigation
+///
+/// See also:
+/// - [todoDetailProvider] for fetching todo data
+/// - [subtaskProvider] for subtask management
+/// - [attachmentProvider] for file attachments
+library;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:todo_app/presentation/providers/todo_providers.dart';
@@ -19,6 +40,7 @@ import 'package:todo_app/presentation/widgets/image_viewer_dialog.dart';
 import 'package:todo_app/presentation/widgets/pdf_viewer_dialog.dart';
 import 'package:todo_app/presentation/widgets/text_viewer_dialog.dart';
 
+/// Screen displaying detailed information about a single todo.
 class TodoDetailScreen extends ConsumerWidget {
   final int todoId;
 

@@ -6,12 +6,34 @@ import 'package:todo_app/data/datasources/local/app_database.dart';
 import 'package:todo_app/domain/entities/auth_user.dart';
 import 'package:todo_app/domain/repositories/auth_repository.dart';
 
+/// Local implementation of [AuthRepository] using Drift and SharedPreferences.
+///
+/// This repository provides offline-capable authentication using:
+/// - Drift database for user credential storage
+/// - SharedPreferences for session persistence
+///
+/// WARNING: This is a simplified implementation for development/testing.
+/// In production, use [SupabaseAuthRepository] for secure authentication.
+///
+/// Security Limitations:
+/// - Passwords are stored in plaintext (use hashing in production)
+/// - No token-based session management
+/// - No password reset functionality
+///
+/// See also:
+/// - [AuthRepository] for the interface contract
+/// - [SupabaseAuthRepository] for production implementation
 class AuthRepositoryImpl implements AuthRepository {
+  /// The local Drift database for user storage.
   final AppDatabase database;
+
+  /// SharedPreferences for session persistence.
   final SharedPreferences prefs;
 
+  /// Key used to store the current user ID in SharedPreferences.
   static const String _userIdKey = 'user_id';
 
+  /// Creates an [AuthRepositoryImpl] with the given [database] and [prefs].
   AuthRepositoryImpl(this.database, this.prefs);
 
   @override
@@ -20,11 +42,11 @@ class AuthRepositoryImpl implements AuthRepository {
     try {
       final user = await database.getUserByEmail(email);
       if (user == null) {
-        return const Left(AuthFailure('사용자를 찾을 수 없습니다'));
+        return const Left(AuthFailure('User not found'));
       }
       if (user.password != password) {
         // Note: In production, use proper password hashing
-        return const Left(AuthFailure('비밀번호가 일치하지 않습니다'));
+        return const Left(AuthFailure('Incorrect password'));
       }
 
       await prefs.setInt(_userIdKey, user.id);
@@ -41,7 +63,7 @@ class AuthRepositoryImpl implements AuthRepository {
     try {
       final existingUser = await database.getUserByEmail(email);
       if (existingUser != null) {
-        return const Left(AuthFailure('이미 등록된 이메일입니다'));
+        return const Left(AuthFailure('Email already registered'));
       }
 
       final id = await database.insertUser(

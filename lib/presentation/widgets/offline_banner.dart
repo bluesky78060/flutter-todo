@@ -1,10 +1,30 @@
+/// Offline status and sync indicator widgets.
+///
+/// Provides visual feedback for network connectivity and sync state.
+///
+/// Widgets included:
+/// - [OfflineBanner]: Full-width banner shown when offline
+/// - [SyncStatusIndicator]: Compact sync status with retry option
+/// - [ConnectionStatusWidget]: Combined status for app bar integration
+///
+/// States tracked:
+/// - Online/offline connectivity
+/// - Sync in progress, success, or failed
+/// - Last sync timestamp
+/// - Retry capability
+///
+/// See also:
+/// - [isOnlineStateProvider] for connectivity state
+/// - [syncStateProvider] for sync status management
+library;
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:todo_app/presentation/providers/connectivity_provider.dart';
 
-/// Banner widget showing offline status
+/// Banner widget showing offline status with warning styling.
 class OfflineBanner extends ConsumerWidget {
   const OfflineBanner({super.key});
 

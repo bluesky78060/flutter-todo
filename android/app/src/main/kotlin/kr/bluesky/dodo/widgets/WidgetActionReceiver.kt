@@ -44,48 +44,43 @@ class WidgetActionReceiver : BroadcastReceiver() {
                 android.util.Log.d(TAG, "Toggle todo - id: $todoId, index: $todoIndex, widgetId: $widgetId")
                 toggleTodoInBackground(context, todoId, todoIndex, widgetId)
             }
-            "kr.bluesky.dodo.widget.DELETE_TODO" -> {
-                val todoId = intent.getStringExtra("todo_id") ?: ""
-                val widgetId = intent.getIntExtra("widget_id", -1)
-                android.util.Log.d(TAG, "Delete todo - id: $todoId, widgetId: $widgetId")
-                deleteTodo(context, todoId, widgetId)
-            }
+            // DELETE_TODO action removed - delete only from app
         }
     }
 
     /**
-     * Toggle todo completion directly in SQLite database without opening the app
+     * Toggle todo completion - Primary: MethodChannel to Flutter (Supabase sync)
+     * Fallback: Local SQLite database (for when app is closed)
+     *
+     * This app uses Supabase as primary storage, so MethodChannel approach is preferred.
      */
     private fun toggleTodoInBackground(context: Context, todoId: String, todoIndex: Int, widgetId: Int) {
         try {
             if (todoId.isEmpty()) {
                 android.util.Log.w(TAG, "Empty todoId, cannot toggle")
-                Toast.makeText(context, "오류: 할일 ID가 없습니다", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "Error: Missing todo ID", Toast.LENGTH_SHORT).show()
                 return
             }
 
             val todoIdInt = todoId.toIntOrNull()
             if (todoIdInt == null) {
                 android.util.Log.e(TAG, "Invalid todoId: $todoId")
-                Toast.makeText(context, "오류: 잘못된 할일 ID", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "Error: Invalid todo ID", Toast.LENGTH_SHORT).show()
                 return
             }
 
             android.util.Log.d(TAG, "Toggling todo: id=$todoId, index=$todoIndex")
 
-            // Get current state from SharedPreferences and toggle it
-            // Note: This app uses Supabase as primary storage, not local SQLite
-            // So we just update SharedPreferences and notify Flutter for Supabase sync
+            // Get current state from SharedPreferences for UI feedback
             val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
             val currentState = prefs.getBoolean("todo_${todoIndex}_completed", false)
             val newState = !currentState
 
-            // Update SharedPreferences immediately for widget UI
+            // Update SharedPreferences immediately for instant UI feedback
             prefs.edit().putBoolean("todo_${todoIndex}_completed", newState).apply()
             android.util.Log.d(TAG, "SharedPreferences updated: todo_${todoIndex}_completed = $newState")
 
-            // Try to notify Flutter if engine is available (for Supabase sync)
-            var flutterNotified = false
+            // PRIMARY: Try to notify Flutter via MethodChannel (for Supabase sync)
             if (flutterEngine != null) {
                 try {
                     val channel = MethodChannel(
@@ -94,9 +89,8 @@ class WidgetActionReceiver : BroadcastReceiver() {
                     )
                     channel.invokeMethod("toggleTodo", mapOf("todo_id" to todoId))
                     android.util.Log.d(TAG, "Notified Flutter for todo: $todoId")
-                    flutterNotified = true
-                    // Flutter will handle widget refresh after Supabase sync
-                    // Show immediate feedback
+
+                    // Flutter will handle everything including widget refresh
                     val message = if (newState) "✓ 완료!" else "↩ 미완료"
                     Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
                     return // Let Flutter handle everything
@@ -105,24 +99,25 @@ class WidgetActionReceiver : BroadcastReceiver() {
                 }
             }
 
-            // Flutter not available - update locally and refresh widget
+            // FALLBACK: Flutter not available - update locally and refresh widget
             android.util.Log.d(TAG, "Flutter not available, updating locally")
 
-            // Also try to update local SQLite if available (for offline support)
+            // Try to update local SQLite (may fail if no local data)
             val dbUpdated = toggleTodoInDatabase(context, todoIdInt)
             android.util.Log.d(TAG, "Database update result: $dbUpdated")
 
-            // Refresh all TodoListWidgets (only when Flutter is not handling it)
+            // Refresh widget to show updated state
             refreshAllWidgets(context)
 
             // Show feedback
             val message = if (newState) "✓ 완료!" else "↩ 미완료"
             Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
 
-            // Inform user to sync in app when opening
             if (dbUpdated == null) {
                 android.util.Log.w(TAG, "Todo toggled only in widget UI. Sync will happen when app opens.")
             }
+
+            android.util.Log.d(TAG, "Todo toggle completed (local mode)")
 
         } catch (e: Exception) {
             android.util.Log.e(TAG, "Error toggling todo", e)
@@ -235,13 +230,6 @@ class WidgetActionReceiver : BroadcastReceiver() {
         } finally {
             db?.close()
         }
-    }
-
-    private fun deleteTodo(context: Context, todoId: String, widgetId: Int) {
-        android.util.Log.d(TAG, "Deleting todo: $todoId")
-
-        // For delete, we need to open the app since it requires database modification
-        Toast.makeText(context, "앱에서 삭제해주세요", Toast.LENGTH_SHORT).show()
     }
 
     /**
