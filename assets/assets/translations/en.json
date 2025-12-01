@@ -621,5 +621,24 @@
   "month_september": "September",
   "month_october": "October",
   "month_november": "November",
-  "month_december": "December"
+  "month_december": "December",
+
+  "current_streak": "Current Streak",
+  "best_day": "Best Day",
+  "this_week": "This Week",
+  "days": "days",
+  "tasks": "tasks",
+  "weekly_trend": "Weekly Trend",
+  "monthly_trend": "Monthly Trend",
+  "week_4_ago": "4 Weeks Ago",
+  "week_3_ago": "3 Weeks Ago",
+  "week_2_ago": "2 Weeks Ago",
+  "last_week": "Last Week",
+  "day_mon": "Mon",
+  "day_tue": "Tue",
+  "day_wed": "Wed",
+  "day_thu": "Thu",
+  "day_fri": "Fri",
+  "day_sat": "Sat",
+  "day_sun": "Sun"
 }
