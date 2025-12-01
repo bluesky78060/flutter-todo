@@ -96,12 +96,6 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> {
           _checkAndRequestPermissions();
           // 초기 위젯 업데이트 (앱 시작 시)
           _updateHomeWidget();
-          // 성능 측정 (앱 실행 후 2초 뒤)
-          Future.delayed(const Duration(seconds: 2), () {
-            if (mounted) {
-              _measurePerformance();
-            }
-          });
         }
       });
     });

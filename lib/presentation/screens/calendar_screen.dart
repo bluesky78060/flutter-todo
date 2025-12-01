@@ -20,6 +20,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:todo_app/core/theme/app_colors.dart';
+import 'package:todo_app/core/services/korean_holiday_service.dart';
 import 'package:todo_app/domain/entities/todo.dart';
 import 'package:todo_app/presentation/providers/todo_providers.dart';
 import 'package:todo_app/presentation/providers/theme_provider.dart';
@@ -38,11 +39,26 @@ class CalendarScreen extends ConsumerStatefulWidget {
 class _CalendarScreenState extends ConsumerState<CalendarScreen> {
   DateTime _focusedDay = DateTime.now();
   DateTime? _selectedDay;
+  Set<int> _holidays = {};
 
   @override
   void initState() {
     super.initState();
     _selectedDay = _focusedDay;
+    _loadHolidaysForMonth(_focusedDay.year, _focusedDay.month);
+  }
+
+  Future<void> _loadHolidaysForMonth(int year, int month) async {
+    try {
+      final holidays = await KoreanHolidayService.getHolidaysForMonth(year, month);
+      if (mounted) {
+        setState(() {
+          _holidays = holidays;
+        });
+      }
+    } catch (e) {
+      print('Failed to load holidays: $e');
+    }
   }
 
   /// 특정 날짜에 해당하는 todos를 필터링
@@ -111,8 +127,28 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                 },
                 onPageChanged: (focusedDay) {
                   _focusedDay = focusedDay;
+                  _loadHolidaysForMonth(focusedDay.year, focusedDay.month);
                 },
                 eventLoader: (day) => _getEventsForDay(day, todos),
+                calendarBuilders: CalendarBuilders(
+                  defaultBuilder: (context, day, focusedDay) {
+                    final isHoliday = _holidays.contains(day.day);
+                    final isWeekend = day.weekday == DateTime.saturday || day.weekday == DateTime.sunday;
+                    return _buildCalendarDay(day, isHoliday, isDarkMode, isWeekend, false);
+                  },
+                  outsideBuilder: (context, day, focusedDay) {
+                    final isHoliday = _holidays.contains(day.day);
+                    return _buildCalendarDay(day, isHoliday, isDarkMode, false, true);
+                  },
+                  todayBuilder: (context, day, focusedDay) {
+                    final isHoliday = _holidays.contains(day.day);
+                    return _buildCalendarDay(day, isHoliday, isDarkMode, false, false, isToday: true);
+                  },
+                  selectedBuilder: (context, day, focusedDay) {
+                    final isHoliday = _holidays.contains(day.day);
+                    return _buildCalendarDay(day, isHoliday, isDarkMode, false, false, isSelected: true);
+                  },
+                ),
                 calendarStyle: CalendarStyle(
                   // Today
                   todayDecoration: BoxDecoration(
@@ -335,5 +371,88 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
         }
       }
     }
+  }
+
+  /// Build calendar day with holiday indicator
+  Widget _buildCalendarDay(
+    DateTime day,
+    bool isHoliday,
+    bool isDarkMode,
+    bool isWeekend,
+    bool isOutside, {
+    bool isToday = false,
+    bool isSelected = false,
+  }) {
+    // Determine text color
+    Color textColor;
+    if (isSelected) {
+      textColor = AppColors.getText(isDarkMode);
+    } else if (isHoliday) {
+      // Holiday text in red/orange
+      textColor = isDarkMode ? const Color(0xFFFF6B6B) : const Color(0xFFE53935);
+    } else if (isWeekend) {
+      // Weekend text in orange
+      textColor = isDarkMode ? AppColors.accentOrange : const Color(0xFFE53935);
+    } else if (isOutside) {
+      // Outside month text in gray
+      textColor = AppColors.textGray.withValues(alpha: 0.5);
+    } else {
+      // Regular text
+      textColor = AppColors.getText(isDarkMode);
+    }
+
+    // Build the cell
+    Widget cell = Center(
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          // Background circle for today/selected
+          if (isToday)
+            Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                color: AppColors.primaryBlue.withValues(alpha: 0.3),
+                shape: BoxShape.circle,
+              ),
+            )
+          else if (isSelected)
+            Container(
+              width: 36,
+              height: 36,
+              decoration: const BoxDecoration(
+                color: AppColors.primaryBlue,
+                shape: BoxShape.circle,
+              ),
+            ),
+          // Text content
+          Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                '${day.day}',
+                style: TextStyle(
+                  color: isSelected ? Colors.white : textColor,
+                  fontWeight: isToday || isSelected ? FontWeight.bold : FontWeight.normal,
+                ),
+              ),
+              // Holiday indicator (red dot)
+              if (isHoliday)
+                Container(
+                  width: 4,
+                  height: 4,
+                  margin: const EdgeInsets.only(top: 2),
+                  decoration: BoxDecoration(
+                    color: isDarkMode ? const Color(0xFFFF6B6B) : const Color(0xFFE53935),
+                    shape: BoxShape.circle,
+                  ),
+                ),
+            ],
+          ),
+        ],
+      ),
+    );
+
+    return cell;
   }
 }
