@@ -39,6 +39,7 @@ import 'package:todo_app/core/utils/samsung_device_utils.dart';
 import 'package:todo_app/presentation/providers/admin_providers.dart';
 import 'package:todo_app/presentation/providers/auth_providers.dart';
 import 'package:todo_app/presentation/providers/backup_provider.dart';
+import 'package:todo_app/presentation/providers/export_provider.dart';
 import 'package:todo_app/presentation/providers/theme_provider.dart';
 import 'package:todo_app/presentation/providers/todo_providers.dart';
 import 'package:todo_app/presentation/screens/theme_preview_screen.dart';
@@ -500,6 +501,48 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ),
             onTap: () {
               _handleRestore();
+            },
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+          ),
+          Divider(
+            color: AppColors.getBorder(isDarkMode),
+            height: 1,
+            indent: 68,
+          ),
+          ListTile(
+            leading: Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: AppColors.getInput(isDarkMode),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Icon(
+                FluentIcons.document_24_regular,
+                color: AppColors.successGreen,
+              ),
+            ),
+            title: Text(
+              'export_data'.tr(),
+              style: TextStyle(
+                color: AppColors.getText(isDarkMode),
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            subtitle: Text(
+              'export_data_desc'.tr(),
+              style: TextStyle(
+                color: AppColors.getTextSecondary(isDarkMode),
+                fontSize: 14,
+              ),
+            ),
+            trailing: Icon(
+              FluentIcons.chevron_right_24_regular,
+              color: AppColors.getTextSecondary(isDarkMode),
+            ),
+            onTap: () {
+              _handleExport();
             },
             contentPadding:
                 const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
@@ -1527,6 +1570,179 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         _showErrorSnackBar('${'restore_failed'.tr()}: $e');
       }
     }
+  }
+
+  Future<void> _handleExport() async {
+    // Show export format selection dialog
+    final format = await _showExportFormatDialog();
+    if (format == null) return;
+
+    try {
+      // Show loading dialog
+      if (!mounted) return;
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+
+      // Export data based on selected format using FutureProvider
+      final success = await ref.read(exportProvider(format).future);
+
+      // Close loading dialog
+      if (mounted) Navigator.pop(context);
+
+      // Show success/error message
+      if (mounted) {
+        if (success) {
+          _showSuccessSnackBar('export_completed'.tr());
+        } else {
+          _showErrorSnackBar('export_failed'.tr());
+        }
+      }
+    } catch (e) {
+      // Close loading dialog
+      if (mounted) Navigator.pop(context);
+
+      // Show error
+      if (mounted) {
+        _showErrorSnackBar('${'export_failed'.tr()}: $e');
+      }
+    }
+  }
+
+  Future<String?> _showExportFormatDialog() async {
+    final isDarkMode = ref.watch(isDarkModeProvider);
+    return showDialog<String>(
+      context: context,
+      builder: (context) => Dialog(
+        backgroundColor: AppColors.getCard(isDarkMode),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(
+                FluentIcons.document_24_regular,
+                color: AppColors.successGreen,
+                size: 48,
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'export_format_select'.tr(),
+                style: TextStyle(
+                  color: AppColors.getText(isDarkMode),
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'export_choose_format'.tr(),
+                style: TextStyle(
+                  color: AppColors.getTextSecondary(isDarkMode),
+                  fontSize: 16,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.pop(context, 'csv');
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primaryBlue,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: Column(
+                    children: [
+                      const Icon(FluentIcons.table_24_regular),
+                      const SizedBox(height: 4),
+                      Text(
+                        'export_csv'.tr(),
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      Text(
+                        'export_csv_desc'.tr(),
+                        style: const TextStyle(
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.pop(context, 'pdf');
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.successGreen,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: Column(
+                    children: [
+                      const Icon(FluentIcons.document_pdf_24_regular),
+                      const SizedBox(height: 4),
+                      Text(
+                        'export_pdf'.tr(),
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      Text(
+                        'export_pdf_desc'.tr(),
+                        style: const TextStyle(
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              SizedBox(
+                width: double.infinity,
+                child: TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: Text(
+                    'cancel'.tr(),
+                    style: const TextStyle(
+                      fontSize: 16,
+                      color: Colors.grey,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   Future<ImportStrategy?> _showRestoreStrategyDialog() async {

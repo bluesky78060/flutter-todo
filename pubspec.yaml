@@ -95,6 +95,10 @@ dependencies:
   # PDF & Document Viewer
   syncfusion_flutter_pdfviewer: ^28.2.7
 
+  # Data Export (CSV, PDF)
+  csv: ^6.0.0
+  pdf: ^3.10.0
+
   # Share
   share_plus: ^10.0.0
 

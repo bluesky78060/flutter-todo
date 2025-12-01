@@ -641,5 +641,15 @@
   "day_thu": "Thu",
   "day_fri": "Fri",
   "day_sat": "Sat",
-  "day_sun": "Sun"
+  "day_sun": "Sun",
+  "export_data": "Export Data",
+  "export_data_desc": "Export as CSV or PDF",
+  "export_format_select": "Select Export Format",
+  "export_choose_format": "Choose your preferred format",
+  "export_csv": "Export as CSV",
+  "export_csv_desc": "Spreadsheet format",
+  "export_pdf": "Export as PDF",
+  "export_pdf_desc": "Document format",
+  "export_completed": "Export completed successfully",
+  "export_failed": "Export failed"
 }
