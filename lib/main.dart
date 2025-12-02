@@ -145,7 +145,7 @@ Future<void> runAppWithErrorHandling() async {
       await Supabase.initialize(
         url: SupabaseConfig.url,
         anonKey: SupabaseConfig.anonKey,
-        authOptions: FlutterAuthClientOptions(
+        authOptions: const FlutterAuthClientOptions(
           authFlowType: AuthFlowType.pkce,
           // Force web to use current URL for OAuth redirects
           // This prevents deep link URLs from being stored

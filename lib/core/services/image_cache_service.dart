@@ -121,7 +121,7 @@ class ImageCacheService {
       final optimizedFile = File(optimizedPath);
       await optimizedFile.writeAsBytes(img.encodeJpg(resized, quality: 85));
 
-      logger.d('✅ 이미지 최적화 완료: ${image.width}x${image.height} → ${newWidth}x${newHeight}');
+      logger.d('✅ 이미지 최적화 완료: $image.width}x${image.height} → $newWidth}x${newHeight}');
 
       return optimizedFile;
     } catch (e) {

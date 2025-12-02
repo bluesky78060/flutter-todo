@@ -11,7 +11,7 @@ class WidgetActionService {
   /// Toggle todo completion status from widget
   static Future<bool> toggleTodo(String todoId) async {
     try {
-      final MethodChannel channel = MethodChannel(_channel);
+      final MethodChannel channel = const MethodChannel(_channel);
       final bool result = await channel.invokeMethod<bool>(
         _methodToggleTodo,
         {'todo_id': todoId},
@@ -28,7 +28,7 @@ class WidgetActionService {
   /// Delete todo from widget
   static Future<bool> deleteTodo(String todoId) async {
     try {
-      final MethodChannel channel = MethodChannel(_channel);
+      final MethodChannel channel = const MethodChannel(_channel);
       final bool result = await channel.invokeMethod<bool>(
         _methodDeleteTodo,
         {'todo_id': todoId},

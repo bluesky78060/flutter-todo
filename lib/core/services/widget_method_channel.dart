@@ -7,7 +7,7 @@ import 'package:todo_app/presentation/providers/todo_providers.dart';
 /// 네이티브 위젯 코드와 Flutter 간의 통신 처리
 class WidgetMethodChannelHandler {
   static const String _channel = 'kr.bluesky.dodo/widget';
-  static final MethodChannel _methodChannel = MethodChannel(_channel);
+  static final MethodChannel _methodChannel = const MethodChannel(_channel);
   static ProviderContainer? _container;
 
   /// Set the provider container for dependency injection

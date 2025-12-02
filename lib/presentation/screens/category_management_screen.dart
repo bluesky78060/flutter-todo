@@ -71,7 +71,7 @@ class CategoryManagementScreen extends ConsumerWidget {
                   ),
                   const Spacer(),
                   Container(
-                    decoration: BoxDecoration(
+                    decoration: const BoxDecoration(
                       color: AppColors.primary,
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -136,11 +136,11 @@ class CategoryManagementScreen extends ConsumerWidget {
                     },
                   );
                 },
-                loading: () => Center(child: CircularProgressIndicator()),
+                loading: () => const Center(child: CircularProgressIndicator()),
                 error: (error, _) => Center(
                   child: Text(
                     'error_prefix'.tr(namedArgs: {'error': error.toString()}),
-                    style: TextStyle(color: Colors.red),
+                    style: const TextStyle(color: Colors.red),
                   ),
                 ),
               ),
@@ -201,7 +201,7 @@ class CategoryManagementScreen extends ConsumerWidget {
             fontSize: AppColors.scaledFontSize(14),
           ),
         ),
-        trailing: Row(
+        trailing: const Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             IconButton(
@@ -276,7 +276,7 @@ class CategoryManagementScreen extends ConsumerWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
+              const Icon(
                 FluentIcons.delete_24_regular,
                 color: Colors.red,
                 size: 48,
@@ -300,7 +300,7 @@ class CategoryManagementScreen extends ConsumerWidget {
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 24),
-              Row(
+              const Row(
                 children: [
                   Expanded(
                     child: OutlinedButton(
@@ -311,7 +311,7 @@ class CategoryManagementScreen extends ConsumerWidget {
                           color: AppColors.getBorder(isDarkMode),
                           width: 1.5,
                         ),
-                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        padding: EdgeInsets.symmetric(vertical: 12),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),

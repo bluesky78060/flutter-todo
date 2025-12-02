@@ -92,7 +92,7 @@ class CategoryRepositoryImpl implements CategoryRepository {
     try {
       final category = await database.getCategoryById(id);
       if (category == null) {
-        return Left(DatabaseFailure('Category not found'));
+        return const Left(DatabaseFailure('Category not found'));
       }
       return Right(_mapCategoryToEntity(category));
     } catch (e) {

@@ -2417,7 +2417,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
-                  '${_geofencingIntervalMinutes}',
+                  '$_geofencingIntervalMinutes',
                   style: TextStyle(
                     color: AppColors.primary,
                     fontSize: AppColors.scaledFontSize(48),

@@ -245,7 +245,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                     color: AppColors.textGray.withValues(alpha: 0.5),
                   ),
                   // Markers
-                  markerDecoration: BoxDecoration(
+                  markerDecoration: const BoxDecoration(
                     color: AppColors.accentOrange,
                     shape: BoxShape.circle,
                   ),
@@ -332,14 +332,14 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                     if (_holidayInfoForSelectedDay != null)
                       Padding(
                         padding: const EdgeInsets.only(top: 8),
-                        child: Row(
+                        child: const Row(
                           children: [
                             Icon(
                               FluentIcons.gift_24_filled,
                               color: AppColors.accentOrange,
                               size: 16,
                             ),
-                            const SizedBox(width: 6),
+                            SizedBox(width: 6),
                             Text(
                               _holidayInfoForSelectedDay!.nameKo,
                               style: TextStyle(
@@ -377,7 +377,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
         error: (error, _) => Center(
           child: Text(
             '${'error'.tr()}: $error',
-            style: TextStyle(color: Colors.red),
+            style: const TextStyle(color: Colors.red),
           ),
         ),
       ),

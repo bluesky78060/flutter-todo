@@ -208,7 +208,7 @@ class PaginationNotifier extends Notifier<PaginationState> {
     if (!state.isLoading && state.hasMore) {
       final remainingItems = state.items.length - visibleItemCount;
       if (remainingItems <= PaginationConfig.preloadThreshold) {
-        logger.d('🔄 PaginationNotifier: Auto-loading next page (${remainingItems} items remaining)');
+        logger.d('🔄 PaginationNotifier: Auto-loading next page ($remainingItems items remaining)');
         loadNextPage();
       }
     }

@@ -39,7 +39,7 @@ class TodoRepositoryImpl implements TodoRepository {
     try {
       final todo = await database.getTodoById(id);
       if (todo == null) {
-        return Left(DatabaseFailure('Todo not found'));
+        return const Left(DatabaseFailure('Todo not found'));
       }
       return Right(_mapTodoToEntity(todo));
     } catch (e) {
