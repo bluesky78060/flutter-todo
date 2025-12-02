@@ -43,7 +43,7 @@ class SubtaskRepositoryImpl implements SubtaskRepository {
     try {
       final subtask = await _database.getSubtaskById(id);
       if (subtask == null) {
-        return const left(DatabaseFailure('Subtask not found'));
+        return left(DatabaseFailure('Subtask not found'));
       }
       return right(_mapDriftToEntity(subtask));
     } catch (e) {

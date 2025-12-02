@@ -6,7 +6,6 @@ library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:todo_app/core/theme/app_colors.dart';
 import 'package:todo_app/presentation/providers/theme_customization_provider.dart';
 
 /// Widget for selecting primary color from palette.

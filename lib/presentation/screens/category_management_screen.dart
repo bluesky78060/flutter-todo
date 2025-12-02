@@ -300,7 +300,7 @@ class CategoryManagementScreen extends ConsumerWidget {
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 24),
-              const Row(
+              Row(
                 children: [
                   Expanded(
                     child: OutlinedButton(

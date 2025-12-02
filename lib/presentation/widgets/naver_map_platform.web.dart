@@ -212,36 +212,6 @@ class _NaverMapWebState extends State<NaverMapWeb> {
     }
   }
 
-  /// Search for places using Naver Local Search API
-  static Future<List<Map<String, dynamic>>> searchPlaces(String query) async {
-    debugPrint('🔍 Searching for: $query');
-
-    final requestId = ++_requestCounter;
-    final completer = Completer<List<Map<String, dynamic>>>();
-    _pendingSearches[requestId] = completer;
-
-    // Send postMessage to JS
-    html.window.postMessage({
-      'channel': 'naver_map_bridge',
-      'type': 'naver_search',
-      'payload': {
-        'requestId': requestId,
-        'query': query,
-      }
-    }, '*');
-
-    // Timeout fallback
-    Future.delayed(const Duration(seconds: 10), () {
-      final pending = _pendingSearches.remove(requestId);
-      if (pending != null && !pending.isCompleted) {
-        debugPrint('⏳ Search timed out for requestId=$requestId');
-        pending.complete(<Map<String, dynamic>>[]);
-      }
-    });
-
-    return completer.future;
-  }
-
   @override
   Widget build(BuildContext context) {
     return HtmlElementView(

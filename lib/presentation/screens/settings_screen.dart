@@ -36,16 +36,13 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:todo_app/core/services/backup_service.dart';
 import 'package:todo_app/core/services/battery_optimization_service.dart';
-import 'package:todo_app/core/services/geofence_workmanager_service.dart';
 import 'package:todo_app/core/theme/app_colors.dart';
 import 'package:todo_app/core/utils/samsung_device_utils.dart';
 import 'package:todo_app/presentation/providers/admin_providers.dart';
 import 'package:todo_app/presentation/providers/auth_providers.dart';
 import 'package:todo_app/presentation/providers/backup_provider.dart';
-import 'package:todo_app/presentation/providers/export_provider.dart';
 import 'package:todo_app/presentation/providers/theme_provider.dart';
 import 'package:todo_app/presentation/providers/theme_customization_provider.dart';
-import 'package:todo_app/presentation/providers/todo_providers.dart';
 import 'package:todo_app/presentation/screens/theme_preview_screen.dart';
 import 'package:todo_app/presentation/widgets/color_picker_widget.dart';
 import 'package:todo_app/presentation/widgets/font_size_slider_widget.dart';
@@ -722,7 +719,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> with SingleTick
           TextButton(
             onPressed: () {
               Navigator.pop(context);
-              ref.read(authProvider.notifier).signOut();
+              ref.read(authActionsProvider).logout();
             },
             child: Text('logout'.tr(), style: const TextStyle(color: Colors.red)),
           ),
@@ -732,13 +729,19 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> with SingleTick
   }
 
   void _handleBackup() async {
-    // Implementation remains same as original
-    final backupService = BackupService();
+    final backupActions = ref.read(backupActionsProvider);
     try {
-      final backupData = await backupService.createBackup();
-      final fileName = 'todo_backup_${DateTime.now().toIso8601String()}.json';
+      final backupPath = await backupActions.exportData();
+      final fileName = backupPath.split('/').last;
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Backup created at $backupPath')),
+        );
+      }
+      
       // Share logic...
-      await Share.share(backupData, subject: fileName);
+      await Share.shareXFiles([XFile(backupPath)], text: 'Todo App Backup');
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -749,8 +752,21 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> with SingleTick
   }
 
   void _handleRestore() async {
-    // Implementation remains same as original
-    // Simplified for mockup
+    final backupActions = ref.read(backupActionsProvider);
+    try {
+      final message = await backupActions.importData(ImportStrategy.overwrite);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(message)),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Restore failed: $e')),
+        );
+      }
+    }
   }
 
   void _handleExport() async {
