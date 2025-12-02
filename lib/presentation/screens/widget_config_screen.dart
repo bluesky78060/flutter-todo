@@ -105,7 +105,7 @@ class WidgetConfigScreen extends ConsumerWidget {
             onChanged: (value) async {
               await ref.read(toggleWidgetEnabledProvider.future);
             },
-            activeColor: AppColors.primaryBlue,
+            activeColor: AppColors.primary,
           ),
         ],
       ),
@@ -179,11 +179,11 @@ class WidgetConfigScreen extends ConsumerWidget {
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           border: Border.all(
-            color: isSelected ? AppColors.primaryBlue : Colors.grey[300]!,
+            color: isSelected ? AppColors.primary : Colors.grey[300]!,
             width: isSelected ? 2 : 1,
           ),
           borderRadius: BorderRadius.circular(8),
-          color: isSelected ? AppColors.primaryBlue.withOpacity(0.05) : null,
+          color: isSelected ? AppColors.primary.withOpacity(0.05) : null,
         ),
         child: SizedBox(
           width: double.infinity,
@@ -203,7 +203,7 @@ class WidgetConfigScreen extends ConsumerWidget {
                     ),
                   );
                 },
-                activeColor: AppColors.primaryBlue,
+                activeColor: AppColors.primary,
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -230,7 +230,7 @@ class WidgetConfigScreen extends ConsumerWidget {
                   ],
                 ),
               ),
-              const Icon(
+              Icon(
                 Icons.chevron_right,
                 color: Colors.grey,
               ),
@@ -359,7 +359,7 @@ class _WidgetThemeConfigScreenState
         elevation: 0,
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? Center(child: CircularProgressIndicator())
           : SingleChildScrollView(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -422,7 +422,7 @@ class _WidgetThemeConfigScreenState
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.primaryBlue.withOpacity(0.1) : null,
+          color: isSelected ? AppColors.primary.withOpacity(0.1) : null,
         ),
         child: Row(
           children: [
@@ -457,7 +457,7 @@ class _WidgetThemeConfigScreenState
             if (isSelected)
               Icon(
                 Icons.check_circle,
-                color: AppColors.primaryBlue,
+                color: AppColors.primary,
               ),
           ],
         ),
@@ -518,7 +518,7 @@ class _WidgetThemeConfigScreenState
             Text(
               tr('widget_today_tasks'),
               style: TextStyle(
-                fontSize: 16,
+                fontSize: AppColors.scaledFontSize(16),
                 fontWeight: FontWeight.bold,
                 color: textColor,
               ),
@@ -532,7 +532,7 @@ class _WidgetThemeConfigScreenState
               child: Text(
                 tr('tap_to_view_all'),
                 style: TextStyle(
-                  fontSize: 11,
+                  fontSize: AppColors.scaledFontSize(11),
                   color: subTextColor,
                 ),
               ),
@@ -568,7 +568,7 @@ class _WidgetThemeConfigScreenState
             Text(
               monthYearText,
               style: TextStyle(
-                fontSize: 16,
+                fontSize: AppColors.scaledFontSize(16),
                 fontWeight: FontWeight.bold,
                 color: textColor,
               ),
@@ -595,7 +595,7 @@ class _WidgetThemeConfigScreenState
                     return Text(
                       d,
                       style: TextStyle(
-                        fontSize: 12,
+                        fontSize: AppColors.scaledFontSize(12),
                         fontWeight: FontWeight.bold,
                         color: dayColor,
                       ),
@@ -621,7 +621,7 @@ class _WidgetThemeConfigScreenState
                     child: Text(
                       hasTask ? '$day●' : '$day',
                       style: TextStyle(
-                        fontSize: 12,
+                        fontSize: AppColors.scaledFontSize(12),
                         color: dayColor,
                       ),
                     ),
@@ -649,7 +649,7 @@ class _WidgetThemeConfigScreenState
             child: Text(
               title,
               style: TextStyle(
-                fontSize: 14,
+                fontSize: AppColors.scaledFontSize(14),
                 color: textColor,
               ),
             ),
@@ -658,7 +658,7 @@ class _WidgetThemeConfigScreenState
             Text(
               time,
               style: TextStyle(
-                fontSize: 12,
+                fontSize: AppColors.scaledFontSize(12),
                 color: subTextColor,
               ),
             ),

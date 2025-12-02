@@ -251,7 +251,7 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('clear_completed_success'.tr(args: [deletedCount.toString()])),
-            backgroundColor: AppColors.primaryBlue,
+            backgroundColor: AppColors.primary,
             duration: const Duration(seconds: 2),
           ),
         );
@@ -420,7 +420,7 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> {
                                     : 'no_completed_todos'.tr(),
                             style: TextStyle(
                               color: AppColors.getTextSecondary(isDarkMode),
-                              fontSize: 16,
+                              fontSize: AppColors.scaledFontSize(16),
                             ),
                           ),
                         ],
@@ -468,16 +468,16 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> {
                     },
                   );
                 },
-                loading: () => const Center(
+                loading: () => Center(
                   child: CircularProgressIndicator(
-                    color: AppColors.primaryBlue,
+                    color: AppColors.primary,
                   ),
                 ),
                 error: (error, _) => Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Icon(
+                      Icon(
                         FluentIcons.error_circle_24_regular,
                         size: 48,
                         color: Colors.red,
@@ -485,7 +485,7 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> {
                       const SizedBox(height: 16),
                       Text(
                         '${'error'}: $error',
-                        style: const TextStyle(
+                        style: TextStyle(
                           color: AppColors.textGray,
                         ),
                       ),
@@ -594,7 +594,7 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> {
                           'todo_list'.tr(),
                           style: TextStyle(
                             color: AppColors.getText(isDarkMode),
-                            fontSize: 20,
+                            fontSize: AppColors.scaledFontSize(20),
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -665,7 +665,7 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> {
                         onSubmitted: (_) => _addTodoFromInput(),
                         style: TextStyle(
                           color: AppColors.getText(isDarkMode),
-                          fontSize: 14,
+                          fontSize: AppColors.scaledFontSize(14),
                         ),
                         decoration: InputDecoration(
                           hintText: 'title_hint'.tr(),
@@ -710,7 +710,7 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> {
                                           : 'no_completed_todos'.tr(),
                                   style: TextStyle(
                                     color: AppColors.getTextSecondary(isDarkMode),
-                                    fontSize: 14,
+                                    fontSize: AppColors.scaledFontSize(14),
                                   ),
                                 ),
                               ],
@@ -740,7 +740,7 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> {
                                   borderRadius: BorderRadius.circular(8),
                                   border: Border.all(
                                     color: isSelected
-                                        ? AppColors.primaryBlue
+                                        ? AppColors.primary
                                         : Colors.transparent,
                                     width: 2,
                                   ),
@@ -775,7 +775,7 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> {
                                 borderRadius: BorderRadius.circular(8),
                                 border: Border.all(
                                   color: isSelected
-                                      ? AppColors.primaryBlue
+                                      ? AppColors.primary
                                       : Colors.transparent,
                                   width: 2,
                                 ),
@@ -797,16 +797,16 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> {
                           },
                         );
                       },
-                      loading: () => const Center(
+                      loading: () => Center(
                         child: CircularProgressIndicator(
-                          color: AppColors.primaryBlue,
+                          color: AppColors.primary,
                         ),
                       ),
                       error: (error, _) => Center(
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            const Icon(
+                            Icon(
                               FluentIcons.error_circle_24_regular,
                               size: 40,
                               color: Colors.red,
@@ -814,7 +814,7 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> {
                             const SizedBox(height: 12),
                             Text(
                               '${'error'}: $error',
-                              style: const TextStyle(
+                              style: TextStyle(
                                 color: AppColors.textGray,
                               ),
                             ),

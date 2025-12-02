@@ -699,5 +699,8 @@
   "font_size_scale": "Font Size Scale",
   "font_size_label": "Font Size",
   "preview": "Preview",
-  "reset_to_defaults": "Reset to Defaults"
+  "reset_to_defaults": "Reset to Defaults",
+  "apply_theme": "Apply Theme",
+  "theme_applied": "Theme applied successfully",
+  "unsaved_theme_changes": "You have unsaved changes"
 }

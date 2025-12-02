@@ -8,6 +8,7 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:permission_handler/permission_handler.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:todo_app/core/theme/app_colors.dart';
 import 'package:todo_app/domain/entities/category.dart';
 import 'package:todo_app/domain/entities/todo.dart';
 import 'package:todo_app/domain/repositories/category_repository.dart';
@@ -152,7 +153,7 @@ class ExportService {
             pw.Text(
               'Todo Backup',
               style: pw.TextStyle(
-                fontSize: 24,
+                fontSize: AppColors.scaledFontSize(24),
                 fontWeight: pw.FontWeight.bold,
               ),
             ),
@@ -161,7 +162,7 @@ class ExportService {
             // Export date
             pw.Text(
               'Exported: ${DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now())}',
-              style: const pw.TextStyle(fontSize: 10),
+              style: pw.TextStyle(fontSize: AppColors.scaledFontSize(10)),
             ),
             pw.SizedBox(height: 16),
 
@@ -178,7 +179,7 @@ class ExportService {
                   pw.Text(
                     '요약',
                     style: pw.TextStyle(
-                      fontSize: 14,
+                      fontSize: AppColors.scaledFontSize(14),
                       fontWeight: pw.FontWeight.bold,
                     ),
                   ),
@@ -199,7 +200,7 @@ class ExportService {
               pw.Text(
                 '할 일 목록',
                 style: pw.TextStyle(
-                  fontSize: 14,
+                  fontSize: AppColors.scaledFontSize(14),
                   fontWeight: pw.FontWeight.bold,
                 ),
               ),
@@ -228,7 +229,7 @@ class ExportService {
                 cellAlignment: pw.Alignment.centerLeft,
                 headerStyle: pw.TextStyle(
                   fontWeight: pw.FontWeight.bold,
-                  fontSize: 10,
+                  fontSize: AppColors.scaledFontSize(10),
                 ),
                 cellPadding: const pw.EdgeInsets.symmetric(horizontal: 4, vertical: 4),
               ),

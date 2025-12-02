@@ -21,6 +21,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:todo_app/core/theme/app_colors.dart';
 import 'package:todo_app/presentation/providers/admin_providers.dart';
 
 /// Admin dashboard showing anonymized application statistics.
@@ -53,16 +54,16 @@ class AdminDashboardScreen extends ConsumerWidget {
                   const SizedBox(height: 24),
                   Text(
                     'access_denied'.tr(),
-                    style: const TextStyle(
-                      fontSize: 24,
+                    style: TextStyle(
+                      fontSize: AppColors.scaledFontSize(24),
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   const SizedBox(height: 12),
                   Text(
                     'admin_only_page'.tr(),
-                    style: const TextStyle(
-                      fontSize: 16,
+                    style: TextStyle(
+                      fontSize: AppColors.scaledFontSize(16),
                       color: Colors.grey,
                     ),
                   ),
@@ -119,16 +120,16 @@ class AdminDashboardScreen extends ConsumerWidget {
               const SizedBox(height: 24),
               Text(
                 'permission_check_failed'.tr(),
-                style: const TextStyle(
-                  fontSize: 24,
+                style: TextStyle(
+                  fontSize: AppColors.scaledFontSize(24),
                   fontWeight: FontWeight.bold,
                 ),
               ),
               const SizedBox(height: 12),
               Text(
                 error.toString(),
-                style: const TextStyle(
-                  fontSize: 14,
+                style: TextStyle(
+                  fontSize: AppColors.scaledFontSize(14),
                   color: Colors.grey,
                 ),
                 textAlign: TextAlign.center,
@@ -170,7 +171,7 @@ class _PrivacyNotice extends StatelessWidget {
                     'privacy_protection'.tr(),
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
-                      fontSize: 16,
+                      fontSize: AppColors.scaledFontSize(16),
                       color: Colors.blue.shade900,
                     ),
                   ),
@@ -178,7 +179,7 @@ class _PrivacyNotice extends StatelessWidget {
                   Text(
                     'privacy_dashboard_notice'.tr(),
                     style: TextStyle(
-                      fontSize: 12,
+                      fontSize: AppColors.scaledFontSize(12),
                       color: Colors.blue.shade800,
                     ),
                   ),
@@ -212,8 +213,8 @@ class _UserStatisticsCard extends ConsumerWidget {
                 const SizedBox(width: 8),
                 Text(
                   'user_statistics'.tr(),
-                  style: const TextStyle(
-                    fontSize: 18,
+                  style: TextStyle(
+                    fontSize: AppColors.scaledFontSize(18),
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -286,8 +287,8 @@ class _TodoStatisticsCard extends ConsumerWidget {
                 const SizedBox(width: 8),
                 Text(
                   'todo_statistics'.tr(),
-                  style: const TextStyle(
-                    fontSize: 18,
+                  style: TextStyle(
+                    fontSize: AppColors.scaledFontSize(18),
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -384,8 +385,8 @@ class _CategoryStatisticsCard extends ConsumerWidget {
                 const SizedBox(width: 8),
                 Text(
                   'category_statistics'.tr(),
-                  style: const TextStyle(
-                    fontSize: 18,
+                  style: TextStyle(
+                    fontSize: AppColors.scaledFontSize(18),
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -423,8 +424,8 @@ class _CategoryStatisticsCard extends ConsumerWidget {
                       const SizedBox(height: 16),
                       Text(
                         'most_used_colors_top5'.tr(),
-                        style: const TextStyle(
-                          fontSize: 14,
+                        style: TextStyle(
+                          fontSize: AppColors.scaledFontSize(14),
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -448,13 +449,13 @@ class _CategoryStatisticsCard extends ConsumerWidget {
                               const SizedBox(width: 12),
                               Text(
                                 color ?? 'Unknown',
-                                style: const TextStyle(fontSize: 13),
+                                style: TextStyle(fontSize: AppColors.scaledFontSize(13)),
                               ),
                               const Spacer(),
                               Text(
                                 '$count',
                                 style: TextStyle(
-                                  fontSize: 13,
+                                  fontSize: AppColors.scaledFontSize(13),
                                   color: Colors.grey.shade600,
                                 ),
                               ),
@@ -510,8 +511,8 @@ class _ActivityByHourCard extends ConsumerWidget {
                 const SizedBox(width: 8),
                 Text(
                   'activity_by_hour'.tr(),
-                  style: const TextStyle(
-                    fontSize: 18,
+                  style: TextStyle(
+                    fontSize: AppColors.scaledFontSize(18),
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -545,7 +546,7 @@ class _ActivityByHourCard extends ConsumerWidget {
                             width: 60,
                             child: Text(
                               '${hour.toString().padLeft(2, '0')}:00',
-                              style: const TextStyle(fontSize: 12),
+                              style: TextStyle(fontSize: AppColors.scaledFontSize(12)),
                             ),
                           ),
                           Expanded(
@@ -577,8 +578,8 @@ class _ActivityByHourCard extends ConsumerWidget {
                             child: Text(
                               '$count',
                               textAlign: TextAlign.right,
-                              style: const TextStyle(
-                                fontSize: 12,
+                              style: TextStyle(
+                                fontSize: AppColors.scaledFontSize(12),
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
@@ -624,8 +625,8 @@ class _CompletionByWeekdayCard extends ConsumerWidget {
                 const SizedBox(width: 8),
                 Text(
                   'completion_by_weekday'.tr(),
-                  style: const TextStyle(
-                    fontSize: 18,
+                  style: TextStyle(
+                    fontSize: AppColors.scaledFontSize(18),
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -660,15 +661,15 @@ class _CompletionByWeekdayCard extends ConsumerWidget {
                             children: [
                               Text(
                                 weekdayName,
-                                style: const TextStyle(
-                                  fontSize: 14,
+                                style: TextStyle(
+                                  fontSize: AppColors.scaledFontSize(14),
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
                               Text(
                                 '${completionRate.toStringAsFixed(1)}%',
                                 style: TextStyle(
-                                  fontSize: 14,
+                                  fontSize: AppColors.scaledFontSize(14),
                                   fontWeight: FontWeight.bold,
                                   color: Theme.of(context).primaryColor,
                                 ),
@@ -705,7 +706,7 @@ class _CompletionByWeekdayCard extends ConsumerWidget {
                               Text(
                                 '$completedTodos/$totalTodos',
                                 style: TextStyle(
-                                  fontSize: 12,
+                                  fontSize: AppColors.scaledFontSize(12),
                                   color: Colors.grey.shade600,
                                 ),
                               ),
@@ -762,13 +763,13 @@ class _StatRow extends StatelessWidget {
         Expanded(
           child: Text(
             label,
-            style: const TextStyle(fontSize: 14),
+            style: TextStyle(fontSize: AppColors.scaledFontSize(14)),
           ),
         ),
         Text(
           value,
           style: TextStyle(
-            fontSize: 14,
+            fontSize: AppColors.scaledFontSize(14),
             fontWeight: FontWeight.bold,
             color: color ?? Colors.black87,
           ),
@@ -795,7 +796,7 @@ class _ErrorWidget extends StatelessWidget {
           Text(
             'data_load_failed'.tr(),
             style: TextStyle(
-              fontSize: 16,
+              fontSize: AppColors.scaledFontSize(16),
               fontWeight: FontWeight.bold,
               color: Colors.red.shade700,
             ),
@@ -803,7 +804,7 @@ class _ErrorWidget extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             error,
-            style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+            style: TextStyle(fontSize: AppColors.scaledFontSize(12), color: Colors.grey.shade600),
             textAlign: TextAlign.center,
           ),
         ],

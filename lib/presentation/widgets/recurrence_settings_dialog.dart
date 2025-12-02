@@ -152,9 +152,9 @@ class _RecurrenceSettingsDialogState extends ConsumerState<RecurrenceSettingsDia
             // Header
             Row(
               children: [
-                const Icon(
+                Icon(
                   FluentIcons.arrow_repeat_all_24_regular,
-                  color: AppColors.primaryBlue,
+                  color: AppColors.primary,
                   size: 24,
                 ),
                 const SizedBox(width: 12),
@@ -162,7 +162,7 @@ class _RecurrenceSettingsDialogState extends ConsumerState<RecurrenceSettingsDia
                   'recurrence_settings'.tr(),
                   style: TextStyle(
                     color: AppColors.getText(isDarkMode),
-                    fontSize: 20,
+                    fontSize: AppColors.scaledFontSize(20),
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -233,7 +233,7 @@ class _RecurrenceSettingsDialogState extends ConsumerState<RecurrenceSettingsDia
                     Navigator.pop(context);
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primaryBlue,
+                    backgroundColor: AppColors.primary,
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                     shape: RoundedRectangleBorder(
@@ -259,7 +259,7 @@ class _RecurrenceSettingsDialogState extends ConsumerState<RecurrenceSettingsDia
           'recurrence_frequency'.tr(),
           style: TextStyle(
             color: AppColors.getTextSecondary(isDarkMode),
-            fontSize: 14,
+            fontSize: AppColors.scaledFontSize(14),
           ),
         ),
         const SizedBox(height: 8),
@@ -287,12 +287,12 @@ class _RecurrenceSettingsDialogState extends ConsumerState<RecurrenceSettingsDia
         });
       },
       backgroundColor: AppColors.getBackground(isDarkMode),
-      selectedColor: AppColors.primaryBlue.withOpacity(0.2),
+      selectedColor: AppColors.primary.withOpacity(0.2),
       labelStyle: TextStyle(
-        color: isSelected ? AppColors.primaryBlue : AppColors.getTextSecondary(isDarkMode),
+        color: isSelected ? AppColors.primary : AppColors.getTextSecondary(isDarkMode),
       ),
       side: BorderSide(
-        color: isSelected ? AppColors.primaryBlue : AppColors.getTextSecondary(isDarkMode).withOpacity(0.3),
+        color: isSelected ? AppColors.primary : AppColors.getTextSecondary(isDarkMode).withOpacity(0.3),
       ),
     );
   }
@@ -321,15 +321,15 @@ class _RecurrenceSettingsDialogState extends ConsumerState<RecurrenceSettingsDia
           'recurrence_interval'.tr(),
           style: TextStyle(
             color: AppColors.getTextSecondary(isDarkMode),
-            fontSize: 14,
+            fontSize: AppColors.scaledFontSize(14),
           ),
         ),
         const SizedBox(height: 8),
         Row(
           children: [
             IconButton(
-              icon: const Icon(FluentIcons.subtract_circle_24_regular),
-              color: AppColors.primaryBlue,
+              icon: Icon(FluentIcons.subtract_circle_24_regular),
+              color: AppColors.primary,
               onPressed: _interval > 1
                   ? () => setState(() => _interval--)
                   : null,
@@ -347,13 +347,13 @@ class _RecurrenceSettingsDialogState extends ConsumerState<RecurrenceSettingsDia
                 '$_interval $unit ${'every_unit'.tr()}',
                 style: TextStyle(
                   color: AppColors.getText(isDarkMode),
-                  fontSize: 16,
+                  fontSize: AppColors.scaledFontSize(16),
                 ),
               ),
             ),
             IconButton(
-              icon: const Icon(FluentIcons.add_circle_24_regular),
-              color: AppColors.primaryBlue,
+              icon: Icon(FluentIcons.add_circle_24_regular),
+              color: AppColors.primary,
               onPressed: _interval < 99
                   ? () => setState(() => _interval++)
                   : null,
@@ -374,7 +374,7 @@ class _RecurrenceSettingsDialogState extends ConsumerState<RecurrenceSettingsDia
           'recurrence_days'.tr(),
           style: TextStyle(
             color: AppColors.getTextSecondary(isDarkMode),
-            fontSize: 14,
+            fontSize: AppColors.scaledFontSize(14),
           ),
         ),
         const SizedBox(height: 8),
@@ -395,12 +395,12 @@ class _RecurrenceSettingsDialogState extends ConsumerState<RecurrenceSettingsDia
                 });
               },
               backgroundColor: AppColors.getBackground(isDarkMode),
-              selectedColor: AppColors.primaryBlue.withOpacity(0.2),
+              selectedColor: AppColors.primary.withOpacity(0.2),
               labelStyle: TextStyle(
-                color: isSelected ? AppColors.primaryBlue : AppColors.getTextSecondary(isDarkMode),
+                color: isSelected ? AppColors.primary : AppColors.getTextSecondary(isDarkMode),
               ),
               side: BorderSide(
-                color: isSelected ? AppColors.primaryBlue : AppColors.getTextSecondary(isDarkMode).withOpacity(0.3),
+                color: isSelected ? AppColors.primary : AppColors.getTextSecondary(isDarkMode).withOpacity(0.3),
               ),
             );
           }),
@@ -417,7 +417,7 @@ class _RecurrenceSettingsDialogState extends ConsumerState<RecurrenceSettingsDia
           'end_condition'.tr(),
           style: TextStyle(
             color: AppColors.getTextSecondary(isDarkMode),
-            fontSize: 14,
+            fontSize: AppColors.scaledFontSize(14),
           ),
         ),
         const SizedBox(height: 8),
@@ -438,7 +438,7 @@ class _RecurrenceSettingsDialogState extends ConsumerState<RecurrenceSettingsDia
               _count = null;
             });
           },
-          activeColor: AppColors.primaryBlue,
+          activeColor: AppColors.primary,
         ),
 
         // End after count
@@ -489,7 +489,7 @@ class _RecurrenceSettingsDialogState extends ConsumerState<RecurrenceSettingsDia
               if (_count == null) _count = 10;
             });
           },
-          activeColor: AppColors.primaryBlue,
+          activeColor: AppColors.primary,
         ),
 
         // End on date
@@ -520,7 +520,7 @@ class _RecurrenceSettingsDialogState extends ConsumerState<RecurrenceSettingsDia
                       ? '${_untilDate!.year}.${_untilDate!.month}.${_untilDate!.day}'
                       : 'select_date'.tr(),
                   style: TextStyle(
-                    color: _hasEndDate ? AppColors.primaryBlue : AppColors.getTextSecondary(isDarkMode),
+                    color: _hasEndDate ? AppColors.primary : AppColors.getTextSecondary(isDarkMode),
                   ),
                 ),
               ),
@@ -538,7 +538,7 @@ class _RecurrenceSettingsDialogState extends ConsumerState<RecurrenceSettingsDia
               }
             });
           },
-          activeColor: AppColors.primaryBlue,
+          activeColor: AppColors.primary,
         ),
       ],
     );
@@ -554,14 +554,14 @@ class _RecurrenceSettingsDialogState extends ConsumerState<RecurrenceSettingsDia
         color: AppColors.getBackground(isDarkMode),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: AppColors.primaryBlue.withOpacity(0.3),
+          color: AppColors.primary.withOpacity(0.3),
         ),
       ),
       child: Row(
         children: [
-          const Icon(
+          Icon(
             FluentIcons.info_24_regular,
-            color: AppColors.primaryBlue,
+            color: AppColors.primary,
             size: 20,
           ),
           const SizedBox(width: 12),
@@ -573,7 +573,7 @@ class _RecurrenceSettingsDialogState extends ConsumerState<RecurrenceSettingsDia
                   'preview'.tr(),
                   style: TextStyle(
                     color: AppColors.getTextSecondary(isDarkMode),
-                    fontSize: 12,
+                    fontSize: AppColors.scaledFontSize(12),
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -581,7 +581,7 @@ class _RecurrenceSettingsDialogState extends ConsumerState<RecurrenceSettingsDia
                   description,
                   style: TextStyle(
                     color: AppColors.getText(isDarkMode),
-                    fontSize: 14,
+                    fontSize: AppColors.scaledFontSize(14),
                   ),
                 ),
               ],

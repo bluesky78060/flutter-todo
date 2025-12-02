@@ -60,7 +60,7 @@ class TodoFilterChip extends ConsumerWidget {
                 label,
                 style: TextStyle(
                   color: AppColors.getText(isDarkMode),
-                  fontSize: 14,
+                  fontSize: AppColors.scaledFontSize(14),
                   fontWeight: FontWeight.w500,
                 ),
                 overflow: TextOverflow.ellipsis,
@@ -71,7 +71,7 @@ class TodoFilterChip extends ConsumerWidget {
               '$count',
               style: TextStyle(
                 color: AppColors.getTextSecondary(isDarkMode),
-                fontSize: 14,
+                fontSize: AppColors.scaledFontSize(14),
               ),
             ),
           ],

@@ -134,8 +134,8 @@ class _ImageViewerDialogState extends ConsumerState<ImageViewerDialog> {
           // Image content
           Center(
             child: _isLoading
-                ? const CircularProgressIndicator(
-                    color: AppColors.primaryBlue,
+                ? CircularProgressIndicator(
+                    color: AppColors.primary,
                   )
                 : _error != null
                     ? Padding(
@@ -151,17 +151,17 @@ class _ImageViewerDialogState extends ConsumerState<ImageViewerDialog> {
                             const SizedBox(height: 16),
                             Text(
                               'image_loading_failed'.tr(),
-                              style: const TextStyle(
+                              style: TextStyle(
                                 color: Colors.white,
-                                fontSize: 16,
+                                fontSize: AppColors.scaledFontSize(16),
                               ),
                             ),
                             const SizedBox(height: 8),
                             Text(
                               _error!,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 color: Colors.white70,
-                                fontSize: 12,
+                                fontSize: AppColors.scaledFontSize(12),
                               ),
                               textAlign: TextAlign.center,
                             ),
@@ -225,9 +225,9 @@ class _ImageViewerDialogState extends ConsumerState<ImageViewerDialog> {
                   children: [
                     Text(
                       widget.attachment.fileName,
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: Colors.white,
-                        fontSize: 14,
+                        fontSize: AppColors.scaledFontSize(14),
                         fontWeight: FontWeight.w500,
                       ),
                       maxLines: 2,
@@ -236,9 +236,9 @@ class _ImageViewerDialogState extends ConsumerState<ImageViewerDialog> {
                     const SizedBox(height: 4),
                     Text(
                       _formatFileSize(widget.attachment.fileSize),
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: Colors.white70,
-                        fontSize: 12,
+                        fontSize: AppColors.scaledFontSize(12),
                       ),
                     ),
                   ],

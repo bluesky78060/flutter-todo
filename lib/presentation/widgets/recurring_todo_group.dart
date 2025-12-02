@@ -72,7 +72,7 @@ class _RecurringTodoGroupState extends ConsumerState<RecurringTodoGroup> {
             color: AppColors.getCard(isDarkMode),
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: AppColors.primaryBlue.withValues(alpha: 0.3),
+              color: AppColors.primary.withValues(alpha: 0.3),
               width: 1.5,
             ),
           ),
@@ -94,15 +94,15 @@ class _RecurringTodoGroupState extends ConsumerState<RecurringTodoGroup> {
                       _isExpanded
                           ? FluentIcons.chevron_down_24_filled
                           : FluentIcons.chevron_right_24_filled,
-                      color: AppColors.primaryBlue,
+                      color: AppColors.primary,
                       size: 20,
                     ),
                     const SizedBox(width: 12),
 
                     // Recurring icon
-                    const Icon(
+                    Icon(
                       FluentIcons.arrow_repeat_all_24_filled,
-                      color: AppColors.primaryBlue,
+                      color: AppColors.primary,
                       size: 20,
                     ),
                     const SizedBox(width: 12),
@@ -114,9 +114,9 @@ class _RecurringTodoGroupState extends ConsumerState<RecurringTodoGroup> {
                         children: [
                           Text(
                             firstTodo.title,
-                            style: const TextStyle(
+                            style: TextStyle(
                               color: AppColors.textWhite,
-                              fontSize: 16,
+                              fontSize: AppColors.scaledFontSize(16),
                               fontWeight: FontWeight.w600,
                             ),
                             maxLines: 1,
@@ -128,9 +128,9 @@ class _RecurringTodoGroupState extends ConsumerState<RecurringTodoGroup> {
                               'completed': completedCount.toString(),
                               'total': totalCount.toString(),
                             }),
-                            style: const TextStyle(
+                            style: TextStyle(
                               color: AppColors.textGray,
-                              fontSize: 12,
+                              fontSize: AppColors.scaledFontSize(12),
                             ),
                           ),
                         ],
@@ -144,14 +144,14 @@ class _RecurringTodoGroupState extends ConsumerState<RecurringTodoGroup> {
                         vertical: 6,
                       ),
                       decoration: BoxDecoration(
-                        color: AppColors.primaryBlue.withValues(alpha: 0.2),
+                        color: AppColors.primary.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(
                         '$totalCount',
-                        style: const TextStyle(
-                          color: AppColors.primaryBlue,
-                          fontSize: 12,
+                        style: TextStyle(
+                          color: AppColors.primary,
+                          fontSize: AppColors.scaledFontSize(12),
                           fontWeight: FontWeight.w600,
                         ),
                       ),

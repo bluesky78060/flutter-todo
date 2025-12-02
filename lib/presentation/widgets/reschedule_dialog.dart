@@ -51,7 +51,7 @@ class RescheduleDialog extends ConsumerWidget {
               children: [
                 Icon(
                   FluentIcons.calendar_arrow_right_24_regular,
-                  color: AppColors.primaryBlue,
+                  color: AppColors.primary,
                   size: 24,
                 ),
                 SizedBox(width: 12),
@@ -59,7 +59,7 @@ class RescheduleDialog extends ConsumerWidget {
                   'reschedule_title'.tr(),
                   style: TextStyle(
                     color: AppColors.getText(isDarkMode),
-                    fontSize: 20,
+                    fontSize: AppColors.scaledFontSize(20),
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -97,7 +97,7 @@ class RescheduleDialog extends ConsumerWidget {
                 'cancel'.tr(),
                 style: TextStyle(
                   color: AppColors.getTextSecondary(isDarkMode),
-                  fontSize: 16,
+                  fontSize: AppColors.scaledFontSize(16),
                 ),
               ),
             ),
@@ -140,7 +140,7 @@ class _RescheduleOption extends ConsumerWidget {
           children: [
             Icon(
               icon,
-              color: AppColors.primaryBlue,
+              color: AppColors.primary,
               size: 24,
             ),
             SizedBox(width: 12),
@@ -148,7 +148,7 @@ class _RescheduleOption extends ConsumerWidget {
               label,
               style: TextStyle(
                 color: AppColors.getText(isDarkMode),
-                fontSize: 16,
+                fontSize: AppColors.scaledFontSize(16),
                 fontWeight: FontWeight.w500,
               ),
             ),

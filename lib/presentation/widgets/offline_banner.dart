@@ -18,6 +18,7 @@
 /// - [syncStateProvider] for sync status management
 library;
 
+import 'package:todo_app/core/theme/app_colors.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
@@ -66,10 +67,10 @@ class OfflineBanner extends ConsumerWidget {
                 children: [
                   Text(
                     tr('offline_mode'),
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
-                      fontSize: 14,
+                      fontSize: AppColors.scaledFontSize(14),
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -78,7 +79,7 @@ class OfflineBanner extends ConsumerWidget {
                     tr('offline_mode_description'),
                     style: TextStyle(
                       color: Colors.white.withValues(alpha: 0.9),
-                      fontSize: 12,
+                      fontSize: AppColors.scaledFontSize(12),
                     ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
@@ -124,7 +125,7 @@ class SyncStatusIndicator extends ConsumerWidget {
             child: Text(
               lastSyncString,
               style: TextStyle(
-                fontSize: 12,
+                fontSize: AppColors.scaledFontSize(12),
                 color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
               ),
               maxLines: 1,
@@ -157,7 +158,7 @@ class SyncStatusIndicator extends ConsumerWidget {
                   Text(
                     tr('retry'),
                     style: TextStyle(
-                      fontSize: 12,
+                      fontSize: AppColors.scaledFontSize(12),
                       color: Colors.red.shade700,
                       fontWeight: FontWeight.w500,
                     ),
@@ -236,7 +237,7 @@ class ConnectionStatusWidget extends ConsumerWidget {
                     ? (syncState.hasFailed ? tr('sync_failed') : '')
                     : tr('offline'),
                 style: TextStyle(
-                  fontSize: 11,
+                  fontSize: AppColors.scaledFontSize(11),
                   color: _getTextColor(isOnline, syncState),
                   fontWeight: FontWeight.w500,
                 ),

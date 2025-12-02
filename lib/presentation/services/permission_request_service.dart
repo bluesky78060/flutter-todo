@@ -72,7 +72,7 @@ class PermissionRequestService {
           title: 'permission_notification_title'.tr(),
           message: 'permission_notification_desc'.tr(),
           icon: null,
-          iconColor: AppColors.primaryBlue,
+          iconColor: AppColors.primary,
         );
 
         if (shouldRequest == true) {
@@ -122,7 +122,7 @@ class PermissionRequestService {
           title: 'permission_location_title'.tr(),
           message: 'permission_location_desc'.tr(),
           icon: FluentIcons.location_24_regular,
-          iconColor: AppColors.primaryBlue,
+          iconColor: AppColors.primary,
         );
 
         if (shouldRequest == true) {
@@ -194,7 +194,7 @@ class PermissionRequestService {
           title: 'permission_battery_title'.tr(),
           message: 'permission_battery_desc'.tr(),
           icon: null,
-          iconColor: AppColors.primaryBlue,
+          iconColor: AppColors.primary,
         );
 
         if (shouldRequest == true) {
@@ -240,35 +240,35 @@ class PermissionRequestService {
                   Expanded(
                     child: Text(
                       title,
-                      style: const TextStyle(color: AppColors.textWhite),
+                      style: TextStyle(color: AppColors.textWhite),
                     ),
                   ),
                 ],
               )
             : Text(
                 title,
-                style: const TextStyle(color: AppColors.textWhite),
+                style: TextStyle(color: AppColors.textWhite),
               ),
         content: Text(
           message,
-          style: const TextStyle(color: AppColors.textGray, height: 1.5),
+          style: TextStyle(color: AppColors.textGray, height: 1.5),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
             child: Text(
               'deny'.tr(),
-              style: const TextStyle(color: AppColors.textGray),
+              style: TextStyle(color: AppColors.textGray),
             ),
           ),
           ElevatedButton(
             onPressed: () => Navigator.of(context).pop(true),
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primaryBlue,
+              backgroundColor: AppColors.primary,
             ),
             child: Text(
               'allow'.tr(),
-              style: const TextStyle(color: Colors.white),
+              style: TextStyle(color: Colors.white),
             ),
           ),
         ],
@@ -291,37 +291,37 @@ class PermissionRequestService {
         backgroundColor: AppColors.getCard(isDarkMode),
         title: Row(
           children: [
-            const Icon(
+            Icon(
               FluentIcons.info_24_regular,
-              color: AppColors.primaryBlue,
+              color: AppColors.primary,
             ),
             const SizedBox(width: 12),
             Text(
               'notification_settings'.tr(),
-              style: const TextStyle(color: AppColors.textWhite),
+              style: TextStyle(color: AppColors.textWhite),
             ),
           ],
         ),
         content: Text(
           'permission_notification_rationale'.tr(),
-          style: const TextStyle(color: AppColors.textGray, height: 1.5),
+          style: TextStyle(color: AppColors.textGray, height: 1.5),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
             child: Text(
               'deny'.tr(),
-              style: const TextStyle(color: AppColors.textGray),
+              style: TextStyle(color: AppColors.textGray),
             ),
           ),
           ElevatedButton(
             onPressed: () => Navigator.of(context).pop(true),
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primaryBlue,
+              backgroundColor: AppColors.primary,
             ),
             child: Text(
               'settings_open'.tr(),
-              style: const TextStyle(color: Colors.white),
+              style: TextStyle(color: Colors.white),
             ),
           ),
         ],

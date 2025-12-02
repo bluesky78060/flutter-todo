@@ -108,7 +108,7 @@ class TodoDetailScreen extends ConsumerWidget {
                 todo.title,
                 style: TextStyle(
                   color: AppColors.getText(isDarkMode),
-                  fontSize: 28,
+                  fontSize: AppColors.scaledFontSize(28),
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -120,7 +120,7 @@ class TodoDetailScreen extends ConsumerWidget {
                   todo.description,
                   style: TextStyle(
                     color: AppColors.getTextSecondary(isDarkMode),
-                    fontSize: 16,
+                    fontSize: AppColors.scaledFontSize(16),
                   ),
                 ),
                 const SizedBox(height: 24),
@@ -141,7 +141,7 @@ class TodoDetailScreen extends ConsumerWidget {
                   icon: FluentIcons.calendar_clock_24_regular,
                   label: 'due_date'.tr(),
                   value: _formatDateTime(todo.dueDate!),
-                  color: AppColors.primaryBlue,
+                  color: AppColors.primary,
                   isDarkMode: isDarkMode,
                 ),
                 const SizedBox(height: 12),
@@ -222,7 +222,7 @@ class TodoDetailScreen extends ConsumerWidget {
                               }
                             }
                           },
-                          icon: const Icon(
+                          icon: Icon(
                             FluentIcons.snooze_24_regular,
                             size: 18,
                           ),
@@ -245,7 +245,7 @@ class TodoDetailScreen extends ConsumerWidget {
                         'snooze_count'.tr(namedArgs: {'count': todo.snoozeCount.toString()}),
                         style: TextStyle(
                           color: AppColors.getTextSecondary(isDarkMode).withValues(alpha: 0.7),
-                          fontSize: 12,
+                          fontSize: AppColors.scaledFontSize(12),
                         ),
                       ),
                     ),
@@ -261,7 +261,7 @@ class TodoDetailScreen extends ConsumerWidget {
                   icon: FluentIcons.location_24_regular,
                   label: 'location'.tr(),
                   value: todo.locationName ?? '${todo.locationLatitude!.toStringAsFixed(6)}, ${todo.locationLongitude!.toStringAsFixed(6)}',
-                  color: AppColors.primaryBlue,
+                  color: AppColors.primary,
                   isDarkMode: isDarkMode,
                 ),
                 if (todo.locationRadius != null) ...[
@@ -272,7 +272,7 @@ class TodoDetailScreen extends ConsumerWidget {
                       '${'geofence_radius'.tr()}: ${todo.locationRadius!.toInt()}m',
                       style: TextStyle(
                         color: AppColors.getTextSecondary(isDarkMode).withValues(alpha: 0.7),
-                        fontSize: 14,
+                        fontSize: AppColors.scaledFontSize(14),
                       ),
                     ),
                   ),
@@ -286,7 +286,7 @@ class TodoDetailScreen extends ConsumerWidget {
                   icon: FluentIcons.arrow_repeat_all_24_regular,
                   label: 'recurrence_settings'.tr(),
                   value: RecurrenceUtils.getDescription(todo.recurrenceRule),
-                  color: AppColors.primaryBlue,
+                  color: AppColors.primary,
                   isDarkMode: isDarkMode,
                 ),
                 const SizedBox(height: 12),
@@ -366,7 +366,7 @@ class TodoDetailScreen extends ConsumerWidget {
                             'overdue'.tr(),
                             style: TextStyle(
                               color: AppColors.accentOrange,
-                              fontSize: 14,
+                              fontSize: AppColors.scaledFontSize(14),
                               fontWeight: FontWeight.w600,
                             ),
                           ),
@@ -377,7 +377,7 @@ class TodoDetailScreen extends ConsumerWidget {
                             }),
                             style: TextStyle(
                               color: AppColors.getTextSecondary(isDarkMode),
-                              fontSize: 12,
+                              fontSize: AppColors.scaledFontSize(12),
                             ),
                           ),
                         ],
@@ -412,7 +412,7 @@ class TodoDetailScreen extends ConsumerWidget {
                                       return Theme(
                                         data: ThemeData.dark().copyWith(
                                           colorScheme: ColorScheme.dark(
-                                            primary: AppColors.primaryBlue,
+                                            primary: AppColors.primary,
                                             surface: AppColors.getCard(isDarkMode),
                                           ),
                                         ),
@@ -459,7 +459,7 @@ class TodoDetailScreen extends ConsumerWidget {
                           ),
                           label: Text('reschedule'.tr()),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.primaryBlue,
+                            backgroundColor: AppColors.primary,
                             foregroundColor: AppColors.getText(isDarkMode),
                             padding: const EdgeInsets.symmetric(
                               horizontal: 16,
@@ -490,15 +490,15 @@ class TodoDetailScreen extends ConsumerWidget {
             ],
           ),
         ),
-        loading: () => const Center(
+        loading: () => Center(
           child: CircularProgressIndicator(
-            color: AppColors.primaryBlue,
+            color: AppColors.primary,
           ),
         ),
         error: (error, _) => Center(
           child: Text(
             'error_prefix'.tr(namedArgs: {'error': error.toString()}),
-            style: const TextStyle(color: Colors.red),
+            style: TextStyle(color: Colors.red),
           ),
         ),
       ),
@@ -549,7 +549,7 @@ class _InfoRow extends StatelessWidget {
                   label,
                   style: TextStyle(
                     color: AppColors.getTextSecondary(isDarkMode),
-                    fontSize: 12,
+                    fontSize: AppColors.scaledFontSize(12),
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -557,7 +557,7 @@ class _InfoRow extends StatelessWidget {
                   value,
                   style: TextStyle(
                     color: effectiveColor,
-                    fontSize: 16,
+                    fontSize: AppColors.scaledFontSize(16),
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -638,9 +638,9 @@ class _SubtasksSectionState extends ConsumerState<_SubtasksSection> {
           // Header
           Row(
             children: [
-              const Icon(
+              Icon(
                 FluentIcons.task_list_square_ltr_24_regular,
-                color: AppColors.primaryBlue,
+                color: AppColors.primary,
                 size: 24,
               ),
               const SizedBox(width: 12),
@@ -648,7 +648,7 @@ class _SubtasksSectionState extends ConsumerState<_SubtasksSection> {
                 'subtasks'.tr(),
                 style: TextStyle(
                   color: AppColors.getText(widget.isDarkMode),
-                  fontSize: 18,
+                  fontSize: AppColors.scaledFontSize(18),
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -661,7 +661,7 @@ class _SubtasksSectionState extends ConsumerState<_SubtasksSection> {
                   }),
                   style: TextStyle(
                     color: AppColors.getTextSecondary(widget.isDarkMode),
-                    fontSize: 12,
+                    fontSize: AppColors.scaledFontSize(12),
                   ),
                 ),
                 loading: () => const SizedBox.shrink(),
@@ -682,7 +682,7 @@ class _SubtasksSectionState extends ConsumerState<_SubtasksSection> {
                       'no_subtasks'.tr(),
                       style: TextStyle(
                         color: AppColors.getTextSecondary(widget.isDarkMode),
-                        fontSize: 14,
+                        fontSize: AppColors.scaledFontSize(14),
                       ),
                     ),
                   ),
@@ -715,11 +715,11 @@ class _SubtasksSectionState extends ConsumerState<_SubtasksSection> {
                     .toList(),
               );
             },
-            loading: () => const Center(
+            loading: () => Center(
               child: Padding(
                 padding: EdgeInsets.all(12.0),
                 child: CircularProgressIndicator(
-                  color: AppColors.primaryBlue,
+                  color: AppColors.primary,
                 ),
               ),
             ),
@@ -727,7 +727,7 @@ class _SubtasksSectionState extends ConsumerState<_SubtasksSection> {
               padding: const EdgeInsets.all(12.0),
               child: Text(
                 'error'.tr() + ': $error',
-                style: const TextStyle(color: Colors.red),
+                style: TextStyle(color: Colors.red),
               ),
             ),
           ),
@@ -761,9 +761,9 @@ class _SubtasksSectionState extends ConsumerState<_SubtasksSection> {
               const SizedBox(width: 8),
               IconButton(
                 onPressed: _addSubtask,
-                icon: const Icon(
+                icon: Icon(
                   FluentIcons.add_circle_24_filled,
-                  color: AppColors.primaryBlue,
+                  color: AppColors.primary,
                 ),
               ),
             ],
@@ -846,7 +846,7 @@ class _SubtaskItem extends StatelessWidget {
                     onPressed: () => Navigator.of(context).pop(true),
                     child: Text(
                       'delete'.tr(),
-                      style: const TextStyle(color: Colors.red),
+                      style: TextStyle(color: Colors.red),
                     ),
                   ),
                 ],
@@ -888,9 +888,9 @@ class _AttachmentsSection extends ConsumerWidget {
           // Header
           Row(
             children: [
-              const Icon(
+              Icon(
                 FluentIcons.attach_24_regular,
-                color: AppColors.primaryBlue,
+                color: AppColors.primary,
                 size: 24,
               ),
               const SizedBox(width: 12),
@@ -898,7 +898,7 @@ class _AttachmentsSection extends ConsumerWidget {
                 'attachments'.tr(),
                 style: TextStyle(
                   color: AppColors.getText(isDarkMode),
-                  fontSize: 18,
+                  fontSize: AppColors.scaledFontSize(18),
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -908,7 +908,7 @@ class _AttachmentsSection extends ConsumerWidget {
                   '${attachments.length}',
                   style: TextStyle(
                     color: AppColors.getTextSecondary(isDarkMode),
-                    fontSize: 12,
+                    fontSize: AppColors.scaledFontSize(12),
                   ),
                 ),
               ) ?? const SizedBox.shrink(),
@@ -927,7 +927,7 @@ class _AttachmentsSection extends ConsumerWidget {
                       'no_attachments'.tr(),
                       style: TextStyle(
                         color: AppColors.getTextSecondary(isDarkMode),
-                        fontSize: 14,
+                        fontSize: AppColors.scaledFontSize(14),
                       ),
                     ),
                   ),
@@ -989,11 +989,11 @@ class _AttachmentsSection extends ConsumerWidget {
                 },
               );
             },
-            loading: () => const Center(
+            loading: () => Center(
               child: Padding(
                 padding: EdgeInsets.all(12.0),
                 child: CircularProgressIndicator(
-                  color: AppColors.primaryBlue,
+                  color: AppColors.primary,
                 ),
               ),
             ),
@@ -1001,7 +1001,7 @@ class _AttachmentsSection extends ConsumerWidget {
               padding: const EdgeInsets.all(12.0),
               child: Text(
                 'error'.tr() + ': $error',
-                style: const TextStyle(color: Colors.red),
+                style: TextStyle(color: Colors.red),
               ),
             ),
           ),
@@ -1091,7 +1091,7 @@ class _AttachmentItem extends ConsumerWidget {
               children: [
                 Icon(
                   _getFileIcon(),
-                  color: AppColors.primaryBlue,
+                  color: AppColors.primary,
                   size: 40,
                 ),
                 const SizedBox(height: 8),
@@ -1104,7 +1104,7 @@ class _AttachmentItem extends ConsumerWidget {
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: AppColors.getText(isDarkMode),
-                      fontSize: 11,
+                      fontSize: AppColors.scaledFontSize(11),
                     ),
                   ),
                 ),
@@ -1113,7 +1113,7 @@ class _AttachmentItem extends ConsumerWidget {
                   _formatFileSize(attachment.fileSize),
                   style: TextStyle(
                     color: AppColors.getTextSecondary(isDarkMode),
-                    fontSize: 9,
+                    fontSize: AppColors.scaledFontSize(9),
                   ),
                 ),
               ],
@@ -1132,7 +1132,7 @@ class _AttachmentItem extends ConsumerWidget {
                 shape: BoxShape.circle,
               ),
               padding: const EdgeInsets.all(4),
-              child: const Icon(
+              child: Icon(
                 FluentIcons.dismiss_24_filled,
                 color: Colors.white,
                 size: 16,
@@ -1162,7 +1162,7 @@ class _AttachmentItem extends ConsumerWidget {
             },
             child: Text(
               'delete'.tr(),
-              style: const TextStyle(color: Colors.red),
+              style: TextStyle(color: Colors.red),
             ),
           ),
         ],

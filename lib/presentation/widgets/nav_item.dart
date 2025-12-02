@@ -74,7 +74,7 @@ class NavItem extends ConsumerWidget {
                 icon,
                 size: 24,
                 color: isActive
-                    ? AppColors.primaryBlue
+                    ? AppColors.primary
                     : AppColors.getTextSecondary(isDarkMode),
               ),
               const SizedBox(height: 4),
@@ -82,9 +82,9 @@ class NavItem extends ConsumerWidget {
                 label,
                 style: TextStyle(
                   color: isActive
-                      ? AppColors.primaryBlue
+                      ? AppColors.primary
                       : AppColors.getTextSecondary(isDarkMode),
-                  fontSize: 12,
+                  fontSize: AppColors.scaledFontSize(12),
                   fontWeight: FontWeight.w500,
                 ),
               ),

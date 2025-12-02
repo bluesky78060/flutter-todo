@@ -67,7 +67,7 @@ class StatisticsScreen extends ConsumerWidget {
                         'statistics'.tr(),
                         style: TextStyle(
                           color: AppColors.getText(isDarkMode),
-                          fontSize: 24,
+                          fontSize: AppColors.scaledFontSize(24),
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -76,7 +76,7 @@ class StatisticsScreen extends ConsumerWidget {
                         'my_work_status'.tr(),
                         style: TextStyle(
                           color: AppColors.getTextSecondary(isDarkMode),
-                          fontSize: 14,
+                          fontSize: AppColors.scaledFontSize(14),
                         ),
                       ),
                     ],
@@ -87,7 +87,7 @@ class StatisticsScreen extends ConsumerWidget {
                       borderRadius: BorderRadius.circular(12),
                       boxShadow: [
                         BoxShadow(
-                          color: AppColors.primaryBlue.withValues(alpha: 0.3),
+                          color: AppColors.primary.withValues(alpha: 0.3),
                           blurRadius: 12,
                           offset: const Offset(0, 4),
                         ),
@@ -126,16 +126,16 @@ class StatisticsScreen extends ConsumerWidget {
                       final stats = _calculateStatistics(todos, categories);
                       return _buildStatisticsContent(stats);
                     },
-                    loading: () => const Center(
+                    loading: () => Center(
                       child: CircularProgressIndicator(
-                        color: AppColors.primaryBlue,
+                        color: AppColors.primary,
                       ),
                     ),
                     error: (error, _) => Center(
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Icon(
+                          Icon(
                             FluentIcons.error_circle_24_regular,
                             size: 48,
                             color: Colors.red,
@@ -152,16 +152,16 @@ class StatisticsScreen extends ConsumerWidget {
                     ),
                   );
                 },
-                loading: () => const Center(
+                loading: () => Center(
                   child: CircularProgressIndicator(
-                    color: AppColors.primaryBlue,
+                    color: AppColors.primary,
                   ),
                 ),
                 error: (error, _) => Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Icon(
+                      Icon(
                         FluentIcons.error_circle_24_regular,
                         size: 48,
                         color: Colors.red,
@@ -567,7 +567,7 @@ class _OverallProgressCard extends ConsumerWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: AppColors.primaryBlue.withValues(alpha: 0.2),
+            color: AppColors.primary.withValues(alpha: 0.2),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -581,10 +581,10 @@ class _OverallProgressCard extends ConsumerWidget {
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: isDarkMode ? Colors.white.withValues(alpha: 0.2) : AppColors.primaryBlue.withValues(alpha: 0.15),
+                  color: isDarkMode ? Colors.white.withValues(alpha: 0.2) : AppColors.primary.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Icon(
+                child: Icon(
                   FluentIcons.chart_multiple_24_filled,
                   color: Colors.white,
                   size: 24,
@@ -595,7 +595,7 @@ class _OverallProgressCard extends ConsumerWidget {
                 'overall_progress'.tr(),
                 style: TextStyle(
                   color: isDarkMode ? Colors.white : AppColors.textDark,
-                  fontSize: 18,
+                  fontSize: AppColors.scaledFontSize(18),
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -670,7 +670,7 @@ class _OverallProgressCard extends ConsumerWidget {
                 decoration: BoxDecoration(
                   color: isDarkMode
                       ? Colors.white.withValues(alpha: 0.2)
-                      : AppColors.primaryBlue.withValues(alpha: 0.15),
+                      : AppColors.primary.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Column(
@@ -678,8 +678,8 @@ class _OverallProgressCard extends ConsumerWidget {
                     Text(
                       '${stats.completionRate.toStringAsFixed(0)}%',
                       style: TextStyle(
-                        color: isDarkMode ? Colors.white : AppColors.primaryBlue,
-                        fontSize: 24,
+                        color: isDarkMode ? Colors.white : AppColors.primary,
+                        fontSize: AppColors.scaledFontSize(24),
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -689,7 +689,7 @@ class _OverallProgressCard extends ConsumerWidget {
                         color: isDarkMode
                             ? Colors.white.withValues(alpha: 0.7)
                             : AppColors.textGrayDark,
-                        fontSize: 10,
+                        fontSize: AppColors.scaledFontSize(10),
                       ),
                     ),
                   ],
@@ -726,7 +726,7 @@ class _MiniStatRow extends StatelessWidget {
           label,
           style: TextStyle(
             color: color.withValues(alpha: 0.8),
-            fontSize: 12,
+            fontSize: AppColors.scaledFontSize(12),
           ),
         ),
         const Spacer(),
@@ -734,7 +734,7 @@ class _MiniStatRow extends StatelessWidget {
           value,
           style: TextStyle(
             color: color,
-            fontSize: 14,
+            fontSize: AppColors.scaledFontSize(14),
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -795,7 +795,7 @@ class _StreakCard extends ConsumerWidget {
           Expanded(
             child: _StreakItem(
               icon: FluentIcons.calendar_week_start_24_filled,
-              iconColor: AppColors.primaryBlue,
+              iconColor: AppColors.primary,
               title: 'this_week'.tr(),
               value: '${stats.weekCompleted}',
               subtitle: 'completed'.tr(),
@@ -834,7 +834,7 @@ class _StreakItem extends ConsumerWidget {
           value,
           style: TextStyle(
             color: AppColors.getText(isDarkMode),
-            fontSize: 24,
+            fontSize: AppColors.scaledFontSize(24),
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -842,7 +842,7 @@ class _StreakItem extends ConsumerWidget {
           subtitle,
           style: TextStyle(
             color: AppColors.getTextSecondary(isDarkMode),
-            fontSize: 11,
+            fontSize: AppColors.scaledFontSize(11),
           ),
         ),
         const SizedBox(height: 4),
@@ -850,7 +850,7 @@ class _StreakItem extends ConsumerWidget {
           title,
           style: TextStyle(
             color: AppColors.getTextSecondary(isDarkMode),
-            fontSize: 10,
+            fontSize: AppColors.scaledFontSize(10),
           ),
           textAlign: TextAlign.center,
         ),
@@ -892,7 +892,7 @@ class _WeeklyBarChartCard extends ConsumerWidget {
                       gradient: AppColors.primaryGradient,
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: const Icon(
+                    child: Icon(
                       FluentIcons.data_bar_horizontal_24_filled,
                       color: Colors.white,
                       size: 20,
@@ -903,7 +903,7 @@ class _WeeklyBarChartCard extends ConsumerWidget {
                     'weekly_trend'.tr(),
                     style: TextStyle(
                       color: AppColors.getText(isDarkMode),
-                      fontSize: 18,
+                      fontSize: AppColors.scaledFontSize(18),
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -917,9 +917,9 @@ class _WeeklyBarChartCard extends ConsumerWidget {
                 ),
                 child: Text(
                   'completed_count'.tr(namedArgs: {'count': '${stats.weekCompleted}'}),
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: Colors.white,
-                    fontSize: 12,
+                    fontSize: AppColors.scaledFontSize(12),
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -951,14 +951,14 @@ class _WeeklyBarChartCard extends ConsumerWidget {
                         TextStyle(
                           color: isDarkMode ? Colors.black87 : Colors.white,
                           fontWeight: FontWeight.bold,
-                          fontSize: 12,
+                          fontSize: AppColors.scaledFontSize(12),
                         ),
                         children: [
                           TextSpan(
                             text: '${rod.toY.toInt()} ${'tasks'.tr()}',
                             style: TextStyle(
                               color: isDarkMode ? Colors.black54 : Colors.white70,
-                              fontSize: 11,
+                              fontSize: AppColors.scaledFontSize(11),
                             ),
                           ),
                         ],
@@ -980,7 +980,7 @@ class _WeeklyBarChartCard extends ConsumerWidget {
                             shortDays[value.toInt()],
                             style: TextStyle(
                               color: AppColors.getTextSecondary(isDarkMode),
-                              fontSize: 11,
+                              fontSize: AppColors.scaledFontSize(11),
                             ),
                           ),
                         );
@@ -998,7 +998,7 @@ class _WeeklyBarChartCard extends ConsumerWidget {
                             value.toInt().toString(),
                             style: TextStyle(
                               color: AppColors.getTextSecondary(isDarkMode),
-                              fontSize: 10,
+                              fontSize: AppColors.scaledFontSize(10),
                             ),
                           );
                         }
@@ -1073,7 +1073,7 @@ class _MonthlyLineChartCard extends ConsumerWidget {
                   gradient: AppColors.primaryGradient,
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Icon(
+                child: Icon(
                   FluentIcons.data_trending_24_filled,
                   color: Colors.white,
                   size: 20,
@@ -1084,7 +1084,7 @@ class _MonthlyLineChartCard extends ConsumerWidget {
                 'monthly_trend'.tr(),
                 style: TextStyle(
                   color: AppColors.getText(isDarkMode),
-                  fontSize: 18,
+                  fontSize: AppColors.scaledFontSize(18),
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -1113,7 +1113,7 @@ class _MonthlyLineChartCard extends ConsumerWidget {
                           '${weekLabels[spot.x.toInt()]}\n${spot.y.toInt()} ${'tasks'.tr()}',
                           TextStyle(
                             color: isDarkMode ? Colors.black87 : Colors.white,
-                            fontSize: 11,
+                            fontSize: AppColors.scaledFontSize(11),
                           ),
                         );
                       }).toList();
@@ -1134,7 +1134,7 @@ class _MonthlyLineChartCard extends ConsumerWidget {
                               labels[value.toInt()],
                               style: TextStyle(
                                 color: AppColors.getTextSecondary(isDarkMode),
-                                fontSize: 11,
+                                fontSize: AppColors.scaledFontSize(11),
                               ),
                             ),
                           );
@@ -1154,7 +1154,7 @@ class _MonthlyLineChartCard extends ConsumerWidget {
                             value.toInt().toString(),
                             style: TextStyle(
                               color: AppColors.getTextSecondary(isDarkMode),
-                              fontSize: 10,
+                              fontSize: AppColors.scaledFontSize(10),
                             ),
                           );
                         }
@@ -1192,7 +1192,7 @@ class _MonthlyLineChartCard extends ConsumerWidget {
                           radius: 4,
                           color: Colors.white,
                           strokeWidth: 2,
-                          strokeColor: AppColors.primaryBlue,
+                          strokeColor: AppColors.primary,
                         );
                       },
                     ),
@@ -1202,8 +1202,8 @@ class _MonthlyLineChartCard extends ConsumerWidget {
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
                         colors: [
-                          AppColors.primaryBlue.withValues(alpha: 0.3),
-                          AppColors.primaryBlue.withValues(alpha: 0.0),
+                          AppColors.primary.withValues(alpha: 0.3),
+                          AppColors.primary.withValues(alpha: 0.0),
                         ],
                       ),
                     ),
@@ -1244,7 +1244,7 @@ class _TodayStatisticsCard extends ConsumerWidget {
                   gradient: AppColors.primaryGradient,
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Icon(
+                child: Icon(
                   FluentIcons.calendar_today_24_filled,
                   color: Colors.white,
                   size: 20,
@@ -1255,7 +1255,7 @@ class _TodayStatisticsCard extends ConsumerWidget {
                 'today_statistics'.tr(),
                 style: TextStyle(
                   color: AppColors.getText(isDarkMode),
-                  fontSize: 18,
+                  fontSize: AppColors.scaledFontSize(18),
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -1328,7 +1328,7 @@ class _InfoCard extends ConsumerWidget {
             value,
             style: TextStyle(
               color: AppColors.getText(isDarkMode),
-              fontSize: 20,
+              fontSize: AppColors.scaledFontSize(20),
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -1337,7 +1337,7 @@ class _InfoCard extends ConsumerWidget {
             label,
             style: TextStyle(
               color: AppColors.getTextSecondary(isDarkMode),
-              fontSize: 12,
+              fontSize: AppColors.scaledFontSize(12),
             ),
           ),
         ],
@@ -1372,7 +1372,7 @@ class _TimeBasedStatisticsCard extends ConsumerWidget {
                   gradient: AppColors.primaryGradient,
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Icon(
+                child: Icon(
                   FluentIcons.clock_24_filled,
                   color: Colors.white,
                   size: 20,
@@ -1383,7 +1383,7 @@ class _TimeBasedStatisticsCard extends ConsumerWidget {
                 'time_analysis'.tr(),
                 style: TextStyle(
                   color: AppColors.getText(isDarkMode),
-                  fontSize: 18,
+                  fontSize: AppColors.scaledFontSize(18),
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -1439,13 +1439,13 @@ class _TimeInfoCard extends ConsumerWidget {
       ),
       child: Column(
         children: [
-          Icon(icon, color: AppColors.primaryBlue, size: 24),
+          Icon(icon, color: AppColors.primary, size: 24),
           const SizedBox(height: 12),
           Text(
             value,
             style: TextStyle(
               color: AppColors.getText(isDarkMode),
-              fontSize: 18,
+              fontSize: AppColors.scaledFontSize(18),
               fontWeight: FontWeight.bold,
             ),
             textAlign: TextAlign.center,
@@ -1455,7 +1455,7 @@ class _TimeInfoCard extends ConsumerWidget {
             label,
             style: TextStyle(
               color: AppColors.getTextSecondary(isDarkMode),
-              fontSize: 11,
+              fontSize: AppColors.scaledFontSize(11),
             ),
             textAlign: TextAlign.center,
           ),
@@ -1513,7 +1513,7 @@ class _NavItem extends ConsumerWidget {
                 icon,
                 size: 24,
                 color: isActive
-                    ? AppColors.primaryBlue
+                    ? AppColors.primary
                     : AppColors.getTextSecondary(isDarkMode),
               ),
               const SizedBox(height: 4),
@@ -1521,9 +1521,9 @@ class _NavItem extends ConsumerWidget {
                 label,
                 style: TextStyle(
                   color: isActive
-                      ? AppColors.primaryBlue
+                      ? AppColors.primary
                       : AppColors.getTextSecondary(isDarkMode),
-                  fontSize: 12,
+                  fontSize: AppColors.scaledFontSize(12),
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -1585,7 +1585,7 @@ class _CategoryAnalysisCard extends ConsumerWidget {
                     'category_analysis'.tr(),
                     style: TextStyle(
                       color: AppColors.getText(isDarkMode),
-                      fontSize: 16,
+                      fontSize: AppColors.scaledFontSize(16),
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -1594,7 +1594,7 @@ class _CategoryAnalysisCard extends ConsumerWidget {
                     'completion_by_category'.tr(),
                     style: TextStyle(
                       color: AppColors.getTextSecondary(isDarkMode),
-                      fontSize: 12,
+                      fontSize: AppColors.scaledFontSize(12),
                     ),
                   ),
                 ],
@@ -1607,9 +1607,9 @@ class _CategoryAnalysisCard extends ConsumerWidget {
                 ),
                 child: Text(
                   '${displayCategories.length}/${stats.categoryStats.length}',
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: AppColors.successGreen,
-                    fontSize: 12,
+                    fontSize: AppColors.scaledFontSize(12),
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -1637,7 +1637,7 @@ class _CategoryAnalysisCard extends ConsumerWidget {
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                           color: AppColors.getText(isDarkMode),
-                          fontSize: 12,
+                          fontSize: AppColors.scaledFontSize(12),
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -1647,7 +1647,7 @@ class _CategoryAnalysisCard extends ConsumerWidget {
                       '${category.completionRate.toStringAsFixed(1)}%',
                       style: TextStyle(
                         color: getColorForRate(category.completionRate),
-                        fontSize: 12,
+                        fontSize: AppColors.scaledFontSize(12),
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -1674,7 +1674,7 @@ class _CategoryAnalysisCard extends ConsumerWidget {
                   '${category.completedCount}/${category.totalCount} completed',
                   style: TextStyle(
                     color: AppColors.getTextSecondary(isDarkMode),
-                    fontSize: 10,
+                    fontSize: AppColors.scaledFontSize(10),
                   ),
                 ),
 
@@ -1761,7 +1761,7 @@ class _MonthlyAnalysisCard extends ConsumerWidget {
                     '월간 추이 분석',
                     style: TextStyle(
                       color: AppColors.getText(isDarkMode),
-                      fontSize: 16,
+                      fontSize: AppColors.scaledFontSize(16),
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -1770,7 +1770,7 @@ class _MonthlyAnalysisCard extends ConsumerWidget {
                     '지난 12개월 완료 추이',
                     style: TextStyle(
                       color: AppColors.getTextSecondary(isDarkMode),
-                      fontSize: 12,
+                      fontSize: AppColors.scaledFontSize(12),
                     ),
                   ),
                 ],
@@ -1778,14 +1778,14 @@ class _MonthlyAnalysisCard extends ConsumerWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: AppColors.primaryBlue.withValues(alpha: 0.1),
+                  color: AppColors.primary.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
                   trend,
-                  style: const TextStyle(
-                    color: AppColors.primaryBlue,
-                    fontSize: 14,
+                  style: TextStyle(
+                    color: AppColors.primary,
+                    fontSize: AppColors.scaledFontSize(14),
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -1805,7 +1805,7 @@ class _MonthlyAnalysisCard extends ConsumerWidget {
                     '연간 총합',
                     style: TextStyle(
                       color: AppColors.getTextSecondary(isDarkMode),
-                      fontSize: 12,
+                      fontSize: AppColors.scaledFontSize(12),
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -1813,7 +1813,7 @@ class _MonthlyAnalysisCard extends ConsumerWidget {
                     '$totalYear개',
                     style: TextStyle(
                       color: AppColors.getText(isDarkMode),
-                      fontSize: 14,
+                      fontSize: AppColors.scaledFontSize(14),
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -1826,7 +1826,7 @@ class _MonthlyAnalysisCard extends ConsumerWidget {
                     '월평균',
                     style: TextStyle(
                       color: AppColors.getTextSecondary(isDarkMode),
-                      fontSize: 12,
+                      fontSize: AppColors.scaledFontSize(12),
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -1834,7 +1834,7 @@ class _MonthlyAnalysisCard extends ConsumerWidget {
                     '$avgValue개',
                     style: TextStyle(
                       color: AppColors.getText(isDarkMode),
-                      fontSize: 14,
+                      fontSize: AppColors.scaledFontSize(14),
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -1847,7 +1847,7 @@ class _MonthlyAnalysisCard extends ConsumerWidget {
                     '최고기록',
                     style: TextStyle(
                       color: AppColors.getTextSecondary(isDarkMode),
-                      fontSize: 12,
+                      fontSize: AppColors.scaledFontSize(12),
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -1855,7 +1855,7 @@ class _MonthlyAnalysisCard extends ConsumerWidget {
                     '${monthLabels[bestMonth]} $bestValue개',
                     style: TextStyle(
                       color: AppColors.successGreen,
-                      fontSize: 12,
+                      fontSize: AppColors.scaledFontSize(12),
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -1903,7 +1903,7 @@ class _MonthlyAnalysisCard extends ConsumerWidget {
                               monthLabels[index],
                               style: TextStyle(
                                 color: AppColors.getTextSecondary(isDarkMode),
-                                fontSize: 10,
+                                fontSize: AppColors.scaledFontSize(10),
                               ),
                             ),
                           );
@@ -1919,7 +1919,7 @@ class _MonthlyAnalysisCard extends ConsumerWidget {
                             value.toInt().toString(),
                             style: TextStyle(
                               color: AppColors.getTextSecondary(isDarkMode),
-                              fontSize: 10,
+                              fontSize: AppColors.scaledFontSize(10),
                             ),
                           );
                         },
@@ -1947,7 +1947,7 @@ class _MonthlyAnalysisCard extends ConsumerWidget {
                     LineChartBarData(
                       spots: lineChartSpots,
                       isCurved: true,
-                      color: AppColors.primaryBlue,
+                      color: AppColors.primary,
                       barWidth: 2,
                       isStrokeCapRound: true,
                       dotData: FlDotData(
@@ -1958,7 +1958,7 @@ class _MonthlyAnalysisCard extends ConsumerWidget {
                             radius: isSpecial ? 4 : 3,
                             color: isSpecial
                                 ? (index == bestMonth ? AppColors.successGreen : AppColors.dangerRed)
-                                : AppColors.primaryBlue,
+                                : AppColors.primary,
                             strokeWidth: 0,
                           );
                         },
@@ -1967,8 +1967,8 @@ class _MonthlyAnalysisCard extends ConsumerWidget {
                         show: true,
                         gradient: LinearGradient(
                           colors: [
-                            AppColors.primaryBlue.withValues(alpha: 0.3),
-                            AppColors.primaryBlue.withValues(alpha: 0.0),
+                            AppColors.primary.withValues(alpha: 0.3),
+                            AppColors.primary.withValues(alpha: 0.0),
                           ],
                           begin: Alignment.topCenter,
                           end: Alignment.bottomCenter,
@@ -2011,7 +2011,7 @@ class _MonthlyAnalysisCard extends ConsumerWidget {
                   '평균선: $avgValue개',
                   style: TextStyle(
                     color: AppColors.getTextSecondary(isDarkMode),
-                    fontSize: 11,
+                    fontSize: AppColors.scaledFontSize(11),
                   ),
                 ),
               ],
@@ -2062,7 +2062,7 @@ class _WeeklyPatternCard extends ConsumerWidget {
             'weekly_pattern'.tr(),
             style: TextStyle(
               color: AppColors.getText(isDarkMode),
-              fontSize: 16,
+              fontSize: AppColors.scaledFontSize(16),
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -2070,7 +2070,7 @@ class _WeeklyPatternCard extends ConsumerWidget {
             'weekly_pattern_subtitle'.tr(),
             style: TextStyle(
               color: AppColors.getTextSecondary(isDarkMode),
-              fontSize: 12,
+              fontSize: AppColors.scaledFontSize(12),
             ),
           ),
           const SizedBox(height: 16),
@@ -2096,7 +2096,7 @@ class _WeeklyPatternCard extends ConsumerWidget {
                       decoration: BoxDecoration(
                         color: isDayMostProductive
                             ? const Color(0xFF4CAF50)
-                            : AppColors.primaryBlue,
+                            : AppColors.primary,
                         borderRadius: const BorderRadius.vertical(
                           top: Radius.circular(8),
                         ),
@@ -2123,7 +2123,7 @@ class _WeeklyPatternCard extends ConsumerWidget {
                         color: isDayMostProductive
                             ? const Color(0xFF4CAF50)
                             : AppColors.getText(isDarkMode),
-                        fontSize: 10,
+                        fontSize: AppColors.scaledFontSize(10),
                         fontWeight: isDayMostProductive
                             ? FontWeight.bold
                             : FontWeight.normal,
@@ -2153,14 +2153,14 @@ class _WeeklyPatternCard extends ConsumerWidget {
                       'most_productive_day'.tr(),
                       style: TextStyle(
                         color: AppColors.getTextSecondary(isDarkMode),
-                        fontSize: 11,
+                        fontSize: AppColors.scaledFontSize(11),
                       ),
                     ),
                     Text(
                       mostProductiveDay.tr(),
                       style: TextStyle(
                         color: AppColors.getText(isDarkMode),
-                        fontSize: 13,
+                        fontSize: AppColors.scaledFontSize(13),
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -2173,14 +2173,14 @@ class _WeeklyPatternCard extends ConsumerWidget {
                       'peak_day_count'.tr(),
                       style: TextStyle(
                         color: AppColors.getTextSecondary(isDarkMode),
-                        fontSize: 11,
+                        fontSize: AppColors.scaledFontSize(11),
                       ),
                     ),
                     Text(
                       '$maxCompletions',
                       style: TextStyle(
                         color: const Color(0xFF4CAF50),
-                        fontSize: 13,
+                        fontSize: AppColors.scaledFontSize(13),
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -2257,7 +2257,7 @@ class _InsightsCard extends ConsumerWidget {
             'insights_title'.tr(),
             style: TextStyle(
               color: AppColors.getText(isDarkMode),
-              fontSize: 16,
+              fontSize: AppColors.scaledFontSize(16),
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -2265,7 +2265,7 @@ class _InsightsCard extends ConsumerWidget {
             'insights_subtitle'.tr(),
             style: TextStyle(
               color: AppColors.getTextSecondary(isDarkMode),
-              fontSize: 12,
+              fontSize: AppColors.scaledFontSize(12),
             ),
           ),
           const SizedBox(height: 16),
@@ -2298,7 +2298,7 @@ class _InsightsCard extends ConsumerWidget {
                   case 'insight_good':
                     insightText = '${'insight_good_text'.tr()} $value% ✨';
                     insightIcon = FluentIcons.triangle_24_filled;
-                    insightColor = AppColors.primaryBlue;
+                    insightColor = AppColors.primary;
                     break;
                   case 'insight_fair':
                     insightText = '${'insight_fair_text'.tr()} $value% 💪';
@@ -2313,7 +2313,7 @@ class _InsightsCard extends ConsumerWidget {
                   case 'insight_best_day':
                     insightText = '${'insight_best_day_text'.tr()} $value ${'tasks'.tr()} 🚀';
                     insightIcon = FluentIcons.rocket_24_filled;
-                    insightColor = AppColors.primaryBlue;
+                    insightColor = AppColors.primary;
                     break;
                   case 'insight_completion_time':
                     insightText = '${'insight_completion_time_text'.tr()} $value ${'hours'.tr()} ⏱️';
@@ -2323,7 +2323,7 @@ class _InsightsCard extends ConsumerWidget {
                   case 'insight_start_tracking':
                     insightText = 'insight_start_tracking_text'.tr();
                     insightIcon = FluentIcons.lightbulb_24_regular;
-                    insightColor = AppColors.primaryBlue;
+                    insightColor = AppColors.primary;
                     break;
                 }
 
@@ -2334,7 +2334,7 @@ class _InsightsCard extends ConsumerWidget {
                       if (insightIcon != null)
                         Icon(
                           insightIcon,
-                          color: insightColor ?? AppColors.primaryBlue,
+                          color: insightColor ?? AppColors.primary,
                           size: 18,
                         ),
                       if (insightIcon != null) const SizedBox(width: 12),
@@ -2343,7 +2343,7 @@ class _InsightsCard extends ConsumerWidget {
                           insightText,
                           style: TextStyle(
                             color: AppColors.getText(isDarkMode),
-                            fontSize: 13,
+                            fontSize: AppColors.scaledFontSize(13),
                             height: 1.5,
                           ),
                         ),

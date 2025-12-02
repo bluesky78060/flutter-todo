@@ -291,61 +291,70 @@ class _MyAppState extends ConsumerState<MyApp> {
 
     final router = ref.watch(goRouterProvider);
     final themeMode = ref.watch(themeProvider);
-    final customization = ref.watch(themeCustomizationProvider);
 
-    logger.d('🎨 MyApp.build() rebuilding with customization: primaryColor=${customization.primaryColor}, fontSizeScale=${customization.fontSizeScale}');
+    // Watch the full state directly to ensure rebuild on any state change
+    final themeState = ref.watch(themeCustomizationProvider);
+    final primaryColor = themeState.applied.primaryColor;
+    final fontScale = themeState.applied.fontSizeScale;
+
+    logger.d('🎨 MyApp.build() rebuilding with APPLIED theme: primaryColor=${primaryColor.value}, fontScale=$fontScale, hasUnsavedChanges=${themeState.hasUnsavedChanges}');
+
+    // Update AppColors dynamic primary color and font scale for widgets
+    AppColors.setDynamicPrimary(primaryColor);
+    AppColors.setDynamicFontScale(fontScale);
+    logger.d('🎨 AppColors theme updated: color=${primaryColor.value}, fontScale=$fontScale');
 
     // Build light theme with custom primary color
     final lightTheme = ThemeData(
       colorScheme: ColorScheme.fromSeed(
-        seedColor: customization.primaryColor,
+        seedColor: primaryColor,
         brightness: Brightness.light,
       ),
       useMaterial3: true,
       textTheme: TextTheme(
-        displayLarge: TextStyle(fontSize: 32 * customization.fontSizeScale),
-        displayMedium: TextStyle(fontSize: 28 * customization.fontSizeScale),
-        displaySmall: TextStyle(fontSize: 24 * customization.fontSizeScale),
-        headlineLarge: TextStyle(fontSize: 24 * customization.fontSizeScale),
-        headlineMedium: TextStyle(fontSize: 20 * customization.fontSizeScale),
-        headlineSmall: TextStyle(fontSize: 18 * customization.fontSizeScale),
-        titleLarge: TextStyle(fontSize: 18 * customization.fontSizeScale, fontWeight: FontWeight.w600),
-        titleMedium: TextStyle(fontSize: 16 * customization.fontSizeScale, fontWeight: FontWeight.w600),
-        titleSmall: TextStyle(fontSize: 14 * customization.fontSizeScale, fontWeight: FontWeight.w600),
-        bodyLarge: TextStyle(fontSize: 16 * customization.fontSizeScale),
-        bodyMedium: TextStyle(fontSize: 14 * customization.fontSizeScale),
-        bodySmall: TextStyle(fontSize: 12 * customization.fontSizeScale),
-        labelLarge: TextStyle(fontSize: 14 * customization.fontSizeScale, fontWeight: FontWeight.w500),
-        labelMedium: TextStyle(fontSize: 12 * customization.fontSizeScale, fontWeight: FontWeight.w500),
-        labelSmall: TextStyle(fontSize: 11 * customization.fontSizeScale, fontWeight: FontWeight.w500),
+        displayLarge: TextStyle(fontSize: AppColors.scaledFontSize(32)),
+        displayMedium: TextStyle(fontSize: AppColors.scaledFontSize(28)),
+        displaySmall: TextStyle(fontSize: AppColors.scaledFontSize(24)),
+        headlineLarge: TextStyle(fontSize: AppColors.scaledFontSize(24)),
+        headlineMedium: TextStyle(fontSize: AppColors.scaledFontSize(20)),
+        headlineSmall: TextStyle(fontSize: AppColors.scaledFontSize(18)),
+        titleLarge: TextStyle(fontSize: AppColors.scaledFontSize(18), fontWeight: FontWeight.w600),
+        titleMedium: TextStyle(fontSize: AppColors.scaledFontSize(16), fontWeight: FontWeight.w600),
+        titleSmall: TextStyle(fontSize: AppColors.scaledFontSize(14), fontWeight: FontWeight.w600),
+        bodyLarge: TextStyle(fontSize: AppColors.scaledFontSize(16)),
+        bodyMedium: TextStyle(fontSize: AppColors.scaledFontSize(14)),
+        bodySmall: TextStyle(fontSize: AppColors.scaledFontSize(12)),
+        labelLarge: TextStyle(fontSize: AppColors.scaledFontSize(14), fontWeight: FontWeight.w500),
+        labelMedium: TextStyle(fontSize: AppColors.scaledFontSize(12), fontWeight: FontWeight.w500),
+        labelSmall: TextStyle(fontSize: AppColors.scaledFontSize(11), fontWeight: FontWeight.w500),
       ),
     );
 
     // Build dark theme with custom primary color
     final darkTheme = ThemeData(
       colorScheme: ColorScheme.fromSeed(
-        seedColor: customization.primaryColor,
+        seedColor: primaryColor,
         brightness: Brightness.dark,
         surface: AppColors.darkCard,
       ),
       scaffoldBackgroundColor: AppColors.darkBackground,
       useMaterial3: true,
       textTheme: TextTheme(
-        displayLarge: TextStyle(fontSize: 32 * customization.fontSizeScale),
-        displayMedium: TextStyle(fontSize: 28 * customization.fontSizeScale),
-        displaySmall: TextStyle(fontSize: 24 * customization.fontSizeScale),
-        headlineLarge: TextStyle(fontSize: 24 * customization.fontSizeScale),
-        headlineMedium: TextStyle(fontSize: 20 * customization.fontSizeScale),
-        headlineSmall: TextStyle(fontSize: 18 * customization.fontSizeScale),
-        titleLarge: TextStyle(fontSize: 18 * customization.fontSizeScale, fontWeight: FontWeight.w600),
-        titleMedium: TextStyle(fontSize: 16 * customization.fontSizeScale, fontWeight: FontWeight.w600),
-        titleSmall: TextStyle(fontSize: 14 * customization.fontSizeScale, fontWeight: FontWeight.w600),
-        bodyLarge: TextStyle(fontSize: 16 * customization.fontSizeScale),
-        bodyMedium: TextStyle(fontSize: 14 * customization.fontSizeScale),
-        bodySmall: TextStyle(fontSize: 12 * customization.fontSizeScale),
-        labelLarge: TextStyle(fontSize: 14 * customization.fontSizeScale, fontWeight: FontWeight.w500),
-        labelMedium: TextStyle(fontSize: 12 * customization.fontSizeScale, fontWeight: FontWeight.w500),
-        labelSmall: TextStyle(fontSize: 11 * customization.fontSizeScale, fontWeight: FontWeight.w500),
+        displayLarge: TextStyle(fontSize: AppColors.scaledFontSize(32)),
+        displayMedium: TextStyle(fontSize: AppColors.scaledFontSize(28)),
+        displaySmall: TextStyle(fontSize: AppColors.scaledFontSize(24)),
+        headlineLarge: TextStyle(fontSize: AppColors.scaledFontSize(24)),
+        headlineMedium: TextStyle(fontSize: AppColors.scaledFontSize(20)),
+        headlineSmall: TextStyle(fontSize: AppColors.scaledFontSize(18)),
+        titleLarge: TextStyle(fontSize: AppColors.scaledFontSize(18), fontWeight: FontWeight.w600),
+        titleMedium: TextStyle(fontSize: AppColors.scaledFontSize(16), fontWeight: FontWeight.w600),
+        titleSmall: TextStyle(fontSize: AppColors.scaledFontSize(14), fontWeight: FontWeight.w600),
+        bodyLarge: TextStyle(fontSize: AppColors.scaledFontSize(16)),
+        bodyMedium: TextStyle(fontSize: AppColors.scaledFontSize(14)),
+        bodySmall: TextStyle(fontSize: AppColors.scaledFontSize(12)),
+        labelLarge: TextStyle(fontSize: AppColors.scaledFontSize(14), fontWeight: FontWeight.w500),
+        labelMedium: TextStyle(fontSize: AppColors.scaledFontSize(12), fontWeight: FontWeight.w500),
+        labelSmall: TextStyle(fontSize: AppColors.scaledFontSize(11), fontWeight: FontWeight.w500),
       ),
     );
 

@@ -67,7 +67,7 @@ class ProgressCard extends ConsumerWidget {
                 'progress'.tr(),
                 style: TextStyle(
                   color: AppColors.getTextSecondary(isDarkMode),
-                  fontSize: 13,
+                  fontSize: AppColors.scaledFontSize(13),
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -78,7 +78,7 @@ class ProgressCard extends ConsumerWidget {
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: [
                     BoxShadow(
-                      color: AppColors.primaryBlue.withValues(alpha: 0.3),
+                      color: AppColors.primary.withValues(alpha: 0.3),
                       blurRadius: 8,
                       offset: Offset(0, 2),
                     ),
@@ -91,7 +91,7 @@ class ProgressCard extends ConsumerWidget {
                   }),
                   style: TextStyle(
                     color: Colors.white,
-                    fontSize: 11,
+                    fontSize: AppColors.scaledFontSize(11),
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -114,7 +114,7 @@ class ProgressCard extends ConsumerWidget {
                     child: Container(
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
-                          colors: [AppColors.primaryBlue, AppColors.primaryBlueDark],
+                          colors: [AppColors.primary, AppColors.primaryDark],
                         ),
                       ),
                     ),

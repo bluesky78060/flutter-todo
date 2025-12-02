@@ -292,8 +292,8 @@ class _LocationPickerDialogState extends ConsumerState<LocationPickerDialog> {
       id: 'radius',
       center: _selectedLocation!,
       radius: _radius,
-      color: AppColors.primaryBlue.withOpacity(0.2),
-      outlineColor: AppColors.primaryBlue,
+      color: AppColors.primary.withOpacity(0.2),
+      outlineColor: AppColors.primary,
       outlineWidth: 2,
     );
     _circles.add(circle);
@@ -373,15 +373,15 @@ class _LocationPickerDialogState extends ConsumerState<LocationPickerDialog> {
                 children: [
                   Text(
                     'select_location'.tr(),
-                    style: const TextStyle(
-                      fontSize: 20,
+                    style: TextStyle(
+                      fontSize: AppColors.scaledFontSize(20),
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   const Spacer(),
                   IconButton(
                     onPressed: () => Navigator.of(context).pop(),
-                    icon: const Icon(Icons.close),
+                    icon: Icon(Icons.close),
                   ),
                 ],
               ),
@@ -395,7 +395,7 @@ class _LocationPickerDialogState extends ConsumerState<LocationPickerDialog> {
                 decoration: InputDecoration(
                   hintText: 'search_location'.tr(),
                   prefixIcon: IconButton(
-                    icon: const Icon(Icons.search),
+                    icon: Icon(Icons.search),
                     onPressed: () {
                       if (_searchController.text.isNotEmpty) {
                         _searchPlaces(_searchController.text);
@@ -413,7 +413,7 @@ class _LocationPickerDialogState extends ConsumerState<LocationPickerDialog> {
                         )
                       : _searchController.text.isNotEmpty
                           ? IconButton(
-                              icon: const Icon(Icons.clear),
+                              icon: Icon(Icons.clear),
                             onPressed: () {
                               _searchController.clear();
                               setState(() {
@@ -442,14 +442,14 @@ class _LocationPickerDialogState extends ConsumerState<LocationPickerDialog> {
                   itemBuilder: (context, index) {
                     final result = _searchResults[index];
                     return ListTile(
-                      leading: Icon(Icons.place, color: AppColors.primaryBlue),
+                      leading: Icon(Icons.place, color: AppColors.primary),
                       title: Text(
                         result.name,
                         style: TextStyle(fontWeight: FontWeight.w500),
                       ),
                       subtitle: Text(
                         result.address,
-                        style: TextStyle(fontSize: 12, color: AppColors.getTextSecondary(isDarkMode)),
+                        style: TextStyle(fontSize: AppColors.scaledFontSize(12), color: AppColors.getTextSecondary(isDarkMode)),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -519,7 +519,7 @@ class _LocationPickerDialogState extends ConsumerState<LocationPickerDialog> {
                               height: 20,
                               child: CircularProgressIndicator(strokeWidth: 2),
                             )
-                          : const Icon(Icons.my_location),
+                          : Icon(Icons.my_location),
                     ),
                   ),
                 ],
@@ -538,7 +538,7 @@ class _LocationPickerDialogState extends ConsumerState<LocationPickerDialog> {
                       Text(
                         _addressText!,
                         style: TextStyle(
-                          fontSize: 14,
+                          fontSize: AppColors.scaledFontSize(14),
                           color: AppColors.getTextSecondary(isDarkMode),
                         ),
                       ),
@@ -552,7 +552,7 @@ class _LocationPickerDialogState extends ConsumerState<LocationPickerDialog> {
                         labelText: 'location_name'.tr(),
                         hintText: 'location_name'.tr(),
                         border: const OutlineInputBorder(),
-                        prefixIcon: const Icon(Icons.label),
+                        prefixIcon: Icon(Icons.label),
                       ),
                     ),
                     const SizedBox(height: 16),
@@ -561,7 +561,7 @@ class _LocationPickerDialogState extends ConsumerState<LocationPickerDialog> {
                     Text(
                       '${'geofence_radius'.tr()}: ${_radius.toInt()}m',
                       style: TextStyle(
-                        fontSize: 14,
+                        fontSize: AppColors.scaledFontSize(14),
                         fontWeight: FontWeight.w500,
                       ),
                     ),

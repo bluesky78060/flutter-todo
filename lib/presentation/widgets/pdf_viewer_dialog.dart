@@ -111,9 +111,9 @@ class _PdfViewerDialogState extends ConsumerState<PdfViewerDialog> {
         children: [
           // PDF content
           if (_isLoading)
-            const Center(
+            Center(
               child: CircularProgressIndicator(
-                color: AppColors.primaryBlue,
+                color: AppColors.primary,
               ),
             )
           else if (_error != null)
@@ -129,19 +129,19 @@ class _PdfViewerDialogState extends ConsumerState<PdfViewerDialog> {
                       size: 48,
                     ),
                     const SizedBox(height: 16),
-                    const Text(
+                    Text(
                       'Unable to load PDF',
                       style: TextStyle(
                         color: Colors.black87,
-                        fontSize: 16,
+                        fontSize: AppColors.scaledFontSize(16),
                       ),
                     ),
                     const SizedBox(height: 8),
                     Text(
                       _error!,
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: Colors.black54,
-                        fontSize: 12,
+                        fontSize: AppColors.scaledFontSize(12),
                       ),
                       textAlign: TextAlign.center,
                     ),
@@ -201,9 +201,9 @@ class _PdfViewerDialogState extends ConsumerState<PdfViewerDialog> {
                   children: [
                     Text(
                       widget.attachment.fileName,
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: Colors.white,
-                        fontSize: 14,
+                        fontSize: AppColors.scaledFontSize(14),
                         fontWeight: FontWeight.w500,
                       ),
                       maxLines: 2,
@@ -212,9 +212,9 @@ class _PdfViewerDialogState extends ConsumerState<PdfViewerDialog> {
                     const SizedBox(height: 4),
                     Text(
                       _formatFileSize(widget.attachment.fileSize),
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: Colors.white70,
-                        fontSize: 12,
+                        fontSize: AppColors.scaledFontSize(12),
                       ),
                     ),
                   ],

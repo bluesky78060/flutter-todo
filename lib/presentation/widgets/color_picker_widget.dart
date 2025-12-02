@@ -1,7 +1,7 @@
 /// Color picker widget for theme customization.
 ///
 /// Displays a grid of predefined colors that users can select from.
-/// Integrates with theme customization provider for saving selections.
+/// Updates pending state only - use "Apply Theme" button to commit changes.
 library;
 
 import 'package:flutter/material.dart';
@@ -10,6 +10,7 @@ import 'package:todo_app/core/theme/app_colors.dart';
 import 'package:todo_app/presentation/providers/theme_customization_provider.dart';
 
 /// Widget for selecting primary color from palette.
+/// Shows pending (preview) selection, not the applied theme.
 class ColorPickerWidget extends ConsumerWidget {
   final bool isDarkMode;
   final VoidCallback? onColorChanged;
@@ -22,8 +23,8 @@ class ColorPickerWidget extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final customization = ref.watch(themeCustomizationProvider);
-    final currentColor = customization.primaryColor;
+    // Watch pending color (preview), not applied
+    final pendingColor = ref.watch(pendingColorProvider);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -40,13 +41,14 @@ class ColorPickerWidget extends ConsumerWidget {
             ThemeColorPalette.colors.length,
             (index) {
               final color = ThemeColorPalette.colors[index];
-              final isSelected = color.value == currentColor.value;
+              final isSelected = color.value == pendingColor.value;
 
               return GestureDetector(
-                onTap: () async {
-                  await ref
+                onTap: () {
+                  // Update pending state only (not applied yet)
+                  ref
                       .read(themeCustomizationProvider.notifier)
-                      .setPrimaryColor(color);
+                      .setPendingColor(color);
                   onColorChanged?.call();
                 },
                 child: Container(

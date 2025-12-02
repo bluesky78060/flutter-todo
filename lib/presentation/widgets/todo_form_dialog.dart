@@ -129,7 +129,7 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
         return Theme(
           data: Theme.of(context).copyWith(
             colorScheme: ColorScheme.dark(
-              primary: AppColors.primaryBlue,
+              primary: AppColors.primary,
               onPrimary: AppColors.getText(isDarkMode),
               surface: AppColors.getCard(isDarkMode),
               onSurface: AppColors.getText(isDarkMode),
@@ -191,7 +191,7 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
                     'select_notification_time'.tr(),
                     style: TextStyle(
                       color: AppColors.getText(isDarkMode),
-                      fontSize: 16,
+                      fontSize: AppColors.scaledFontSize(16),
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -204,7 +204,7 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
                     },
                     child: Text(
                       'confirm'.tr(),
-                      style: const TextStyle(color: AppColors.primaryBlue),
+                      style: TextStyle(color: AppColors.primary),
                     ),
                   ),
                 ],
@@ -579,7 +579,7 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
             'delete_attachment'.tr(),
             style: TextStyle(
               color: AppColors.getText(isDarkMode),
-              fontSize: 18,
+              fontSize: AppColors.scaledFontSize(18),
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -591,7 +591,7 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
                 'confirm_delete_attachment'.tr(),
                 style: TextStyle(
                   color: AppColors.getTextSecondary(isDarkMode),
-                  fontSize: 14,
+                  fontSize: AppColors.scaledFontSize(14),
                 ),
               ),
               const SizedBox(height: 12),
@@ -605,7 +605,7 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
                   fileName,
                   style: TextStyle(
                     color: AppColors.getText(isDarkMode),
-                    fontSize: 13,
+                    fontSize: AppColors.scaledFontSize(13),
                     fontWeight: FontWeight.w500,
                   ),
                   maxLines: 2,
@@ -626,7 +626,7 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
               onPressed: () => Navigator.pop(context, true),
               child: Text(
                 'delete'.tr(),
-                style: const TextStyle(color: Colors.redAccent),
+                style: TextStyle(color: Colors.redAccent),
               ),
             ),
           ],
@@ -660,7 +660,7 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
             'view_attachment'.tr(),
             style: TextStyle(
               color: AppColors.getText(isDarkMode),
-              fontSize: 18,
+              fontSize: AppColors.scaledFontSize(18),
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -702,7 +702,7 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
                   fileName,
                   style: TextStyle(
                     color: AppColors.getText(isDarkMode),
-                    fontSize: 14,
+                    fontSize: AppColors.scaledFontSize(14),
                     fontWeight: FontWeight.w500,
                   ),
                   textAlign: TextAlign.center,
@@ -717,7 +717,7 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
               onPressed: () => Navigator.pop(context),
               child: Text(
                 'close'.tr(),
-                style: TextStyle(color: AppColors.primaryBlue),
+                style: TextStyle(color: AppColors.primary),
               ),
             ),
           ],
@@ -741,7 +741,7 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
         return Theme(
           data: Theme.of(context).copyWith(
             colorScheme: ColorScheme.dark(
-              primary: AppColors.primaryBlue,
+              primary: AppColors.primary,
               onPrimary: AppColors.getText(isDarkMode),
               surface: AppColors.getCard(isDarkMode),
               onSurface: AppColors.getText(isDarkMode),
@@ -789,7 +789,7 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
                     'select_notification_time'.tr(),
                     style: TextStyle(
                       color: AppColors.getText(isDarkMode),
-                      fontSize: 16,
+                      fontSize: AppColors.scaledFontSize(16),
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -802,7 +802,7 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
                     },
                     child: Text(
                       'confirm'.tr(),
-                      style: const TextStyle(color: AppColors.primaryBlue),
+                      style: TextStyle(color: AppColors.primary),
                     ),
                   ),
                 ],
@@ -1070,7 +1070,7 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
                   _isEditMode ? 'edit_todo'.tr() : 'new_todo'.tr(),
                   style: TextStyle(
                     color: AppColors.getText(isDarkMode),
-                    fontSize: 24,
+                    fontSize: AppColors.scaledFontSize(24),
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -1095,7 +1095,7 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
                   'title'.tr(),
                   style: TextStyle(
                     color: AppColors.getTextSecondary(isDarkMode),
-                    fontSize: 14,
+                    fontSize: AppColors.scaledFontSize(14),
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -1110,7 +1110,7 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
                     autofocus: !_isEditMode,
                     style: TextStyle(
                       color: AppColors.getText(isDarkMode),
-                      fontSize: 16,
+                      fontSize: AppColors.scaledFontSize(16),
                     ),
                     decoration: InputDecoration(
                       hintText: 'title_hint'.tr(),
@@ -1137,7 +1137,7 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
                   'description_optional'.tr(),
                   style: TextStyle(
                     color: AppColors.getTextSecondary(isDarkMode),
-                    fontSize: 14,
+                    fontSize: AppColors.scaledFontSize(14),
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -1152,7 +1152,7 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
                     maxLines: 4,
                     style: TextStyle(
                       color: AppColors.getText(isDarkMode),
-                      fontSize: 16,
+                      fontSize: AppColors.scaledFontSize(16),
                     ),
                     decoration: InputDecoration(
                       hintText: 'description_hint'.tr(),
@@ -1179,7 +1179,7 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
                   'category_optional'.tr(),
                   style: TextStyle(
                     color: AppColors.getTextSecondary(isDarkMode),
-                    fontSize: 14,
+                    fontSize: AppColors.scaledFontSize(14),
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -1210,7 +1210,7 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
                             'select_category'.tr(),
                             style: TextStyle(
                               color: AppColors.getTextSecondary(isDarkMode),
-                              fontSize: 16,
+                              fontSize: AppColors.scaledFontSize(16),
                             ),
                           ),
                           items: [
@@ -1220,7 +1220,7 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
                                 'no_category'.tr(),
                                 style: TextStyle(
                                   color: AppColors.getTextSecondary(isDarkMode),
-                                  fontSize: 16,
+                                  fontSize: AppColors.scaledFontSize(16),
                                 ),
                               ),
                             ),
@@ -1242,7 +1242,7 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
                                     if (category.icon != null) ...[
                                       Text(
                                         category.icon!,
-                                        style: const TextStyle(fontSize: 16),
+                                        style: TextStyle(fontSize: AppColors.scaledFontSize(16)),
                                       ),
                                       const SizedBox(width: 6),
                                     ],
@@ -1251,7 +1251,7 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
                                         category.name,
                                         style: TextStyle(
                                           color: AppColors.getText(isDarkMode),
-                                          fontSize: 16,
+                                          fontSize: AppColors.scaledFontSize(16),
                                         ),
                                         overflow: TextOverflow.ellipsis,
                                       ),
@@ -1270,10 +1270,10 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
                       ),
                     );
                   },
-                  loading: () => const CircularProgressIndicator(),
+                  loading: () => CircularProgressIndicator(),
                   error: (error, stack) => Text(
                     '${'category_load_failed'.tr()}: $error',
-                    style: const TextStyle(color: Colors.red),
+                    style: TextStyle(color: Colors.red),
                   ),
                 ),
               ],
@@ -1288,7 +1288,7 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
                   'due_date_optional'.tr(),
                   style: TextStyle(
                     color: AppColors.getTextSecondary(isDarkMode),
-                    fontSize: 14,
+                    fontSize: AppColors.scaledFontSize(14),
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -1322,7 +1322,7 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
                               color: _selectedDueDate != null
                                   ? AppColors.getText(isDarkMode)
                                   : AppColors.getTextSecondary(isDarkMode),
-                              fontSize: 16,
+                              fontSize: AppColors.scaledFontSize(16),
                             ),
                           ),
                         ),
@@ -1369,7 +1369,7 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
                         'all_day'.tr(),
                         style: TextStyle(
                           color: AppColors.getText(isDarkMode),
-                          fontSize: 16,
+                          fontSize: AppColors.scaledFontSize(16),
                         ),
                       ),
                       const Spacer(),
@@ -1390,8 +1390,8 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
                             }
                           });
                         },
-                        activeColor: AppColors.primaryBlue,
-                        activeTrackColor: AppColors.primaryBlue.withOpacity(0.5),
+                        activeColor: AppColors.primary,
+                        activeTrackColor: AppColors.primary.withOpacity(0.5),
                       ),
                     ],
                   ),
@@ -1408,7 +1408,7 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
                   'priority_label'.tr(),
                   style: TextStyle(
                     color: AppColors.getTextSecondary(isDarkMode),
-                    fontSize: 14,
+                    fontSize: AppColors.scaledFontSize(14),
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -1435,12 +1435,12 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
                                 ),
                                 decoration: BoxDecoration(
                                   color: _selectedPriority == priority
-                                      ? AppColors.primaryBlue
+                                      ? AppColors.primary
                                       : AppColors.getInput(isDarkMode),
                                   borderRadius: BorderRadius.circular(12),
                                   border: _selectedPriority == priority
                                       ? Border.all(
-                                          color: AppColors.primaryBlue,
+                                          color: AppColors.primary,
                                           width: 2,
                                         )
                                       : null,
@@ -1452,7 +1452,7 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
                                       color: _selectedPriority == priority
                                           ? Colors.white
                                           : AppColors.getText(isDarkMode),
-                                      fontSize: 13,
+                                      fontSize: AppColors.scaledFontSize(13),
                                       fontWeight: FontWeight.w600,
                                     ),
                                   ),
@@ -1476,7 +1476,7 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
                   'notification_time_optional'.tr(),
                   style: TextStyle(
                     color: AppColors.getTextSecondary(isDarkMode),
-                    fontSize: 14,
+                    fontSize: AppColors.scaledFontSize(14),
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -1509,7 +1509,7 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
                             color: _selectedNotificationTime != null
                                 ? AppColors.getText(isDarkMode)
                                 : AppColors.getTextSecondary(isDarkMode),
-                            fontSize: 16,
+                            fontSize: AppColors.scaledFontSize(16),
                           ),
                         ),
                         const Spacer(),
@@ -1544,7 +1544,7 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
                   'recurrence_optional'.tr(),
                   style: TextStyle(
                     color: AppColors.getTextSecondary(isDarkMode),
-                    fontSize: 14,
+                    fontSize: AppColors.scaledFontSize(14),
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -1578,7 +1578,7 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
                               color: _recurrenceRule != null
                                   ? AppColors.getText(isDarkMode)
                                   : AppColors.getTextSecondary(isDarkMode),
-                              fontSize: 16,
+                              fontSize: AppColors.scaledFontSize(16),
                             ),
                           ),
                         ),
@@ -1613,7 +1613,7 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
                   'location_based_reminder_optional'.tr(),
                   style: TextStyle(
                     color: AppColors.getTextSecondary(isDarkMode),
-                    fontSize: 14,
+                    fontSize: AppColors.scaledFontSize(14),
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -1645,7 +1645,7 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
                               color: _locationName != null
                                   ? AppColors.getText(isDarkMode)
                                   : AppColors.getTextSecondary(isDarkMode),
-                              fontSize: 16,
+                              fontSize: AppColors.scaledFontSize(16),
                             ),
                           ),
                         ),
@@ -1684,7 +1684,7 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
                     'attachments_optional'.tr(),
                     style: TextStyle(
                       color: AppColors.getTextSecondary(isDarkMode),
-                      fontSize: 14,
+                      fontSize: AppColors.scaledFontSize(14),
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -1714,7 +1714,7 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
                             'attach_file'.tr(),
                             style: TextStyle(
                               color: AppColors.getTextSecondary(isDarkMode),
-                              fontSize: 16,
+                              fontSize: AppColors.scaledFontSize(16),
                             ),
                           ),
                         ],
@@ -1787,7 +1787,7 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
                                     fileName,
                                     style: TextStyle(
                                       color: AppColors.getText(isDarkMode),
-                                      fontSize: 14,
+                                      fontSize: AppColors.scaledFontSize(14),
                                       fontWeight: FontWeight.w500,
                                     ),
                                     maxLines: 2,
@@ -1798,7 +1798,7 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
                                     '${(file.lengthSync() / 1024).toStringAsFixed(1)} KB',
                                     style: TextStyle(
                                       color: AppColors.getTextSecondary(isDarkMode),
-                                      fontSize: 12,
+                                      fontSize: AppColors.scaledFontSize(12),
                                     ),
                                   ),
                                 ],
@@ -1809,14 +1809,14 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
                             if (isImage)
                               Container(
                                 decoration: BoxDecoration(
-                                  color: AppColors.primaryBlue.withOpacity(0.1),
+                                  color: AppColors.primary.withOpacity(0.1),
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: IconButton(
                                   onPressed: () => _previewImage(file),
                                   icon: Icon(
                                     FluentIcons.eye_24_regular,
-                                    color: AppColors.primaryBlue,
+                                    color: AppColors.primary,
                                     size: 18,
                                   ),
                                   padding: const EdgeInsets.all(4),
@@ -1872,8 +1872,8 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
                     ),
                     child: Text(
                       'cancel'.tr(),
-                      style: const TextStyle(
-                        fontSize: 16,
+                      style: TextStyle(
+                        fontSize: AppColors.scaledFontSize(16),
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -1887,7 +1887,7 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
                       borderRadius: BorderRadius.circular(12),
                       boxShadow: [
                         BoxShadow(
-                          color: AppColors.primaryBlue.withValues(alpha: 0.3),
+                          color: AppColors.primary.withValues(alpha: 0.3),
                           blurRadius: 12,
                           offset: const Offset(0, 4),
                         ),
@@ -1906,8 +1906,8 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
                       ),
                       child: Text(
                         _isEditMode ? 'save'.tr() : 'add'.tr(),
-                        style: const TextStyle(
-                          fontSize: 16,
+                        style: TextStyle(
+                          fontSize: AppColors.scaledFontSize(16),
                           fontWeight: FontWeight.w600,
                         ),
                       ),

@@ -64,7 +64,7 @@ Widget buildHeaderSection({
                     'todo_list'.tr(),
                     style: TextStyle(
                       color: AppColors.getText(isDarkMode),
-                      fontSize: 24,
+                      fontSize: AppColors.scaledFontSize(24),
                       fontWeight: FontWeight.bold,
                     ),
                     maxLines: 1,
@@ -78,7 +78,7 @@ Widget buildHeaderSection({
                           'keep_it_up'.tr(),
                           style: TextStyle(
                             color: AppColors.getTextSecondary(isDarkMode),
-                            fontSize: 14,
+                            fontSize: AppColors.scaledFontSize(14),
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -126,7 +126,7 @@ Widget buildHeaderSection({
                     borderRadius: BorderRadius.circular(12),
                     boxShadow: [
                       BoxShadow(
-                        color: AppColors.primaryBlue.withValues(alpha: 0.3),
+                        color: AppColors.primary.withValues(alpha: 0.3),
                         blurRadius: 12,
                         offset: const Offset(0, 4),
                       ),
@@ -300,13 +300,13 @@ Widget buildSearchBar({
           controller: searchController,
           style: TextStyle(
             color: AppColors.getText(isDarkMode),
-            fontSize: 14,
+            fontSize: AppColors.scaledFontSize(14),
           ),
           decoration: InputDecoration(
             hintText: 'search_todos'.tr(),
             hintStyle: TextStyle(
               color: AppColors.getTextSecondary(isDarkMode),
-              fontSize: 14,
+              fontSize: AppColors.scaledFontSize(14),
             ),
             prefixIcon: Icon(
               FluentIcons.search_24_regular,
@@ -424,7 +424,7 @@ Widget buildQuickAddInput({
         onSubmitted: (_) => onSubmitted(),
         style: TextStyle(
           color: AppColors.getText(isDarkMode),
-          fontSize: 16,
+          fontSize: AppColors.scaledFontSize(16),
         ),
         decoration: InputDecoration(
           hintText: 'title_hint'.tr(),

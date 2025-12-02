@@ -54,7 +54,7 @@ class RecurringDeleteDialog extends ConsumerWidget {
               'delete_recurring_event'.tr(),
               style: TextStyle(
                 color: AppColors.getText(isDarkMode),
-                fontSize: 20,
+                fontSize: AppColors.scaledFontSize(20),
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -65,7 +65,7 @@ class RecurringDeleteDialog extends ConsumerWidget {
               'delete_recurring_message'.tr(),
               style: TextStyle(
                 color: AppColors.getTextSecondary(isDarkMode),
-                fontSize: 14,
+                fontSize: AppColors.scaledFontSize(14),
               ),
             ),
             const SizedBox(height: 24),
@@ -120,7 +120,7 @@ class RecurringDeleteDialog extends ConsumerWidget {
                 child: Text(
                   'cancel'.tr(),
                   style: TextStyle(
-                    fontSize: 16,
+                    fontSize: AppColors.scaledFontSize(16),
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -164,7 +164,7 @@ class RecurringDeleteDialog extends ConsumerWidget {
               title,
               style: TextStyle(
                 color: isDestructive ? AppColors.dangerRed : AppColors.getText(isDarkMode),
-                fontSize: 16,
+                fontSize: AppColors.scaledFontSize(16),
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -173,7 +173,7 @@ class RecurringDeleteDialog extends ConsumerWidget {
               description,
               style: TextStyle(
                 color: AppColors.getTextSecondary(isDarkMode),
-                fontSize: 14,
+                fontSize: AppColors.scaledFontSize(14),
               ),
             ),
           ],

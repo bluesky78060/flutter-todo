@@ -11,7 +11,38 @@ import 'package:flutter/material.dart';
 ///
 /// Use the helper methods (e.g., [getBackground], [getText]) for theme-aware
 /// color selection instead of directly referencing dark/light variants.
+///
+/// For dynamic primary color (theme customization), use [primary] getter
+/// instead of [primaryBlue] constant.
 class AppColors {
+  // ============================================
+  // Dynamic Theme Color (Set from ThemeCustomization)
+  // ============================================
+
+  /// Current dynamic primary color (set by theme customization)
+  static Color _dynamicPrimary = const Color(0xFF2B8DEE);
+
+  /// Current dynamic font scale (set by theme customization)
+  static double _dynamicFontScale = 1.0;
+
+  /// Set the dynamic primary color (called when theme is applied)
+  static void setDynamicPrimary(Color color) {
+    _dynamicPrimary = color;
+  }
+
+  /// Set the dynamic font scale (called when theme is applied)
+  static void setDynamicFontScale(double scale) {
+    _dynamicFontScale = scale;
+  }
+
+  /// Get current dynamic primary color
+  static Color get primary => _dynamicPrimary;
+
+  /// Get current dynamic font scale
+  static double get fontScale => _dynamicFontScale;
+
+  /// Get scaled font size (base size * fontScale)
+  static double scaledFontSize(double baseSize) => baseSize * _dynamicFontScale;
   // ============================================
   // Dark Theme Colors
   // ============================================

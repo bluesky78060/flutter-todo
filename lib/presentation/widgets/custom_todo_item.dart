@@ -136,14 +136,14 @@ class _CustomTodoItemState extends ConsumerState<CustomTodoItem>
                               : Colors.transparent,
                           border: Border.all(
                             color: widget.todo.isCompleted
-                                ? AppColors.primaryBlue
+                                ? AppColors.primary
                                 : AppColors.getBorder(isDarkMode),
                             width: 2.5,
                           ),
                           borderRadius: _checkboxBorderRadius,
                         ),
                         child: widget.todo.isCompleted
-                            ? const Icon(
+                            ? Icon(
                                 Icons.check,
                                 size: 16,
                                 color: Colors.white,
@@ -161,7 +161,7 @@ class _CustomTodoItemState extends ConsumerState<CustomTodoItem>
                             widget.todo.title,
                             style: TextStyle(
                               color: AppColors.getText(isDarkMode),
-                              fontSize: 16,
+                              fontSize: AppColors.scaledFontSize(16),
                               fontWeight: FontWeight.normal,
                               decoration: widget.todo.isCompleted
                                   ? TextDecoration.lineThrough
@@ -177,7 +177,7 @@ class _CustomTodoItemState extends ConsumerState<CustomTodoItem>
                               widget.todo.description,
                               style: TextStyle(
                                 color: AppColors.getTextSecondary(isDarkMode),
-                                fontSize: 14,
+                                fontSize: AppColors.scaledFontSize(14),
                                 decoration: widget.todo.isCompleted
                                     ? TextDecoration.lineThrough
                                     : null,
@@ -191,9 +191,9 @@ class _CustomTodoItemState extends ConsumerState<CustomTodoItem>
                             const SizedBox(height: 6),
                             Row(
                               children: [
-                                const Icon(
+                                Icon(
                                   FluentIcons.calendar_clock_24_regular,
-                                  color: AppColors.primaryBlue,
+                                  color: AppColors.primary,
                                   size: 14,
                                 ),
                                 const SizedBox(width: 6),
@@ -201,8 +201,8 @@ class _CustomTodoItemState extends ConsumerState<CustomTodoItem>
                                   child: Text(
                                     _formatDueDate(widget.todo.dueDate!, checkAllDay: true),
                                     style: TextStyle(
-                                      color: AppColors.primaryBlue,
-                                      fontSize: 12,
+                                      color: AppColors.primary,
+                                      fontSize: AppColors.scaledFontSize(12),
                                       fontWeight: FontWeight.w500,
                                     ),
                                     maxLines: 1,
@@ -216,7 +216,7 @@ class _CustomTodoItemState extends ConsumerState<CustomTodoItem>
                             const SizedBox(height: 6),
                             Row(
                               children: [
-                                const Icon(
+                                Icon(
                                   FluentIcons.alert_24_regular,
                                   color: AppColors.accentOrange,
                                   size: 14,
@@ -229,7 +229,7 @@ class _CustomTodoItemState extends ConsumerState<CustomTodoItem>
                                     }),
                                     style: TextStyle(
                                       color: AppColors.accentOrange,
-                                      fontSize: 12,
+                                      fontSize: AppColors.scaledFontSize(12),
                                       fontWeight: FontWeight.w500,
                                     ),
                                     maxLines: 1,
@@ -243,9 +243,9 @@ class _CustomTodoItemState extends ConsumerState<CustomTodoItem>
                             const SizedBox(height: 6),
                             Row(
                               children: [
-                                const Icon(
+                                Icon(
                                   FluentIcons.arrow_repeat_all_24_regular,
-                                  color: AppColors.primaryBlue,
+                                  color: AppColors.primary,
                                   size: 14,
                                 ),
                                 const SizedBox(width: 6),
@@ -253,8 +253,8 @@ class _CustomTodoItemState extends ConsumerState<CustomTodoItem>
                                   child: Text(
                                     'recurring'.tr(),
                                     style: TextStyle(
-                                      color: AppColors.primaryBlue,
-                                      fontSize: 12,
+                                      color: AppColors.primary,
+                                      fontSize: AppColors.scaledFontSize(12),
                                       fontWeight: FontWeight.w500,
                                     ),
                                     maxLines: 1,

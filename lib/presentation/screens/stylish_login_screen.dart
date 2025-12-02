@@ -427,7 +427,7 @@ class _StylishLoginScreenState extends ConsumerState<StylishLoginScreen>
                             Text(
                               'Todo App',
                               style: TextStyle(
-                                fontSize: 28,
+                                fontSize: AppColors.scaledFontSize(28),
                                 fontWeight: FontWeight.bold,
                                 color: textColor,
                               ),
@@ -436,7 +436,7 @@ class _StylishLoginScreenState extends ConsumerState<StylishLoginScreen>
                             Text(
                               'login_subtitle'.tr(),
                               style: TextStyle(
-                                fontSize: 14,
+                                fontSize: AppColors.scaledFontSize(14),
                                 color: subTextColor,
                               ),
                             ),
@@ -513,7 +513,7 @@ class _StylishLoginScreenState extends ConsumerState<StylishLoginScreen>
                                         'remember_me'.tr(),
                                         style: TextStyle(
                                           color: subTextColor,
-                                          fontSize: 14,
+                                          fontSize: AppColors.scaledFontSize(14),
                                         ),
                                       ),
                                     ],
@@ -531,7 +531,7 @@ class _StylishLoginScreenState extends ConsumerState<StylishLoginScreen>
                                       'forgot_password'.tr(),
                                       style: TextStyle(
                                         color: subTextColor,
-                                        fontSize: 14,
+                                        fontSize: AppColors.scaledFontSize(14),
                                         decoration: TextDecoration.underline,
                                         decorationColor: subTextColor,
                                       ),
@@ -572,8 +572,8 @@ class _StylishLoginScreenState extends ConsumerState<StylishLoginScreen>
                                       )
                                     : Text(
                                         _isSignUpMode ? 'sign_up'.tr() : 'login'.tr(),
-                                        style: const TextStyle(
-                                          fontSize: 16,
+                                        style: TextStyle(
+                                          fontSize: AppColors.scaledFontSize(16),
                                           fontWeight: FontWeight.w600,
                                         ),
                                       ),
@@ -591,7 +591,7 @@ class _StylishLoginScreenState extends ConsumerState<StylishLoginScreen>
                                       : 'dont_have_account'.tr(),
                                   style: TextStyle(
                                     color: subTextColor,
-                                    fontSize: 14,
+                                    fontSize: AppColors.scaledFontSize(14),
                                   ),
                                 ),
                                 TextButton(
@@ -607,7 +607,7 @@ class _StylishLoginScreenState extends ConsumerState<StylishLoginScreen>
                                     style: TextStyle(
                                       color: textColor,
                                       fontWeight: FontWeight.bold,
-                                      fontSize: 14,
+                                      fontSize: AppColors.scaledFontSize(14),
                                     ),
                                   ),
                                 ),
@@ -630,7 +630,7 @@ class _StylishLoginScreenState extends ConsumerState<StylishLoginScreen>
                                       'or'.tr(),
                                       style: TextStyle(
                                         color: subTextColor,
-                                        fontSize: 13,
+                                        fontSize: AppColors.scaledFontSize(13),
                                       ),
                                     ),
                                   ),
@@ -797,8 +797,8 @@ class _StylishLoginScreenState extends ConsumerState<StylishLoginScreen>
         icon: Icon(icon, size: 24),
         label: Text(
           label,
-          style: const TextStyle(
-            fontSize: 16,
+          style: TextStyle(
+            fontSize: AppColors.scaledFontSize(16),
             fontWeight: FontWeight.w500,
           ),
         ),

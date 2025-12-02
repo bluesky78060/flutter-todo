@@ -57,12 +57,12 @@ class CategoryChip extends ConsumerWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           decoration: BoxDecoration(
             color: isSelected
-                ? (color ?? AppColors.primaryBlue).withOpacity(0.2)
+                ? (color ?? AppColors.primary).withOpacity(0.2)
                 : AppColors.getCard(isDarkMode),
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
               color: isSelected
-                  ? (color ?? AppColors.primaryBlue)
+                  ? (color ?? AppColors.primary)
                   : AppColors.getBorder(isDarkMode),
               width: 1.5,
             ),
@@ -84,7 +84,7 @@ class CategoryChip extends ConsumerWidget {
               if (icon != null) ...[
                 Text(
                   icon!,
-                  style: const TextStyle(fontSize: 14),
+                  style: TextStyle(fontSize: AppColors.scaledFontSize(14)),
                 ),
                 const SizedBox(width: 4),
               ],
@@ -92,7 +92,7 @@ class CategoryChip extends ConsumerWidget {
                 label,
                 style: TextStyle(
                   color: AppColors.getText(isDarkMode),
-                  fontSize: 14,
+                  fontSize: AppColors.scaledFontSize(14),
                   fontWeight: FontWeight.w500,
                 ),
               ),

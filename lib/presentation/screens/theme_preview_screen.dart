@@ -190,8 +190,8 @@ class _ThemePreviewScreenState extends State<ThemePreviewScreen> {
               children: [
                 Text(
                   _isDarkMode ? 'dark_mode'.tr() : 'light_mode'.tr(),
-                  style: const TextStyle(
-                    fontSize: 20,
+                  style: TextStyle(
+                    fontSize: AppColors.scaledFontSize(20),
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
                   ),
@@ -200,7 +200,7 @@ class _ThemePreviewScreenState extends State<ThemePreviewScreen> {
                 Text(
                   _isDarkMode ? 'dark_theme_enabled'.tr() : 'light_theme_enabled'.tr(),
                   style: TextStyle(
-                    fontSize: 14,
+                    fontSize: AppColors.scaledFontSize(14),
                     color: Colors.white.withOpacity(0.9),
                   ),
                 ),
@@ -237,7 +237,7 @@ class _ThemePreviewScreenState extends State<ThemePreviewScreen> {
                       FluentIcons.weather_sunny_24_filled,
                       size: 20,
                       color: !_isDarkMode
-                          ? AppColors.primaryBlue
+                          ? AppColors.primary
                           : Colors.white.withOpacity(0.7),
                     ),
                   ),
@@ -263,7 +263,7 @@ class _ThemePreviewScreenState extends State<ThemePreviewScreen> {
                       FluentIcons.weather_moon_24_filled,
                       size: 20,
                       color: _isDarkMode
-                          ? AppColors.primaryBlue
+                          ? AppColors.primary
                           : Colors.white.withOpacity(0.7),
                     ),
                   ),
@@ -297,14 +297,14 @@ class _ThemePreviewScreenState extends State<ThemePreviewScreen> {
                 _isDarkMode
                     ? FluentIcons.weather_moon_24_filled
                     : FluentIcons.weather_sunny_24_filled,
-                color: AppColors.primaryBlue,
+                color: AppColors.primary,
                 size: 24,
               ),
               const SizedBox(width: 12),
               Text(
                 _isDarkMode ? 'dark_mode'.tr() : 'light_mode'.tr(),
                 style: TextStyle(
-                  fontSize: 20,
+                  fontSize: AppColors.scaledFontSize(20),
                   fontWeight: FontWeight.bold,
                   color: AppColors.getText(_isDarkMode),
                 ),
@@ -315,7 +315,7 @@ class _ThemePreviewScreenState extends State<ThemePreviewScreen> {
           Text(
             _isDarkMode ? 'dark_theme_enabled'.tr() : 'light_theme_enabled'.tr(),
             style: TextStyle(
-              fontSize: 14,
+              fontSize: AppColors.scaledFontSize(14),
               color: AppColors.getTextSecondary(_isDarkMode),
               height: 1.5,
             ),
@@ -332,7 +332,7 @@ class _ThemePreviewScreenState extends State<ThemePreviewScreen> {
         Text(
           'preview_color_palette'.tr(),
           style: TextStyle(
-            fontSize: 18,
+            fontSize: AppColors.scaledFontSize(18),
             fontWeight: FontWeight.bold,
             color: AppColors.getText(_isDarkMode),
           ),
@@ -363,7 +363,7 @@ class _ThemePreviewScreenState extends State<ThemePreviewScreen> {
               _buildColorRow(
                   'Secondary Text', AppColors.getTextSecondary(_isDarkMode)),
               const SizedBox(height: 12),
-              _buildColorRow('Primary Blue', AppColors.primaryBlue),
+              _buildColorRow('Primary Blue', AppColors.primary),
               const SizedBox(height: 12),
               _buildColorRow('Success Green', AppColors.successGreen),
               const SizedBox(height: 12),
@@ -398,7 +398,7 @@ class _ThemePreviewScreenState extends State<ThemePreviewScreen> {
               Text(
                 label,
                 style: TextStyle(
-                  fontSize: 14,
+                  fontSize: AppColors.scaledFontSize(14),
                   fontWeight: FontWeight.w600,
                   color: AppColors.getText(_isDarkMode),
                 ),
@@ -406,7 +406,7 @@ class _ThemePreviewScreenState extends State<ThemePreviewScreen> {
               Text(
                 _colorToHex(color),
                 style: TextStyle(
-                  fontSize: 12,
+                  fontSize: AppColors.scaledFontSize(12),
                   color: AppColors.getTextSecondary(_isDarkMode),
                 ),
               ),
@@ -428,7 +428,7 @@ class _ThemePreviewScreenState extends State<ThemePreviewScreen> {
         Text(
           'Todo List Preview',
           style: TextStyle(
-            fontSize: 18,
+            fontSize: AppColors.scaledFontSize(18),
             fontWeight: FontWeight.bold,
             color: AppColors.getText(_isDarkMode),
           ),
@@ -470,7 +470,7 @@ class _ThemePreviewScreenState extends State<ThemePreviewScreen> {
                     ),
             ),
             child: todo.isCompleted
-                ? const Icon(
+                ? Icon(
                     FluentIcons.checkmark_24_filled,
                     size: 16,
                     color: Colors.white,
@@ -486,7 +486,7 @@ class _ThemePreviewScreenState extends State<ThemePreviewScreen> {
                 Text(
                   todo.title,
                   style: TextStyle(
-                    fontSize: 16,
+                    fontSize: AppColors.scaledFontSize(16),
                     fontWeight: FontWeight.w600,
                     color: AppColors.getText(_isDarkMode),
                     decoration: todo.isCompleted
@@ -499,7 +499,7 @@ class _ThemePreviewScreenState extends State<ThemePreviewScreen> {
                   Text(
                     todo.description!,
                     style: TextStyle(
-                      fontSize: 14,
+                      fontSize: AppColors.scaledFontSize(14),
                       color: AppColors.getTextSecondary(_isDarkMode),
                     ),
                     maxLines: 2,
@@ -519,7 +519,7 @@ class _ThemePreviewScreenState extends State<ThemePreviewScreen> {
                       Text(
                         DateFormat('yyyy-MM-dd HH:mm').format(todo.dueDate!),
                         style: TextStyle(
-                          fontSize: 12,
+                          fontSize: AppColors.scaledFontSize(12),
                           color: AppColors.getTextSecondary(_isDarkMode),
                         ),
                       ),
@@ -540,8 +540,8 @@ class _ThemePreviewScreenState extends State<ThemePreviewScreen> {
             ),
             child: Text(
               _sampleCategory.name,
-              style: const TextStyle(
-                fontSize: 12,
+              style: TextStyle(
+                fontSize: AppColors.scaledFontSize(12),
                 fontWeight: FontWeight.w600,
                 color: Colors.white,
               ),
@@ -559,7 +559,7 @@ class _ThemePreviewScreenState extends State<ThemePreviewScreen> {
         Text(
           'preview_button_styles'.tr(),
           style: TextStyle(
-            fontSize: 18,
+            fontSize: AppColors.scaledFontSize(18),
             fontWeight: FontWeight.bold,
             color: AppColors.getText(_isDarkMode),
           ),
@@ -583,17 +583,17 @@ class _ThemePreviewScreenState extends State<ThemePreviewScreen> {
                 child: ElevatedButton(
                   onPressed: () {},
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primaryBlue,
+                    backgroundColor: AppColors.primary,
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  child: const Text(
+                  child: Text(
                     'Primary Button',
                     style: TextStyle(
-                      fontSize: 16,
+                      fontSize: AppColors.scaledFontSize(16),
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -613,10 +613,10 @@ class _ThemePreviewScreenState extends State<ThemePreviewScreen> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  child: const Text(
+                  child: Text(
                     'Success Button',
                     style: TextStyle(
-                      fontSize: 16,
+                      fontSize: AppColors.scaledFontSize(16),
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -636,10 +636,10 @@ class _ThemePreviewScreenState extends State<ThemePreviewScreen> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  child: const Text(
+                  child: Text(
                     'Danger Button',
                     style: TextStyle(
-                      fontSize: 16,
+                      fontSize: AppColors.scaledFontSize(16),
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -652,9 +652,9 @@ class _ThemePreviewScreenState extends State<ThemePreviewScreen> {
                 child: OutlinedButton(
                   onPressed: () {},
                   style: OutlinedButton.styleFrom(
-                    foregroundColor: AppColors.primaryBlue,
-                    side: const BorderSide(
-                      color: AppColors.primaryBlue,
+                    foregroundColor: AppColors.primary,
+                    side: BorderSide(
+                      color: AppColors.primary,
                       width: 2,
                     ),
                     padding: const EdgeInsets.symmetric(vertical: 14),
@@ -662,10 +662,10 @@ class _ThemePreviewScreenState extends State<ThemePreviewScreen> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  child: const Text(
+                  child: Text(
                     'Outlined Button',
                     style: TextStyle(
-                      fontSize: 16,
+                      fontSize: AppColors.scaledFontSize(16),
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -685,7 +685,7 @@ class _ThemePreviewScreenState extends State<ThemePreviewScreen> {
         Text(
           'preview_input_fields'.tr(),
           style: TextStyle(
-            fontSize: 18,
+            fontSize: AppColors.scaledFontSize(18),
             fontWeight: FontWeight.bold,
             color: AppColors.getText(_isDarkMode),
           ),
@@ -726,8 +726,8 @@ class _ThemePreviewScreenState extends State<ThemePreviewScreen> {
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(
-                      color: AppColors.primaryBlue,
+                    borderSide: BorderSide(
+                      color: AppColors.primary,
                       width: 2,
                     ),
                   ),
@@ -764,8 +764,8 @@ class _ThemePreviewScreenState extends State<ThemePreviewScreen> {
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(
-                      color: AppColors.primaryBlue,
+                    borderSide: BorderSide(
+                      color: AppColors.primary,
                       width: 2,
                     ),
                   ),
@@ -796,7 +796,7 @@ class _ThemePreviewScreenState extends State<ThemePreviewScreen> {
         Text(
           'Category Chips',
           style: TextStyle(
-            fontSize: 18,
+            fontSize: AppColors.scaledFontSize(18),
             fontWeight: FontWeight.bold,
             color: AppColors.getText(_isDarkMode),
           ),
@@ -830,8 +830,8 @@ class _ThemePreviewScreenState extends State<ThemePreviewScreen> {
                 ),
                 child: Text(
                   name,
-                  style: const TextStyle(
-                    fontSize: 14,
+                  style: TextStyle(
+                    fontSize: AppColors.scaledFontSize(14),
                     fontWeight: FontWeight.w600,
                     color: Colors.white,
                   ),

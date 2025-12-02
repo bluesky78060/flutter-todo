@@ -218,7 +218,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                 calendarStyle: CalendarStyle(
                   // Today
                   todayDecoration: BoxDecoration(
-                    color: AppColors.primaryBlue.withValues(alpha: 0.3),
+                    color: AppColors.primary.withValues(alpha: 0.3),
                     shape: BoxShape.circle,
                   ),
                   todayTextStyle: TextStyle(
@@ -226,8 +226,8 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                     fontWeight: FontWeight.bold,
                   ),
                   // Selected day
-                  selectedDecoration: const BoxDecoration(
-                    color: AppColors.primaryBlue,
+                  selectedDecoration: BoxDecoration(
+                    color: AppColors.primary,
                     shape: BoxShape.circle,
                   ),
                   selectedTextStyle: TextStyle(
@@ -245,7 +245,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                     color: AppColors.textGray.withValues(alpha: 0.5),
                   ),
                   // Markers
-                  markerDecoration: const BoxDecoration(
+                  markerDecoration: BoxDecoration(
                     color: AppColors.accentOrange,
                     shape: BoxShape.circle,
                   ),
@@ -258,7 +258,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                   titleCentered: true,
                   titleTextStyle: TextStyle(
                     color: AppColors.getText(isDarkMode),
-                    fontSize: 18,
+                    fontSize: AppColors.scaledFontSize(18),
                     fontWeight: FontWeight.w600,
                   ),
                   leftChevronIcon: Icon(
@@ -292,9 +292,9 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                   children: [
                     Row(
                       children: [
-                        const Icon(
+                        Icon(
                           FluentIcons.calendar_24_filled,
-                          color: AppColors.primaryBlue,
+                          color: AppColors.primary,
                           size: 20,
                         ),
                         const SizedBox(width: 8),
@@ -306,7 +306,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                           }),
                           style: TextStyle(
                             color: AppColors.getText(isDarkMode),
-                            fontSize: 16,
+                            fontSize: AppColors.scaledFontSize(16),
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -314,14 +314,14 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(
-                            color: AppColors.primaryBlue.withValues(alpha: 0.2),
+                            color: AppColors.primary.withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(
                             'count_items'.tr(namedArgs: {'count': '${_getTodosForDay(_selectedDay!, todos).length}'}),
-                            style: const TextStyle(
-                              color: AppColors.primaryBlue,
-                              fontSize: 12,
+                            style: TextStyle(
+                              color: AppColors.primary,
+                              fontSize: AppColors.scaledFontSize(12),
                               fontWeight: FontWeight.w600,
                             ),
                           ),
@@ -344,7 +344,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                               _holidayInfoForSelectedDay!.nameKo,
                               style: TextStyle(
                                 color: AppColors.accentOrange,
-                                fontSize: 13,
+                                fontSize: AppColors.scaledFontSize(13),
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
@@ -364,20 +364,20 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                     'select_date_message'.tr(),
                     style: TextStyle(
                       color: AppColors.textGray.withValues(alpha: 0.6),
-                      fontSize: 16,
+                      fontSize: AppColors.scaledFontSize(16),
                     ),
                   ),
                 ),
               ),
           ],
         ),
-        loading: () => const Center(
-          child: CircularProgressIndicator(color: AppColors.primaryBlue),
+        loading: () => Center(
+          child: CircularProgressIndicator(color: AppColors.primary),
         ),
         error: (error, _) => Center(
           child: Text(
             '${'error'.tr()}: $error',
-            style: const TextStyle(color: Colors.red),
+            style: TextStyle(color: Colors.red),
           ),
         ),
       ),
@@ -400,7 +400,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
               'no_todos_for_date'.tr(),
               style: TextStyle(
                 color: AppColors.textGray.withValues(alpha: 0.6),
-                fontSize: 16,
+                fontSize: AppColors.scaledFontSize(16),
               ),
             ),
           ],
@@ -506,7 +506,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
               width: 36,
               height: 36,
               decoration: BoxDecoration(
-                color: AppColors.primaryBlue.withValues(alpha: 0.3),
+                color: AppColors.primary.withValues(alpha: 0.3),
                 shape: BoxShape.circle,
               ),
             )
@@ -514,8 +514,8 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
             Container(
               width: 36,
               height: 36,
-              decoration: const BoxDecoration(
-                color: AppColors.primaryBlue,
+              decoration: BoxDecoration(
+                color: AppColors.primary,
                 shape: BoxShape.circle,
               ),
             ),

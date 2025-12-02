@@ -24,7 +24,7 @@ class ColorUtils {
       return Color(int.parse('0xFF$hexString', radix: 16));
     } catch (e) {
       // Return default color if parsing fails
-      return AppColors.primaryBlue;
+      return AppColors.primary;
     }
   }
 

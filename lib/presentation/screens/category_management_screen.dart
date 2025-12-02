@@ -65,18 +65,18 @@ class CategoryManagementScreen extends ConsumerWidget {
                     'category_management'.tr(),
                     style: TextStyle(
                       color: AppColors.getText(isDarkMode),
-                      fontSize: 24,
+                      fontSize: AppColors.scaledFontSize(24),
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   const Spacer(),
                   Container(
                     decoration: BoxDecoration(
-                      color: AppColors.primaryBlue,
+                      color: AppColors.primary,
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: IconButton(
-                      icon: const Icon(
+                      icon: Icon(
                         FluentIcons.add_24_regular,
                         color: Colors.white,
                       ),
@@ -106,7 +106,7 @@ class CategoryManagementScreen extends ConsumerWidget {
                             'no_categories'.tr(),
                             style: TextStyle(
                               color: AppColors.getTextSecondary(isDarkMode),
-                              fontSize: 16,
+                              fontSize: AppColors.scaledFontSize(16),
                             ),
                           ),
                           const SizedBox(height: 8),
@@ -114,7 +114,7 @@ class CategoryManagementScreen extends ConsumerWidget {
                             'add_category_hint'.tr(),
                             style: TextStyle(
                               color: AppColors.getTextSecondary(isDarkMode),
-                              fontSize: 14,
+                              fontSize: AppColors.scaledFontSize(14),
                             ),
                           ),
                         ],
@@ -136,11 +136,11 @@ class CategoryManagementScreen extends ConsumerWidget {
                     },
                   );
                 },
-                loading: () => const Center(child: CircularProgressIndicator()),
+                loading: () => Center(child: CircularProgressIndicator()),
                 error: (error, _) => Center(
                   child: Text(
                     'error_prefix'.tr(namedArgs: {'error': error.toString()}),
-                    style: const TextStyle(color: Colors.red),
+                    style: TextStyle(color: Colors.red),
                   ),
                 ),
               ),
@@ -182,7 +182,7 @@ class CategoryManagementScreen extends ConsumerWidget {
           child: Center(
             child: Text(
               category.icon ?? '📁',
-              style: const TextStyle(fontSize: 24),
+              style: TextStyle(fontSize: AppColors.scaledFontSize(24)),
             ),
           ),
         ),
@@ -190,7 +190,7 @@ class CategoryManagementScreen extends ConsumerWidget {
           category.name,
           style: TextStyle(
             color: AppColors.getText(isDarkMode),
-            fontSize: 16,
+            fontSize: AppColors.scaledFontSize(16),
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -198,7 +198,7 @@ class CategoryManagementScreen extends ConsumerWidget {
           DateFormat('yyyy-MM-dd').format(category.createdAt.toLocal()),
           style: TextStyle(
             color: AppColors.getTextSecondary(isDarkMode),
-            fontSize: 14,
+            fontSize: AppColors.scaledFontSize(14),
           ),
         ),
         trailing: Row(
@@ -207,7 +207,7 @@ class CategoryManagementScreen extends ConsumerWidget {
             IconButton(
               icon: Icon(
                 FluentIcons.edit_24_regular,
-                color: AppColors.primaryBlue,
+                color: AppColors.primary,
               ),
               onPressed: () => _showCategoryDialog(
                 context,
@@ -216,7 +216,7 @@ class CategoryManagementScreen extends ConsumerWidget {
               ),
             ),
             IconButton(
-              icon: const Icon(
+              icon: Icon(
                 FluentIcons.delete_24_regular,
                 color: Colors.red,
               ),
@@ -243,7 +243,7 @@ class CategoryManagementScreen extends ConsumerWidget {
       final hexString = normalized.replaceAll('#', '');
       return Color(int.parse('0xFF$hexString', radix: 16));
     } catch (e) {
-      return AppColors.primaryBlue;
+      return AppColors.primary;
     }
   }
 
@@ -276,7 +276,7 @@ class CategoryManagementScreen extends ConsumerWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(
+              Icon(
                 FluentIcons.delete_24_regular,
                 color: Colors.red,
                 size: 48,
@@ -286,7 +286,7 @@ class CategoryManagementScreen extends ConsumerWidget {
                 'delete_category'.tr(),
                 style: TextStyle(
                   color: AppColors.getText(isDarkMode),
-                  fontSize: 20,
+                  fontSize: AppColors.scaledFontSize(20),
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -295,7 +295,7 @@ class CategoryManagementScreen extends ConsumerWidget {
                 'confirm_delete_category_name'.tr(namedArgs: {'name': category.name}),
                 style: TextStyle(
                   color: AppColors.getTextSecondary(isDarkMode),
-                  fontSize: 16,
+                  fontSize: AppColors.scaledFontSize(16),
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -446,7 +446,7 @@ class _CategoryDialogState extends ConsumerState<CategoryDialog> {
       // Validate hex string length (should be 6 characters: RRGGBB)
       if (hexString.length != 6) {
         print('⚠️ Invalid color hex length: $colorString -> $hexString');
-        return AppColors.primaryBlue;
+        return AppColors.primary;
       }
 
       // Parse and create Color
@@ -457,7 +457,7 @@ class _CategoryDialogState extends ConsumerState<CategoryDialog> {
       return color;
     } catch (e) {
       print('❌ Failed to parse color: $colorString, error: $e');
-      return AppColors.primaryBlue;
+      return AppColors.primary;
     }
   }
 
@@ -487,7 +487,7 @@ class _CategoryDialogState extends ConsumerState<CategoryDialog> {
                 widget.category == null ? 'new_category'.tr() : 'edit_category'.tr(),
                 style: TextStyle(
                   color: AppColors.getText(isDarkMode),
-                  fontSize: 20,
+                  fontSize: AppColors.scaledFontSize(20),
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -498,7 +498,7 @@ class _CategoryDialogState extends ConsumerState<CategoryDialog> {
                 'name'.tr(),
                 style: TextStyle(
                   color: AppColors.getTextSecondary(isDarkMode),
-                  fontSize: 14,
+                  fontSize: AppColors.scaledFontSize(14),
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -528,7 +528,7 @@ class _CategoryDialogState extends ConsumerState<CategoryDialog> {
                 'color'.tr(),
                 style: TextStyle(
                   color: AppColors.getTextSecondary(isDarkMode),
-                  fontSize: 14,
+                  fontSize: AppColors.scaledFontSize(14),
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -557,7 +557,7 @@ class _CategoryDialogState extends ConsumerState<CategoryDialog> {
                         ),
                       ),
                       child: isSelected
-                          ? const Icon(
+                          ? Icon(
                               FluentIcons.checkmark_24_filled,
                               color: Colors.white,
                             )
@@ -573,7 +573,7 @@ class _CategoryDialogState extends ConsumerState<CategoryDialog> {
                 'icon'.tr(),
                 style: TextStyle(
                   color: AppColors.getTextSecondary(isDarkMode),
-                  fontSize: 14,
+                  fontSize: AppColors.scaledFontSize(14),
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -594,17 +594,17 @@ class _CategoryDialogState extends ConsumerState<CategoryDialog> {
                       height: 48,
                       decoration: BoxDecoration(
                         color: isSelected
-                            ? AppColors.primaryBlue.withValues(alpha: 0.2)
+                            ? AppColors.primary.withValues(alpha: 0.2)
                             : AppColors.getInput(isDarkMode),
                         borderRadius: BorderRadius.circular(12),
                         border: isSelected
-                            ? Border.all(color: AppColors.primaryBlue, width: 2)
+                            ? Border.all(color: AppColors.primary, width: 2)
                             : null,
                       ),
                       child: Center(
                         child: Text(
                           icon,
-                          style: const TextStyle(fontSize: 24),
+                          style: TextStyle(fontSize: AppColors.scaledFontSize(24)),
                         ),
                       ),
                     ),
@@ -638,7 +638,7 @@ class _CategoryDialogState extends ConsumerState<CategoryDialog> {
                     child: ElevatedButton(
                       onPressed: _saveCategory,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primaryBlue,
+                        backgroundColor: AppColors.primary,
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 14),
                         shape: RoundedRectangleBorder(

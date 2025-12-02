@@ -150,7 +150,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     'settings'.tr(),
                     style: TextStyle(
                       color: AppColors.getText(isDarkMode),
-                      fontSize: 24,
+                      fontSize: AppColors.scaledFontSize(24),
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -267,22 +267,22 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             color: AppColors.getInput(isDarkMode),
             borderRadius: BorderRadius.circular(10),
           ),
-          child: const Icon(
+          child: Icon(
             FluentIcons.data_bar_vertical_24_regular,
-            color: AppColors.primaryBlue,
+            color: AppColors.primary,
           ),
         ),
-        title: const Text(
+        title: Text(
           '관리자 대시보드',
           style: TextStyle(
-            fontSize: 16,
+            fontSize: AppColors.scaledFontSize(16),
             fontWeight: FontWeight.w500,
           ),
         ),
-        subtitle: const Text(
+        subtitle: Text(
           '익명화된 통계 및 분석',
           style: TextStyle(
-            fontSize: 14,
+            fontSize: AppColors.scaledFontSize(14),
           ),
         ),
         trailing: Icon(
@@ -300,6 +300,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
   Widget _buildThemeCustomizationCard() {
     final isDarkMode = ref.watch(isDarkModeProvider);
+    final hasUnsavedChanges = ref.watch(hasUnsavedThemeChangesProvider);
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -321,7 +323,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             'primary_color'.tr(),
             style: TextStyle(
               color: AppColors.getText(isDarkMode),
-              fontSize: 16,
+              fontSize: AppColors.scaledFontSize(16),
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -336,7 +338,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             'font_size_scale'.tr(),
             style: TextStyle(
               color: AppColors.getText(isDarkMode),
-              fontSize: 16,
+              fontSize: AppColors.scaledFontSize(16),
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -344,6 +346,86 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           FontSizeSliderWidget(
             isDarkMode: isDarkMode,
           ),
+
+          // Apply Theme Button
+          const SizedBox(height: 32),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: hasUnsavedChanges
+                  ? () {
+                      ref.read(themeCustomizationProvider.notifier).applyTheme();
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('theme_applied'.tr()),
+                          backgroundColor: AppColors.successGreen,
+                          behavior: SnackBarBehavior.floating,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                      );
+                    }
+                  : null,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: Colors.white,
+                disabledBackgroundColor: AppColors.getInput(isDarkMode),
+                disabledForegroundColor: AppColors.getTextSecondary(isDarkMode),
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    FluentIcons.checkmark_24_regular,
+                    size: 20,
+                    color: hasUnsavedChanges
+                        ? Colors.white
+                        : AppColors.getTextSecondary(isDarkMode),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    'apply_theme'.tr(),
+                    style: TextStyle(
+                      fontSize: AppColors.scaledFontSize(16),
+                      fontWeight: FontWeight.w600,
+                      color: hasUnsavedChanges
+                          ? Colors.white
+                          : AppColors.getTextSecondary(isDarkMode),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          // Unsaved changes indicator
+          if (hasUnsavedChanges) ...[
+            const SizedBox(height: 12),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  FluentIcons.info_16_regular,
+                  size: 14,
+                  color: Colors.orange,
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  'unsaved_theme_changes'.tr(),
+                  style: TextStyle(
+                    color: Colors.orange,
+                    fontSize: AppColors.scaledFontSize(12),
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ],
         ],
       ),
     );
@@ -355,7 +437,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       title,
       style: TextStyle(
         color: AppColors.getTextSecondary(isDarkMode),
-        fontSize: 14,
+        fontSize: AppColors.scaledFontSize(14),
         fontWeight: FontWeight.w600,
         letterSpacing: 0.5,
       ),
@@ -398,9 +480,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 child: Center(
                   child: Text(
                     user.name[0].toUpperCase(),
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: Colors.white,
-                      fontSize: 32,
+                      fontSize: AppColors.scaledFontSize(32),
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -413,7 +495,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 user.name,
                 style: TextStyle(
                   color: AppColors.getText(isDarkMode),
-                  fontSize: 20,
+                  fontSize: AppColors.scaledFontSize(20),
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -422,7 +504,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 user.email,
                 style: TextStyle(
                   color: AppColors.getTextSecondary(isDarkMode),
-                  fontSize: 14,
+                  fontSize: AppColors.scaledFontSize(14),
                 ),
               ),
               const SizedBox(height: 20),
@@ -445,12 +527,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Icon(FluentIcons.sign_out_24_regular, size: 20),
+                      Icon(FluentIcons.sign_out_24_regular, size: 20),
                       const SizedBox(width: 8),
                       Text(
                         'logout'.tr(),
-                        style: const TextStyle(
-                          fontSize: 16,
+                        style: TextStyle(
+                          fontSize: AppColors.scaledFontSize(16),
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -461,10 +543,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ],
           );
         },
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => Center(child: CircularProgressIndicator()),
         error: (_, __) => Text(
           'error_occurred'.tr(),
-          style: const TextStyle(color: Colors.red),
+          style: TextStyle(color: Colors.red),
         ),
       ),
     );
@@ -493,16 +575,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 color: AppColors.getInput(isDarkMode),
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: const Icon(
+              child: Icon(
                 FluentIcons.arrow_download_24_regular,
-                color: AppColors.primaryBlue,
+                color: AppColors.primary,
               ),
             ),
             title: Text(
               'backup'.tr(),
               style: TextStyle(
                 color: AppColors.getText(isDarkMode),
-                fontSize: 16,
+                fontSize: AppColors.scaledFontSize(16),
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -510,7 +592,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               'backup_desc'.tr(),
               style: TextStyle(
                 color: AppColors.getTextSecondary(isDarkMode),
-                fontSize: 14,
+                fontSize: AppColors.scaledFontSize(14),
               ),
             ),
             trailing: Icon(
@@ -535,16 +617,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 color: AppColors.getInput(isDarkMode),
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: const Icon(
+              child: Icon(
                 FluentIcons.arrow_upload_24_regular,
-                color: AppColors.primaryBlue,
+                color: AppColors.primary,
               ),
             ),
             title: Text(
               'restore'.tr(),
               style: TextStyle(
                 color: AppColors.getText(isDarkMode),
-                fontSize: 16,
+                fontSize: AppColors.scaledFontSize(16),
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -552,7 +634,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               'restore_desc'.tr(),
               style: TextStyle(
                 color: AppColors.getTextSecondary(isDarkMode),
-                fontSize: 14,
+                fontSize: AppColors.scaledFontSize(14),
               ),
             ),
             trailing: Icon(
@@ -577,7 +659,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 color: AppColors.getInput(isDarkMode),
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: const Icon(
+              child: Icon(
                 FluentIcons.document_24_regular,
                 color: AppColors.successGreen,
               ),
@@ -586,7 +668,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               'export_data'.tr(),
               style: TextStyle(
                 color: AppColors.getText(isDarkMode),
-                fontSize: 16,
+                fontSize: AppColors.scaledFontSize(16),
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -594,7 +676,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               'export_data_desc'.tr(),
               style: TextStyle(
                 color: AppColors.getTextSecondary(isDarkMode),
-                fontSize: 14,
+                fontSize: AppColors.scaledFontSize(14),
               ),
             ),
             trailing: Icon(
@@ -635,16 +717,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 color: AppColors.getInput(isDarkMode),
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: const Icon(
+              child: Icon(
                 FluentIcons.phone_24_regular,
-                color: AppColors.primaryBlue,
+                color: AppColors.primary,
               ),
             ),
             title: Text(
               'samsung_device_detected'.tr(),
               style: TextStyle(
                 color: AppColors.getText(isDarkMode),
-                fontSize: 16,
+                fontSize: AppColors.scaledFontSize(16),
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -652,7 +734,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               'One UI ${_oneUIVersion ?? 'model_checking'.tr()}',
               style: TextStyle(
                 color: AppColors.successGreen,
-                fontSize: 14,
+                fontSize: AppColors.scaledFontSize(14),
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -682,7 +764,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               'battery_optimization_status'.tr(),
               style: TextStyle(
                 color: AppColors.getText(isDarkMode),
-                fontSize: 16,
+                fontSize: AppColors.scaledFontSize(16),
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -694,7 +776,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 color: _isBatteryOptimizationIgnored
                     ? AppColors.successGreen
                     : Colors.orange,
-                fontSize: 14,
+                fontSize: AppColors.scaledFontSize(14),
               ),
             ),
             trailing: !_isBatteryOptimizationIgnored
@@ -705,7 +787,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     },
                     child: Text(
                       'settings'.tr(),
-                      style: const TextStyle(color: AppColors.primaryBlue),
+                      style: TextStyle(color: AppColors.primary),
                     ),
                   )
                 : null,
@@ -724,16 +806,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 color: AppColors.getInput(isDarkMode),
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: const Icon(
+              child: Icon(
                 FluentIcons.info_24_regular,
-                color: AppColors.primaryBlue,
+                color: AppColors.primary,
               ),
             ),
             title: Text(
               'notification_optimization_status'.tr(),
               style: TextStyle(
                 color: AppColors.getText(isDarkMode),
-                fontSize: 16,
+                fontSize: AppColors.scaledFontSize(16),
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -741,7 +823,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               'samsung_workaround_applied'.tr(),
               style: TextStyle(
                 color: AppColors.getTextSecondary(isDarkMode),
-                fontSize: 14,
+                fontSize: AppColors.scaledFontSize(14),
               ),
             ),
             contentPadding:
@@ -780,9 +862,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     color: AppColors.getInput(isDarkMode),
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: const Icon(
+                  child: Icon(
                     FluentIcons.phone_tablet_24_regular,
-                    color: AppColors.primaryBlue,
+                    color: AppColors.primary,
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -794,7 +876,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         'foldable_device_detected'.tr(),
                         style: TextStyle(
                           color: AppColors.getText(isDarkMode),
-                          fontSize: 16,
+                          fontSize: AppColors.scaledFontSize(16),
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -803,7 +885,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         _deviceModel ?? 'model_checking'.tr(),
                         style: TextStyle(
                           color: AppColors.successGreen,
-                          fontSize: 14,
+                          fontSize: AppColors.scaledFontSize(14),
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -828,7 +910,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Icon(
+                  Icon(
                     FluentIcons.warning_24_regular,
                     color: Colors.orange,
                     size: 20,
@@ -840,9 +922,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       children: [
                         Text(
                           'cover_screen_notification_notice'.tr(),
-                          style: const TextStyle(
+                          style: TextStyle(
                             color: Colors.orange,
-                            fontSize: 14,
+                            fontSize: AppColors.scaledFontSize(14),
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -851,7 +933,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           'cover_screen_notification_limitation'.tr(),
                           style: TextStyle(
                             color: AppColors.getTextSecondary(isDarkMode),
-                            fontSize: 13,
+                            fontSize: AppColors.scaledFontSize(13),
                             height: 1.4,
                           ),
                         ),
@@ -868,7 +950,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               'cover_screen_notification_guide'.tr(),
               style: TextStyle(
                 color: AppColors.getText(isDarkMode),
-                fontSize: 15,
+                fontSize: AppColors.scaledFontSize(15),
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -909,7 +991,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 'oneui_7_additional_settings'.tr(),
                 style: TextStyle(
                   color: AppColors.getText(isDarkMode),
-                  fontSize: 15,
+                  fontSize: AppColors.scaledFontSize(15),
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -947,7 +1029,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Icon(
+                    Icon(
                       FluentIcons.warning_24_regular,
                       color: Colors.red,
                       size: 18,
@@ -958,7 +1040,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         'oneui_7_8_warning'.tr(),
                         style: TextStyle(
                           color: AppColors.getTextSecondary(isDarkMode),
-                          fontSize: 12,
+                          fontSize: AppColors.scaledFontSize(12),
                           height: 1.3,
                         ),
                       ),
@@ -973,14 +1055,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: AppColors.primaryBlue.withValues(alpha: 0.1),
+                color: AppColors.primary.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Row(
                 children: [
-                  const Icon(
+                  Icon(
                     FluentIcons.info_24_regular,
-                    color: AppColors.primaryBlue,
+                    color: AppColors.primary,
                     size: 18,
                   ),
                   const SizedBox(width: 8),
@@ -989,7 +1071,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       'cover_screen_setup_complete'.tr(),
                       style: TextStyle(
                         color: AppColors.getTextSecondary(isDarkMode),
-                        fontSize: 12,
+                        fontSize: AppColors.scaledFontSize(12),
                         height: 1.3,
                       ),
                     ),
@@ -1022,9 +1104,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           child: Center(
             child: Text(
               number,
-              style: const TextStyle(
+              style: TextStyle(
                 color: Colors.white,
-                fontSize: 12,
+                fontSize: AppColors.scaledFontSize(12),
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -1039,7 +1121,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 title,
                 style: TextStyle(
                   color: AppColors.getText(isDarkMode),
-                  fontSize: 14,
+                  fontSize: AppColors.scaledFontSize(14),
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -1048,7 +1130,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 description,
                 style: TextStyle(
                   color: AppColors.getTextSecondary(isDarkMode),
-                  fontSize: 12,
+                  fontSize: AppColors.scaledFontSize(12),
                 ),
               ),
             ],
@@ -1079,16 +1161,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             color: AppColors.getInput(isDarkMode),
             borderRadius: BorderRadius.circular(10),
           ),
-          child: const Icon(
+          child: Icon(
             FluentIcons.folder_24_regular,
-            color: AppColors.primaryBlue,
+            color: AppColors.primary,
           ),
         ),
         title: Text(
           'category_management'.tr(),
           style: TextStyle(
             color: AppColors.getText(isDarkMode),
-            fontSize: 16,
+            fontSize: AppColors.scaledFontSize(16),
             fontWeight: FontWeight.w500,
           ),
         ),
@@ -1096,7 +1178,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           'category_management_desc'.tr(),
           style: TextStyle(
             color: AppColors.getTextSecondary(isDarkMode),
-            fontSize: 14,
+            fontSize: AppColors.scaledFontSize(14),
           ),
         ),
         trailing: Icon(
@@ -1133,16 +1215,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             color: AppColors.getInput(isDarkMode),
             borderRadius: BorderRadius.circular(10),
           ),
-          child: const Icon(
+          child: Icon(
             FluentIcons.board_24_regular,
-            color: AppColors.primaryBlue,
+            color: AppColors.primary,
           ),
         ),
         title: Text(
           'widget_settings'.tr(),
           style: TextStyle(
             color: AppColors.getText(isDarkMode),
-            fontSize: 16,
+            fontSize: AppColors.scaledFontSize(16),
             fontWeight: FontWeight.w500,
           ),
         ),
@@ -1150,7 +1232,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           'widget_settings_desc'.tr(),
           style: TextStyle(
             color: AppColors.getTextSecondary(isDarkMode),
-            fontSize: 14,
+            fontSize: AppColors.scaledFontSize(14),
           ),
         ),
         trailing: Icon(
@@ -1189,16 +1271,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 color: AppColors.getInput(isDarkMode),
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: const Icon(
+              child: Icon(
                 FluentIcons.info_24_regular,
-                color: AppColors.primaryBlue,
+                color: AppColors.primary,
               ),
             ),
             title: Text(
               'version_info'.tr(),
               style: TextStyle(
                 color: AppColors.getText(isDarkMode),
-                fontSize: 16,
+                fontSize: AppColors.scaledFontSize(16),
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -1206,7 +1288,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               _version.isNotEmpty ? 'v$_version ($_buildNumber)' : 'loading'.tr(),
               style: TextStyle(
                 color: AppColors.getTextSecondary(isDarkMode),
-                fontSize: 14,
+                fontSize: AppColors.scaledFontSize(14),
               ),
             ),
             contentPadding:
@@ -1224,16 +1306,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 color: AppColors.getInput(isDarkMode),
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: const Icon(
+              child: Icon(
                 FluentIcons.document_text_24_regular,
-                color: AppColors.primaryBlue,
+                color: AppColors.primary,
               ),
             ),
             title: Text(
               'open_source_licenses'.tr(),
               style: TextStyle(
                 color: AppColors.getText(isDarkMode),
-                fontSize: 16,
+                fontSize: AppColors.scaledFontSize(16),
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -1259,16 +1341,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 color: AppColors.getInput(isDarkMode),
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: const Icon(
+              child: Icon(
                 FluentIcons.color_24_regular,
-                color: AppColors.primaryBlue,
+                color: AppColors.primary,
               ),
             ),
             title: Text(
               '테마 미리보기',
               style: TextStyle(
                 color: AppColors.getText(isDarkMode),
-                fontSize: 16,
+                fontSize: AppColors.scaledFontSize(16),
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -1276,7 +1358,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               '라이트/다크 모드 UI 확인',
               style: TextStyle(
                 color: AppColors.getTextSecondary(isDarkMode),
-                fontSize: 14,
+                fontSize: AppColors.scaledFontSize(14),
               ),
             ),
             trailing: Icon(
@@ -1306,16 +1388,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 color: AppColors.getInput(isDarkMode),
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: const Icon(
+              child: Icon(
                 FluentIcons.mail_24_regular,
-                color: AppColors.primaryBlue,
+                color: AppColors.primary,
               ),
             ),
             title: Text(
               'send_feedback'.tr(),
               style: TextStyle(
                 color: AppColors.getText(isDarkMode),
-                fontSize: 16,
+                fontSize: AppColors.scaledFontSize(16),
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -1348,7 +1430,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(
+              Icon(
                 FluentIcons.sign_out_24_regular,
                 color: Colors.red,
                 size: 48,
@@ -1358,7 +1440,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 'logout'.tr(),
                 style: TextStyle(
                   color: AppColors.getText(isDarkMode),
-                  fontSize: 20,
+                  fontSize: AppColors.scaledFontSize(20),
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -1367,7 +1449,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 'logout_confirm'.tr(),
                 style: TextStyle(
                   color: AppColors.getTextSecondary(isDarkMode),
-                  fontSize: 16,
+                  fontSize: AppColors.scaledFontSize(16),
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -1466,7 +1548,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       showDialog(
         context: context,
         barrierDismissible: false,
-        builder: (context) => const Center(
+        builder: (context) => Center(
           child: CircularProgressIndicator(),
         ),
       );
@@ -1507,7 +1589,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(
+              Icon(
                 FluentIcons.checkmark_circle_24_filled,
                 color: AppColors.successGreen,
                 size: 48,
@@ -1517,7 +1599,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 'backup_complete'.tr(),
                 style: TextStyle(
                   color: AppColors.getText(isDarkMode),
-                  fontSize: 20,
+                  fontSize: AppColors.scaledFontSize(20),
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -1526,7 +1608,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 'backup_file_saved'.tr(),
                 style: TextStyle(
                   color: AppColors.getTextSecondary(isDarkMode),
-                  fontSize: 16,
+                  fontSize: AppColors.scaledFontSize(16),
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -1534,8 +1616,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               Text(
                 filePath.split('/').last,
                 style: TextStyle(
-                  color: AppColors.primaryBlue,
-                  fontSize: 14,
+                  color: AppColors.primary,
+                  fontSize: AppColors.scaledFontSize(14),
                 ),
                 textAlign: TextAlign.center,
                 maxLines: 2,
@@ -1572,7 +1654,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         );
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primaryBlue,
+                        backgroundColor: AppColors.primary,
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 12),
                         shape: RoundedRectangleBorder(
@@ -1602,7 +1684,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       showDialog(
         context: context,
         barrierDismissible: false,
-        builder: (context) => const Center(
+        builder: (context) => Center(
           child: CircularProgressIndicator(),
         ),
       );
@@ -1643,7 +1725,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       showDialog(
         context: context,
         barrierDismissible: false,
-        builder: (context) => const Center(
+        builder: (context) => Center(
           child: CircularProgressIndicator(),
         ),
       );
@@ -1687,7 +1769,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(
+              Icon(
                 FluentIcons.document_24_regular,
                 color: AppColors.successGreen,
                 size: 48,
@@ -1697,7 +1779,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 'export_format_select'.tr(),
                 style: TextStyle(
                   color: AppColors.getText(isDarkMode),
-                  fontSize: 20,
+                  fontSize: AppColors.scaledFontSize(20),
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -1706,7 +1788,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 'export_choose_format'.tr(),
                 style: TextStyle(
                   color: AppColors.getTextSecondary(isDarkMode),
-                  fontSize: 16,
+                  fontSize: AppColors.scaledFontSize(16),
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -1718,7 +1800,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     Navigator.pop(context, 'csv');
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primaryBlue,
+                    backgroundColor: AppColors.primary,
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
@@ -1727,19 +1809,19 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   ),
                   child: Column(
                     children: [
-                      const Icon(FluentIcons.table_24_regular),
+                      Icon(FluentIcons.table_24_regular),
                       const SizedBox(height: 4),
                       Text(
                         'export_csv'.tr(),
-                        style: const TextStyle(
-                          fontSize: 16,
+                        style: TextStyle(
+                          fontSize: AppColors.scaledFontSize(16),
                           fontWeight: FontWeight.w600,
                         ),
                       ),
                       Text(
                         'export_csv_desc'.tr(),
-                        style: const TextStyle(
-                          fontSize: 12,
+                        style: TextStyle(
+                          fontSize: AppColors.scaledFontSize(12),
                         ),
                       ),
                     ],
@@ -1763,19 +1845,19 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   ),
                   child: Column(
                     children: [
-                      const Icon(FluentIcons.document_pdf_24_regular),
+                      Icon(FluentIcons.document_pdf_24_regular),
                       const SizedBox(height: 4),
                       Text(
                         'export_pdf'.tr(),
-                        style: const TextStyle(
-                          fontSize: 16,
+                        style: TextStyle(
+                          fontSize: AppColors.scaledFontSize(16),
                           fontWeight: FontWeight.w600,
                         ),
                       ),
                       Text(
                         'export_pdf_desc'.tr(),
-                        style: const TextStyle(
-                          fontSize: 12,
+                        style: TextStyle(
+                          fontSize: AppColors.scaledFontSize(12),
                         ),
                       ),
                     ],
@@ -1791,8 +1873,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   },
                   child: Text(
                     'cancel'.tr(),
-                    style: const TextStyle(
-                      fontSize: 16,
+                    style: TextStyle(
+                      fontSize: AppColors.scaledFontSize(16),
                       color: Colors.grey,
                     ),
                   ),
@@ -1819,9 +1901,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(
+              Icon(
                 FluentIcons.arrow_upload_24_regular,
-                color: AppColors.primaryBlue,
+                color: AppColors.primary,
                 size: 48,
               ),
               const SizedBox(height: 16),
@@ -1829,7 +1911,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 'restore_method_select'.tr(),
                 style: TextStyle(
                   color: AppColors.getText(isDarkMode),
-                  fontSize: 20,
+                  fontSize: AppColors.scaledFontSize(20),
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -1838,7 +1920,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 'restore_data_handling'.tr(),
                 style: TextStyle(
                   color: AppColors.getTextSecondary(isDarkMode),
-                  fontSize: 16,
+                  fontSize: AppColors.scaledFontSize(16),
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -1861,8 +1943,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     children: [
                       Text(
                         'restore_overwrite'.tr(),
-                        style: const TextStyle(
-                          fontSize: 16,
+                        style: TextStyle(
+                          fontSize: AppColors.scaledFontSize(16),
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -1870,7 +1952,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       Text(
                         'restore_delete_then_restore'.tr(),
                         style: TextStyle(
-                          fontSize: 12,
+                          fontSize: AppColors.scaledFontSize(12),
                           color: Colors.white.withValues(alpha: 0.8),
                         ),
                       ),
@@ -1886,7 +1968,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     Navigator.pop(context, ImportStrategy.merge);
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primaryBlue,
+                    backgroundColor: AppColors.primary,
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
@@ -1897,8 +1979,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     children: [
                       Text(
                         'restore_merge'.tr(),
-                        style: const TextStyle(
-                          fontSize: 16,
+                        style: TextStyle(
+                          fontSize: AppColors.scaledFontSize(16),
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -1906,7 +1988,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       Text(
                         'restore_merge_latest_first'.tr(),
                         style: TextStyle(
-                          fontSize: 12,
+                          fontSize: AppColors.scaledFontSize(12),
                           color: Colors.white.withValues(alpha: 0.8),
                         ),
                       ),
@@ -2023,8 +2105,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 children: [
                   Text(
                     isDarkMode ? '다크 모드' : '라이트 모드',
-                    style: const TextStyle(
-                      fontSize: 20,
+                    style: TextStyle(
+                      fontSize: AppColors.scaledFontSize(20),
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
                     ),
@@ -2033,7 +2115,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   Text(
                     isDarkMode ? '어두운 테마 활성화' : '밝은 테마 활성화',
                     style: TextStyle(
-                      fontSize: 14,
+                      fontSize: AppColors.scaledFontSize(14),
                       color: Colors.white.withOpacity(0.9),
                     ),
                   ),
@@ -2067,7 +2149,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         FluentIcons.weather_sunny_24_filled,
                         size: 20,
                         color: !isDarkMode
-                            ? AppColors.primaryBlue
+                            ? AppColors.primary
                             : Colors.white.withOpacity(0.7),
                       ),
                     ),
@@ -2089,7 +2171,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         FluentIcons.weather_moon_24_filled,
                         size: 20,
                         color: isDarkMode
-                            ? AppColors.primaryBlue
+                            ? AppColors.primary
                             : Colors.white.withOpacity(0.7),
                       ),
                     ),
@@ -2138,7 +2220,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             : 'geofencing_disabled'.tr(),
                         style: TextStyle(
                           color: AppColors.getText(isDarkMode),
-                          fontSize: 16,
+                          fontSize: AppColors.scaledFontSize(16),
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -2149,7 +2231,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             : 'geofencing_status'.tr(),
                         style: TextStyle(
                           color: AppColors.getTextSecondary(isDarkMode),
-                          fontSize: 13,
+                          fontSize: AppColors.scaledFontSize(13),
                         ),
                       ),
                     ],
@@ -2171,8 +2253,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       }
                     });
                   },
-                  activeColor: AppColors.primaryBlue,
-                  activeTrackColor: AppColors.primaryBlue.withValues(alpha: 0.3),
+                  activeColor: AppColors.primary,
+                  activeTrackColor: AppColors.primary.withValues(alpha: 0.3),
                 ),
               ],
             ),
@@ -2194,7 +2276,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           'geofencing_battery_optimization'.tr(),
                           style: TextStyle(
                             color: AppColors.getText(isDarkMode),
-                            fontSize: 16,
+                            fontSize: AppColors.scaledFontSize(16),
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -2203,7 +2285,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           'geofencing_battery_optimization_desc'.tr(),
                           style: TextStyle(
                             color: AppColors.getTextSecondary(isDarkMode),
-                            fontSize: 13,
+                            fontSize: AppColors.scaledFontSize(13),
                           ),
                         ),
                       ],
@@ -2216,9 +2298,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         _batteryOptimizationEnabled = value;
                       });
                     },
-                    activeColor: AppColors.primaryBlue,
+                    activeColor: AppColors.primary,
                     activeTrackColor:
-                        AppColors.primaryBlue.withValues(alpha: 0.3),
+                        AppColors.primary.withValues(alpha: 0.3),
                   ),
                 ],
               ),
@@ -2235,7 +2317,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     'geofencing_check_interval'.tr(),
                     style: TextStyle(
                       color: AppColors.getText(isDarkMode),
-                      fontSize: 16,
+                      fontSize: AppColors.scaledFontSize(16),
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -2259,7 +2341,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         'battery_optimization_status'.tr(),
                         style: TextStyle(
                           color: AppColors.getText(isDarkMode),
-                          fontSize: 14,
+                          fontSize: AppColors.scaledFontSize(14),
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -2270,7 +2352,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             : 'battery_optimization_disabled'.tr(),
                         style: TextStyle(
                           color: AppColors.getTextSecondary(isDarkMode),
-                          fontSize: 13,
+                          fontSize: AppColors.scaledFontSize(13),
                         ),
                       ),
                     ],
@@ -2287,8 +2369,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     child: Text(
                       '${_geofencingIntervalMinutes}m',
                       style: TextStyle(
-                        color: AppColors.primaryBlue,
-                        fontSize: 12,
+                        color: AppColors.primary,
+                        fontSize: AppColors.scaledFontSize(12),
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -2337,8 +2419,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 Text(
                   '${_geofencingIntervalMinutes}',
                   style: TextStyle(
-                    color: AppColors.primaryBlue,
-                    fontSize: 48,
+                    color: AppColors.primary,
+                    fontSize: AppColors.scaledFontSize(48),
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -2347,7 +2429,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   _geofencingIntervalMinutes == 1 ? '분' : '분',
                   style: TextStyle(
                     color: AppColors.getTextSecondary(isDarkMode),
-                    fontSize: 14,
+                    fontSize: AppColors.scaledFontSize(14),
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -2366,9 +2448,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               elevation: 4,
             ),
             overlayShape: RoundSliderOverlayShape(overlayRadius: 20),
-            activeTrackColor: AppColors.primaryBlue,
+            activeTrackColor: AppColors.primary,
             inactiveTrackColor: AppColors.getInput(isDarkMode),
-            thumbColor: AppColors.primaryBlue,
+            thumbColor: AppColors.primary,
           ),
           child: Slider(
             value: actualIndex.toDouble(),
@@ -2421,12 +2503,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       height: 40,
                       decoration: BoxDecoration(
                         color: isSelected
-                            ? AppColors.primaryBlue
+                            ? AppColors.primary
                             : AppColors.getInput(isDarkMode),
                         shape: BoxShape.circle,
                         border: Border.all(
                           color: isSelected
-                              ? AppColors.primaryBlue
+                              ? AppColors.primary
                               : AppColors.getBorder(isDarkMode),
                           width: 2,
                         ),
@@ -2438,7 +2520,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             color: isSelected
                                 ? Colors.white
                                 : AppColors.getTextSecondary(isDarkMode),
-                            fontSize: 12,
+                            fontSize: AppColors.scaledFontSize(12),
                             fontWeight: FontWeight.bold,
                           ),
                         ),

@@ -238,14 +238,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               Icon(
                 Icons.check_circle_outline,
                 size: 80,
-                color: AppColors.primaryBlue,
+                color: AppColors.primary,
               ),
               const SizedBox(height: 16),
               Text(
                 'Todo App',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  fontSize: 32,
+                  fontSize: AppColors.scaledFontSize(32),
                   fontWeight: FontWeight.bold,
                   color: AppColors.getText(isDarkMode),
                 ),
@@ -255,7 +255,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 'login_subtitle'.tr(),
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  fontSize: 14,
+                  fontSize: AppColors.scaledFontSize(14),
                   color: AppColors.getTextSecondary(isDarkMode),
                 ),
               ),
@@ -277,7 +277,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     borderSide: BorderSide(color: AppColors.getBorder(isDarkMode)),
                   ),
                   focusedBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: AppColors.primaryBlue, width: 2),
+                    borderSide: BorderSide(color: AppColors.primary, width: 2),
                   ),
                   filled: true,
                   fillColor: AppColors.getInput(isDarkMode),
@@ -305,7 +305,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     borderSide: BorderSide(color: AppColors.getBorder(isDarkMode)),
                   ),
                   focusedBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: AppColors.primaryBlue, width: 2),
+                    borderSide: BorderSide(color: AppColors.primary, width: 2),
                   ),
                   filled: true,
                   fillColor: AppColors.getInput(isDarkMode),
@@ -344,7 +344,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         )
                       : Text(
                           _isSignUpMode ? 'sign_up'.tr() : 'login'.tr(),
-                          style: const TextStyle(fontSize: 16),
+                          style: TextStyle(fontSize: AppColors.scaledFontSize(16)),
                         ),
                 ),
               ),
@@ -371,7 +371,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       _isSignUpMode ? 'login'.tr() : 'sign_up'.tr(),
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
-                        color: AppColors.primaryBlue,
+                        color: AppColors.primary,
                       ),
                     ),
                   ),
@@ -408,7 +408,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 label: Text(
                   'google_login'.tr(),
                   style: TextStyle(
-                    fontSize: 16,
+                    fontSize: AppColors.scaledFontSize(16),
                     fontWeight: FontWeight.w500,
                     color: AppColors.getText(isDarkMode),
                   ),
@@ -430,8 +430,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 icon: const Icon(Icons.chat_bubble, size: 24, color: Colors.black87),
                 label: Text(
                   'kakao_login'.tr(),
-                  style: const TextStyle(
-                    fontSize: 16,
+                  style: TextStyle(
+                    fontSize: AppColors.scaledFontSize(16),
                     fontWeight: FontWeight.w500,
                     color: Colors.black87,
                   ),

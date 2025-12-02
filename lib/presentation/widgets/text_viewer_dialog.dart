@@ -126,7 +126,7 @@ class _TextViewerDialogState extends ConsumerState<TextViewerDialog> {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: AppColors.primaryBlue.withValues(alpha: 0.1),
+                  color: AppColors.primary.withValues(alpha: 0.1),
                   borderRadius: const BorderRadius.only(
                     topLeft: Radius.circular(12),
                     topRight: Radius.circular(12),
@@ -134,9 +134,9 @@ class _TextViewerDialogState extends ConsumerState<TextViewerDialog> {
                 ),
                 child: Row(
                   children: [
-                    const Icon(
+                    Icon(
                       FluentIcons.document_text_24_regular,
-                      color: AppColors.primaryBlue,
+                      color: AppColors.primary,
                       size: 24,
                     ),
                     const SizedBox(width: 12),
@@ -146,9 +146,9 @@ class _TextViewerDialogState extends ConsumerState<TextViewerDialog> {
                         children: [
                           Text(
                             widget.attachment.fileName,
-                            style: const TextStyle(
+                            style: TextStyle(
                               color: Colors.black87,
-                              fontSize: 16,
+                              fontSize: AppColors.scaledFontSize(16),
                               fontWeight: FontWeight.w600,
                             ),
                             maxLines: 1,
@@ -157,9 +157,9 @@ class _TextViewerDialogState extends ConsumerState<TextViewerDialog> {
                           const SizedBox(height: 4),
                           Text(
                             _formatFileSize(widget.attachment.fileSize),
-                            style: const TextStyle(
+                            style: TextStyle(
                               color: Colors.black54,
-                              fontSize: 12,
+                              fontSize: AppColors.scaledFontSize(12),
                             ),
                           ),
                         ],
@@ -173,9 +173,9 @@ class _TextViewerDialogState extends ConsumerState<TextViewerDialog> {
               // Content area
               Expanded(
                 child: _isLoading
-                    ? const Center(
+                    ? Center(
                         child: CircularProgressIndicator(
-                          color: AppColors.primaryBlue,
+                          color: AppColors.primary,
                         ),
                       )
                     : _error != null
@@ -193,17 +193,17 @@ class _TextViewerDialogState extends ConsumerState<TextViewerDialog> {
                                   const SizedBox(height: 16),
                                   Text(
                                     'file_loading_failed'.tr(),
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       color: Colors.black87,
-                                      fontSize: 16,
+                                      fontSize: AppColors.scaledFontSize(16),
                                     ),
                                   ),
                                   const SizedBox(height: 8),
                                   Text(
                                     _error!,
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       color: Colors.black54,
-                                      fontSize: 12,
+                                      fontSize: AppColors.scaledFontSize(12),
                                     ),
                                     textAlign: TextAlign.center,
                                   ),
@@ -217,8 +217,8 @@ class _TextViewerDialogState extends ConsumerState<TextViewerDialog> {
                             child: SingleChildScrollView(
                               child: SelectableText(
                                 _textContent ?? '',
-                                style: const TextStyle(
-                                  fontSize: 14,
+                                style: TextStyle(
+                                  fontSize: AppColors.scaledFontSize(14),
                                   fontFamily: 'monospace',
                                   color: Colors.black87,
                                   height: 1.5,
