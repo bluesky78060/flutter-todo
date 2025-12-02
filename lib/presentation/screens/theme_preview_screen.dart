@@ -16,20 +16,22 @@ library;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:todo_app/core/theme/app_colors.dart';
 import 'package:todo_app/domain/entities/category.dart';
 import 'package:todo_app/domain/entities/todo.dart';
+import 'package:todo_app/presentation/providers/theme_provider.dart';
 
 /// Screen for previewing light/dark theme appearances.
-class ThemePreviewScreen extends StatefulWidget {
+class ThemePreviewScreen extends ConsumerStatefulWidget {
   const ThemePreviewScreen({super.key});
 
   @override
-  State<ThemePreviewScreen> createState() => _ThemePreviewScreenState();
+  ConsumerState<ThemePreviewScreen> createState() => _ThemePreviewScreenState();
 }
 
-class _ThemePreviewScreenState extends State<ThemePreviewScreen> {
-  bool _isDarkMode = false;
+class _ThemePreviewScreenState extends ConsumerState<ThemePreviewScreen> {
+  late bool _isDarkMode;
 
   // 샘플 데이터
   late final Category _sampleCategory;
@@ -39,6 +41,8 @@ class _ThemePreviewScreenState extends State<ThemePreviewScreen> {
   @override
   void initState() {
     super.initState();
+    // Initialize with app's current dark mode state
+    _isDarkMode = ref.read(isDarkModeProvider);
     _sampleCategory = Category(
       id: 1,
       userId: 'preview-user',
@@ -137,25 +141,33 @@ class _ThemePreviewScreenState extends State<ThemePreviewScreen> {
   }
 
   Widget _buildThemeToggleCard() {
+    // Use dynamic primary color for gradient
+    final primaryColor = AppColors.primary;
+    final primaryDark = HSLColor.fromColor(primaryColor)
+        .withLightness((HSLColor.fromColor(primaryColor).lightness - 0.15).clamp(0.0, 1.0))
+        .toColor();
+    final primaryLight = HSLColor.fromColor(primaryColor)
+        .withLightness((HSLColor.fromColor(primaryColor).lightness + 0.1).clamp(0.0, 1.0))
+        .toColor();
+
     return Container(
       margin: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         gradient: _isDarkMode
-            ? const LinearGradient(
-                colors: [Color(0xFF1E3A8A), Color(0xFF1E40AF)],
+            ? LinearGradient(
+                colors: [primaryDark, primaryColor],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               )
-            : const LinearGradient(
-                colors: [Color(0xFF3B82F6), Color(0xFF60A5FA)],
+            : LinearGradient(
+                colors: [primaryColor, primaryLight],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: (_isDarkMode ? Colors.blue.shade900 : Colors.blue.shade300)
-                .withOpacity(0.3),
+            color: primaryColor.withValues(alpha: 0.3),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -363,7 +375,7 @@ class _ThemePreviewScreenState extends State<ThemePreviewScreen> {
               _buildColorRow(
                   'Secondary Text', AppColors.getTextSecondary(_isDarkMode)),
               const SizedBox(height: 12),
-              _buildColorRow('Primary Blue', AppColors.primary),
+              _buildColorRow('primary_color'.tr(), AppColors.primary),
               const SizedBox(height: 12),
               _buildColorRow('Success Green', AppColors.successGreen),
               const SizedBox(height: 12),
