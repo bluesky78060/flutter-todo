@@ -2,7 +2,7 @@
 ///
 /// Provides helper functions to:
 /// - Group todos by parent recurring series
-/// - Sort todos by due date
+/// - Sort todos by priority and due date
 /// - Prepare grouped todos for display
 ///
 /// Example:
@@ -14,6 +14,7 @@
 library;
 
 import 'package:todo_app/domain/entities/todo.dart';
+import 'package:todo_app/core/constants/priority_constants.dart';
 
 /// Group todos by recurring series for display.
 ///
@@ -80,17 +81,37 @@ List<List<Todo>> groupTodosBySeries(List<Todo> todos) {
     result.add([todo]);
   }
 
-  // Add grouped recurring series (sorted by due date within each group)
+  // Add grouped recurring series (sorted by priority first, then due date within each group)
   for (final group in groupedByParent.values) {
-    // Sort by due date within group
-    group.sort((a, b) => _compareTodosByDueDate(a, b));
+    // Sort by priority first (high → medium → low), then by due date within same priority
+    group.sort((a, b) => _compareTodosByPriorityAndDueDate(a, b));
     result.add(group);
   }
 
-  // Sort the result by the first todo's due date in each group
-  result.sort((a, b) => _compareTodosByDueDate(a.first, b.first));
+  // Sort the result by the first todo's priority and due date in each group
+  result.sort((a, b) => _compareTodosByPriorityAndDueDate(a.first, b.first));
 
   return result;
+}
+
+/// Compare two todos by priority first, then by due date for sorting.
+///
+/// Priority order: high → medium → low (descending priority)
+/// Within same priority, sorts by due date (earliest first)
+///
+/// Returns:
+/// - -1 if a has higher priority or earlier due date
+/// - 1 if b has higher priority or earlier due date
+/// - 0 if equal priority and due date
+int _compareTodosByPriorityAndDueDate(Todo a, Todo b) {
+  // First compare by priority (high → medium → low)
+  final priorityComparison = PriorityConstants.compare(b.priority ?? 'medium', a.priority ?? 'medium');
+  if (priorityComparison != 0) {
+    return priorityComparison; // Returns 1 if a > b priority, -1 if a < b priority
+  }
+
+  // If same priority, compare by due date
+  return _compareTodosByDueDate(a, b);
 }
 
 /// Compare two todos by due date for sorting.
