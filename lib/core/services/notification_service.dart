@@ -132,17 +132,18 @@ class NotificationService {
     }
   }
 
-  /// Create notification channel for Android
+  /// Create notification channels for Android (priority-based)
   Future<void> _createNotificationChannel() async {
     final androidPlugin = _notificationsPlugin
         .resolvePlatformSpecificImplementation<
             AndroidFlutterLocalNotificationsPlugin>();
 
-    // 이전 채널 삭제 (v1, v2) - 캐시된 잘못된 설정 제거
+    // 이전 채널 삭제 (v1, v2, v3) - 캐시된 잘못된 설정 제거
     if (androidPlugin != null) {
       try {
         await androidPlugin.deleteNotificationChannel('todo_notifications');
         await androidPlugin.deleteNotificationChannel('todo_notifications_v2');
+        await androidPlugin.deleteNotificationChannel('todo_notifications_v3');
         if (kDebugMode) {
           print('🗑️ Old notification channels deleted');
         }
@@ -153,21 +154,47 @@ class NotificationService {
       }
     }
 
-    const androidChannel = AndroidNotificationChannel(
-      'todo_notifications_v3',  // v3로 업데이트 - 채널 캐싱 문제 해결
-      'Todo Reminders',
-      description: 'Notifications for todo items',
-      importance: Importance.max,  // high -> max로 변경 (헤드업 알림 필수)
+    // Low priority channel (조용한 알림)
+    const lowPriorityChannel = AndroidNotificationChannel(
+      'todo_notifications_low',
+      'Low Priority Reminders',
+      description: 'Low priority todo notifications',
+      importance: Importance.low,
+      playSound: false,
+      enableVibration: false,
+      enableLights: false,
+    );
+
+    // Medium priority channel (기본 알림 - 소리 없음)
+    const mediumPriorityChannel = AndroidNotificationChannel(
+      'todo_notifications_medium',
+      'Medium Priority Reminders',
+      description: 'Medium priority todo notifications',
+      importance: Importance.default_,
+      playSound: true,
+      enableVibration: true,
+      enableLights: true,
+      ledColor: const Color.fromARGB(255, 0, 150, 255),
+    );
+
+    // High priority channel (긴급 알림 - 최대 우선순위)
+    const highPriorityChannel = AndroidNotificationChannel(
+      'todo_notifications_high',
+      'High Priority Reminders',
+      description: 'High priority todo notifications',
+      importance: Importance.max,
       playSound: true,
       enableVibration: true,
       enableLights: true,
       ledColor: const Color.fromARGB(255, 255, 0, 0),
     );
 
-    await androidPlugin?.createNotificationChannel(androidChannel);
+    await androidPlugin?.createNotificationChannel(lowPriorityChannel);
+    await androidPlugin?.createNotificationChannel(mediumPriorityChannel);
+    await androidPlugin?.createNotificationChannel(highPriorityChannel);
 
     if (kDebugMode) {
-      print('📱 Android notification channel v3 created');
+      print('📱 Android notification channels (low/medium/high priority) created');
     }
   }
 
@@ -245,11 +272,17 @@ class NotificationService {
   }
 
   /// Schedule a notification for a specific date and time
+  ///
+  /// [priority] determines the notification channel (low/medium/high)
+  /// - low: Silent, minimal interruption
+  /// - medium: Standard with sound and vibration (default)
+  /// - high: Maximum with urgent sound and LED
   Future<void> scheduleNotification({
     required int id,
     required String title,
     required String body,
     required DateTime scheduledDate,
+    String priority = 'medium',
   }) async {
     try {
       if (!_initialized) {
@@ -340,15 +373,52 @@ class NotificationService {
         }
       }
 
+      // Determine channel ID and visual settings based on priority
+      String channelId;
+      Importance importance;
+      Priority notificationPriority;
+      bool enableSound;
+      bool enableVibrationFlag;
+      bool enableLightsFlag;
+      Color ledColor;
+
+      switch (priority) {
+        case 'low':
+          channelId = 'todo_notifications_low';
+          importance = Importance.low;
+          notificationPriority = Priority.low;
+          enableSound = false;
+          enableVibrationFlag = false;
+          enableLightsFlag = false;
+          ledColor = const Color.fromARGB(255, 0, 0, 0);
+        case 'high':
+          channelId = 'todo_notifications_high';
+          importance = Importance.max;
+          notificationPriority = Priority.max;
+          enableSound = true;
+          enableVibrationFlag = true;
+          enableLightsFlag = true;
+          ledColor = const Color.fromARGB(255, 255, 0, 0);
+        case 'medium':
+        default:
+          channelId = 'todo_notifications_medium';
+          importance = Importance.default_;
+          notificationPriority = Priority.default_;
+          enableSound = true;
+          enableVibrationFlag = true;
+          enableLightsFlag = true;
+          ledColor = const Color.fromARGB(255, 0, 150, 255);
+      }
+
       final androidDetails = AndroidNotificationDetails(
-        'todo_notifications_v3',  // v3 채널 ID와 일치
+        channelId,
         'Todo Reminders',
         channelDescription: 'Notifications for todo items',
-        importance: Importance.max,
-        priority: Priority.max,
+        importance: importance,
+        priority: notificationPriority,
         showWhen: true,
-        enableVibration: true,
-        playSound: true,
+        enableVibration: enableVibrationFlag,
+        playSound: enableSound,
         // 포그라운드에서도 알림 표시
         channelShowBadge: true,
         autoCancel: true,  // 탭하면 자동으로 사라짐
@@ -373,8 +443,8 @@ class NotificationService {
         // 중요도 높이기 위한 추가 설정
         ticker: title,
         // LED 설정
-        enableLights: true,
-        ledColor: const Color.fromARGB(255, 255, 0, 0),
+        enableLights: enableLightsFlag,
+        ledColor: ledColor,
         ledOnMs: 1000,
         ledOffMs: 500,
         // Android 14+ 호환성
@@ -404,6 +474,7 @@ class NotificationService {
         print('   ID: $id');
         print('   Title: $title');
         print('   Body: $body');
+        print('   Priority: $priority (Channel: $channelId)');
         print('   Scheduled (local): $scheduledDate');
         print('   Scheduled (TZ): $scheduledTZ');
         print('   Timezone: ${tz.local.name}');

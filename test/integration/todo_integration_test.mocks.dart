@@ -117,6 +117,7 @@ class MockTodoRepository extends _i1.Mock implements _i2.TodoRepository {
     int? categoryId,
     DateTime? notificationTime,
     String? recurrenceRule,
+    String? priority,
     int? parentRecurringTodoId,
     double? locationLatitude,
     double? locationLongitude,
@@ -131,6 +132,7 @@ class MockTodoRepository extends _i1.Mock implements _i2.TodoRepository {
                 #categoryId: categoryId,
                 #notificationTime: notificationTime,
                 #recurrenceRule: recurrenceRule,
+                #priority: priority,
                 #parentRecurringTodoId: parentRecurringTodoId,
                 #locationLatitude: locationLatitude,
                 #locationLongitude: locationLongitude,
@@ -148,6 +150,7 @@ class MockTodoRepository extends _i1.Mock implements _i2.TodoRepository {
                     #categoryId: categoryId,
                     #notificationTime: notificationTime,
                     #recurrenceRule: recurrenceRule,
+                    #priority: priority,
                     #parentRecurringTodoId: parentRecurringTodoId,
                     #locationLatitude: locationLatitude,
                     #locationLongitude: locationLongitude,
@@ -260,6 +263,7 @@ class MockNotificationService extends _i1.Mock
     required String? title,
     required String? body,
     required DateTime? scheduledDate,
+    String? priority = 'medium',
   }) =>
       (super.noSuchMethod(
             Invocation.method(#scheduleNotification, [], {
@@ -267,6 +271,7 @@ class MockNotificationService extends _i1.Mock
               #title: title,
               #body: body,
               #scheduledDate: scheduledDate,
+              #priority: priority,
             }),
             returnValue: _i4.Future<void>.value(),
             returnValueForMissingStub: _i4.Future<void>.value(),

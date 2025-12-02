@@ -165,6 +165,7 @@ class TodoActions {
     double? locationLongitude,
     String? locationName,
     double? locationRadius,
+    String? priority,
   }) async {
     final repository = ref.read(todoRepositoryProvider);
     final syncNotifier = ref.read(syncStateProvider.notifier);
@@ -183,6 +184,7 @@ class TodoActions {
       locationLongitude: locationLongitude,
       locationName: locationName,
       locationRadius: locationRadius,
+      priority: priority,
     );
 
     // Use isRight/isLeft pattern for proper async handling
@@ -219,6 +221,7 @@ class TodoActions {
           title: 'todo_reminder'.tr(),
           body: title,
           scheduledDate: notificationTime,
+          priority: priority ?? 'medium',
         );
 
         // Verify scheduling
@@ -732,6 +735,7 @@ class TodoActions {
                   title: 'todo_reminder'.tr(),
                   body: todo.title,
                   scheduledDate: newNotificationTime,
+                  priority: todo.priority ?? 'medium',
                 );
                 logger.d('✅ TodoActions: Notification rescheduled');
               } catch (e) {
