@@ -222,7 +222,7 @@ class TodoRepositoryImpl implements TodoRepository {
       locationLongitude: todo.locationLongitude,
       locationName: todo.locationName,
       locationRadius: todo.locationRadius,
-      position: todo.position ?? 0,
+      position: todo.position,
       priority: todo.priority,
     );
   }

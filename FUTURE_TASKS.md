@@ -1,7 +1,7 @@
 # 향후 추가 기능 및 개선 사항
 
-현재 버전: **1.0.15+47** (데이터 내보내기 기능 추가)
-최종 업데이트: **2025-12-01**
+현재 버전: **1.0.15+46** (Google Play 업로드용 AAB)
+최종 업데이트: **2025-12-02**
 
 ## 우선순위 분류
 - 🔴 **High**: 핵심 기능, 사용자 경험에 직접적 영향
@@ -11,6 +11,34 @@
 ---
 
 ## ✅ 완료된 작업 (Completed)
+
+### 2025-12-02 - 테마 커스터마이징 기능 완전 구현 (4.3) ✨
+- ✅ **테마 커스터마이징 기능**
+  - **목표**: 사용자가 앱의 기본 색상과 폰트 크기를 커스터마이즈할 수 있는 기능
+  - **구현 내용**:
+    - **Primary Color Picker**: 12가지 프리셋 컬러 팔레트에서 선택
+    - **Font Size Slider**: 80% ~ 150% 범위로 전역 폰트 크기 조절
+    - **실시간 미리보기**: 색상/폰트 변경 시 즉시 미리보기
+    - **Apply Theme 버튼**: 변경사항 명시적 적용 (Pending → Applied)
+    - **기본값 복원**: Reset to Defaults 버튼
+    - **영속성**: SharedPreferences에 설정 저장
+  - **신규 파일**:
+    - `lib/presentation/widgets/color_picker_widget.dart` - 12색 컬러 피커 그리드
+    - `lib/presentation/widgets/font_size_slider_widget.dart` - 폰트 크기 슬라이더
+    - `lib/presentation/providers/theme_customization_provider.dart` - Riverpod 상태 관리
+  - **수정된 파일**:
+    - `lib/core/theme/app_colors.dart` - 동적 primary 색상, primaryDark getter, fontScale 추가
+    - `lib/presentation/screens/theme_preview_screen.dart` - Apply Theme 버튼 및 미리보기 통합
+    - `assets/translations/ko.json` - 한국어 번역 키 추가
+    - `assets/translations/en.json` - 영어 번역 키 추가
+  - **기술 구현**:
+    - `_dynamicPrimary`: 동적 primary 색상 저장
+    - `primaryDark`: HSLColor로 더 어두운 변형 자동 계산 (lightness -0.15)
+    - `pendingColorProvider` / `pendingFontScaleProvider`: 미적용 미리보기 상태
+    - `appliedThemeProvider`: 실제 적용된 테마 상태
+  - **테스트**: ✅ GitHub Actions 테스트 통과 (priority 파라미터 수정 포함)
+  - **버전**: 1.0.15+46
+  - **커밋**: 이전 세션에서 완료
 
 ### 2025-12-01 (심야) - Phase 2: 장기 추이 분석 카드 구현 ✨
 - ✅ **통계 화면 Phase 2: 월간 추이 분석 카드**
@@ -723,7 +751,7 @@
 | 기능 | 상태 | 세부사항 | 예상시간 |
 |------|------|---------|---------|
 | **4.2 드래그 앤 드롭 정렬** | ✅ 완료 | ReorderableListView, position 필드 | 완료됨 |
-| **4.3 테마 커스터마이징** | 🟡 예정 | 색상 선택, 폰트 크기, 미리보기 | 6-8시간 |
+| **4.3 테마 커스터마이징** | ✅ 완료 | 색상 선택, 폰트 크기, 미리보기 | 완료됨 (2025-12-02) |
 | **4.4 홈 화면 위젯 고급 기능** | ✅ 완료 | 삼성 스타일 인터랙티브 위젯 (6/6 완료) | 완료됨 |
 
 #### ✅ 4.4 홈 화면 위젯 고급 기능 (Samsung Style Interactive Widget) - 83% 완료
@@ -841,17 +869,17 @@
 
 ### 📋 Phase 3 (진행 중 / 완료) - 데이터 관리 및 UX 개선
 **예정 기간**: 2025-11-28 ~ 2025-12-31
-**현재 진행 상황**: 3/7 완료 (42%)
+**현재 진행 상황**: 4/7 완료 (57%)
 
 **✅ 완료된 항목**:
 - ✅ 데이터 내보내기 (CSV, PDF) - 완료 (2025-12-01)
 - ✅ 하드코딩 한글 제거 (번역 키 적용) - 완료 (2025-11-30)
 - ✅ 통계 화면 개선 (그래프, 추이 분석, Phase 1-2) - 완료 (2025-12-01)
+- ✅ 테마 커스터마이징 (색상 선택, 폰트 크기) - 완료 (2025-12-02)
 
 **📋 진행 예정 항목**:
 - [ ] 첨부파일 개선 (개별 삭제, 웹 플랫폼 지원) - 4-6시간
 - [ ] 알림 우선순위 설정 - 4-6시간
-- [ ] 테마 커스터마이징 (색상 선택, 폰트 크기) - 6-8시간
 - [ ] 프로필 관리 (프로필 사진, 닉네임) - 4-6시간
 
 ### 🚀 Phase 4 (장기) - 협업 및 고급 기능
@@ -941,4 +969,4 @@
 
 ---
 
-**문서 최종 업데이트**: 2025-12-01 KST
+**문서 최종 업데이트**: 2025-12-02 KST

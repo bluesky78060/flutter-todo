@@ -735,7 +735,7 @@ class TodoActions {
                   title: 'todo_reminder'.tr(),
                   body: todo.title,
                   scheduledDate: newNotificationTime,
-                  priority: todo.priority ?? 'medium',
+                  priority: todo.priority,
                 );
                 logger.d('✅ TodoActions: Notification rescheduled');
               } catch (e) {

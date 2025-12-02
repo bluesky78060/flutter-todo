@@ -14,7 +14,6 @@
 library;
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:todo_app/presentation/providers/database_provider.dart';
 import 'package:todo_app/core/utils/app_logger.dart';
 
 /// Provider for handling widget action events.

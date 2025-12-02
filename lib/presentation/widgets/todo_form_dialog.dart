@@ -918,7 +918,7 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
                     ? _descriptionController.text
                     : '',
                 scheduledDate: _selectedNotificationTime!,
-                priority: _selectedPriority ?? 'medium',
+                priority: _selectedPriority,
               );
         }
 

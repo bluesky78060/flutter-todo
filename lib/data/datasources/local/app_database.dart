@@ -420,7 +420,7 @@ class AppDatabase extends _$AppDatabase {
       for (final todo in todosList) {
         batch.update(
           todos,
-          TodosCompanion(position: Value(todo.position ?? 0)),
+          TodosCompanion(position: Value(todo.position)),
           where: (tbl) => tbl.id.equals(todo.id),
         );
       }
