@@ -86,20 +86,32 @@ class PerformanceMetrics {
     int score = 100;
 
     // 할일 로드 시간 (목표: < 500ms)
-    if (todoLoadTime > 1000) score -= 30;
-    else if (todoLoadTime > 500) score -= 15;
+    if (todoLoadTime > 1000) {
+      score -= 30;
+    } else if (todoLoadTime > 500) {
+      score -= 15;
+    }
 
     // 필터 변경 레이턴시 (목표: < 10ms)
-    if (filterChangeLatency > 100) score -= 25;
-    else if (filterChangeLatency > 50) score -= 10;
+    if (filterChangeLatency > 100) {
+      score -= 25;
+    } else if (filterChangeLatency > 50) {
+      score -= 10;
+    }
 
     // 이미지 로드 시간 (목표: < 100ms)
-    if (imageLoadTime > 500) score -= 25;
-    else if (imageLoadTime > 200) score -= 10;
+    if (imageLoadTime > 500) {
+      score -= 25;
+    } else if (imageLoadTime > 200) {
+      score -= 10;
+    }
 
     // 메모리 사용량 (목표: < 200MB)
-    if (memoryUsageMB > 400) score -= 20;
-    else if (memoryUsageMB > 250) score -= 10;
+    if (memoryUsageMB > 400) {
+      score -= 20;
+    } else if (memoryUsageMB > 250) {
+      score -= 10;
+    }
 
     return score.clamp(0, 100);
   }

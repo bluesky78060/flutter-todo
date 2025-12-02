@@ -28,7 +28,7 @@ class BackupService {
       if (Platform.isAndroid) {
         final status = await Permission.storage.request();
         if (!status.isGranted) {
-          return Left(const DatabaseFailure('Storage permission denied'));
+          return const Left(DatabaseFailure('Storage permission denied'));
         }
       }
 
@@ -89,7 +89,7 @@ class BackupService {
 
       return Right(file);
     } catch (e) {
-      return Left(const DatabaseFailure('Failed to export data'));
+      return const Left(DatabaseFailure('Failed to export data'));
     }
   }
 
@@ -105,12 +105,12 @@ class BackupService {
       );
 
       if (result == null || result.files.isEmpty) {
-        return Left(const DatabaseFailure('No file selected'));
+        return const Left(DatabaseFailure('No file selected'));
       }
 
       final filePath = result.files.first.path;
       if (filePath == null) {
-        return Left(const DatabaseFailure('Invalid file path'));
+        return const Left(DatabaseFailure('Invalid file path'));
       }
 
       // Read file content
@@ -120,7 +120,7 @@ class BackupService {
 
       // Validate backup format
       if (!_validateBackupFormat(backupData)) {
-        return Left(const DatabaseFailure('Invalid backup file format'));
+        return const Left(DatabaseFailure('Invalid backup file format'));
       }
 
       // Apply import strategy
@@ -164,7 +164,7 @@ class BackupService {
 
       return Right('Successfully imported $importedCount items');
     } catch (e) {
-      return Left(const DatabaseFailure('Failed to import data'));
+      return const Left(DatabaseFailure('Failed to import data'));
     }
   }
 
