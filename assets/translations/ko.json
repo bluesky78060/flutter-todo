@@ -692,5 +692,12 @@
   "priority_low": "낮음",
   "priority_medium": "보통",
   "priority_high": "높음",
-  "priority_label": "우선순위"
+  "priority_label": "우선순위",
+
+  "theme_customization": "테마 커스터마이징",
+  "primary_color": "주요 색상",
+  "font_size_scale": "폰트 크기 스케일",
+  "font_size_label": "폰트 크기",
+  "preview": "미리보기",
+  "reset_to_defaults": "기본값으로 초기화"
 }

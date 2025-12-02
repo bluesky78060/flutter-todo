@@ -692,5 +692,12 @@
   "priority_low": "Low",
   "priority_medium": "Medium",
   "priority_high": "High",
-  "priority_label": "Priority"
+  "priority_label": "Priority",
+
+  "theme_customization": "Theme Customization",
+  "primary_color": "Primary Color",
+  "font_size_scale": "Font Size Scale",
+  "font_size_label": "Font Size",
+  "preview": "Preview",
+  "reset_to_defaults": "Reset to Defaults"
 }

@@ -23,19 +23,23 @@ CREATE INDEX IF NOT EXISTS idx_attachments_user_id ON attachments(user_id);
 ALTER TABLE attachments ENABLE ROW LEVEL SECURITY;
 
 -- RLS Policies: Users can only access their own attachments
+DROP POLICY IF EXISTS "Users can view their own attachments" ON attachments;
 CREATE POLICY "Users can view their own attachments"
   ON attachments FOR SELECT
   USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can insert their own attachments" ON attachments;
 CREATE POLICY "Users can insert their own attachments"
   ON attachments FOR INSERT
   WITH CHECK (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can update their own attachments" ON attachments;
 CREATE POLICY "Users can update their own attachments"
   ON attachments FOR UPDATE
   USING (auth.uid() = user_id)
   WITH CHECK (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can delete their own attachments" ON attachments;
 CREATE POLICY "Users can delete their own attachments"
   ON attachments FOR DELETE
   USING (auth.uid() = user_id);

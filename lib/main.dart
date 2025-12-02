@@ -37,6 +37,7 @@ import 'package:todo_app/core/theme/app_colors.dart';
 import 'package:todo_app/presentation/providers/database_provider.dart';
 import 'package:todo_app/presentation/providers/auth_providers.dart';
 import 'package:todo_app/presentation/providers/theme_provider.dart';
+import 'package:todo_app/presentation/providers/theme_customization_provider.dart';
 import 'package:todo_app/core/utils/app_logger.dart';
 import 'package:todo_app/core/widget/widget_init.dart';
 import 'package:todo_app/core/services/widget_method_channel.dart';
@@ -290,26 +291,69 @@ class _MyAppState extends ConsumerState<MyApp> {
 
     final router = ref.watch(goRouterProvider);
     final themeMode = ref.watch(themeProvider);
+    final customization = ref.watch(themeCustomizationProvider);
+
+    logger.d('🎨 MyApp.build() rebuilding with customization: primaryColor=${customization.primaryColor}, fontSizeScale=${customization.fontSizeScale}');
+
+    // Build light theme with custom primary color
+    final lightTheme = ThemeData(
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: customization.primaryColor,
+        brightness: Brightness.light,
+      ),
+      useMaterial3: true,
+      textTheme: TextTheme(
+        displayLarge: TextStyle(fontSize: 32 * customization.fontSizeScale),
+        displayMedium: TextStyle(fontSize: 28 * customization.fontSizeScale),
+        displaySmall: TextStyle(fontSize: 24 * customization.fontSizeScale),
+        headlineLarge: TextStyle(fontSize: 24 * customization.fontSizeScale),
+        headlineMedium: TextStyle(fontSize: 20 * customization.fontSizeScale),
+        headlineSmall: TextStyle(fontSize: 18 * customization.fontSizeScale),
+        titleLarge: TextStyle(fontSize: 18 * customization.fontSizeScale, fontWeight: FontWeight.w600),
+        titleMedium: TextStyle(fontSize: 16 * customization.fontSizeScale, fontWeight: FontWeight.w600),
+        titleSmall: TextStyle(fontSize: 14 * customization.fontSizeScale, fontWeight: FontWeight.w600),
+        bodyLarge: TextStyle(fontSize: 16 * customization.fontSizeScale),
+        bodyMedium: TextStyle(fontSize: 14 * customization.fontSizeScale),
+        bodySmall: TextStyle(fontSize: 12 * customization.fontSizeScale),
+        labelLarge: TextStyle(fontSize: 14 * customization.fontSizeScale, fontWeight: FontWeight.w500),
+        labelMedium: TextStyle(fontSize: 12 * customization.fontSizeScale, fontWeight: FontWeight.w500),
+        labelSmall: TextStyle(fontSize: 11 * customization.fontSizeScale, fontWeight: FontWeight.w500),
+      ),
+    );
+
+    // Build dark theme with custom primary color
+    final darkTheme = ThemeData(
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: customization.primaryColor,
+        brightness: Brightness.dark,
+        surface: AppColors.darkCard,
+      ),
+      scaffoldBackgroundColor: AppColors.darkBackground,
+      useMaterial3: true,
+      textTheme: TextTheme(
+        displayLarge: TextStyle(fontSize: 32 * customization.fontSizeScale),
+        displayMedium: TextStyle(fontSize: 28 * customization.fontSizeScale),
+        displaySmall: TextStyle(fontSize: 24 * customization.fontSizeScale),
+        headlineLarge: TextStyle(fontSize: 24 * customization.fontSizeScale),
+        headlineMedium: TextStyle(fontSize: 20 * customization.fontSizeScale),
+        headlineSmall: TextStyle(fontSize: 18 * customization.fontSizeScale),
+        titleLarge: TextStyle(fontSize: 18 * customization.fontSizeScale, fontWeight: FontWeight.w600),
+        titleMedium: TextStyle(fontSize: 16 * customization.fontSizeScale, fontWeight: FontWeight.w600),
+        titleSmall: TextStyle(fontSize: 14 * customization.fontSizeScale, fontWeight: FontWeight.w600),
+        bodyLarge: TextStyle(fontSize: 16 * customization.fontSizeScale),
+        bodyMedium: TextStyle(fontSize: 14 * customization.fontSizeScale),
+        bodySmall: TextStyle(fontSize: 12 * customization.fontSizeScale),
+        labelLarge: TextStyle(fontSize: 14 * customization.fontSizeScale, fontWeight: FontWeight.w500),
+        labelMedium: TextStyle(fontSize: 12 * customization.fontSizeScale, fontWeight: FontWeight.w500),
+        labelSmall: TextStyle(fontSize: 11 * customization.fontSizeScale, fontWeight: FontWeight.w500),
+      ),
+    );
 
     return MaterialApp.router(
       title: 'Todo App',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.blue,
-          brightness: Brightness.light,
-        ),
-        useMaterial3: true,
-      ),
-      darkTheme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: AppColors.primaryBlue,
-          brightness: Brightness.dark,
-          surface: AppColors.darkCard,
-        ),
-        scaffoldBackgroundColor: AppColors.darkBackground,
-        useMaterial3: true,
-      ),
+      theme: lightTheme,
+      darkTheme: darkTheme,
       themeMode: themeMode,
       routerConfig: router,
       localizationsDelegates: context.localizationDelegates,

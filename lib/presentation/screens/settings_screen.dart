@@ -41,8 +41,11 @@ import 'package:todo_app/presentation/providers/auth_providers.dart';
 import 'package:todo_app/presentation/providers/backup_provider.dart';
 import 'package:todo_app/presentation/providers/export_provider.dart';
 import 'package:todo_app/presentation/providers/theme_provider.dart';
+import 'package:todo_app/presentation/providers/theme_customization_provider.dart';
 import 'package:todo_app/presentation/providers/todo_providers.dart';
 import 'package:todo_app/presentation/screens/theme_preview_screen.dart';
+import 'package:todo_app/presentation/widgets/color_picker_widget.dart';
+import 'package:todo_app/presentation/widgets/font_size_slider_widget.dart';
 
 /// Settings screen with app preferences and account management.
 class SettingsScreen extends ConsumerStatefulWidget {
@@ -162,6 +165,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 children: [
                   // Theme Toggle Card
                   _buildThemeToggleCard(),
+                  const SizedBox(height: 32),
+
+                  // Theme Customization Card
+                  _buildSectionHeader('theme_customization'.tr()),
+                  const SizedBox(height: 12),
+                  _buildThemeCustomizationCard(),
                   const SizedBox(height: 32),
 
                   // Profile Section
@@ -285,6 +294,57 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         },
         contentPadding:
             const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+      ),
+    );
+  }
+
+  Widget _buildThemeCustomizationCard() {
+    final isDarkMode = ref.watch(isDarkModeProvider);
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: AppColors.getCard(isDarkMode),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.2),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Primary Color Section
+          Text(
+            'primary_color'.tr(),
+            style: TextStyle(
+              color: AppColors.getText(isDarkMode),
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 16),
+          ColorPickerWidget(
+            isDarkMode: isDarkMode,
+          ),
+          const SizedBox(height: 32),
+
+          // Font Size Section
+          Text(
+            'font_size_scale'.tr(),
+            style: TextStyle(
+              color: AppColors.getText(isDarkMode),
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 16),
+          FontSizeSliderWidget(
+            isDarkMode: isDarkMode,
+          ),
+        ],
       ),
     );
   }
