@@ -135,6 +135,7 @@ class SupabaseTodoDataSource {
     int? categoryId,
     DateTime? notificationTime,
     String? recurrenceRule,
+    String? priority,
     int? parentRecurringTodoId,
     double? locationLatitude,
     double? locationLongitude,
@@ -167,7 +168,7 @@ class SupabaseTodoDataSource {
         logger.d('Creating todo: userId=$userId, title=$title, '
             'categoryId=$categoryId, dueDate=${dueDate?.toIso8601String()}, '
             'notificationTime=${notificationTime?.toIso8601String()}, '
-            'recurrenceRule=$recurrenceRule, parentRecurringTodoId=$parentRecurringTodoId, '
+            'recurrenceRule=$recurrenceRule, priority=$priority, parentRecurringTodoId=$parentRecurringTodoId, '
             'location=$locationLatitude,$locationLongitude, position=$newPosition');
       }
 
@@ -179,6 +180,7 @@ class SupabaseTodoDataSource {
         'due_date': dueDate?.toUtc().toIso8601String(),
         'notification_time': notificationTime?.toUtc().toIso8601String(),
         'recurrence_rule': recurrenceRule,
+        'priority': priority ?? 'medium',
         'parent_recurring_todo_id': parentRecurringTodoId,
         'location_latitude': locationLatitude,
         'location_longitude': locationLongitude,
@@ -216,6 +218,7 @@ class SupabaseTodoDataSource {
       'due_date': todo.dueDate?.toUtc().toIso8601String(),
       'notification_time': todo.notificationTime?.toUtc().toIso8601String(),
       'recurrence_rule': todo.recurrenceRule,
+      'priority': todo.priority,
       'parent_recurring_todo_id': todo.parentRecurringTodoId,
       'snooze_count': todo.snoozeCount,
       'last_snooze_time': todo.lastSnoozeTime?.toUtc().toIso8601String(),

@@ -32,6 +32,7 @@ import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:todo_app/core/theme/app_colors.dart';
 import 'package:todo_app/core/utils/recurrence_utils.dart';
 import 'package:todo_app/core/utils/color_utils.dart';
+import 'package:todo_app/core/constants/priority_constants.dart';
 import 'package:todo_app/domain/entities/todo.dart';
 import 'package:todo_app/presentation/providers/todo_providers.dart';
 import 'package:todo_app/presentation/providers/category_providers.dart';
@@ -63,6 +64,7 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
   DateTime? _selectedNotificationTime;
   int? _selectedCategoryId;
   String? _recurrenceRule;
+  String _selectedPriority = PriorityConstants.medium; // Priority field (default: medium)
   bool _isAllDay = false; // 하루 종일 옵션
 
   // Location fields
@@ -91,6 +93,7 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
       _selectedNotificationTime = todo.notificationTime;
       _selectedCategoryId = todo.categoryId;
       _recurrenceRule = todo.recurrenceRule;
+      _selectedPriority = todo.priority;
       _locationLatitude = todo.locationLatitude;
       _locationLongitude = todo.locationLongitude;
       _locationName = todo.locationName;
@@ -851,6 +854,7 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
             dueDate: _selectedDueDate,
             categoryId: _selectedCategoryId,
             notificationTime: _selectedNotificationTime,
+            priority: _selectedPriority,
             locationLatitude: _locationLatitude,
             locationLongitude: _locationLongitude,
             locationName: _locationName,
@@ -871,6 +875,7 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
             categoryId: _selectedCategoryId,
             notificationTime: _selectedNotificationTime,
             recurrenceRule: _recurrenceRule,
+            priority: _selectedPriority,
             locationLatitude: _locationLatitude,
             locationLongitude: _locationLongitude,
             locationName: _locationName,
@@ -890,6 +895,7 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
           categoryId: _selectedCategoryId,
           notificationTime: _selectedNotificationTime,
           recurrenceRule: _recurrenceRule,
+          priority: _selectedPriority,
           locationLatitude: _locationLatitude,
           locationLongitude: _locationLongitude,
           locationName: _locationName,
@@ -1388,6 +1394,74 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
                       ),
                     ],
                   ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+
+            // Priority Selector
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'priority_label'.tr(),
+                  style: TextStyle(
+                    color: AppColors.getTextSecondary(isDarkMode),
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    for (final priority in PriorityConstants.all)
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 4),
+                          child: Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              onTap: () {
+                                setState(() {
+                                  _selectedPriority = priority;
+                                });
+                              },
+                              borderRadius: BorderRadius.circular(12),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 10,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: _selectedPriority == priority
+                                      ? AppColors.primaryBlue
+                                      : AppColors.getInput(isDarkMode),
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: _selectedPriority == priority
+                                      ? Border.all(
+                                          color: AppColors.primaryBlue,
+                                          width: 2,
+                                        )
+                                      : null,
+                                ),
+                                child: Center(
+                                  child: Text(
+                                    PriorityConstants.getDisplayName(priority).tr(),
+                                    style: TextStyle(
+                                      color: _selectedPriority == priority
+                                          ? Colors.white
+                                          : AppColors.getText(isDarkMode),
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
               ],
             ),

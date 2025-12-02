@@ -55,6 +55,7 @@ class TodoRepositoryImpl implements TodoRepository {
     int? categoryId,
     DateTime? notificationTime,
     String? recurrenceRule,
+    String? priority,
     int? parentRecurringTodoId,
     double? locationLatitude,
     double? locationLongitude,
@@ -82,6 +83,7 @@ class TodoRepositoryImpl implements TodoRepository {
           locationName: drift.Value(locationName),
           locationRadius: drift.Value(locationRadius),
           position: drift.Value(newPosition),
+          priority: drift.Value(priority ?? 'medium'),
         ),
       );
       return Right(id);
@@ -112,6 +114,7 @@ class TodoRepositoryImpl implements TodoRepository {
         locationName: todo.locationName,
         locationRadius: todo.locationRadius,
         position: todo.position,
+        priority: todo.priority,
       );
       await database.updateTodo(dbTodo);
       return const Right(unit);
@@ -143,6 +146,7 @@ class TodoRepositoryImpl implements TodoRepository {
         locationName: todo.locationName,
         locationRadius: todo.locationRadius,
         position: todo.position,
+        priority: todo.priority,
       )).toList();
 
       await database.batchUpdateTodoPositions(dbTodos);
@@ -219,6 +223,7 @@ class TodoRepositoryImpl implements TodoRepository {
       locationName: todo.locationName,
       locationRadius: todo.locationRadius,
       position: todo.position ?? 0,
+      priority: todo.priority,
     );
   }
 }

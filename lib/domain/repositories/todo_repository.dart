@@ -51,6 +51,7 @@ abstract class TodoRepository {
   /// - [categoryId]: Category for organization
   /// - [notificationTime]: When to send reminder
   /// - [recurrenceRule]: RRULE for recurring todos
+  /// - [priority]: Notification priority level (low, medium, high)
   /// - [parentRecurringTodoId]: Reference to parent recurring todo
   /// - [locationLatitude], [locationLongitude]: Geofence coordinates
   /// - [locationName]: Human-readable location name
@@ -62,6 +63,7 @@ abstract class TodoRepository {
     int? categoryId,
     DateTime? notificationTime,
     String? recurrenceRule,
+    String? priority,
     int? parentRecurringTodoId,
     double? locationLatitude,
     double? locationLongitude,
