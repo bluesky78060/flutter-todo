@@ -258,6 +258,65 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> with SingleTick
                             error: (_, __) => [],
                           ),
 
+                      // Geofencing/Location-based Notifications
+                      _buildSectionHeader('geofencing_settings'.tr(), subTextColor),
+                      const SizedBox(height: 12),
+                      _buildGlassCard(
+                        isDarkMode: isDarkMode,
+                        child: Column(
+                          children: [
+                            _buildListTile(
+                              icon: FluentIcons.location_24_regular,
+                              title: 'geofencing_settings'.tr(),
+                              subtitle: 'geofencing_status'.tr(),
+                              onTap: () {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text('coming_soon'.tr().replaceFirst('{feature}', 'geofencing_settings'.tr()))),
+                                );
+                              },
+                              isDarkMode: isDarkMode,
+                              textColor: textColor,
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+
+                      // Licenses and Feedback
+                      _buildSectionHeader('info'.tr(), subTextColor),
+                      const SizedBox(height: 12),
+                      _buildGlassCard(
+                        isDarkMode: isDarkMode,
+                        child: Column(
+                          children: [
+                            _buildListTile(
+                              icon: FluentIcons.document_24_regular,
+                              title: 'open_source_licenses'.tr(),
+                              subtitle: 'open_source_licenses',
+                              onTap: () {
+                                showLicensePage(context: context);
+                              },
+                              isDarkMode: isDarkMode,
+                              textColor: textColor,
+                            ),
+                            const Divider(height: 32),
+                            _buildListTile(
+                              icon: FluentIcons.chat_24_regular,
+                              title: 'send_feedback'.tr(),
+                              subtitle: 'send_feedback',
+                              onTap: () {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text('coming_soon'.tr().replaceFirst('{feature}', 'send_feedback'.tr()))),
+                                );
+                              },
+                              isDarkMode: isDarkMode,
+                              textColor: textColor,
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+
                       // App Info
                       Center(
                         child: Text(
@@ -498,7 +557,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> with SingleTick
             ),
             const SizedBox(width: 12),
             Text(
-              'Dark Mode',
+              'dark_mode'.tr(),
               style: TextStyle(
                 color: textColor,
                 fontSize: 16,
@@ -647,8 +706,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> with SingleTick
   Widget _buildAdminContent(bool isDarkMode, Color textColor) {
     return _buildListTile(
       icon: FluentIcons.data_bar_vertical_24_regular,
-      title: '관리자 대시보드',
-      subtitle: '익명화된 통계 및 분석',
+      title: 'admin_dashboard'.tr(),
+      subtitle: 'anonymized_statistics'.tr(),
       onTap: () => context.push('/admin-dashboard'),
       isDarkMode: isDarkMode,
       textColor: textColor,
