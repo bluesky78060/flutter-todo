@@ -509,7 +509,7 @@ class _ThemePreviewScreenState extends ConsumerState<ThemePreviewScreen> {
                 if (todo.description != null) ...[
                   const SizedBox(height: 4),
                   Text(
-                    todo.description!,
+                    todo.description,
                     style: TextStyle(
                       fontSize: AppColors.scaledFontSize(14),
                       color: AppColors.getTextSecondary(_isDarkMode),

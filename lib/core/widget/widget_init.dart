@@ -13,13 +13,6 @@ Future<void> initializeWidgetSystem() async {
   }
 }
 
-/// Handle widget click/tap events
-void _handleWidgetClick(String uri) {
-  print('Widget clicked: $uri');
-  // Handle widget tap to open app or navigate to specific screen
-  // This can be implemented based on the URI pattern from widget
-}
-
 /// Update widget after data changes in the app
 /// This can be called from WidgetService when data changes
 Future<void> updateWidgetAfterChange() async {

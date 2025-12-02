@@ -105,7 +105,7 @@ List<List<Todo>> groupTodosBySeries(List<Todo> todos) {
 /// - 0 if equal priority and due date
 int _compareTodosByPriorityAndDueDate(Todo a, Todo b) {
   // First compare by priority (high → medium → low)
-  final priorityComparison = PriorityConstants.compare(b.priority ?? 'medium', a.priority ?? 'medium');
+  final priorityComparison = PriorityConstants.compare(b.priority, a.priority);
   if (priorityComparison != 0) {
     return priorityComparison; // Returns 1 if a > b priority, -1 if a < b priority
   }

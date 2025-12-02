@@ -62,7 +62,7 @@ class SupabaseCategoryDataSource {
       }).select().single();
 
       AppLogger.info('✅ Category created in Supabase: $name');
-      return response as Map<String, dynamic>;
+      return response;
     } catch (e) {
       AppLogger.error('❌ Failed to create category in Supabase', error: e);
       rethrow;
