@@ -170,7 +170,7 @@ class NotificationService {
       'todo_notifications_medium',
       'Medium Priority Reminders',
       description: 'Medium priority todo notifications',
-      importance: Importance.default_,
+      importance: Importance.defaultImportance,
       playSound: true,
       enableVibration: true,
       enableLights: true,
@@ -402,8 +402,8 @@ class NotificationService {
         case 'medium':
         default:
           channelId = 'todo_notifications_medium';
-          importance = Importance.default_;
-          notificationPriority = Priority.default_;
+          importance = Importance.defaultImportance;
+          notificationPriority = Priority.defaultPriority;
           enableSound = true;
           enableVibrationFlag = true;
           enableLightsFlag = true;
