@@ -38,6 +38,12 @@ class AppColors {
   /// Get current dynamic primary color
   static Color get primary => _dynamicPrimary;
 
+  /// Get darker variant of current primary color (for gradients)
+  static Color get primaryDark {
+    final hsl = HSLColor.fromColor(_dynamicPrimary);
+    return hsl.withLightness((hsl.lightness - 0.15).clamp(0.0, 1.0)).toColor();
+  }
+
   /// Get current dynamic font scale
   static double get fontScale => _dynamicFontScale;
 

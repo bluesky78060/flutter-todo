@@ -391,6 +391,7 @@ void main() {
             parentRecurringTodoId: null,
             snoozeCount: 0,
             position: 0,
+            priority: 'medium',
           ),
           Todo(
             id: 2,
@@ -406,6 +407,7 @@ void main() {
             parentRecurringTodoId: null,
             snoozeCount: 0,
             position: 1,
+            priority: 'medium',
           ),
         ];
 
