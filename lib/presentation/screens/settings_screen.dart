@@ -61,14 +61,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> with SingleTick
   bool _isSamsungDevice = false;
   String? _oneUIVersion;
   bool _isBatteryOptimizationIgnored = false;
-  bool _isFoldableDevice = false;
-  String? _deviceModel;
-
-  // Geofencing settings
-  final bool _geofencingEnabled = true;
-  final int _geofencingIntervalMinutes = 15;
-  final bool _batteryOptimizationEnabled = true;
-  late final BatteryState _currentBatteryState = BatteryState.medium;
 
   late AnimationController _animationController;
 
@@ -117,8 +109,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> with SingleTick
           _isSamsungDevice = isSamsung;
           _oneUIVersion = oneUIVersion;
           _isBatteryOptimizationIgnored = batteryOptimized;
-          _isFoldableDevice = isFoldable;
-          _deviceModel = model;
         });
       }
     } catch (e) {
@@ -732,8 +722,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> with SingleTick
     final backupActions = ref.read(backupActionsProvider);
     try {
       final backupPath = await backupActions.exportData();
-      final fileName = backupPath.split('/').last;
-      
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Backup created at $backupPath')),
