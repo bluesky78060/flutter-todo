@@ -135,7 +135,7 @@ class StatisticsScreen extends ConsumerWidget {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(
+                          const Icon(
                             FluentIcons.error_circle_24_regular,
                             size: 48,
                             color: Colors.red,
@@ -161,7 +161,7 @@ class StatisticsScreen extends ConsumerWidget {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(
+                      const Icon(
                         FluentIcons.error_circle_24_regular,
                         size: 48,
                         color: Colors.red,
@@ -584,7 +584,7 @@ class _OverallProgressCard extends ConsumerWidget {
                   color: isDarkMode ? Colors.white.withValues(alpha: 0.2) : AppColors.primary.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Icon(
+                child: const Icon(
                   FluentIcons.chart_multiple_24_filled,
                   color: Colors.white,
                   size: 24,
@@ -892,7 +892,7 @@ class _WeeklyBarChartCard extends ConsumerWidget {
                       gradient: AppColors.primaryGradient,
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: Icon(
+                    child: const Icon(
                       FluentIcons.data_bar_horizontal_24_filled,
                       color: Colors.white,
                       size: 20,
@@ -1073,7 +1073,7 @@ class _MonthlyLineChartCard extends ConsumerWidget {
                   gradient: AppColors.primaryGradient,
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Icon(
+                child: const Icon(
                   FluentIcons.data_trending_24_filled,
                   color: Colors.white,
                   size: 20,
@@ -1244,7 +1244,7 @@ class _TodayStatisticsCard extends ConsumerWidget {
                   gradient: AppColors.primaryGradient,
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Icon(
+                child: const Icon(
                   FluentIcons.calendar_today_24_filled,
                   color: Colors.white,
                   size: 20,
@@ -1372,7 +1372,7 @@ class _TimeBasedStatisticsCard extends ConsumerWidget {
                   gradient: AppColors.primaryGradient,
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Icon(
+                child: const Icon(
                   FluentIcons.clock_24_filled,
                   color: Colors.white,
                   size: 20,
@@ -1500,9 +1500,9 @@ class _NavItem extends ConsumerWidget {
                   width: 32,
                   height: 3,
                   margin: const EdgeInsets.only(bottom: 4),
-                  decoration: BoxDecoration(
+                  decoration: const BoxDecoration(
                     gradient: AppColors.primaryGradient,
-                    borderRadius: const BorderRadius.vertical(
+                    borderRadius: BorderRadius.vertical(
                       bottom: Radius.circular(3),
                     ),
                   ),
@@ -1681,7 +1681,7 @@ class _CategoryAnalysisCard extends ConsumerWidget {
                 if (!isLast) const SizedBox(height: 12),
               ],
             );
-          }).toList(),
+          }),
         ],
       ),
     );
@@ -1884,10 +1884,10 @@ class _MonthlyAnalysisCard extends ConsumerWidget {
                   ),
                   titlesData: FlTitlesData(
                     show: true,
-                    rightTitles: AxisTitles(
+                    rightTitles: const AxisTitles(
                       sideTitles: SideTitles(showTitles: false),
                     ),
-                    topTitles: AxisTitles(
+                    topTitles: const AxisTitles(
                       sideTitles: SideTitles(showTitles: false),
                     ),
                     bottomTitles: AxisTitles(
@@ -2102,10 +2102,10 @@ class _WeeklyPatternCard extends ConsumerWidget {
                         ),
                       ),
                       child: isDayMostProductive
-                          ? Align(
+                          ? const Align(
                               alignment: Alignment.topCenter,
                               child: Padding(
-                                padding: const EdgeInsets.only(top: 4),
+                                padding: EdgeInsets.only(top: 4),
                                 child: Icon(
                                   FluentIcons.star_24_filled,
                                   color: Colors.white,

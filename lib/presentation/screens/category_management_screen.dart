@@ -71,7 +71,7 @@ class CategoryManagementScreen extends ConsumerWidget {
                   ),
                   const Spacer(),
                   Container(
-                    decoration: const BoxDecoration(
+                    decoration: BoxDecoration(
                       color: AppColors.primary,
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -201,7 +201,7 @@ class CategoryManagementScreen extends ConsumerWidget {
             fontSize: AppColors.scaledFontSize(14),
           ),
         ),
-        trailing: const Row(
+        trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             IconButton(

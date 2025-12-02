@@ -332,7 +332,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                     if (_holidayInfoForSelectedDay != null)
                       Padding(
                         padding: const EdgeInsets.only(top: 8),
-                        child: const Row(
+                        child: Row(
                           children: [
                             Icon(
                               FluentIcons.gift_24_filled,
