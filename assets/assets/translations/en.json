@@ -755,5 +755,8 @@
   "manage_categories": "Manage Categories",
   "manage_categories_desc": "Add and manage todo categories",
   "theme_customization": "Theme Customization",
-  "theme_customization_desc": "Customize app theme colors and styles"
+  "theme_customization_desc": "Customize app theme colors and styles",
+
+  "login_to_sync": "Login to sync your todos",
+  "widget_login_info": "Please sign up in the main app first"
 }
