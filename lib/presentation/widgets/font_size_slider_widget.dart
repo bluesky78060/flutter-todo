@@ -148,7 +148,7 @@ class FontSizeSliderWidget extends ConsumerWidget {
             onPressed: () {
               ref
                   .read(themeCustomizationProvider.notifier)
-                  .resetToDefaults();
+                  .resetPendingToDefaults();
               onScaleChanged?.call();
             },
             style: OutlinedButton.styleFrom(

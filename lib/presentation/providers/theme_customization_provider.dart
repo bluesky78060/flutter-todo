@@ -219,7 +219,14 @@ class ThemeCustomizationNotifier extends Notifier<ThemeCustomizationState> {
     logger.d('🎨 resetToDefaults called');
     state = ThemeCustomizationState.initial(ThemeCustomization.defaults);
     _saveToPrefs(ThemeCustomization.defaults);
-    logger.d('✅ State reset to defaults and saved');
+    logger.d('✅ State reset to defaults and saved - hasUnsavedChanges: ${state.hasUnsavedChanges}');
+  }
+
+  /// Reset only pending to defaults (for preview/undo)
+  void resetPendingToDefaults() {
+    logger.d('🎨 resetPendingToDefaults called');
+    state = state.copyWith(pending: ThemeCustomization.defaults);
+    logger.d('✅ Pending reset to defaults - hasUnsavedChanges: ${state.hasUnsavedChanges}');
   }
 
   // Legacy methods for backward compatibility (now update pending state)

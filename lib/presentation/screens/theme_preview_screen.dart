@@ -20,9 +20,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:todo_app/core/theme/app_colors.dart';
 import 'package:todo_app/domain/entities/category.dart';
 import 'package:todo_app/domain/entities/todo.dart';
+import 'package:todo_app/presentation/providers/theme_customization_provider.dart';
 import 'package:todo_app/presentation/providers/theme_provider.dart';
 
-/// Screen for previewing light/dark theme appearances.
+/// Screen for previewing light/dark theme appearances with real-time customization preview.
+///
+/// Shows live preview of:
+/// - Pending color changes (before applying)
+/// - Pending font size changes (before applying)
+/// - Light/dark mode toggle
 class ThemePreviewScreen extends ConsumerStatefulWidget {
   const ThemePreviewScreen({super.key});
 
@@ -141,8 +147,9 @@ class _ThemePreviewScreenState extends ConsumerState<ThemePreviewScreen> {
   }
 
   Widget _buildThemeToggleCard() {
-    // Use dynamic primary color for gradient
-    final primaryColor = AppColors.primary;
+    // Use pending color from customization provider for real-time preview
+    final pendingColor = ref.watch(pendingColorProvider);
+    final primaryColor = pendingColor;
     final primaryDark = HSLColor.fromColor(primaryColor)
         .withLightness((HSLColor.fromColor(primaryColor).lightness - 0.15).clamp(0.0, 1.0))
         .toColor();
@@ -290,6 +297,7 @@ class _ThemePreviewScreenState extends ConsumerState<ThemePreviewScreen> {
   }
 
   Widget _buildInfoCard() {
+    final pendingColor = ref.watch(pendingColorProvider);
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -309,7 +317,7 @@ class _ThemePreviewScreenState extends ConsumerState<ThemePreviewScreen> {
                 _isDarkMode
                     ? FluentIcons.weather_moon_24_filled
                     : FluentIcons.weather_sunny_24_filled,
-                color: AppColors.primary,
+                color: pendingColor,
                 size: 24,
               ),
               const SizedBox(width: 12),
@@ -362,24 +370,24 @@ class _ThemePreviewScreenState extends ConsumerState<ThemePreviewScreen> {
           ),
           child: Column(
             children: [
-              _buildColorRow('Background', AppColors.getBackground(_isDarkMode)),
+              _buildColorRow('color_background'.tr(), AppColors.getBackground(_isDarkMode)),
               const SizedBox(height: 12),
-              _buildColorRow('Card Background', AppColors.getCard(_isDarkMode)),
+              _buildColorRow('color_card_background'.tr(), AppColors.getCard(_isDarkMode)),
               const SizedBox(height: 12),
-              _buildColorRow('Input Field', AppColors.getInput(_isDarkMode)),
+              _buildColorRow('color_input_field'.tr(), AppColors.getInput(_isDarkMode)),
               const SizedBox(height: 12),
-              _buildColorRow('Border', AppColors.getBorder(_isDarkMode)),
+              _buildColorRow('color_border'.tr(), AppColors.getBorder(_isDarkMode)),
               const SizedBox(height: 12),
-              _buildColorRow('Primary Text', AppColors.getText(_isDarkMode)),
+              _buildColorRow('color_primary_text'.tr(), AppColors.getText(_isDarkMode)),
               const SizedBox(height: 12),
               _buildColorRow(
-                  'Secondary Text', AppColors.getTextSecondary(_isDarkMode)),
+                  'color_secondary_text'.tr(), AppColors.getTextSecondary(_isDarkMode)),
               const SizedBox(height: 12),
-              _buildColorRow('primary_color'.tr(), AppColors.primary),
+              _buildColorRow('primary_color'.tr(), ref.watch(pendingColorProvider)),
               const SizedBox(height: 12),
-              _buildColorRow('Success Green', AppColors.successGreen),
+              _buildColorRow('color_success_green'.tr(), AppColors.successGreen),
               const SizedBox(height: 12),
-              _buildColorRow('Danger Red', AppColors.dangerRed),
+              _buildColorRow('color_danger_red'.tr(), AppColors.dangerRed),
             ],
           ),
         ),
@@ -438,7 +446,7 @@ class _ThemePreviewScreenState extends ConsumerState<ThemePreviewScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Todo List Preview',
+          'preview_todo_list'.tr(),
           style: TextStyle(
             fontSize: AppColors.scaledFontSize(18),
             fontWeight: FontWeight.bold,
@@ -565,6 +573,7 @@ class _ThemePreviewScreenState extends ConsumerState<ThemePreviewScreen> {
   }
 
   Widget _buildButtonPreview() {
+    final pendingColor = ref.watch(pendingColorProvider);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -595,7 +604,7 @@ class _ThemePreviewScreenState extends ConsumerState<ThemePreviewScreen> {
                 child: ElevatedButton(
                   onPressed: () {},
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
+                    backgroundColor: pendingColor,
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(
@@ -603,7 +612,7 @@ class _ThemePreviewScreenState extends ConsumerState<ThemePreviewScreen> {
                     ),
                   ),
                   child: Text(
-                    'Primary Button',
+                    'preview_primary'.tr(),
                     style: TextStyle(
                       fontSize: AppColors.scaledFontSize(16),
                       fontWeight: FontWeight.w600,
@@ -626,7 +635,7 @@ class _ThemePreviewScreenState extends ConsumerState<ThemePreviewScreen> {
                     ),
                   ),
                   child: Text(
-                    'Success Button',
+                    'preview_success'.tr(),
                     style: TextStyle(
                       fontSize: AppColors.scaledFontSize(16),
                       fontWeight: FontWeight.w600,
@@ -649,7 +658,7 @@ class _ThemePreviewScreenState extends ConsumerState<ThemePreviewScreen> {
                     ),
                   ),
                   child: Text(
-                    'Danger Button',
+                    'preview_danger'.tr(),
                     style: TextStyle(
                       fontSize: AppColors.scaledFontSize(16),
                       fontWeight: FontWeight.w600,
@@ -664,9 +673,9 @@ class _ThemePreviewScreenState extends ConsumerState<ThemePreviewScreen> {
                 child: OutlinedButton(
                   onPressed: () {},
                   style: OutlinedButton.styleFrom(
-                    foregroundColor: AppColors.primary,
+                    foregroundColor: pendingColor,
                     side: BorderSide(
-                      color: AppColors.primary,
+                      color: pendingColor,
                       width: 2,
                     ),
                     padding: const EdgeInsets.symmetric(vertical: 14),
@@ -675,7 +684,7 @@ class _ThemePreviewScreenState extends ConsumerState<ThemePreviewScreen> {
                     ),
                   ),
                   child: Text(
-                    'Outlined Button',
+                    'preview_outlined'.tr(),
                     style: TextStyle(
                       fontSize: AppColors.scaledFontSize(16),
                       fontWeight: FontWeight.w600,
@@ -691,6 +700,7 @@ class _ThemePreviewScreenState extends ConsumerState<ThemePreviewScreen> {
   }
 
   Widget _buildInputFieldPreview() {
+    final pendingColor = ref.watch(pendingColorProvider);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -718,7 +728,7 @@ class _ThemePreviewScreenState extends ConsumerState<ThemePreviewScreen> {
               // 일반 입력 필드
               TextField(
                 decoration: InputDecoration(
-                  hintText: 'Enter todo title',
+                  hintText: 'title_hint'.tr(),
                   hintStyle: TextStyle(
                     color: AppColors.getTextSecondary(_isDarkMode),
                   ),
@@ -739,7 +749,7 @@ class _ThemePreviewScreenState extends ConsumerState<ThemePreviewScreen> {
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: BorderSide(
-                      color: AppColors.primary,
+                      color: pendingColor,
                       width: 2,
                     ),
                   ),
@@ -752,7 +762,7 @@ class _ThemePreviewScreenState extends ConsumerState<ThemePreviewScreen> {
               // 검색 입력 필드
               TextField(
                 decoration: InputDecoration(
-                  hintText: 'Search...',
+                  hintText: 'search_todos'.tr(),
                   hintStyle: TextStyle(
                     color: AppColors.getTextSecondary(_isDarkMode),
                   ),
@@ -777,7 +787,7 @@ class _ThemePreviewScreenState extends ConsumerState<ThemePreviewScreen> {
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: BorderSide(
-                      color: AppColors.primary,
+                      color: pendingColor,
                       width: 2,
                     ),
                   ),
@@ -806,7 +816,7 @@ class _ThemePreviewScreenState extends ConsumerState<ThemePreviewScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Category Chips',
+          'preview_category_chips'.tr(),
           style: TextStyle(
             fontSize: AppColors.scaledFontSize(18),
             fontWeight: FontWeight.bold,

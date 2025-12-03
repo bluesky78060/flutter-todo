@@ -43,6 +43,7 @@ import 'package:todo_app/presentation/providers/auth_providers.dart';
 import 'package:todo_app/presentation/providers/backup_provider.dart';
 import 'package:todo_app/presentation/providers/theme_provider.dart';
 import 'package:todo_app/presentation/providers/theme_customization_provider.dart';
+import 'package:todo_app/presentation/screens/geofence_settings_screen.dart';
 import 'package:todo_app/presentation/screens/theme_preview_screen.dart';
 import 'package:todo_app/presentation/widgets/color_picker_widget.dart';
 import 'package:todo_app/presentation/widgets/font_size_slider_widget.dart';
@@ -245,7 +246,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> with SingleTick
                       ...ref.watch(isAdminProvider).when(
                             data: (isAdmin) => isAdmin
                                 ? [
-                                    _buildSectionHeader('관리자', subTextColor),
+                                    _buildSectionHeader('admin_dashboard'.tr(), subTextColor),
                                     const SizedBox(height: 12),
                                     _buildGlassCard(
                                       isDarkMode: isDarkMode,
@@ -270,8 +271,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> with SingleTick
                               title: 'geofencing_settings'.tr(),
                               subtitle: 'geofencing_status'.tr(),
                               onTap: () {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(content: Text('coming_soon'.tr().replaceFirst('{feature}', 'geofencing_settings'.tr()))),
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (context) => const GeofenceSettingsScreen(),
+                                  ),
                                 );
                               },
                               isDarkMode: isDarkMode,
@@ -292,7 +295,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> with SingleTick
                             _buildListTile(
                               icon: FluentIcons.document_24_regular,
                               title: 'open_source_licenses'.tr(),
-                              subtitle: 'open_source_licenses',
+                              subtitle: 'open_source_licenses_desc'.tr(),
                               onTap: () {
                                 showLicensePage(context: context);
                               },
@@ -303,7 +306,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> with SingleTick
                             _buildListTile(
                               icon: FluentIcons.chat_24_regular,
                               title: 'send_feedback'.tr(),
-                              subtitle: 'send_feedback',
+                              subtitle: 'send_feedback_desc'.tr(),
                               onTap: () {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(content: Text('coming_soon'.tr().replaceFirst('{feature}', 'send_feedback'.tr()))),
@@ -557,7 +560,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> with SingleTick
             ),
             const SizedBox(width: 12),
             Text(
-              'dark_mode'.tr(),
+              isDarkMode ? 'dark_mode'.tr() : 'light_mode'.tr(),
               style: TextStyle(
                 color: textColor,
                 fontSize: 16,
