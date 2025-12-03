@@ -1,13 +1,18 @@
 {
-    "name": "todo_app",
-    "short_name": "todo_app",
+    "name": "DoDo - 스마트 할 일 관리",
+    "short_name": "DoDo",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
-    "orientation": "portrait-primary",
+    "background_color": "#6366F1",
+    "theme_color": "#6366F1",
+    "description": "클라우드 동기화, 위치 기반 알림, 반복 일정을 지원하는 스마트한 할 일 관리 앱",
+    "orientation": "any",
     "prefer_related_applications": false,
+    "lang": "ko",
+    "dir": "ltr",
+    "categories": ["productivity", "utilities", "lifestyle"],
+    "scope": "/",
+    "id": "dodo-todo-app",
     "icons": [
         {
             "src": "icons/Icon-192.png",
@@ -30,6 +35,29 @@
             "sizes": "512x512",
             "type": "image/png",
             "purpose": "maskable"
+        }
+    ],
+    "shortcuts": [
+        {
+            "name": "할 일 추가",
+            "short_name": "추가",
+            "description": "새로운 할 일을 빠르게 추가합니다",
+            "url": "/?action=add",
+            "icons": [{"src": "icons/Icon-192.png", "sizes": "192x192"}]
+        },
+        {
+            "name": "오늘 할 일",
+            "short_name": "오늘",
+            "description": "오늘의 할 일을 확인합니다",
+            "url": "/?filter=today",
+            "icons": [{"src": "icons/Icon-192.png", "sizes": "192x192"}]
+        }
+    ],
+    "related_applications": [
+        {
+            "platform": "play",
+            "url": "https://play.google.com/store/apps/details?id=kr.bluesky.dodo",
+            "id": "kr.bluesky.dodo"
         }
     ]
 }
