@@ -758,5 +758,24 @@
   "theme_customization_desc": "Customize app theme colors and styles",
 
   "login_to_sync": "Login to sync your todos",
-  "widget_login_info": "Please sign up in the main app first"
+  "widget_login_info": "Please sign up in the main app first",
+
+  "edit_profile": "Edit Profile",
+  "display_name": "Display Name",
+  "enter_display_name": "Enter your display name",
+  "save_changes": "Save Changes",
+  "tap_to_edit_profile": "Tap to edit profile",
+  "tap_to_change_photo": "Tap to change photo",
+  "change_profile_photo": "Change Profile Photo",
+  "take_photo": "Take Photo",
+  "choose_from_gallery": "Choose from Gallery",
+  "remove_photo": "Remove Photo",
+  "profile_updated": "Profile updated successfully",
+  "avatar_updated": "Profile photo updated",
+  "avatar_removed": "Profile photo removed",
+  "display_name_required": "Display name is required",
+  "update_failed": "Update failed",
+  "remove_failed": "Remove failed",
+  "error_loading_profile": "Error loading profile",
+  "email_cannot_be_changed": "Email cannot be changed"
 }

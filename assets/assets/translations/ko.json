@@ -750,5 +750,24 @@
   "geofencing_toggle_failed": "지오펜싱 토글 실패",
 
   "login_to_sync": "로그인하여 할 일을 동기화하세요",
-  "widget_login_info": "메인 앱에서 회원가입 후 로그인하세요"
+  "widget_login_info": "메인 앱에서 회원가입 후 로그인하세요",
+
+  "edit_profile": "프로필 편집",
+  "display_name": "표시 이름",
+  "enter_display_name": "표시 이름을 입력하세요",
+  "save_changes": "변경사항 저장",
+  "tap_to_edit_profile": "탭하여 프로필 편집",
+  "tap_to_change_photo": "탭하여 사진 변경",
+  "change_profile_photo": "프로필 사진 변경",
+  "take_photo": "사진 촬영",
+  "choose_from_gallery": "갤러리에서 선택",
+  "remove_photo": "사진 삭제",
+  "profile_updated": "프로필이 업데이트되었습니다",
+  "avatar_updated": "프로필 사진이 업데이트되었습니다",
+  "avatar_removed": "프로필 사진이 삭제되었습니다",
+  "display_name_required": "표시 이름을 입력해주세요",
+  "update_failed": "업데이트 실패",
+  "remove_failed": "삭제 실패",
+  "error_loading_profile": "프로필 로딩 오류",
+  "email_cannot_be_changed": "이메일은 변경할 수 없습니다"
 }
