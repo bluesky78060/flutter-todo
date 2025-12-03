@@ -747,5 +747,8 @@
   "geofencing_step_2_description": "위치 주변 영역을 정의합니다 (예: 100-1000미터)",
   "geofencing_step_3_title": "알림 받기",
   "geofencing_step_3_description": "영역 진입 또는 퇴출 시 알림을 받습니다",
-  "geofencing_toggle_failed": "지오펜싱 토글 실패"
+  "geofencing_toggle_failed": "지오펜싱 토글 실패",
+
+  "login_to_sync": "로그인하여 할 일을 동기화하세요",
+  "widget_login_info": "메인 앱에서 회원가입 후 로그인하세요"
 }

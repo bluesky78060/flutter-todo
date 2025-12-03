@@ -25,9 +25,11 @@ import 'package:todo_app/core/utils/app_logger.dart';
 import 'package:todo_app/platforms/windows/calendar_widget_window.dart';
 import 'package:todo_app/platforms/windows/tray_manager.dart';
 import 'package:todo_app/platforms/windows/widget_config.dart';
+import 'package:todo_app/platforms/windows/widget_login_screen.dart';
 import 'package:todo_app/presentation/providers/database_provider.dart';
 import 'package:todo_app/presentation/providers/theme_provider.dart';
 import 'package:todo_app/presentation/providers/theme_customization_provider.dart';
+import 'package:todo_app/presentation/providers/auth_providers.dart';
 
 /// Widget-specific entry point
 void main() async {
@@ -131,6 +133,7 @@ class _CalendarWidgetAppState extends ConsumerState<CalendarWidgetApp>
     final themeMode = ref.watch(themeProvider);
     final isDarkMode = themeMode == ThemeMode.dark;
     final primaryColor = ref.watch(primaryColorProvider);
+    final authState = ref.watch(currentUserProvider);
 
     return MaterialApp(
       debugShowCheckedModeBanner: false,
@@ -147,7 +150,24 @@ class _CalendarWidgetAppState extends ConsumerState<CalendarWidgetApp>
         ),
         scaffoldBackgroundColor: Colors.transparent,
       ),
-      home: const CalendarWidgetWindow(),
+      home: authState.when(
+        data: (user) {
+          if (user != null) {
+            // User is logged in, show calendar
+            return const CalendarWidgetWindow();
+          } else {
+            // User is not logged in, show login screen
+            return const WidgetLoginScreen();
+          }
+        },
+        loading: () => const Scaffold(
+          backgroundColor: Colors.transparent,
+          body: Center(
+            child: CircularProgressIndicator(),
+          ),
+        ),
+        error: (error, stack) => const WidgetLoginScreen(),
+      ),
     );
   }
 }
