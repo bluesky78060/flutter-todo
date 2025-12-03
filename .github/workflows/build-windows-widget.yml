@@ -36,6 +36,9 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
+      - name: Enable Windows platform
+        run: flutter create --platforms=windows .
+
       - name: Build Windows Widget
         run: flutter build windows --release -t lib/main_widget.dart
 
