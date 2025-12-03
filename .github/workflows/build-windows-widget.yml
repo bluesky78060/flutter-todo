@@ -1,0 +1,86 @@
+name: Build Windows Calendar Widget
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'lib/platforms/windows/**'
+      - 'lib/main_widget.dart'
+      - '.github/workflows/build-windows-widget.yml'
+  workflow_dispatch:  # 수동 실행 가능
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.27.1'
+          channel: 'stable'
+          cache: true
+
+      - name: Create .env file
+        run: |
+          echo "GOOGLE_MAPS_API_KEY=${{ secrets.GOOGLE_MAPS_API_KEY }}" > .env
+          echo "NAVER_MAPS_CLIENT_ID=${{ secrets.NAVER_MAPS_CLIENT_ID }}" >> .env
+          echo "NAVER_LOCAL_SEARCH_CLIENT_ID=${{ secrets.NAVER_LOCAL_SEARCH_CLIENT_ID }}" >> .env
+          echo "NAVER_LOCAL_SEARCH_CLIENT_SECRET=${{ secrets.NAVER_LOCAL_SEARCH_CLIENT_SECRET }}" >> .env
+          echo "SUPABASE_URL=${{ secrets.APP_SUPABASE_URL }}" >> .env
+          echo "SUPABASE_ANON_KEY=${{ secrets.APP_SUPABASE_ANON_KEY }}" >> .env
+        shell: bash
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build Windows Widget
+        run: flutter build windows --release -t lib/main_widget.dart
+
+      - name: Create Windows icon (if exists)
+        run: |
+          if (Test-Path "assets/icon/app_icon.ico") {
+            Copy-Item "assets/icon/app_icon.ico" "build/windows/x64/runner/Release/"
+          }
+        shell: powershell
+
+      - name: Package Widget
+        run: |
+          cd build/windows/x64/runner/Release
+          Compress-Archive -Path * -DestinationPath ../../../../../DoDo-Calendar-Widget-Windows.zip
+        shell: powershell
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: DoDo-Calendar-Widget-Windows
+          path: DoDo-Calendar-Widget-Windows.zip
+          retention-days: 30
+
+      - name: Create Release (on tag)
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v1
+        with:
+          files: DoDo-Calendar-Widget-Windows.zip
+          name: DoDo Calendar Widget ${{ github.ref_name }}
+          body: |
+            ## DoDo Calendar Widget for Windows
+
+            Windows 데스크톱용 캘린더 위젯입니다.
+
+            ### 설치 방법
+            1. `DoDo-Calendar-Widget-Windows.zip` 다운로드
+            2. 원하는 폴더에 압축 해제
+            3. `todo_app.exe` 실행
+
+            ### 기능
+            - 월간 캘린더 보기
+            - 날짜별 할 일 표시
+            - 빠른 할 일 추가
+            - 시스템 트레이 지원
+            - 항상 위에 표시 옵션
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
