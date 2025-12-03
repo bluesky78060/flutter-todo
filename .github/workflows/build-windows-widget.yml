@@ -49,6 +49,18 @@ jobs:
           }
         shell: powershell
 
+      - name: Copy .env to Release folder
+        run: |
+          Copy-Item ".env" "build/windows/x64/runner/Release/"
+        shell: powershell
+
+      - name: Copy assets to Release folder
+        run: |
+          if (Test-Path "assets") {
+            Copy-Item -Recurse "assets" "build/windows/x64/runner/Release/"
+          }
+        shell: powershell
+
       - name: Package Widget
         run: |
           cd build/windows/x64/runner/Release
