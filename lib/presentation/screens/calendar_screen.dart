@@ -26,6 +26,7 @@ import 'package:todo_app/presentation/providers/todo_providers.dart';
 import 'package:todo_app/presentation/providers/theme_provider.dart';
 import 'package:todo_app/presentation/widgets/custom_todo_item.dart';
 import 'package:todo_app/presentation/widgets/recurring_delete_dialog.dart';
+import 'package:todo_app/presentation/widgets/todo_form_dialog.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 
 /// Calendar screen for date-based todo visualization.
@@ -326,6 +327,9 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                             ),
                           ),
                         ),
+                        const Spacer(),
+                        // Add todo button (only for today or future dates)
+                        _buildAddTodoButton(isDarkMode),
                       ],
                     ),
                     // Show holiday info if selected day is a holiday
@@ -548,6 +552,66 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
     );
 
     return cell;
+  }
+
+  /// Check if selected day is today or in the future
+  bool _canAddTodoForSelectedDay() {
+    if (_selectedDay == null) return false;
+    final today = DateTime.now();
+    final todayDate = DateTime(today.year, today.month, today.day);
+    final selectedDate = DateTime(_selectedDay!.year, _selectedDay!.month, _selectedDay!.day);
+    return !selectedDate.isBefore(todayDate);
+  }
+
+  /// Build add todo button for selected date
+  Widget _buildAddTodoButton(bool isDarkMode) {
+    final canAdd = _canAddTodoForSelectedDay();
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: canAdd ? _addTodoForSelectedDate : null,
+        borderRadius: BorderRadius.circular(8),
+        child: Tooltip(
+          message: 'add_todo_for_date'.tr(),
+          child: Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: canAdd
+                  ? AppColors.primary.withValues(alpha: 0.1)
+                  : AppColors.textGray.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(
+              FluentIcons.add_24_regular,
+              color: canAdd
+                  ? AppColors.primary
+                  : AppColors.textGray.withValues(alpha: 0.3),
+              size: 20,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Open todo form dialog with selected date pre-filled
+  void _addTodoForSelectedDate() {
+    if (_selectedDay == null) return;
+
+    showDialog(
+      context: context,
+      builder: (context) => TodoFormDialog(
+        initialDueDate: DateTime(
+          _selectedDay!.year,
+          _selectedDay!.month,
+          _selectedDay!.day,
+          0,
+          0,
+        ),
+        initialAllDay: true,
+      ),
+    );
   }
 
 }

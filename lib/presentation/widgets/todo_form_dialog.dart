@@ -50,8 +50,15 @@ import 'package:todo_app/presentation/providers/widget_provider.dart';
 /// Dialog for creating or editing a todo item.
 class TodoFormDialog extends ConsumerStatefulWidget {
   final Todo? existingTodo; // null = create mode, not null = edit mode
+  final DateTime? initialDueDate; // 캘린더에서 선택한 날짜 (create mode only)
+  final bool initialAllDay; // 하루 종일 옵션 초기값 (create mode only)
 
-  const TodoFormDialog({super.key, this.existingTodo});
+  const TodoFormDialog({
+    super.key,
+    this.existingTodo,
+    this.initialDueDate,
+    this.initialAllDay = false,
+  });
 
   @override
   ConsumerState<TodoFormDialog> createState() => _TodoFormDialogState();
@@ -103,6 +110,12 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
           todo.dueDate!.hour == 0 &&
           todo.dueDate!.minute == 0) {
         _isAllDay = true;
+      }
+    } else {
+      // Create mode: apply initial values from calendar
+      if (widget.initialDueDate != null) {
+        _selectedDueDate = widget.initialDueDate;
+        _isAllDay = widget.initialAllDay;
       }
     }
   }
