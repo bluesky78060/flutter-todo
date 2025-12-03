@@ -13,6 +13,8 @@
 ///   uuid: 'abc-123-def-456',
 ///   email: 'user@example.com',
 ///   name: 'John Doe',
+///   displayName: 'Johnny',
+///   avatarUrl: 'https://example.com/avatar.png',
 /// );
 /// ```
 class AuthUser {
@@ -26,8 +28,14 @@ class AuthUser {
   /// The user's email address.
   final String email;
 
-  /// The user's display name.
+  /// The user's display name (from OAuth provider or email).
   final String name;
+
+  /// Custom display name set by the user.
+  final String? displayName;
+
+  /// URL to the user's profile avatar image.
+  final String? avatarUrl;
 
   /// When the user account was created.
   final DateTime? createdAt;
@@ -38,8 +46,13 @@ class AuthUser {
     required this.uuid,
     required this.email,
     required this.name,
+    this.displayName,
+    this.avatarUrl,
     this.createdAt,
   });
+
+  /// Returns the display name if set, otherwise falls back to name.
+  String get effectiveName => displayName?.isNotEmpty == true ? displayName! : name;
 
   /// Creates a copy of this user with the given fields replaced.
   AuthUser copyWith({
@@ -47,6 +60,8 @@ class AuthUser {
     String? uuid,
     String? email,
     String? name,
+    String? displayName,
+    String? avatarUrl,
     DateTime? createdAt,
   }) {
     return AuthUser(
@@ -55,6 +70,8 @@ class AuthUser {
       uuid: uuid ?? this.uuid,
       email: email ?? this.email,
       name: name ?? this.name,
+      displayName: displayName ?? this.displayName,
+      avatarUrl: avatarUrl ?? this.avatarUrl,
       createdAt: createdAt ?? this.createdAt,
     );
   }

@@ -2,10 +2,12 @@
 <resources>
     <string name="app_name">DoDo</string>
     <string name="widget_todo_list_description">Displays today\'s todo tasks on your home screen</string>
+    <string name="widget_todo_detail_description">Displays today\'s tasks with title and description</string>
     <string name="widget_calendar_description">Displays a monthly calendar with task indicators</string>
 
     <!-- Widget strings -->
     <string name="widget_today_tasks">Tasks</string>
+    <string name="widget_todo_detail_title">Today\'s Tasks</string>
     <string name="widget_task_1">Task 1</string>
     <string name="widget_task_2">Task 2</string>
     <string name="widget_task_3">Task 3</string>
@@ -31,6 +33,7 @@
     <string name="widget_group_next_week">Next Week</string>
     <string name="widget_group_later">Later</string>
     <string name="widget_group_overdue">Overdue</string>
+    <string name="widget_group_no_due_date">No Due Date</string>
 
     <!-- Progress strings -->
     <string name="widget_progress_format">%d/%d completed</string>

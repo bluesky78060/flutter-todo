@@ -278,6 +278,14 @@ class _MyAppState extends ConsumerState<MyApp> {
       // Trigger only on transition to authenticated
       if (next == true && prev != true) {
         try {
+          // Save access token to SharedPreferences for widget background sync
+          final session = Supabase.instance.client.auth.currentSession;
+          if (session != null) {
+            final prefs = await SharedPreferences.getInstance();
+            await prefs.setString('supabase_access_token', session.accessToken);
+            logger.d('✅ Main: Saved access token to SharedPreferences for widget sync');
+          }
+
           final recurringService = ref.read(recurringTodoServiceProvider);
           logger.d('🔄 Main: Authenticated - generating recurring todo instances');
           await recurringService.generateUpcomingInstances(lookAheadDays: 30);
@@ -285,6 +293,15 @@ class _MyAppState extends ConsumerState<MyApp> {
         } catch (e, stackTrace) {
           logger.e('❌ Main: Failed to generate recurring instances after auth',
               error: e, stackTrace: stackTrace);
+        }
+      } else if (next == false && prev == true) {
+        // Clear access token on logout
+        try {
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.remove('supabase_access_token');
+          logger.d('✅ Main: Cleared access token from SharedPreferences');
+        } catch (e) {
+          logger.e('❌ Main: Failed to clear access token', error: e);
         }
       }
     });

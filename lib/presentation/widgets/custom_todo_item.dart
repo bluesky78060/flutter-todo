@@ -74,8 +74,10 @@ class _CustomTodoItemState extends ConsumerState<CustomTodoItem>
 
   String _formatDueDate(DateTime date, {bool checkAllDay = false}) {
     final local = date.toLocal();
-    // Check if this is an all-day event (time is 00:00)
-    final isAllDay = checkAllDay && local.hour == 0 && local.minute == 0;
+    // Check if this is an all-day event (time is 00:00 or 23:59)
+    final isAllDay = checkAllDay &&
+        ((local.hour == 0 && local.minute == 0) ||
+         (local.hour == 23 && local.minute == 59));
     if (isAllDay) {
       return '${local.year}-${local.month.toString().padLeft(2, '0')}-${local.day.toString().padLeft(2, '0')} (${'all_day'.tr()})';
     }

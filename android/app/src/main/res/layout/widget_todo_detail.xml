@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/widget_container"
+    android:id="@+id/widget_detail_container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/widget_background_dark"
@@ -24,17 +24,17 @@
 
             <!-- Title -->
             <TextView
-                android:id="@+id/widget_title"
+                android:id="@+id/widget_detail_title"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/widget_today_tasks"
+                android:text="@string/widget_todo_detail_title"
                 android:textColor="#FFFFFF"
                 android:textSize="18sp"
                 android:textStyle="bold" />
 
-            <!-- Progress Text (e.g., "2/5 completed") -->
+            <!-- Progress Text -->
             <TextView
-                android:id="@+id/widget_progress"
+                android:id="@+id/widget_detail_progress"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text=""
@@ -46,7 +46,7 @@
 
         <!-- Add Button (blue circle with +) -->
         <FrameLayout
-            android:id="@+id/widget_add_button"
+            android:id="@+id/widget_detail_add_button"
             android:layout_width="36dp"
             android:layout_height="36dp"
             android:layout_marginEnd="8dp"
@@ -64,7 +64,7 @@
 
         <!-- Menu Button (three dots) -->
         <TextView
-            android:id="@+id/widget_menu_button"
+            android:id="@+id/widget_detail_menu_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="⋮"
@@ -74,41 +74,29 @@
             android:paddingEnd="4dp" />
     </LinearLayout>
 
-    <!-- Divider (using TextView since View is not allowed in RemoteViews) -->
+    <!-- Divider -->
     <TextView
         android:layout_width="match_parent"
         android:layout_height="1dp"
         android:background="#444444" />
 
-    <!-- Date Group Label 1 (Today, Tomorrow, etc.) -->
-    <TextView
-        android:id="@+id/widget_todo_1_group"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text=""
-        android:textColor="#4FC3F7"
-        android:textSize="12sp"
-        android:textStyle="bold"
-        android:paddingTop="10dp"
-        android:paddingBottom="4dp"
-        android:visibility="gone" />
-
-    <!-- Todo Item 1 -->
+    <!-- Todo Item 1 with title + description -->
     <LinearLayout
-        android:id="@+id/widget_todo_1_container"
+        android:id="@+id/widget_detail_todo_1_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:paddingTop="8dp"
-        android:paddingBottom="6dp">
+        android:gravity="top"
+        android:paddingTop="12dp"
+        android:paddingBottom="8dp">
 
         <!-- Checkbox -->
         <ImageView
-            android:id="@+id/widget_todo_1_checkbox"
+            android:id="@+id/widget_detail_todo_1_checkbox"
             android:layout_width="22dp"
             android:layout_height="22dp"
             android:layout_marginEnd="12dp"
+            android:layout_marginTop="2dp"
             android:src="@drawable/widget_checkbox_unchecked" />
 
         <!-- Text Container -->
@@ -119,58 +107,58 @@
             android:orientation="vertical">
 
             <TextView
-                android:id="@+id/widget_todo_1_text"
+                android:id="@+id/widget_detail_todo_1_title"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text=""
                 android:textColor="#FFFFFF"
-                android:textSize="16sp"
+                android:textSize="15sp"
                 android:textStyle="bold"
                 android:maxLines="1"
                 android:ellipsize="end" />
 
             <TextView
-                android:id="@+id/widget_todo_1_time"
-                android:layout_width="wrap_content"
+                android:id="@+id/widget_detail_todo_1_desc"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text=""
                 android:textColor="#888888"
-                android:textSize="11sp"
-                android:paddingTop="2dp" />
+                android:textSize="13sp"
+                android:paddingTop="3dp"
+                android:maxLines="2"
+                android:ellipsize="end"
+                android:visibility="gone" />
         </LinearLayout>
 
     </LinearLayout>
 
-    <!-- Date Group Label 2 -->
+    <!-- Divider between items -->
     <TextView
-        android:id="@+id/widget_todo_2_group"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text=""
-        android:textColor="#4FC3F7"
-        android:textSize="12sp"
-        android:textStyle="bold"
-        android:paddingTop="10dp"
-        android:paddingBottom="4dp"
-        android:visibility="gone" />
+        android:layout_height="1dp"
+        android:layout_marginStart="34dp"
+        android:background="#333333" />
 
-    <!-- Todo Item 2 -->
+    <!-- Todo Item 2 with title + description -->
     <LinearLayout
-        android:id="@+id/widget_todo_2_container"
+        android:id="@+id/widget_detail_todo_2_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:paddingTop="6dp"
-        android:paddingBottom="6dp">
+        android:gravity="top"
+        android:paddingTop="10dp"
+        android:paddingBottom="8dp">
 
+        <!-- Checkbox -->
         <ImageView
-            android:id="@+id/widget_todo_2_checkbox"
+            android:id="@+id/widget_detail_todo_2_checkbox"
             android:layout_width="22dp"
             android:layout_height="22dp"
             android:layout_marginEnd="12dp"
+            android:layout_marginTop="2dp"
             android:src="@drawable/widget_checkbox_unchecked" />
 
+        <!-- Text Container -->
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -178,24 +166,27 @@
             android:orientation="vertical">
 
             <TextView
-                android:id="@+id/widget_todo_2_text"
+                android:id="@+id/widget_detail_todo_2_title"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text=""
                 android:textColor="#FFFFFF"
-                android:textSize="16sp"
+                android:textSize="15sp"
                 android:textStyle="bold"
                 android:maxLines="1"
                 android:ellipsize="end" />
 
             <TextView
-                android:id="@+id/widget_todo_2_time"
-                android:layout_width="wrap_content"
+                android:id="@+id/widget_detail_todo_2_desc"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text=""
                 android:textColor="#888888"
-                android:textSize="11sp"
-                android:paddingTop="2dp" />
+                android:textSize="13sp"
+                android:paddingTop="3dp"
+                android:maxLines="2"
+                android:ellipsize="end"
+                android:visibility="gone" />
         </LinearLayout>
 
     </LinearLayout>

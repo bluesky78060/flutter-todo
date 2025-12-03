@@ -25,7 +25,7 @@ if (localPropertiesFile.exists()) {
 android {
     namespace = "kr.bluesky.dodo"
     compileSdk = flutter.compileSdkVersion
-    ndkVersion = flutter.ndkVersion
+    // ndkVersion = flutter.ndkVersion
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
@@ -94,6 +94,8 @@ android {
     packaging {
         jniLibs {
             useLegacyPackaging = true
+            // 디버그 심볼 유지 (NDK llvm-strip 호환성 문제 우회)
+            keepDebugSymbols += "**/*.so"
             // ============================================================
             // ABI 필터링 (arm64-v8a: 95% 이상의 활성 Android 기기 지원)
             // ============================================================
@@ -110,4 +112,6 @@ flutter {
 
 dependencies {
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
+    // Kotlin Coroutines for background widget operations
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
 }

@@ -270,7 +270,9 @@ class WidgetService {
         }
         futures.add(HomeWidget.saveWidgetData<String>('upcoming_event_$i', '${dueDate.month}|${dueDate.day}|$timeStr|${todo.title}'));
       } else {
-        futures.add(HomeWidget.saveWidgetData<String?>('upcoming_event_$i', null));
+        // Use empty string instead of null to ensure previous data is cleared
+        // null may not remove the key from SharedPreferences
+        futures.add(HomeWidget.saveWidgetData<String>('upcoming_event_$i', ''));
       }
     }
     futures.add(HomeWidget.saveWidgetData<int>('upcoming_event_count', upcomingTodos.length));
@@ -290,11 +292,19 @@ class WidgetService {
       final completedCount = todayTodos.where((t) => t.isCompleted).length;
       final totalCount = todayTodos.length;
 
-      // Sort and categorize todos by date group
-      final sortedTodos = _sortTodosByDateGroup(todos.where((t) => !t.isCompleted).toList());
+      // Sort and categorize todos by date group (incomplete only)
+      final incompleteTodos = todos.where((t) => !t.isCompleted).toList();
+      final noDueDateCount = incompleteTodos.where((t) => t.dueDate == null).length;
+      print('   Incomplete todos: ${incompleteTodos.length}, No due date: $noDueDateCount');
 
-      // Get top 3 todos to display
-      final displayTodos = sortedTodos.take(3).toList();
+      // Sort by user's position (drag-and-drop order) instead of date groups
+      final sortedTodos = _sortTodosByPosition(incompleteTodos);
+      print('   Sorted todos count: ${sortedTodos.length}');
+
+      // Get top 10 todos to save (display 2, but save 10 for multiple shift operations on completion)
+      // This allows up to 8 consecutive completions without reopening the app
+      final displayTodos = sortedTodos.take(10).toList();
+      print('   Buffer todos (10 max): ${displayTodos.map((t) => "${t.title} (dueDate: ${t.dueDate})").toList()}');
 
       // Prepare all widget data in parallel
       final List<Future<void>> todoFutures = [
@@ -303,8 +313,8 @@ class WidgetService {
         HomeWidget.saveWidgetData<int>('todo_total_count', totalCount),
       ];
 
-      // Save todo items (3 items max) with date group info
-      for (int i = 0; i < 3; i++) {
+      // Save todo items (10 items for extended shift capability, but widget displays only 2)
+      for (int i = 0; i < 10; i++) {
         if (i < displayTodos.length) {
           final todo = displayTodos[i];
           String timeStr = '';
@@ -326,6 +336,7 @@ class WidgetService {
 
           todoFutures.addAll([
             HomeWidget.saveWidgetData<String>('todo_${i + 1}_text', todo.title),
+            HomeWidget.saveWidgetData<String>('todo_${i + 1}_description', todo.description ?? ''),
             HomeWidget.saveWidgetData<String>('todo_${i + 1}_id', todo.id.toString()),
             HomeWidget.saveWidgetData<bool>('todo_${i + 1}_completed', todo.isCompleted),
             HomeWidget.saveWidgetData<String>('todo_${i + 1}_time', timeStr),
@@ -334,6 +345,7 @@ class WidgetService {
         } else {
           todoFutures.addAll([
             HomeWidget.saveWidgetData<String?>('todo_${i + 1}_text', null),
+            HomeWidget.saveWidgetData<String>('todo_${i + 1}_description', ''),
             HomeWidget.saveWidgetData<String>('todo_${i + 1}_time', ''),
             HomeWidget.saveWidgetData<String>('todo_${i + 1}_id', ''),
             HomeWidget.saveWidgetData<bool>('todo_${i + 1}_completed', false),
@@ -345,12 +357,16 @@ class WidgetService {
       // Execute all saves in parallel
       await Future.wait(todoFutures);
 
-      // Notify native widget
+      // Notify native widgets (both TodoListWidget and TodoDetailWidget)
       await HomeWidget.updateWidget(
         qualifiedAndroidName: 'kr.bluesky.dodo.widgets.TodoListWidget',
         iOSName: 'TodoListWidget',
       );
-      print('✅ Todo list widget updated');
+      await HomeWidget.updateWidget(
+        qualifiedAndroidName: 'kr.bluesky.dodo.widgets.TodoDetailWidget',
+        iOSName: 'TodoDetailWidget',
+      );
+      print('✅ Todo list widgets updated (list + detail)');
     } catch (e) {
       print('❌ Error updating todo list widget: $e');
     }
@@ -369,69 +385,21 @@ class WidgetService {
     }).toList();
   }
 
-  /// Sort todos by date group (overdue first, then today, tomorrow, etc.)
-  List<Todo> _sortTodosByDateGroup(List<Todo> todos) {
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
-
-    // Separate todos by group
-    final overdue = <Todo>[];
-    final todayTodos = <Todo>[];
-    final tomorrowTodos = <Todo>[];
-    final thisWeekTodos = <Todo>[];
-    final nextWeekTodos = <Todo>[];
-    final laterTodos = <Todo>[];
-    final noDueDateTodos = <Todo>[];
-
-    for (final todo in todos) {
-      if (todo.dueDate == null) {
-        noDueDateTodos.add(todo);
-        continue;
-      }
-
-      final dueDate = DateTime(todo.dueDate!.year, todo.dueDate!.month, todo.dueDate!.day);
-      final tomorrow = today.add(const Duration(days: 1));
-      final endOfWeek = today.add(Duration(days: 7 - today.weekday));
-      final endOfNextWeek = endOfWeek.add(const Duration(days: 7));
-
-      if (dueDate.isBefore(today)) {
-        overdue.add(todo);
-      } else if (dueDate.isAtSameMomentAs(today)) {
-        todayTodos.add(todo);
-      } else if (dueDate.isAtSameMomentAs(tomorrow)) {
-        tomorrowTodos.add(todo);
-      } else if (dueDate.isBefore(endOfWeek) || dueDate.isAtSameMomentAs(endOfWeek)) {
-        thisWeekTodos.add(todo);
-      } else if (dueDate.isBefore(endOfNextWeek) || dueDate.isAtSameMomentAs(endOfNextWeek)) {
-        nextWeekTodos.add(todo);
-      } else {
-        laterTodos.add(todo);
-      }
-    }
-
-    // Sort each group by due date
-    overdue.sort((a, b) => (a.dueDate ?? now).compareTo(b.dueDate ?? now));
-    todayTodos.sort((a, b) => (a.dueDate ?? now).compareTo(b.dueDate ?? now));
-    tomorrowTodos.sort((a, b) => (a.dueDate ?? now).compareTo(b.dueDate ?? now));
-    thisWeekTodos.sort((a, b) => (a.dueDate ?? now).compareTo(b.dueDate ?? now));
-    nextWeekTodos.sort((a, b) => (a.dueDate ?? now).compareTo(b.dueDate ?? now));
-    laterTodos.sort((a, b) => (a.dueDate ?? now).compareTo(b.dueDate ?? now));
-
-    // Combine in order
-    return [
-      ...overdue,
-      ...todayTodos,
-      ...tomorrowTodos,
-      ...thisWeekTodos,
-      ...nextWeekTodos,
-      ...laterTodos,
-      ...noDueDateTodos,
-    ];
+  /// Sort todos by user's position (drag-and-drop order)
+  /// Position takes precedence - user's manual ordering is respected
+  List<Todo> _sortTodosByPosition(List<Todo> todos) {
+    final sorted = List<Todo>.from(todos);
+    sorted.sort((a, b) {
+      final posA = a.position ?? 999999;
+      final posB = b.position ?? 999999;
+      return posA.compareTo(posB);
+    });
+    return sorted;
   }
 
   /// Get date group string for a todo
   String _getDateGroup(DateTime? dueDate) {
-    if (dueDate == null) return '';
+    if (dueDate == null) return 'no_due_date';
 
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);

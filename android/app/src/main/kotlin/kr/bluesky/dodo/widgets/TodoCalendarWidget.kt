@@ -256,7 +256,8 @@ class TodoCalendarWidget : HomeWidgetProvider() {
             val eventKey = "upcoming_event_$i"
             val eventData = widgetData.getString(eventKey, null)
             android.util.Log.d("CalendarWidget", "Checking $eventKey = $eventData")
-            if (eventData != null && eventData.contains("|")) {
+            // Check for both null and empty string (Flutter saves "" to clear events)
+            if (!eventData.isNullOrEmpty() && eventData.contains("|")) {
                 val parts = eventData.split("|", limit = 4)
                 val eventMonth = parts[0].toIntOrNull()
                 val eventDay = parts.getOrNull(1)?.toIntOrNull()

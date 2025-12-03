@@ -12,37 +12,25 @@ import es.antonborri.home_widget.HomeWidgetProvider
 import kr.bluesky.dodo.R
 import kr.bluesky.dodo.MainActivity
 import android.util.Log
-import java.util.Calendar
 
 /**
- * Today's Todo List Widget - Using HomeWidgetProvider (home_widget 0.8.1)
+ * Todo Detail Widget - Shows 2 todos with title AND description
  * Features:
  * - Multiple themes: light, dark, transparent, blue, purple
  * - Add button to open app with add todo action
  * - Checkbox to toggle todo completion
- * - Delete button to remove todo
- * - Date group labels (Today, Tomorrow, This Week, etc.)
- * - Progress indicator (X/Y completed)
+ * - Shows title and description for each todo
  */
-class TodoListWidget : HomeWidgetProvider() {
+class TodoDetailWidget : HomeWidgetProvider() {
 
     companion object {
-        private const val TAG = "TodoListWidget"
+        private const val TAG = "TodoDetailWidget"
 
         const val THEME_LIGHT = "light"
         const val THEME_DARK = "dark"
         const val THEME_TRANSPARENT = "transparent"
         const val THEME_BLUE = "blue"
         const val THEME_PURPLE = "purple"
-
-        // Date group constants
-        const val GROUP_OVERDUE = "overdue"
-        const val GROUP_TODAY = "today"
-        const val GROUP_TOMORROW = "tomorrow"
-        const val GROUP_THIS_WEEK = "this_week"
-        const val GROUP_NEXT_WEEK = "next_week"
-        const val GROUP_LATER = "later"
-        const val GROUP_NO_DUE_DATE = "no_due_date"
     }
 
     override fun onUpdate(
@@ -51,7 +39,7 @@ class TodoListWidget : HomeWidgetProvider() {
         appWidgetIds: IntArray,
         widgetData: SharedPreferences
     ) {
-        Log.d(TAG, "onUpdate called for ${appWidgetIds.size} widgets with HomeWidgetProvider")
+        Log.d(TAG, "onUpdate called for ${appWidgetIds.size} widgets")
 
         appWidgetIds.forEach { widgetId ->
             updateAppWidget(context, appWidgetManager, widgetId, widgetData)
@@ -66,7 +54,7 @@ class TodoListWidget : HomeWidgetProvider() {
     ) {
         Log.d(TAG, "Updating widget $appWidgetId")
 
-        val views = RemoteViews(context.packageName, R.layout.widget_todo_list)
+        val views = RemoteViews(context.packageName, R.layout.widget_todo_detail)
 
         // Get theme setting
         val theme = widgetData.getString("widget_theme", THEME_DARK) ?: THEME_DARK
@@ -83,59 +71,48 @@ class TodoListWidget : HomeWidgetProvider() {
         }
         val addPendingIntent = PendingIntent.getActivity(
             context,
-            1001,
+            3001,
             addIntent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
-        views.setOnClickPendingIntent(R.id.widget_add_button, addPendingIntent)
+        views.setOnClickPendingIntent(R.id.widget_detail_add_button, addPendingIntent)
         Log.d(TAG, "Add button click handler set")
-
-        // NOTE: Container click to open app is removed per user request
-        // Only the + (add) button will open the app now
 
         // Get progress data
         val completedCount = widgetData.getInt("todo_completed_count", 0)
         val totalCount = widgetData.getInt("todo_total_count", 0)
 
         // Update progress display
-        val progressViewId = R.id.widget_progress
+        val progressViewId = R.id.widget_detail_progress
         if (totalCount > 0) {
             val progressText = context.getString(R.string.widget_progress_format, completedCount, totalCount)
             views.setTextViewText(progressViewId, progressText)
             views.setViewVisibility(progressViewId, android.view.View.VISIBLE)
-            // Apply theme color to progress text
             val (_, _, timeColor) = getTextColors(theme)
             views.setTextColor(progressViewId, timeColor)
         } else {
             views.setViewVisibility(progressViewId, android.view.View.GONE)
         }
 
-        // Track previous group to show headers only when group changes
-        var previousGroup = ""
-
-        // Load and display todos (2 items - today's todos only)
+        // Load and display todos (2 items with title + description)
         try {
             for (index in 1..2) {
                 val todoText = widgetData.getString("todo_${index}_text", null)
-                val todoTime = widgetData.getString("todo_${index}_time", "") ?: ""
+                val todoDescription = widgetData.getString("todo_${index}_description", "") ?: ""
                 val todoId = widgetData.getString("todo_${index}_id", "") ?: ""
                 val isCompleted = widgetData.getBoolean("todo_${index}_completed", false)
-                val todoGroup = widgetData.getString("todo_${index}_group", "") ?: ""
 
-                val textViewId = context.resources.getIdentifier(
-                    "widget_todo_${index}_text", "id", context.packageName
+                val titleViewId = context.resources.getIdentifier(
+                    "widget_detail_todo_${index}_title", "id", context.packageName
                 )
-                val timeViewId = context.resources.getIdentifier(
-                    "widget_todo_${index}_time", "id", context.packageName
+                val descViewId = context.resources.getIdentifier(
+                    "widget_detail_todo_${index}_desc", "id", context.packageName
                 )
                 val checkboxId = context.resources.getIdentifier(
-                    "widget_todo_${index}_checkbox", "id", context.packageName
+                    "widget_detail_todo_${index}_checkbox", "id", context.packageName
                 )
                 val containerId = context.resources.getIdentifier(
-                    "widget_todo_${index}_container", "id", context.packageName
-                )
-                val groupViewId = context.resources.getIdentifier(
-                    "widget_todo_${index}_group", "id", context.packageName
+                    "widget_detail_todo_${index}_container", "id", context.packageName
                 )
 
                 if (todoText != null && todoText.isNotEmpty()) {
@@ -144,42 +121,28 @@ class TodoListWidget : HomeWidgetProvider() {
                         views.setViewVisibility(containerId, android.view.View.VISIBLE)
                     }
 
-                    // Show date group label if different from previous
-                    if (groupViewId != 0) {
-                        if (todoGroup.isNotEmpty() && todoGroup != previousGroup) {
-                            val groupLabel = getGroupLabel(context, todoGroup)
-                            views.setTextViewText(groupViewId, groupLabel)
-                            views.setViewVisibility(groupViewId, android.view.View.VISIBLE)
-                            // Apply theme color to group label
-                            val groupColor = getGroupColor(theme)
-                            views.setTextColor(groupViewId, groupColor)
-                            previousGroup = todoGroup
-                        } else {
-                            views.setViewVisibility(groupViewId, android.view.View.GONE)
-                        }
-                    }
-
                     // Get theme-appropriate colors
-                    val (textColor, completedColor, timeColor) = getTextColors(theme)
+                    val (textColor, completedColor, descColor) = getTextColors(theme)
 
-                    // Update text
-                    if (textViewId != 0) {
-                        views.setTextViewText(textViewId, todoText)
-                        // Apply different color for completed items
+                    // Update title
+                    if (titleViewId != 0) {
+                        views.setTextViewText(titleViewId, todoText)
                         if (isCompleted) {
-                            views.setTextColor(textViewId, completedColor)
+                            views.setTextColor(titleViewId, completedColor)
                         } else {
-                            views.setTextColor(textViewId, textColor)
+                            views.setTextColor(titleViewId, textColor)
                         }
                     }
 
-                    // Update time
-                    if (timeViewId != 0 && todoTime.isNotEmpty()) {
-                        views.setTextViewText(timeViewId, todoTime)
-                        views.setTextColor(timeViewId, timeColor)
-                        views.setViewVisibility(timeViewId, android.view.View.VISIBLE)
-                    } else if (timeViewId != 0) {
-                        views.setViewVisibility(timeViewId, android.view.View.GONE)
+                    // Update description
+                    if (descViewId != 0) {
+                        if (todoDescription.isNotEmpty()) {
+                            views.setTextViewText(descViewId, todoDescription)
+                            views.setTextColor(descViewId, descColor)
+                            views.setViewVisibility(descViewId, android.view.View.VISIBLE)
+                        } else {
+                            views.setViewVisibility(descViewId, android.view.View.GONE)
+                        }
                     }
 
                     // Update checkbox appearance
@@ -190,7 +153,7 @@ class TodoListWidget : HomeWidgetProvider() {
                             views.setImageViewResource(checkboxId, R.drawable.widget_checkbox_unchecked)
                         }
 
-                        // Set checkbox click handler - toggle completion via BroadcastReceiver (no app launch)
+                        // Set checkbox click handler
                         val toggleIntent = Intent(context, WidgetActionReceiver::class.java).apply {
                             action = "kr.bluesky.dodo.widget.TOGGLE_TODO"
                             putExtra("todo_id", todoId)
@@ -199,21 +162,18 @@ class TodoListWidget : HomeWidgetProvider() {
                         }
                         val togglePendingIntent = PendingIntent.getBroadcast(
                             context,
-                            2000 + index,
+                            4000 + index,
                             toggleIntent,
                             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE
                         )
                         views.setOnClickPendingIntent(checkboxId, togglePendingIntent)
                     }
 
-                    Log.d(TAG, "Updated todo $index: $todoText (time: $todoTime, completed: $isCompleted, group: $todoGroup)")
+                    Log.d(TAG, "Updated todo $index: $todoText (desc: $todoDescription, completed: $isCompleted)")
                 } else {
-                    // Hide empty todo items and their group labels
+                    // Hide empty todo items
                     if (containerId != 0) {
                         views.setViewVisibility(containerId, android.view.View.GONE)
-                    }
-                    if (groupViewId != 0) {
-                        views.setViewVisibility(groupViewId, android.view.View.GONE)
                     }
                 }
             }
@@ -244,85 +204,55 @@ class TodoListWidget : HomeWidgetProvider() {
             else -> R.drawable.widget_background_dark
         }
 
-        views.setInt(R.id.widget_container, "setBackgroundResource", bgResId)
+        views.setInt(R.id.widget_detail_container, "setBackgroundResource", bgResId)
 
         // Apply title color based on theme
         val titleColor = when (theme) {
             THEME_LIGHT -> Color.parseColor("#212121")
-            THEME_TRANSPARENT -> Color.WHITE // White text for dark wallpaper visibility
-            else -> Color.WHITE // Dark, Blue, Purple use white text
+            THEME_TRANSPARENT -> Color.WHITE
+            else -> Color.WHITE
         }
-        views.setTextColor(R.id.widget_title, titleColor)
+        views.setTextColor(R.id.widget_detail_title, titleColor)
 
         // Apply menu button color
         val menuColor = when (theme) {
             THEME_LIGHT -> Color.parseColor("#757575")
-            THEME_TRANSPARENT -> Color.parseColor("#CCCCCC") // Light gray for dark wallpaper
+            THEME_TRANSPARENT -> Color.parseColor("#CCCCCC")
             else -> Color.parseColor("#888888")
         }
-        views.setTextColor(R.id.widget_menu_button, menuColor)
-    }
-
-    /**
-     * Get localized group label text
-     */
-    private fun getGroupLabel(context: Context, group: String): String {
-        return when (group) {
-            GROUP_OVERDUE -> context.getString(R.string.widget_group_overdue)
-            GROUP_TODAY -> context.getString(R.string.widget_group_today)
-            GROUP_TOMORROW -> context.getString(R.string.widget_group_tomorrow)
-            GROUP_THIS_WEEK -> context.getString(R.string.widget_group_this_week)
-            GROUP_NEXT_WEEK -> context.getString(R.string.widget_group_next_week)
-            GROUP_LATER -> context.getString(R.string.widget_group_later)
-            GROUP_NO_DUE_DATE -> context.getString(R.string.widget_group_no_due_date)
-            else -> group
-        }
-    }
-
-    /**
-     * Get group label color based on theme
-     */
-    private fun getGroupColor(theme: String): Int {
-        return when (theme) {
-            THEME_LIGHT -> Color.parseColor("#0288D1")      // Light blue
-            THEME_TRANSPARENT -> Color.parseColor("#4FC3F7") // Cyan
-            THEME_DARK -> Color.parseColor("#4FC3F7")        // Cyan
-            THEME_BLUE -> Color.parseColor("#81D4FA")        // Light blue
-            THEME_PURPLE -> Color.parseColor("#CE93D8")      // Light purple
-            else -> Color.parseColor("#4FC3F7")
-        }
+        views.setTextColor(R.id.widget_detail_menu_button, menuColor)
     }
 
     /**
      * Get text colors based on theme
-     * Returns Triple(textColor, completedColor, timeColor)
+     * Returns Triple(textColor, completedColor, descColor)
      */
     private fun getTextColors(theme: String): Triple<Int, Int, Int> {
         return when (theme) {
             THEME_LIGHT -> Triple(
-                Color.parseColor("#212121"), // text
-                Color.parseColor("#9E9E9E"), // completed
-                Color.parseColor("#757575")  // time
+                Color.parseColor("#212121"),
+                Color.parseColor("#9E9E9E"),
+                Color.parseColor("#757575")
             )
             THEME_TRANSPARENT -> Triple(
-                Color.WHITE,                  // text - white for dark wallpaper visibility
-                Color.parseColor("#AAAAAA"), // completed - light gray
-                Color.parseColor("#CCCCCC")  // time - light gray
+                Color.WHITE,
+                Color.parseColor("#AAAAAA"),
+                Color.parseColor("#CCCCCC")
             )
             THEME_DARK -> Triple(
-                Color.WHITE,                  // text
-                Color.parseColor("#888888"), // completed
-                Color.parseColor("#888888")  // time
+                Color.WHITE,
+                Color.parseColor("#888888"),
+                Color.parseColor("#888888")
             )
             THEME_BLUE -> Triple(
-                Color.WHITE,                  // text
-                Color.parseColor("#90CAF9"), // completed
-                Color.parseColor("#BBDEFB")  // time
+                Color.WHITE,
+                Color.parseColor("#90CAF9"),
+                Color.parseColor("#BBDEFB")
             )
             THEME_PURPLE -> Triple(
-                Color.WHITE,                  // text
-                Color.parseColor("#B39DDB"), // completed
-                Color.parseColor("#D1C4E9")  // time
+                Color.WHITE,
+                Color.parseColor("#B39DDB"),
+                Color.parseColor("#D1C4E9")
             )
             else -> Triple(
                 Color.WHITE,

@@ -88,8 +88,18 @@ List<List<Todo>> groupTodosBySeries(List<Todo> todos) {
     result.add(group);
   }
 
-  // Sort the result by the first todo's priority and due date in each group
-  result.sort((a, b) => _compareTodosByPriorityAndDueDate(a.first, b.first));
+  // Sort the result by position first (user's drag-and-drop order),
+  // then by priority and due date as secondary sort
+  result.sort((a, b) {
+    // Position-based sorting (user's manual order) takes precedence
+    final posA = a.first.position ?? 999999;
+    final posB = b.first.position ?? 999999;
+    if (posA != posB) {
+      return posA.compareTo(posB);
+    }
+    // Fall back to priority/due date if positions are equal
+    return _compareTodosByPriorityAndDueDate(a.first, b.first);
+  });
 
   return result;
 }

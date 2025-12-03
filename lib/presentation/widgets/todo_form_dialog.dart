@@ -105,10 +105,10 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
       _locationLongitude = todo.locationLongitude;
       _locationName = todo.locationName;
       _locationRadius = todo.locationRadius;
-      // Detect all-day event: dueDate exists and time is 00:00
+      // Detect all-day event: dueDate exists and time is 00:00 or 23:59
       if (todo.dueDate != null &&
-          todo.dueDate!.hour == 0 &&
-          todo.dueDate!.minute == 0) {
+          ((todo.dueDate!.hour == 0 && todo.dueDate!.minute == 0) ||
+           (todo.dueDate!.hour == 23 && todo.dueDate!.minute == 59))) {
         _isAllDay = true;
       }
     } else {
@@ -155,15 +155,16 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
 
     if (pickedDate == null || !mounted) return;
 
-    // If all-day is selected, set time to 00:00 and skip time picker
+    // If all-day is selected, set time to 23:59:59 (end of day) to avoid showing as overdue
     if (_isAllDay) {
       setState(() {
         _selectedDueDate = DateTime(
           pickedDate.year,
           pickedDate.month,
           pickedDate.day,
-          0,
-          0,
+          23,
+          59,
+          59,
         );
       });
       return;

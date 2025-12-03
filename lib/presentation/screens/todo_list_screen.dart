@@ -51,6 +51,7 @@ import 'package:todo_app/presentation/utils/todo_grouping_utils.dart';
 import 'package:todo_app/presentation/utils/todo_reorder_utils.dart';
 import 'package:todo_app/presentation/utils/layout_builders_utils.dart';
 import 'package:todo_app/presentation/utils/dialog_helpers_utils.dart';
+import 'package:todo_app/core/services/widget_sync_service.dart';
 
 /// Main screen displaying the todo list with filtering and search.
 class TodoListScreen extends ConsumerStatefulWidget {
@@ -60,7 +61,7 @@ class TodoListScreen extends ConsumerStatefulWidget {
   ConsumerState<TodoListScreen> createState() => _TodoListScreenState();
 }
 
-class _TodoListScreenState extends ConsumerState<TodoListScreen> {
+class _TodoListScreenState extends ConsumerState<TodoListScreen> with WidgetsBindingObserver {
   final TextEditingController _inputController = TextEditingController();
   final TextEditingController _searchController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
@@ -72,6 +73,9 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> {
   @override
   void initState() {
     super.initState();
+
+    // Register lifecycle observer for pending sync processing
+    WidgetsBinding.instance.addObserver(this);
 
     // Setup search debounce
     _searchController.addListener(_onSearchChanged);
@@ -87,9 +91,33 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> {
           _checkAndRequestPermissions();
           // 초기 위젯 업데이트 (앱 시작 시)
           _updateHomeWidget();
+          // Process any pending syncs from widget
+          _processPendingSyncs();
         }
       });
     });
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    if (state == AppLifecycleState.resumed) {
+      // Process pending syncs when app resumes from background
+      _processPendingSyncs();
+    }
+  }
+
+  /// Process pending syncs from widget actions
+  Future<void> _processPendingSyncs() async {
+    if (kIsWeb) return;
+    try {
+      final syncService = ref.read(widgetSyncServiceProvider);
+      await syncService.processPendingSyncs();
+      // Also check if widget needs refresh to load next items
+      await syncService.checkAndRefreshWidget();
+    } catch (e) {
+      debugPrint('❌ TodoListScreen: Error processing pending syncs: $e');
+    }
   }
 
   /// 홈 화면 위젯 업데이트
@@ -191,6 +219,7 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _inputController.dispose();
     _searchController.dispose();
     _scrollController.dispose();

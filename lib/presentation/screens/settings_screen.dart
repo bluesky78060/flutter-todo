@@ -35,7 +35,6 @@ import 'package:go_router/go_router.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:todo_app/core/services/backup_service.dart';
-import 'package:todo_app/core/services/battery_optimization_service.dart';
 import 'package:todo_app/core/theme/app_colors.dart';
 import 'package:todo_app/core/utils/samsung_device_utils.dart';
 import 'package:todo_app/presentation/providers/admin_providers.dart';
@@ -44,9 +43,11 @@ import 'package:todo_app/presentation/providers/backup_provider.dart';
 import 'package:todo_app/presentation/providers/theme_provider.dart';
 import 'package:todo_app/presentation/providers/theme_customization_provider.dart';
 import 'package:todo_app/presentation/screens/geofence_settings_screen.dart';
+import 'package:todo_app/presentation/screens/profile_edit_screen.dart';
 import 'package:todo_app/presentation/screens/theme_preview_screen.dart';
 import 'package:todo_app/presentation/widgets/color_picker_widget.dart';
 import 'package:todo_app/presentation/widgets/font_size_slider_widget.dart';
+import 'package:todo_app/presentation/providers/profile_provider.dart';
 
 /// Settings screen with app preferences and account management.
 class SettingsScreen extends ConsumerStatefulWidget {
@@ -470,6 +471,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> with SingleTick
   }
 
   Widget _buildProfileCard(AsyncValue authState, bool isDarkMode) {
+    final profileState = ref.watch(profileProvider);
+
     return _buildGlassCard(
       isDarkMode: isDarkMode,
       child: authState.when(
@@ -482,54 +485,92 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> with SingleTick
               ),
             );
           }
+
+          final displayName = profileState.displayName ?? user.name;
+          final avatarUrl = profileState.avatarUrl;
+
           return Row(
             children: [
-              Container(
-                width: 60,
-                height: 60,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: AppColors.primaryGradient,
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.primary.withValues(alpha: 0.3),
-                      blurRadius: 12,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Center(
-                  child: Text(
-                    user.name[0].toUpperCase(),
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
+              // Avatar with tap to edit
+              GestureDetector(
+                onTap: () => _navigateToProfileEdit(),
+                child: Container(
+                  width: 60,
+                  height: 60,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: avatarUrl == null ? AppColors.primaryGradient : null,
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.primary.withValues(alpha: 0.3),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
                   ),
+                  child: avatarUrl != null
+                      ? ClipOval(
+                          child: Image.network(
+                            avatarUrl,
+                            fit: BoxFit.cover,
+                            width: 60,
+                            height: 60,
+                            errorBuilder: (_, __, ___) => Center(
+                              child: Text(
+                                displayName[0].toUpperCase(),
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ),
+                        )
+                      : Center(
+                          child: Text(
+                            displayName[0].toUpperCase(),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
                 ),
               ),
               const SizedBox(width: 16),
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      user.name,
-                      style: TextStyle(
-                        color: isDarkMode ? Colors.white : Colors.black,
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
+                child: GestureDetector(
+                  onTap: () => _navigateToProfileEdit(),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        displayName,
+                        style: TextStyle(
+                          color: isDarkMode ? Colors.white : Colors.black,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                    ),
-                    Text(
-                      user.email,
-                      style: TextStyle(
-                        color: isDarkMode ? Colors.white.withValues(alpha: 0.7) : Colors.black.withValues(alpha: 0.6),
-                        fontSize: 14,
+                      Text(
+                        user.email,
+                        style: TextStyle(
+                          color: isDarkMode ? Colors.white.withValues(alpha: 0.7) : Colors.black.withValues(alpha: 0.6),
+                          fontSize: 14,
+                        ),
                       ),
-                    ),
-                  ],
+                      const SizedBox(height: 4),
+                      Text(
+                        'tap_to_edit_profile'.tr(),
+                        style: TextStyle(
+                          color: AppColors.primary,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
               IconButton(
@@ -544,6 +585,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> with SingleTick
         },
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (_, __) => const Text('Error'),
+      ),
+    );
+  }
+
+  void _navigateToProfileEdit() {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => const ProfileEditScreen(),
       ),
     );
   }

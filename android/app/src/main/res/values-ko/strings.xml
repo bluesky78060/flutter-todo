@@ -2,10 +2,12 @@
 <resources>
     <string name="app_name">DoDo</string>
     <string name="widget_todo_list_description">홈 화면에 오늘의 할 일을 표시합니다</string>
+    <string name="widget_todo_detail_description">오늘의 할 일을 제목과 설명으로 표시합니다</string>
     <string name="widget_calendar_description">할 일이 표시된 월간 캘린더를 보여줍니다</string>
 
     <!-- Widget strings -->
     <string name="widget_today_tasks">할일</string>
+    <string name="widget_todo_detail_title">오늘의 할일</string>
     <string name="widget_task_1">할 일 1</string>
     <string name="widget_task_2">할 일 2</string>
     <string name="widget_task_3">할 일 3</string>
@@ -31,6 +33,7 @@
     <string name="widget_group_next_week">다음 주</string>
     <string name="widget_group_later">나중에</string>
     <string name="widget_group_overdue">지남</string>
+    <string name="widget_group_no_due_date">기한 없음</string>
 
     <!-- Progress strings -->
     <string name="widget_progress_format">%d/%d 완료</string>

@@ -1,7 +1,7 @@
 # 향후 추가 기능 및 개선 사항
 
-현재 버전: **1.0.15+46** (Google Play 업로드용 AAB)
-최종 업데이트: **2025-12-02**
+현재 버전: **1.0.17+49** (Google Play 업로드용 AAB)
+최종 업데이트: **2025-12-03**
 
 ## 우선순위 분류
 - 🔴 **High**: 핵심 기능, 사용자 경험에 직접적 영향
@@ -11,6 +11,35 @@
 ---
 
 ## ✅ 완료된 작업 (Completed)
+
+### 2025-12-03 - Windows 위젯 Supabase 동기화 및 버그 수정 ✨
+- ✅ **Windows 캘린더 위젯 Supabase 동기화 완전 구현**
+  - **문제**: Windows 위젯이 Supabase에서 todo 데이터를 가져오지 못함 (로컬 DB만 참조)
+  - **해결**: Flutter native와 동일한 Supabase 클라이언트 연동
+  - **구현 내용**:
+    - `.env` 파일에서 credentials 로드 (dotenv 패키지 활용)
+    - Supabase에서 실시간 todo 데이터 가져오기
+    - 로그인 상태 감지 및 인증 처리
+    - GitHub Actions workflow에 `.env` 파일 자동 생성
+  - **수정된 파일**:
+    - `lib/main_widget.dart` - Supabase 초기화 및 데이터 페칭
+    - `.github/workflows/build-windows-widget.yml` - .env 파일 생성 단계 추가
+
+- ✅ **"하루 종일" 할일 버그 수정**
+  - **문제**: 하루 종일을 선택하면 00:00으로 설정되어 바로 "지남"으로 표시됨
+  - **해결**: 00:00 → 23:59:59로 변경하여 하루 끝까지 유효하게 처리
+  - **추가 개선**: 리스트에서 시간 대신 "하루 종일" 텍스트로 표시
+  - **수정된 파일**:
+    - `lib/presentation/widgets/todo_form_dialog.dart` - 시간 설정 로직 변경 (23:59:59)
+    - `lib/presentation/widgets/custom_todo_item.dart` - 00:00과 23:59 모두 "하루 종일"로 표시
+
+- ✅ **Web 앱 최적화**
+  - **Naver Maps SDK**: 동적 지도 API 클라이언트 ID로 전환 (ncpKeyId 파라미터)
+  - **manifest.json 개선**: PWA 메타데이터 최적화, 앱 아이콘 및 shortcuts 추가
+  - **index.html 개선**: SEO 메타 태그, Open Graph, Twitter Card, 구조화된 데이터 추가
+  - **수정된 파일**: `web/index.html`, `web/manifest.json`
+
+- ✅ **버전**: 1.0.17+49 AAB 빌드 성공 (Google Play 업로드용)
 
 ### 2025-12-02 - 테마 커스터마이징 기능 완전 구현 (4.3) ✨
 - ✅ **테마 커스터마이징 기능**
@@ -709,10 +738,10 @@
 - ✅ 파일 크기 제한 (10MB) 구현
 - ✅ 첨부파일 개수 제한 (10개) 구현
 
-**향후 개선사항**:
-- [x] 개별 파일 삭제 UI
-- [x] 다운로드 버튼 추가
-- [x] 웹 플랫폼 파일 업로드 지원
+**향후 개선사항**: ✅ 모두 완료됨
+- [x] 개별 파일 삭제 UI - 완료 (todo_detail_screen.dart)
+- [x] 다운로드 버튼 추가 - 완료
+- [x] 웹 플랫폼 파일 업로드 지원 - 완료 (attachment_service.dart, kIsWeb 처리)
 
 **참고 문서**: `TASKS.md`, `SUPABASE_STORAGE_SETUP.md`
 
@@ -798,7 +827,7 @@
 
 | 기능 | 상태 | 세부사항 | 예상시간 |
 |------|------|---------|---------|
-| **7.2 프로필 관리** | 🟡 예정 | 프로필 사진, 닉네임, 메타데이터 | 4-6시간 |
+| **7.2 프로필 관리** | ✅ 완료 | 프로필 사진, 닉네임, Supabase user_metadata 연동 | 완료 (2025-12-03) |
 | **7.3 계정 삭제** | 🟢 예정 | 삭제 UI, 확인 다이얼로그, 데이터 초기화 | 3-4시간 |
 
 ### 8. 성능 및 안정성
@@ -869,18 +898,27 @@
 
 ### 📋 Phase 3 (진행 중 / 완료) - 데이터 관리 및 UX 개선
 **예정 기간**: 2025-11-28 ~ 2025-12-31
-**현재 진행 상황**: 4/7 완료 (57%)
+**현재 진행 상황**: 7/7 완료 (100%) ✅
 
 **✅ 완료된 항목**:
 - ✅ 데이터 내보내기 (CSV, PDF) - 완료 (2025-12-01)
 - ✅ 하드코딩 한글 제거 (번역 키 적용) - 완료 (2025-11-30)
 - ✅ 통계 화면 개선 (그래프, 추이 분석, Phase 1-2) - 완료 (2025-12-01)
 - ✅ 테마 커스터마이징 (색상 선택, 폰트 크기) - 완료 (2025-12-02)
+- ✅ Windows 위젯 Supabase 동기화 - 완료 (2025-12-03)
+- ✅ "하루 종일" 할일 버그 수정 - 완료 (2025-12-03)
+- ✅ Web 앱 최적화 (SEO, PWA) - 완료 (2025-12-03)
+- ✅ 알림 우선순위 설정 (3.3) - 이미 구현됨 (확인일: 2025-12-03)
+- ✅ 첨부파일 개선 (개별 삭제, 웹 플랫폼 지원) - 이미 구현됨 (확인일: 2025-12-03)
+  - 개별 삭제: `_showDeleteConfirmation()`, `_deleteAttachment()` in todo_detail_screen.dart
+  - 웹 지원: `pickFileWithBytes()`, `uploadFileFromBytes()`, kIsWeb 조건부 처리 in attachment_service.dart
 
-**📋 진행 예정 항목**:
-- [ ] 첨부파일 개선 (개별 삭제, 웹 플랫폼 지원) - 4-6시간
-- [ ] 알림 우선순위 설정 - 4-6시간
-- [ ] 프로필 관리 (프로필 사진, 닉네임) - 4-6시간
+**📋 Phase 3 완료 항목** (8/8 완료 - 100%):
+- ✅ 프로필 관리 (프로필 사진, 닉네임) - 완료 (2025-12-03)
+  - ProfileService: Supabase user_metadata로 displayName, avatarUrl 관리
+  - ProfileProvider: Riverpod Notifier 패턴으로 상태 관리
+  - ProfileEditScreen: Glassmorphic UI, 갤러리/카메라/웹 지원
+  - Settings 화면에 아바타 프로필 섹션 추가
 
 ### 🚀 Phase 4 (장기) - 협업 및 고급 기능
 **예정 기간**: 2026-01-01 이후
@@ -969,4 +1007,4 @@
 
 ---
 
-**문서 최종 업데이트**: 2025-12-02 KST
+**문서 최종 업데이트**: 2025-12-03 KST

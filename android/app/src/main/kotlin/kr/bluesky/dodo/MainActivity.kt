@@ -99,9 +99,6 @@ class MainActivity: FlutterActivity() {
             }, 500)
         }
 
-        // Store FlutterEngine for WidgetActionReceiver to use
-        kr.bluesky.dodo.widgets.WidgetActionReceiver.setFlutterEngine(flutterEngine)
-
         // Widget action channel
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, WIDGET_CHANNEL).setMethodCallHandler { call, result ->
             when (call.method) {
