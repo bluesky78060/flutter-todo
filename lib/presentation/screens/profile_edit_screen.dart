@@ -153,7 +153,8 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen>
                               isDarkMode,
                               textColor,
                               profileState,
-                              user.name,
+                              user.displayName ?? user.name,
+                              user.avatarUrl,
                             ),
                             const SizedBox(height: 32),
 
@@ -163,7 +164,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen>
                               textColor,
                               subTextColor,
                               profileState,
-                              user.name,
+                              user.displayName ?? user.name,
                             ),
                             const SizedBox(height: 24),
 
@@ -330,8 +331,9 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen>
     Color textColor,
     ProfileState profileState,
     String fallbackName,
+    String? userAvatarUrl,
   ) {
-    final avatarUrl = profileState.avatarUrl;
+    final avatarUrl = profileState.avatarUrl ?? userAvatarUrl;
     final displayName = profileState.displayName ?? fallbackName;
 
     return _buildGlassCard(
@@ -608,19 +610,28 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen>
               },
               isDarkMode: isDarkMode,
             ),
-            if (ref.read(profileProvider).avatarUrl != null) ...[
-              const SizedBox(height: 12),
-              _buildAvatarOption(
-                icon: FluentIcons.delete_24_regular,
-                title: 'remove_photo'.tr(),
-                onTap: () {
-                  Navigator.pop(context);
-                  _removeAvatar();
-                },
-                isDarkMode: isDarkMode,
-                isDestructive: true,
-              ),
-            ],
+            Builder(builder: (context) {
+              final profileState = ref.read(profileProvider);
+              final authState = ref.read(currentUserProvider);
+              final hasAvatar = profileState.avatarUrl != null ||
+                  (authState.value?.avatarUrl != null);
+              if (!hasAvatar) return const SizedBox.shrink();
+              return Column(
+                children: [
+                  const SizedBox(height: 12),
+                  _buildAvatarOption(
+                    icon: FluentIcons.delete_24_regular,
+                    title: 'remove_photo'.tr(),
+                    onTap: () {
+                      Navigator.pop(context);
+                      _removeAvatar();
+                    },
+                    isDarkMode: isDarkMode,
+                    isDestructive: true,
+                  ),
+                ],
+              );
+            }),
             const SizedBox(height: 16),
           ],
         ),

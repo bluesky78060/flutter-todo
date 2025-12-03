@@ -486,8 +486,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> with SingleTick
             );
           }
 
-          final displayName = profileState.displayName ?? user.name;
-          final avatarUrl = profileState.avatarUrl;
+          final displayName = profileState.displayName ?? user.displayName ?? user.name;
+          final avatarUrl = profileState.avatarUrl ?? user.avatarUrl;
 
           return Row(
             children: [

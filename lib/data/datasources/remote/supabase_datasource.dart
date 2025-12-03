@@ -395,12 +395,25 @@ class SupabaseAuthDataSource {
     final user = client.auth.currentUser;
     if (user == null) return null;
 
+    // Get avatar URL from various possible sources in user metadata
+    // OAuth providers store it in different keys: avatar_url, picture, etc.
+    final metadata = user.userMetadata;
+    String? avatarUrl = metadata?['avatar_url'] as String?;
+    avatarUrl ??= metadata?['picture'] as String?;
+    avatarUrl ??= metadata?['avatar'] as String?;
+
+    // Get display name from various possible sources
+    String? displayName = metadata?['display_name'] as String?;
+    displayName ??= metadata?['full_name'] as String?;
+
     return domain.AuthUser(
       // ignore: deprecated_member_use_from_same_package
       id: user.id.hashCode,  // Legacy: hash UUID to int for backward compatibility
       uuid: user.id,  // Primary: use Supabase UUID
       email: user.email ?? '',
-      name: user.userMetadata?['name'] as String? ?? user.email ?? '',
+      name: metadata?['name'] as String? ?? user.email ?? '',
+      displayName: displayName,
+      avatarUrl: avatarUrl,
       createdAt: user.createdAt.isNotEmpty ? DateTime.parse(user.createdAt) : null,
     );
   }
