@@ -26,6 +26,15 @@ import 'package:todo_app/presentation/providers/theme_provider.dart';
 import 'package:todo_app/presentation/providers/theme_customization_provider.dart';
 import 'package:todo_app/presentation/providers/auth_providers.dart';
 
+/// Resize direction for window resize handles
+enum ResizeDirection {
+  right,
+  bottom,
+  left,
+  bottomRight,
+  bottomLeft,
+}
+
 /// Calendar widget window for Windows desktop
 class CalendarWidgetWindow extends ConsumerStatefulWidget {
   const CalendarWidgetWindow({super.key});
@@ -39,14 +48,27 @@ class _CalendarWidgetWindowState extends ConsumerState<CalendarWidgetWindow>
   DateTime _focusedDay = DateTime.now();
   DateTime? _selectedDay;
   bool _isAlwaysOnTop = true;
+  bool _isResizing = false;
+
+  // Min/max window sizes for resizing
+  static const double _minWidth = 280;
+  static const double _minHeight = 400;
+  static const double _maxWidth = 500;
+  static const double _maxHeight = 700;
 
   @override
   void initState() {
     super.initState();
     if (Platform.isWindows || Platform.isMacOS || Platform.isLinux) {
       windowManager.addListener(this);
+      _initWindowSize();
     }
     _selectedDay = _focusedDay;
+  }
+
+  Future<void> _initWindowSize() async {
+    await windowManager.setMinimumSize(const Size(_minWidth, _minHeight));
+    await windowManager.setMaximumSize(const Size(_maxWidth, _maxHeight));
   }
 
   @override
@@ -66,37 +88,43 @@ class _CalendarWidgetWindowState extends ConsumerState<CalendarWidgetWindow>
 
     return Scaffold(
       backgroundColor: Colors.transparent,
-      body: Container(
-        decoration: BoxDecoration(
-          color: isDarkMode
-              ? AppColors.darkBackground.withOpacity(0.95)
-              : Colors.white.withOpacity(0.95),
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(isDarkMode ? 0.3 : 0.15),
-              blurRadius: 20,
-              spreadRadius: 2,
+      body: Stack(
+        children: [
+          Container(
+            decoration: BoxDecoration(
+              color: isDarkMode
+                  ? AppColors.darkBackground.withOpacity(0.95)
+                  : Colors.white.withOpacity(0.95),
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(isDarkMode ? 0.3 : 0.15),
+                  blurRadius: 20,
+                  spreadRadius: 2,
+                ),
+              ],
             ),
-          ],
-        ),
-        child: Column(
-          children: [
-            _buildDragHeader(isDarkMode, primaryColor),
-            Expanded(
-              child: todosAsync.when(
-                data: (todos) => _buildCalendarContent(todos, isDarkMode, primaryColor),
-                loading: () => const Center(child: CircularProgressIndicator()),
-                error: (e, st) => Center(
-                  child: Text(
-                    'Error: $e',
-                    style: TextStyle(color: AppColors.getText(isDarkMode)),
+            child: Column(
+              children: [
+                _buildDragHeader(isDarkMode, primaryColor),
+                Expanded(
+                  child: todosAsync.when(
+                    data: (todos) => _buildCalendarContent(todos, isDarkMode, primaryColor),
+                    loading: () => const Center(child: CircularProgressIndicator()),
+                    error: (e, st) => Center(
+                      child: Text(
+                        'Error: $e',
+                        style: TextStyle(color: AppColors.getText(isDarkMode)),
+                      ),
+                    ),
                   ),
                 ),
-              ),
+              ],
             ),
-          ],
-        ),
+          ),
+          // Resize handles
+          ..._buildResizeHandles(isDarkMode),
+        ],
       ),
     );
   }
@@ -181,6 +209,140 @@ class _CalendarWidgetWindowState extends ConsumerState<CalendarWidgetWindow>
         child: Icon(icon, color: Colors.white, size: 14),
       ),
     );
+  }
+
+  List<Widget> _buildResizeHandles(bool isDarkMode) {
+    const handleSize = 12.0;
+    const hitArea = 8.0;
+    final handleColor = isDarkMode
+        ? Colors.white.withOpacity(0.3)
+        : Colors.grey.withOpacity(0.4);
+
+    return [
+      // Right edge
+      Positioned(
+        right: 0,
+        top: handleSize,
+        bottom: handleSize,
+        width: hitArea,
+        child: MouseRegion(
+          cursor: SystemMouseCursors.resizeLeftRight,
+          child: GestureDetector(
+            onPanUpdate: (details) => _handleResize(details, ResizeDirection.right),
+          ),
+        ),
+      ),
+      // Bottom edge
+      Positioned(
+        left: handleSize,
+        right: handleSize,
+        bottom: 0,
+        height: hitArea,
+        child: MouseRegion(
+          cursor: SystemMouseCursors.resizeUpDown,
+          child: GestureDetector(
+            onPanUpdate: (details) => _handleResize(details, ResizeDirection.bottom),
+          ),
+        ),
+      ),
+      // Left edge
+      Positioned(
+        left: 0,
+        top: handleSize,
+        bottom: handleSize,
+        width: hitArea,
+        child: MouseRegion(
+          cursor: SystemMouseCursors.resizeLeftRight,
+          child: GestureDetector(
+            onPanUpdate: (details) => _handleResize(details, ResizeDirection.left),
+          ),
+        ),
+      ),
+      // Bottom-right corner (main resize handle)
+      Positioned(
+        right: 0,
+        bottom: 0,
+        width: handleSize + 4,
+        height: handleSize + 4,
+        child: MouseRegion(
+          cursor: SystemMouseCursors.resizeDownRight,
+          child: GestureDetector(
+            onPanUpdate: (details) => _handleResize(details, ResizeDirection.bottomRight),
+            child: Container(
+              alignment: Alignment.bottomRight,
+              padding: const EdgeInsets.all(2),
+              child: Icon(
+                FluentIcons.resize_large_24_regular,
+                size: 10,
+                color: handleColor,
+              ),
+            ),
+          ),
+        ),
+      ),
+      // Bottom-left corner
+      Positioned(
+        left: 0,
+        bottom: 0,
+        width: handleSize,
+        height: handleSize,
+        child: MouseRegion(
+          cursor: SystemMouseCursors.resizeDownLeft,
+          child: GestureDetector(
+            onPanUpdate: (details) => _handleResize(details, ResizeDirection.bottomLeft),
+          ),
+        ),
+      ),
+    ];
+  }
+
+  Future<void> _handleResize(DragUpdateDetails details, ResizeDirection direction) async {
+    if (!Platform.isWindows && !Platform.isMacOS && !Platform.isLinux) return;
+    if (_isResizing) return;
+
+    _isResizing = true;
+
+    try {
+      final currentSize = await windowManager.getSize();
+      final currentPosition = await windowManager.getPosition();
+
+      double newWidth = currentSize.width;
+      double newHeight = currentSize.height;
+      double newX = currentPosition.dx;
+      double newY = currentPosition.dy;
+
+      switch (direction) {
+        case ResizeDirection.right:
+          newWidth += details.delta.dx;
+          break;
+        case ResizeDirection.bottom:
+          newHeight += details.delta.dy;
+          break;
+        case ResizeDirection.left:
+          newWidth -= details.delta.dx;
+          newX += details.delta.dx;
+          break;
+        case ResizeDirection.bottomRight:
+          newWidth += details.delta.dx;
+          newHeight += details.delta.dy;
+          break;
+        case ResizeDirection.bottomLeft:
+          newWidth -= details.delta.dx;
+          newHeight += details.delta.dy;
+          newX += details.delta.dx;
+          break;
+      }
+
+      // Clamp to min/max sizes
+      newWidth = newWidth.clamp(_minWidth, _maxWidth);
+      newHeight = newHeight.clamp(_minHeight, _maxHeight);
+
+      await windowManager.setBounds(
+        Rect.fromLTWH(newX, newY, newWidth, newHeight),
+      );
+    } finally {
+      _isResizing = false;
+    }
   }
 
   Widget _buildCalendarContent(List<Todo> todos, bool isDarkMode, Color primaryColor) {
@@ -476,82 +638,169 @@ class _CalendarWidgetWindowState extends ConsumerState<CalendarWidgetWindow>
 
   void _showQuickAddDialog(DateTime date, bool isDarkMode, Color primaryColor) {
     final controller = TextEditingController();
+    TimeOfDay? selectedTime;
 
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: AppColors.getCard(isDarkMode),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        title: Text(
-          '${'add_todo'.tr()} - ${DateFormat('M/d').format(date)}',
-          style: TextStyle(
-            fontSize: 14,
-            color: AppColors.getText(isDarkMode),
-          ),
-        ),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          style: TextStyle(
-            fontSize: 13,
-            color: AppColors.getText(isDarkMode),
-          ),
-          decoration: InputDecoration(
-            hintText: 'title_hint'.tr(),
-            hintStyle: TextStyle(
-              color: AppColors.getTextSecondary(isDarkMode),
-              fontSize: 13,
-            ),
-            filled: true,
-            fillColor: AppColors.getInput(isDarkMode),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide.none,
-            ),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-          ),
-          onSubmitted: (value) {
-            if (value.isNotEmpty) {
-              _addTodo(date, value);
-              Navigator.pop(context);
-            }
-          },
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(
-              'cancel'.tr(),
-              style: TextStyle(color: AppColors.getTextSecondary(isDarkMode)),
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          backgroundColor: AppColors.getCard(isDarkMode),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          title: Text(
+            '${'add_todo'.tr()} - ${DateFormat('M/d').format(date)}',
+            style: TextStyle(
+              fontSize: 14,
+              color: AppColors.getText(isDarkMode),
             ),
           ),
-          ElevatedButton(
-            onPressed: () {
-              if (controller.text.isNotEmpty) {
-                _addTodo(date, controller.text);
-                Navigator.pop(context);
-              }
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: primaryColor,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Title input
+              TextField(
+                controller: controller,
+                autofocus: true,
+                style: TextStyle(
+                  fontSize: 13,
+                  color: AppColors.getText(isDarkMode),
+                ),
+                decoration: InputDecoration(
+                  hintText: 'title_hint'.tr(),
+                  hintStyle: TextStyle(
+                    color: AppColors.getTextSecondary(isDarkMode),
+                    fontSize: 13,
+                  ),
+                  filled: true,
+                  fillColor: AppColors.getInput(isDarkMode),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide.none,
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                ),
+              ),
+              const SizedBox(height: 12),
+              // Notification time selector
+              InkWell(
+                onTap: () async {
+                  final picked = await showTimePicker(
+                    context: context,
+                    initialTime: selectedTime ?? TimeOfDay.now(),
+                    builder: (context, child) {
+                      return Theme(
+                        data: Theme.of(context).copyWith(
+                          colorScheme: isDarkMode
+                              ? ColorScheme.dark(
+                                  primary: primaryColor,
+                                  surface: AppColors.darkBackground,
+                                )
+                              : ColorScheme.light(
+                                  primary: primaryColor,
+                                ),
+                        ),
+                        child: child!,
+                      );
+                    },
+                  );
+                  if (picked != null) {
+                    setDialogState(() => selectedTime = picked);
+                  }
+                },
                 borderRadius: BorderRadius.circular(8),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: AppColors.getInput(isDarkMode),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        FluentIcons.alert_24_regular,
+                        size: 16,
+                        color: selectedTime != null
+                            ? primaryColor
+                            : AppColors.getTextSecondary(isDarkMode),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          selectedTime != null
+                              ? selectedTime!.format(context)
+                              : 'notification_time_optional'.tr(),
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: selectedTime != null
+                                ? AppColors.getText(isDarkMode)
+                                : AppColors.getTextSecondary(isDarkMode),
+                          ),
+                        ),
+                      ),
+                      if (selectedTime != null)
+                        GestureDetector(
+                          onTap: () => setDialogState(() => selectedTime = null),
+                          child: Icon(
+                            FluentIcons.dismiss_circle_24_regular,
+                            size: 16,
+                            color: AppColors.getTextSecondary(isDarkMode),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(
+                'cancel'.tr(),
+                style: TextStyle(color: AppColors.getTextSecondary(isDarkMode)),
               ),
             ),
-            child: Text('add'.tr()),
-          ),
-        ],
+            ElevatedButton(
+              onPressed: () {
+                if (controller.text.isNotEmpty) {
+                  _addTodo(date, controller.text, selectedTime);
+                  Navigator.pop(context);
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: primaryColor,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              child: Text('add'.tr()),
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  void _addTodo(DateTime date, String title) {
+  void _addTodo(DateTime date, String title, TimeOfDay? notificationTime) {
     final actions = ref.read(todoActionsProvider);
+
+    // Create notification DateTime if time is selected
+    DateTime? notificationDateTime;
+    if (notificationTime != null) {
+      notificationDateTime = DateTime(
+        date.year,
+        date.month,
+        date.day,
+        notificationTime.hour,
+        notificationTime.minute,
+      );
+    }
+
     actions.createTodo(
       title,
       '', // description
       date, // dueDate
+      notificationTime: notificationDateTime,
     );
   }
 
@@ -566,7 +815,7 @@ class _CalendarWidgetWindowState extends ConsumerState<CalendarWidgetWindow>
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         title: Row(
           children: [
-            Icon(
+            const Icon(
               FluentIcons.sign_out_24_regular,
               color: AppColors.dangerRed,
               size: 20,
