@@ -145,6 +145,16 @@ class AuthActions {
 
   Future<void> logout() async {
     final repository = ref.read(authRepositoryProvider);
+
+    // Clear local database to prevent data leakage between accounts
+    try {
+      final database = ref.read(localDatabaseProvider);
+      await database.clearAllUserData();
+      logger.d('🗑️ Local database cleared on logout');
+    } catch (e) {
+      logger.e('⚠️ Failed to clear local database: $e');
+    }
+
     await repository.logout();
     // No need to invalidate - StreamProvider will auto-update
     logger.d('✅ Logout successful - StreamProvider will auto-update');

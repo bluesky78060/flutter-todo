@@ -426,6 +426,16 @@ class AppDatabase extends _$AppDatabase {
       }
     });
   }
+
+  /// Clear all user data from local database.
+  /// Called on logout to prevent data leakage between accounts.
+  Future<void> clearAllUserData() async {
+    // Delete in correct order to respect foreign key constraints
+    await delete(attachments).go();
+    await delete(subtasks).go();
+    await delete(todos).go();
+    await delete(categories).go();
+  }
 }
 
 LazyDatabase _openConnection() {
