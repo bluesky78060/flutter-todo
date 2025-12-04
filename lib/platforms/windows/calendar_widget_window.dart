@@ -633,26 +633,54 @@ class _CalendarWidgetWindowState extends ConsumerState<CalendarWidgetWindow>
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
-              // Time indicator
-              if (todo.notificationTime != null)
+              // Time indicators (due time and notification time)
+              if (todo.dueDate != null && (todo.dueDate!.hour != 0 || todo.dueDate!.minute != 0) || todo.notificationTime != null)
                 Padding(
                   padding: const EdgeInsets.only(left: 6, top: 2),
-                  child: Row(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(
-                        FluentIcons.alert_12_regular,
-                        size: 10,
-                        color: AppColors.getTextSecondary(isDarkMode),
-                      ),
-                      const SizedBox(width: 2),
-                      Text(
-                        DateFormat('HH:mm').format(todo.notificationTime!),
-                        style: TextStyle(
-                          fontSize: 10,
-                          color: AppColors.getTextSecondary(isDarkMode),
+                      // Due time
+                      if (todo.dueDate != null && (todo.dueDate!.hour != 0 || todo.dueDate!.minute != 0))
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              FluentIcons.clock_12_regular,
+                              size: 10,
+                              color: AppColors.getTextSecondary(isDarkMode),
+                            ),
+                            const SizedBox(width: 2),
+                            Text(
+                              DateFormat('HH:mm').format(todo.dueDate!),
+                              style: TextStyle(
+                                fontSize: 10,
+                                color: AppColors.getTextSecondary(isDarkMode),
+                              ),
+                            ),
+                          ],
                         ),
-                      ),
+                      // Notification time
+                      if (todo.notificationTime != null)
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              FluentIcons.alert_12_regular,
+                              size: 10,
+                              color: primaryColor.withOpacity(0.7),
+                            ),
+                            const SizedBox(width: 2),
+                            Text(
+                              DateFormat('HH:mm').format(todo.notificationTime!),
+                              style: TextStyle(
+                                fontSize: 10,
+                                color: primaryColor.withOpacity(0.7),
+                              ),
+                            ),
+                          ],
+                        ),
                     ],
                   ),
                 ),
@@ -684,7 +712,8 @@ class _CalendarWidgetWindowState extends ConsumerState<CalendarWidgetWindow>
   void _showQuickAddDialog(DateTime date, bool isDarkMode, Color primaryColor) {
     final titleController = TextEditingController();
     final descriptionController = TextEditingController();
-    TimeOfDay? selectedTime;
+    TimeOfDay? selectedDueTime;
+    TimeOfDay? selectedNotificationTime;
 
     showDialog(
       context: context,
@@ -751,74 +780,28 @@ class _CalendarWidgetWindowState extends ConsumerState<CalendarWidgetWindow>
                   ),
                 ),
                 const SizedBox(height: 10),
-              // Notification time selector
-              InkWell(
-                onTap: () async {
-                  final picked = await showTimePicker(
-                    context: context,
-                    initialTime: selectedTime ?? TimeOfDay.now(),
-                    builder: (context, child) {
-                      return Theme(
-                        data: Theme.of(context).copyWith(
-                          colorScheme: isDarkMode
-                              ? ColorScheme.dark(
-                                  primary: primaryColor,
-                                  surface: AppColors.darkBackground,
-                                )
-                              : ColorScheme.light(
-                                  primary: primaryColor,
-                                ),
-                        ),
-                        child: child!,
-                      );
-                    },
-                  );
-                  if (picked != null) {
-                    setDialogState(() => selectedTime = picked);
-                  }
-                },
-                borderRadius: BorderRadius.circular(8),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                  decoration: BoxDecoration(
-                    color: AppColors.getInput(isDarkMode),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(
-                        FluentIcons.alert_24_regular,
-                        size: 16,
-                        color: selectedTime != null
-                            ? primaryColor
-                            : AppColors.getTextSecondary(isDarkMode),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          selectedTime != null
-                              ? selectedTime!.format(context)
-                              : 'notification_time_optional'.tr(),
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: selectedTime != null
-                                ? AppColors.getText(isDarkMode)
-                                : AppColors.getTextSecondary(isDarkMode),
-                          ),
-                        ),
-                      ),
-                      if (selectedTime != null)
-                        GestureDetector(
-                          onTap: () => setDialogState(() => selectedTime = null),
-                          child: Icon(
-                            FluentIcons.dismiss_circle_24_regular,
-                            size: 16,
-                            color: AppColors.getTextSecondary(isDarkMode),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                // Due time selector
+                _buildTimeSelector(
+                  context: context,
+                  isDarkMode: isDarkMode,
+                  primaryColor: primaryColor,
+                  icon: FluentIcons.clock_24_regular,
+                  label: 'due_time_optional'.tr(),
+                  selectedTime: selectedDueTime,
+                  onTimePicked: (time) => setDialogState(() => selectedDueTime = time),
+                  onClear: () => setDialogState(() => selectedDueTime = null),
+                ),
+                const SizedBox(height: 8),
+                // Notification time selector
+                _buildTimeSelector(
+                  context: context,
+                  isDarkMode: isDarkMode,
+                  primaryColor: primaryColor,
+                  icon: FluentIcons.alert_24_regular,
+                  label: 'notification_time_optional'.tr(),
+                  selectedTime: selectedNotificationTime,
+                  onTimePicked: (time) => setDialogState(() => selectedNotificationTime = time),
+                  onClear: () => setDialogState(() => selectedNotificationTime = null),
                 ),
               ],
             ),
@@ -834,7 +817,13 @@ class _CalendarWidgetWindowState extends ConsumerState<CalendarWidgetWindow>
             ElevatedButton(
               onPressed: () {
                 if (titleController.text.isNotEmpty) {
-                  _addTodo(date, titleController.text, descriptionController.text, selectedTime);
+                  _addTodo(
+                    date,
+                    titleController.text,
+                    descriptionController.text,
+                    selectedDueTime,
+                    selectedNotificationTime,
+                  );
                   Navigator.pop(context);
                 }
               },
@@ -853,8 +842,117 @@ class _CalendarWidgetWindowState extends ConsumerState<CalendarWidgetWindow>
     );
   }
 
-  void _addTodo(DateTime date, String title, String description, TimeOfDay? notificationTime) {
+  Widget _buildTimeSelector({
+    required BuildContext context,
+    required bool isDarkMode,
+    required Color primaryColor,
+    required IconData icon,
+    required String label,
+    required TimeOfDay? selectedTime,
+    required void Function(TimeOfDay) onTimePicked,
+    required VoidCallback onClear,
+  }) {
+    return InkWell(
+      onTap: () async {
+        final picked = await showTimePicker(
+          context: context,
+          initialTime: selectedTime ?? TimeOfDay.now(),
+          builder: (context, child) {
+            return Theme(
+              data: Theme.of(context).copyWith(
+                colorScheme: isDarkMode
+                    ? ColorScheme.dark(
+                        primary: primaryColor,
+                        surface: AppColors.darkBackground,
+                      )
+                    : ColorScheme.light(
+                        primary: primaryColor,
+                      ),
+                // Fix text size for keyboard input mode
+                textTheme: Theme.of(context).textTheme.copyWith(
+                  displayLarge: const TextStyle(fontSize: 40),
+                  displayMedium: const TextStyle(fontSize: 36),
+                  headlineMedium: const TextStyle(fontSize: 28),
+                ),
+              ),
+              child: MediaQuery(
+                data: MediaQuery.of(context).copyWith(
+                  textScaler: const TextScaler.linear(0.85),
+                ),
+                child: child!,
+              ),
+            );
+          },
+        );
+        if (picked != null) {
+          onTimePicked(picked);
+        }
+      },
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        decoration: BoxDecoration(
+          color: AppColors.getInput(isDarkMode),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Row(
+          children: [
+            Icon(
+              icon,
+              size: 16,
+              color: selectedTime != null
+                  ? primaryColor
+                  : AppColors.getTextSecondary(isDarkMode),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                selectedTime != null
+                    ? selectedTime.format(context)
+                    : label,
+                style: TextStyle(
+                  fontSize: 13,
+                  color: selectedTime != null
+                      ? AppColors.getText(isDarkMode)
+                      : AppColors.getTextSecondary(isDarkMode),
+                ),
+              ),
+            ),
+            if (selectedTime != null)
+              GestureDetector(
+                onTap: onClear,
+                child: Icon(
+                  FluentIcons.dismiss_circle_24_regular,
+                  size: 16,
+                  color: AppColors.getTextSecondary(isDarkMode),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _addTodo(
+    DateTime date,
+    String title,
+    String description,
+    TimeOfDay? dueTime,
+    TimeOfDay? notificationTime,
+  ) {
     final actions = ref.read(todoActionsProvider);
+
+    // Create dueDate with time if selected
+    DateTime dueDate = date;
+    if (dueTime != null) {
+      dueDate = DateTime(
+        date.year,
+        date.month,
+        date.day,
+        dueTime.hour,
+        dueTime.minute,
+      );
+    }
 
     // Create notification DateTime if time is selected
     DateTime? notificationDateTime;
@@ -871,7 +969,7 @@ class _CalendarWidgetWindowState extends ConsumerState<CalendarWidgetWindow>
     actions.createTodo(
       title,
       description,
-      date, // dueDate
+      dueDate,
       notificationTime: notificationDateTime,
     );
   }
