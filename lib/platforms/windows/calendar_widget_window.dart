@@ -10,6 +10,7 @@
 /// - Draggable header
 /// - Always on top option
 /// - System tray integration
+/// - OAuth login (Google, Kakao)
 library;
 
 import 'dart:io';
@@ -19,7 +20,10 @@ import 'package:table_calendar/table_calendar.dart';
 import 'package:window_manager/window_manager.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:todo_app/core/theme/app_colors.dart';
+import 'package:todo_app/core/config/oauth_redirect.dart';
+import 'package:todo_app/core/utils/app_logger.dart';
 import 'package:todo_app/domain/entities/todo.dart';
 import 'package:todo_app/presentation/providers/todo_providers.dart';
 import 'package:todo_app/presentation/providers/theme_provider.dart';
@@ -84,7 +88,7 @@ class _CalendarWidgetWindowState extends ConsumerState<CalendarWidgetWindow>
     final themeMode = ref.watch(themeProvider);
     final isDarkMode = themeMode == ThemeMode.dark;
     final primaryColor = ref.watch(primaryColorProvider);
-    final todosAsync = ref.watch(todosProvider);
+    final authState = ref.watch(currentUserProvider);
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -104,22 +108,55 @@ class _CalendarWidgetWindowState extends ConsumerState<CalendarWidgetWindow>
                 ),
               ],
             ),
-            child: Column(
-              children: [
-                _buildDragHeader(isDarkMode, primaryColor),
-                Expanded(
-                  child: todosAsync.when(
-                    data: (todos) => _buildCalendarContent(todos, isDarkMode, primaryColor),
-                    loading: () => const Center(child: CircularProgressIndicator()),
-                    error: (e, st) => Center(
-                      child: Text(
-                        'Error: $e',
-                        style: TextStyle(color: AppColors.getText(isDarkMode)),
+            child: authState.when(
+              data: (user) {
+                if (user == null) {
+                  // Show login screen
+                  return Column(
+                    children: [
+                      _buildDragHeader(isDarkMode, primaryColor, showLogout: false),
+                      Expanded(
+                        child: _buildLoginScreen(isDarkMode, primaryColor),
+                      ),
+                    ],
+                  );
+                }
+                // Show calendar content
+                final todosAsync = ref.watch(todosProvider);
+                return Column(
+                  children: [
+                    _buildDragHeader(isDarkMode, primaryColor, showLogout: true),
+                    Expanded(
+                      child: todosAsync.when(
+                        data: (todos) => _buildCalendarContent(todos, isDarkMode, primaryColor),
+                        loading: () => const Center(child: CircularProgressIndicator()),
+                        error: (e, st) => Center(
+                          child: Text(
+                            'Error: $e',
+                            style: TextStyle(color: AppColors.getText(isDarkMode)),
+                          ),
+                        ),
                       ),
                     ),
+                  ],
+                );
+              },
+              loading: () => Column(
+                children: [
+                  _buildDragHeader(isDarkMode, primaryColor, showLogout: false),
+                  const Expanded(
+                    child: Center(child: CircularProgressIndicator()),
                   ),
-                ),
-              ],
+                ],
+              ),
+              error: (e, st) => Column(
+                children: [
+                  _buildDragHeader(isDarkMode, primaryColor, showLogout: false),
+                  Expanded(
+                    child: _buildLoginScreen(isDarkMode, primaryColor),
+                  ),
+                ],
+              ),
             ),
           ),
           // Resize handles
@@ -129,7 +166,7 @@ class _CalendarWidgetWindowState extends ConsumerState<CalendarWidgetWindow>
     );
   }
 
-  Widget _buildDragHeader(bool isDarkMode, Color primaryColor) {
+  Widget _buildDragHeader(bool isDarkMode, Color primaryColor, {bool showLogout = true}) {
     return GestureDetector(
       onPanStart: (_) {
         if (Platform.isWindows || Platform.isMacOS || Platform.isLinux) {
@@ -156,12 +193,14 @@ class _CalendarWidgetWindowState extends ConsumerState<CalendarWidgetWindow>
               ),
             ),
             const Spacer(),
-            // Logout button
-            _buildWindowButton(
-              FluentIcons.sign_out_24_regular,
-              () => _showLogoutConfirmDialog(),
-            ),
-            const SizedBox(width: 4),
+            // Logout button (only show when logged in)
+            if (showLogout) ...[
+              _buildWindowButton(
+                FluentIcons.sign_out_24_regular,
+                () => _showLogoutConfirmDialog(),
+              ),
+              const SizedBox(width: 4),
+            ],
             // Always on top toggle
             _buildWindowButton(
               _isAlwaysOnTop
@@ -1039,10 +1078,316 @@ class _CalendarWidgetWindowState extends ConsumerState<CalendarWidgetWindow>
     // Perform logout
     await ref.read(authActionsProvider).logout();
 
-    // Show login screen or close widget
-    if (mounted && (Platform.isWindows || Platform.isMacOS || Platform.isLinux)) {
-      // Hide the calendar widget window after logout
-      await windowManager.hide();
+    // Stay on login screen instead of hiding
+    // Widget will auto-show login screen via authState watch
+  }
+
+  // Login screen for unauthenticated users
+  Widget _buildLoginScreen(bool isDarkMode, Color primaryColor) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const SizedBox(height: 20),
+          // App icon
+          Container(
+            width: 56,
+            height: 56,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [primaryColor, primaryColor.withOpacity(0.7)],
+              ),
+              borderRadius: BorderRadius.circular(14),
+              boxShadow: [
+                BoxShadow(
+                  color: primaryColor.withOpacity(0.3),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: const Icon(
+              FluentIcons.checkmark_circle_24_filled,
+              color: Colors.white,
+              size: 32,
+            ),
+          ),
+          const SizedBox(height: 16),
+          // Title
+          Text(
+            'login'.tr(),
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: AppColors.getText(isDarkMode),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'login_subtitle'.tr(),
+            style: TextStyle(
+              fontSize: 12,
+              color: AppColors.getTextSecondary(isDarkMode),
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 24),
+
+          // Email/Password Login Section
+          _buildEmailLoginSection(isDarkMode, primaryColor),
+
+          const SizedBox(height: 16),
+
+          // Divider with "or"
+          Row(
+            children: [
+              Expanded(child: Divider(color: AppColors.getBorder(isDarkMode))),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                child: Text(
+                  'or'.tr(),
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: AppColors.getTextSecondary(isDarkMode),
+                  ),
+                ),
+              ),
+              Expanded(child: Divider(color: AppColors.getBorder(isDarkMode))),
+            ],
+          ),
+
+          const SizedBox(height: 16),
+
+          // Google Login Button
+          _buildOAuthButton(
+            label: 'google_login'.tr(),
+            icon: FluentIcons.globe_24_regular,
+            backgroundColor: Colors.white,
+            textColor: Colors.black87,
+            onPressed: _signInWithGoogle,
+            isDarkMode: isDarkMode,
+          ),
+
+          const SizedBox(height: 10),
+
+          // Kakao Login Button
+          _buildOAuthButton(
+            label: 'kakao_login'.tr(),
+            icon: FluentIcons.chat_24_regular,
+            backgroundColor: const Color(0xFFFEE500),
+            textColor: Colors.black87,
+            onPressed: _signInWithKakao,
+            isDarkMode: isDarkMode,
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Email login section with text fields
+  Widget _buildEmailLoginSection(bool isDarkMode, Color primaryColor) {
+    final emailController = TextEditingController();
+    final passwordController = TextEditingController();
+
+    return StatefulBuilder(
+      builder: (context, setLoginState) {
+        return Column(
+          children: [
+            // Email input
+            TextField(
+              controller: emailController,
+              keyboardType: TextInputType.emailAddress,
+              style: TextStyle(
+                fontSize: 13,
+                color: AppColors.getText(isDarkMode),
+              ),
+              decoration: InputDecoration(
+                hintText: 'email'.tr(),
+                hintStyle: TextStyle(
+                  color: AppColors.getTextSecondary(isDarkMode),
+                  fontSize: 13,
+                ),
+                prefixIcon: Icon(
+                  FluentIcons.mail_24_regular,
+                  size: 18,
+                  color: AppColors.getTextSecondary(isDarkMode),
+                ),
+                filled: true,
+                fillColor: AppColors.getInput(isDarkMode),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide.none,
+                ),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              ),
+            ),
+            const SizedBox(height: 10),
+            // Password input
+            TextField(
+              controller: passwordController,
+              obscureText: true,
+              style: TextStyle(
+                fontSize: 13,
+                color: AppColors.getText(isDarkMode),
+              ),
+              decoration: InputDecoration(
+                hintText: 'password'.tr(),
+                hintStyle: TextStyle(
+                  color: AppColors.getTextSecondary(isDarkMode),
+                  fontSize: 13,
+                ),
+                prefixIcon: Icon(
+                  FluentIcons.lock_closed_24_regular,
+                  size: 18,
+                  color: AppColors.getTextSecondary(isDarkMode),
+                ),
+                filled: true,
+                fillColor: AppColors.getInput(isDarkMode),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide.none,
+                ),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              ),
+              onSubmitted: (_) => _signInWithEmail(emailController.text, passwordController.text),
+            ),
+            const SizedBox(height: 12),
+            // Login button
+            SizedBox(
+              width: double.infinity,
+              height: 40,
+              child: ElevatedButton(
+                onPressed: () => _signInWithEmail(emailController.text, passwordController.text),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: primaryColor,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                child: Text(
+                  'login'.tr(),
+                  style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // OAuth button builder
+  Widget _buildOAuthButton({
+    required String label,
+    required IconData icon,
+    required Color backgroundColor,
+    required Color textColor,
+    required VoidCallback onPressed,
+    required bool isDarkMode,
+  }) {
+    return SizedBox(
+      width: double.infinity,
+      height: 40,
+      child: ElevatedButton.icon(
+        onPressed: onPressed,
+        icon: Icon(icon, size: 18),
+        label: Text(
+          label,
+          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+        ),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: backgroundColor,
+          foregroundColor: textColor,
+          elevation: 2,
+          shadowColor: Colors.black.withOpacity(0.15),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Email/Password login
+  Future<void> _signInWithEmail(String email, String password) async {
+    if (email.isEmpty || password.isEmpty) {
+      _showSnackBar('email_password_required'.tr());
+      return;
     }
+
+    try {
+      logger.d('🔐 Widget login attempt: $email');
+      await Supabase.instance.client.auth.signInWithPassword(
+        email: email.trim(),
+        password: password,
+      );
+      logger.d('✅ Widget login successful');
+    } catch (e) {
+      logger.e('❌ Widget login error: $e');
+      if (mounted) {
+        _showSnackBar('${'login_failed'.tr()}: ${e.toString()}');
+      }
+    }
+  }
+
+  // Google OAuth login
+  Future<void> _signInWithGoogle() async {
+    try {
+      final redirectUrl = oauthRedirectUrl();
+      logger.d('🔗 Google OAuth redirectTo: $redirectUrl');
+
+      final response = await Supabase.instance.client.auth.signInWithOAuth(
+        OAuthProvider.google,
+        redirectTo: redirectUrl,
+        authScreenLaunchMode: LaunchMode.externalApplication,
+      );
+
+      if (!response) {
+        throw 'google_login_failed'.tr();
+      }
+      logger.d('✅ Google OAuth initiated');
+    } catch (e) {
+      logger.e('❌ Google OAuth error: $e');
+      if (mounted) {
+        _showSnackBar('${'google_login_failed'.tr()}: ${e.toString()}');
+      }
+    }
+  }
+
+  // Kakao OAuth login
+  Future<void> _signInWithKakao() async {
+    try {
+      final redirectUrl = oauthRedirectUrl();
+      logger.d('🔗 Kakao OAuth redirectTo: $redirectUrl');
+
+      final response = await Supabase.instance.client.auth.signInWithOAuth(
+        OAuthProvider.kakao,
+        redirectTo: redirectUrl,
+        authScreenLaunchMode: LaunchMode.externalApplication,
+      );
+
+      if (!response) {
+        throw 'kakao_login_failed'.tr();
+      }
+      logger.d('✅ Kakao OAuth initiated');
+    } catch (e) {
+      logger.e('❌ Kakao OAuth error: $e');
+      if (mounted) {
+        _showSnackBar('${'kakao_login_failed'.tr()}: ${e.toString()}');
+      }
+    }
+  }
+
+  void _showSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message, style: const TextStyle(fontSize: 12)),
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.all(16),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      ),
+    );
   }
 }
