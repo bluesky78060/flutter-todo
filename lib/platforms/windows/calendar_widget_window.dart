@@ -201,6 +201,14 @@ class _CalendarWidgetWindowState extends ConsumerState<CalendarWidgetWindow>
               ),
               const SizedBox(width: 4),
             ],
+            // Exit button (only show on login screen)
+            if (!showLogout) ...[
+              _buildWindowButton(
+                FluentIcons.power_24_regular,
+                () => _showExitConfirmDialog(),
+              ),
+              const SizedBox(width: 4),
+            ],
             // Always on top toggle
             _buildWindowButton(
               _isAlwaysOnTop
@@ -1080,6 +1088,73 @@ class _CalendarWidgetWindowState extends ConsumerState<CalendarWidgetWindow>
 
     // Stay on login screen instead of hiding
     // Widget will auto-show login screen via authState watch
+  }
+
+  void _showExitConfirmDialog() {
+    final themeMode = ref.read(themeProvider);
+    final isDarkMode = themeMode == ThemeMode.dark;
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppColors.getCard(isDarkMode),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        title: Row(
+          children: [
+            const Icon(
+              FluentIcons.power_24_regular,
+              color: AppColors.dangerRed,
+              size: 20,
+            ),
+            const SizedBox(width: 8),
+            Text(
+              'exit'.tr(),
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: AppColors.getText(isDarkMode),
+              ),
+            ),
+          ],
+        ),
+        content: Text(
+          'exit_confirm'.tr(),
+          style: TextStyle(
+            fontSize: 13,
+            color: AppColors.getTextSecondary(isDarkMode),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              'cancel'.tr(),
+              style: TextStyle(color: AppColors.getTextSecondary(isDarkMode)),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _performExit();
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.dangerRed,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            child: Text('exit'.tr()),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _performExit() async {
+    if (Platform.isWindows || Platform.isMacOS || Platform.isLinux) {
+      await windowManager.close();
+    }
   }
 
   // Login screen for unauthenticated users
