@@ -1160,70 +1160,70 @@ class _CalendarWidgetWindowState extends ConsumerState<CalendarWidgetWindow>
   // Login screen for unauthenticated users
   Widget _buildLoginScreen(bool isDarkMode, Color primaryColor) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const SizedBox(height: 20),
+          const SizedBox(height: 8),
           // App icon
           Container(
-            width: 56,
-            height: 56,
+            width: 48,
+            height: 48,
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [primaryColor, primaryColor.withOpacity(0.7)],
               ),
-              borderRadius: BorderRadius.circular(14),
+              borderRadius: BorderRadius.circular(12),
               boxShadow: [
                 BoxShadow(
                   color: primaryColor.withOpacity(0.3),
-                  blurRadius: 12,
-                  offset: const Offset(0, 4),
+                  blurRadius: 10,
+                  offset: const Offset(0, 3),
                 ),
               ],
             ),
             child: const Icon(
               FluentIcons.checkmark_circle_24_filled,
               color: Colors.white,
-              size: 32,
+              size: 28,
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           // Title
           Text(
             'login'.tr(),
             style: TextStyle(
-              fontSize: 18,
+              fontSize: 16,
               fontWeight: FontWeight.bold,
               color: AppColors.getText(isDarkMode),
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 4),
           Text(
             'login_subtitle'.tr(),
             style: TextStyle(
-              fontSize: 12,
+              fontSize: 11,
               color: AppColors.getTextSecondary(isDarkMode),
             ),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 16),
 
           // Email/Password Login Section
           _buildEmailLoginSection(isDarkMode, primaryColor),
 
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
 
           // Divider with "or"
           Row(
             children: [
               Expanded(child: Divider(color: AppColors.getBorder(isDarkMode))),
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12),
+                padding: const EdgeInsets.symmetric(horizontal: 10),
                 child: Text(
                   'or'.tr(),
                   style: TextStyle(
-                    fontSize: 11,
+                    fontSize: 10,
                     color: AppColors.getTextSecondary(isDarkMode),
                   ),
                 ),
@@ -1232,7 +1232,7 @@ class _CalendarWidgetWindowState extends ConsumerState<CalendarWidgetWindow>
             ],
           ),
 
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
 
           // Google Login Button
           _buildOAuthButton(
@@ -1244,7 +1244,7 @@ class _CalendarWidgetWindowState extends ConsumerState<CalendarWidgetWindow>
             isDarkMode: isDarkMode,
           ),
 
-          const SizedBox(height: 10),
+          const SizedBox(height: 8),
 
           // Kakao Login Button
           _buildOAuthButton(
@@ -1270,68 +1270,74 @@ class _CalendarWidgetWindowState extends ConsumerState<CalendarWidgetWindow>
         return Column(
           children: [
             // Email input
-            TextField(
-              controller: emailController,
-              keyboardType: TextInputType.emailAddress,
-              style: TextStyle(
-                fontSize: 13,
-                color: AppColors.getText(isDarkMode),
+            SizedBox(
+              height: 38,
+              child: TextField(
+                controller: emailController,
+                keyboardType: TextInputType.emailAddress,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: AppColors.getText(isDarkMode),
+                ),
+                decoration: InputDecoration(
+                  hintText: 'email'.tr(),
+                  hintStyle: TextStyle(
+                    color: AppColors.getTextSecondary(isDarkMode),
+                    fontSize: 12,
+                  ),
+                  prefixIcon: Icon(
+                    FluentIcons.mail_24_regular,
+                    size: 16,
+                    color: AppColors.getTextSecondary(isDarkMode),
+                  ),
+                  filled: true,
+                  fillColor: AppColors.getInput(isDarkMode),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide.none,
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                ),
               ),
-              decoration: InputDecoration(
-                hintText: 'email'.tr(),
-                hintStyle: TextStyle(
-                  color: AppColors.getTextSecondary(isDarkMode),
-                  fontSize: 13,
+            ),
+            const SizedBox(height: 8),
+            // Password input
+            SizedBox(
+              height: 38,
+              child: TextField(
+                controller: passwordController,
+                obscureText: true,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: AppColors.getText(isDarkMode),
                 ),
-                prefixIcon: Icon(
-                  FluentIcons.mail_24_regular,
-                  size: 18,
-                  color: AppColors.getTextSecondary(isDarkMode),
+                decoration: InputDecoration(
+                  hintText: 'password'.tr(),
+                  hintStyle: TextStyle(
+                    color: AppColors.getTextSecondary(isDarkMode),
+                    fontSize: 12,
+                  ),
+                  prefixIcon: Icon(
+                    FluentIcons.lock_closed_24_regular,
+                    size: 16,
+                    color: AppColors.getTextSecondary(isDarkMode),
+                  ),
+                  filled: true,
+                  fillColor: AppColors.getInput(isDarkMode),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide.none,
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                 ),
-                filled: true,
-                fillColor: AppColors.getInput(isDarkMode),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide.none,
-                ),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                onSubmitted: (_) => _signInWithEmail(emailController.text, passwordController.text),
               ),
             ),
             const SizedBox(height: 10),
-            // Password input
-            TextField(
-              controller: passwordController,
-              obscureText: true,
-              style: TextStyle(
-                fontSize: 13,
-                color: AppColors.getText(isDarkMode),
-              ),
-              decoration: InputDecoration(
-                hintText: 'password'.tr(),
-                hintStyle: TextStyle(
-                  color: AppColors.getTextSecondary(isDarkMode),
-                  fontSize: 13,
-                ),
-                prefixIcon: Icon(
-                  FluentIcons.lock_closed_24_regular,
-                  size: 18,
-                  color: AppColors.getTextSecondary(isDarkMode),
-                ),
-                filled: true,
-                fillColor: AppColors.getInput(isDarkMode),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide.none,
-                ),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-              ),
-              onSubmitted: (_) => _signInWithEmail(emailController.text, passwordController.text),
-            ),
-            const SizedBox(height: 12),
             // Login button
             SizedBox(
               width: double.infinity,
-              height: 40,
+              height: 36,
               child: ElevatedButton(
                 onPressed: () => _signInWithEmail(emailController.text, passwordController.text),
                 style: ElevatedButton.styleFrom(
@@ -1343,7 +1349,7 @@ class _CalendarWidgetWindowState extends ConsumerState<CalendarWidgetWindow>
                 ),
                 child: Text(
                   'login'.tr(),
-                  style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
                 ),
               ),
             ),
@@ -1364,13 +1370,13 @@ class _CalendarWidgetWindowState extends ConsumerState<CalendarWidgetWindow>
   }) {
     return SizedBox(
       width: double.infinity,
-      height: 40,
+      height: 36,
       child: ElevatedButton.icon(
         onPressed: onPressed,
-        icon: Icon(icon, size: 18),
+        icon: Icon(icon, size: 16),
         label: Text(
           label,
-          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+          style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w500),
         ),
         style: ElevatedButton.styleFrom(
           backgroundColor: backgroundColor,
