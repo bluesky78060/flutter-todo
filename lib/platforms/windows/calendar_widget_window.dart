@@ -24,6 +24,7 @@ import 'package:todo_app/domain/entities/todo.dart';
 import 'package:todo_app/presentation/providers/todo_providers.dart';
 import 'package:todo_app/presentation/providers/theme_provider.dart';
 import 'package:todo_app/presentation/providers/theme_customization_provider.dart';
+import 'package:todo_app/presentation/providers/auth_providers.dart';
 
 /// Calendar widget window for Windows desktop
 class CalendarWidgetWindow extends ConsumerStatefulWidget {
@@ -127,6 +128,12 @@ class _CalendarWidgetWindowState extends ConsumerState<CalendarWidgetWindow>
               ),
             ),
             const Spacer(),
+            // Logout button
+            _buildWindowButton(
+              FluentIcons.sign_out_24_regular,
+              () => _showLogoutConfirmDialog(),
+            ),
+            const SizedBox(width: 4),
             // Always on top toggle
             _buildWindowButton(
               _isAlwaysOnTop
@@ -546,5 +553,77 @@ class _CalendarWidgetWindowState extends ConsumerState<CalendarWidgetWindow>
       '', // description
       date, // dueDate
     );
+  }
+
+  void _showLogoutConfirmDialog() {
+    final themeMode = ref.read(themeProvider);
+    final isDarkMode = themeMode == ThemeMode.dark;
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppColors.getCard(isDarkMode),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        title: Row(
+          children: [
+            Icon(
+              FluentIcons.sign_out_24_regular,
+              color: AppColors.dangerRed,
+              size: 20,
+            ),
+            const SizedBox(width: 8),
+            Text(
+              'logout'.tr(),
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: AppColors.getText(isDarkMode),
+              ),
+            ),
+          ],
+        ),
+        content: Text(
+          'logout_confirm'.tr(),
+          style: TextStyle(
+            fontSize: 13,
+            color: AppColors.getTextSecondary(isDarkMode),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              'cancel'.tr(),
+              style: TextStyle(color: AppColors.getTextSecondary(isDarkMode)),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _performLogout();
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.dangerRed,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            child: Text('logout'.tr()),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _performLogout() async {
+    // Perform logout
+    await ref.read(authActionsProvider).logout();
+
+    // Show login screen or close widget
+    if (mounted && (Platform.isWindows || Platform.isMacOS || Platform.isLinux)) {
+      // Hide the calendar widget window after logout
+      await windowManager.hide();
+    }
   }
 }
