@@ -51,10 +51,10 @@ class _CalendarWidgetWindowState extends ConsumerState<CalendarWidgetWindow>
   bool _isResizing = false;
 
   // Min/max window sizes for resizing
-  static const double _minWidth = 280;
-  static const double _minHeight = 400;
-  static const double _maxWidth = 500;
-  static const double _maxHeight = 700;
+  static const double _minWidth = 320;
+  static const double _minHeight = 500;
+  static const double _maxWidth = 550;
+  static const double _maxHeight = 800;
 
   @override
   void initState() {
@@ -578,66 +578,112 @@ class _CalendarWidgetWindowState extends ConsumerState<CalendarWidgetWindow>
   }
 
   Widget _buildCompactTodoItem(Todo todo, bool isDarkMode, Color primaryColor) {
+    final hasDescription = todo.description.isNotEmpty;
+
     return Container(
-      margin: const EdgeInsets.only(bottom: 4),
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+      margin: const EdgeInsets.only(bottom: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
       decoration: BoxDecoration(
         color: AppColors.getInput(isDarkMode),
-        borderRadius: BorderRadius.circular(6),
+        borderRadius: BorderRadius.circular(8),
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Completion checkbox
-          GestureDetector(
-            onTap: () {
-              // Toggle todo completion using updateTodo
-              final actions = ref.read(todoActionsProvider);
-              final updatedTodo = todo.copyWith(
-                isCompleted: !todo.isCompleted,
-                completedAt: !todo.isCompleted ? DateTime.now() : null,
-              );
-              actions.updateTodo(updatedTodo);
-            },
-            child: Icon(
-              todo.isCompleted
-                  ? FluentIcons.checkmark_circle_24_filled
-                  : FluentIcons.circle_24_regular,
-              size: 14,
-              color: todo.isCompleted ? primaryColor : AppColors.getTextSecondary(isDarkMode),
-            ),
-          ),
-          const SizedBox(width: 6),
-          // Title
-          Expanded(
-            child: Text(
-              todo.title,
-              style: TextStyle(
-                fontSize: 11,
-                color: todo.isCompleted
-                    ? AppColors.getTextSecondary(isDarkMode)
-                    : AppColors.getText(isDarkMode),
-                decoration: todo.isCompleted ? TextDecoration.lineThrough : null,
+          // Header row with checkbox, title, and time
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Completion checkbox
+              GestureDetector(
+                onTap: () {
+                  // Toggle todo completion using updateTodo
+                  final actions = ref.read(todoActionsProvider);
+                  final updatedTodo = todo.copyWith(
+                    isCompleted: !todo.isCompleted,
+                    completedAt: !todo.isCompleted ? DateTime.now() : null,
+                  );
+                  actions.updateTodo(updatedTodo);
+                },
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 2),
+                  child: Icon(
+                    todo.isCompleted
+                        ? FluentIcons.checkmark_circle_24_filled
+                        : FluentIcons.circle_24_regular,
+                    size: 16,
+                    color: todo.isCompleted ? primaryColor : AppColors.getTextSecondary(isDarkMode),
+                  ),
+                ),
               ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
+              const SizedBox(width: 8),
+              // Title
+              Expanded(
+                child: Text(
+                  todo.title,
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                    color: todo.isCompleted
+                        ? AppColors.getTextSecondary(isDarkMode)
+                        : AppColors.getText(isDarkMode),
+                    decoration: todo.isCompleted ? TextDecoration.lineThrough : null,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              // Time indicator
+              if (todo.notificationTime != null)
+                Padding(
+                  padding: const EdgeInsets.only(left: 6, top: 2),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        FluentIcons.alert_12_regular,
+                        size: 10,
+                        color: AppColors.getTextSecondary(isDarkMode),
+                      ),
+                      const SizedBox(width: 2),
+                      Text(
+                        DateFormat('HH:mm').format(todo.notificationTime!),
+                        style: TextStyle(
+                          fontSize: 10,
+                          color: AppColors.getTextSecondary(isDarkMode),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+            ],
           ),
-          // Time indicator
-          if (todo.notificationTime != null)
-            Text(
-              DateFormat('HH:mm').format(todo.notificationTime!),
-              style: TextStyle(
-                fontSize: 9,
-                color: AppColors.getTextSecondary(isDarkMode),
+          // Description (max 3 lines)
+          if (hasDescription) ...[
+            const SizedBox(height: 4),
+            Padding(
+              padding: const EdgeInsets.only(left: 24),
+              child: Text(
+                todo.description,
+                style: TextStyle(
+                  fontSize: 10,
+                  color: AppColors.getTextSecondary(isDarkMode),
+                  height: 1.3,
+                  decoration: todo.isCompleted ? TextDecoration.lineThrough : null,
+                ),
+                maxLines: 3,
+                overflow: TextOverflow.ellipsis,
               ),
             ),
+          ],
         ],
       ),
     );
   }
 
   void _showQuickAddDialog(DateTime date, bool isDarkMode, Color primaryColor) {
-    final controller = TextEditingController();
+    final titleController = TextEditingController();
+    final descriptionController = TextEditingController();
     TimeOfDay? selectedTime;
 
     showDialog(
@@ -653,33 +699,58 @@ class _CalendarWidgetWindowState extends ConsumerState<CalendarWidgetWindow>
               color: AppColors.getText(isDarkMode),
             ),
           ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Title input
-              TextField(
-                controller: controller,
-                autofocus: true,
-                style: TextStyle(
-                  fontSize: 13,
-                  color: AppColors.getText(isDarkMode),
-                ),
-                decoration: InputDecoration(
-                  hintText: 'title_hint'.tr(),
-                  hintStyle: TextStyle(
-                    color: AppColors.getTextSecondary(isDarkMode),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Title input
+                TextField(
+                  controller: titleController,
+                  autofocus: true,
+                  style: TextStyle(
                     fontSize: 13,
+                    color: AppColors.getText(isDarkMode),
                   ),
-                  filled: true,
-                  fillColor: AppColors.getInput(isDarkMode),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide.none,
+                  decoration: InputDecoration(
+                    hintText: 'title_hint'.tr(),
+                    hintStyle: TextStyle(
+                      color: AppColors.getTextSecondary(isDarkMode),
+                      fontSize: 13,
+                    ),
+                    filled: true,
+                    fillColor: AppColors.getInput(isDarkMode),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide.none,
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                   ),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                 ),
-              ),
-              const SizedBox(height: 12),
+                const SizedBox(height: 10),
+                // Description input
+                TextField(
+                  controller: descriptionController,
+                  maxLines: 3,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: AppColors.getText(isDarkMode),
+                  ),
+                  decoration: InputDecoration(
+                    hintText: 'description_hint'.tr(),
+                    hintStyle: TextStyle(
+                      color: AppColors.getTextSecondary(isDarkMode),
+                      fontSize: 12,
+                    ),
+                    filled: true,
+                    fillColor: AppColors.getInput(isDarkMode),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide.none,
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  ),
+                ),
+                const SizedBox(height: 10),
               // Notification time selector
               InkWell(
                 onTap: () async {
@@ -745,11 +816,12 @@ class _CalendarWidgetWindowState extends ConsumerState<CalendarWidgetWindow>
                             color: AppColors.getTextSecondary(isDarkMode),
                           ),
                         ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
           actions: [
             TextButton(
@@ -761,8 +833,8 @@ class _CalendarWidgetWindowState extends ConsumerState<CalendarWidgetWindow>
             ),
             ElevatedButton(
               onPressed: () {
-                if (controller.text.isNotEmpty) {
-                  _addTodo(date, controller.text, selectedTime);
+                if (titleController.text.isNotEmpty) {
+                  _addTodo(date, titleController.text, descriptionController.text, selectedTime);
                   Navigator.pop(context);
                 }
               },
@@ -781,7 +853,7 @@ class _CalendarWidgetWindowState extends ConsumerState<CalendarWidgetWindow>
     );
   }
 
-  void _addTodo(DateTime date, String title, TimeOfDay? notificationTime) {
+  void _addTodo(DateTime date, String title, String description, TimeOfDay? notificationTime) {
     final actions = ref.read(todoActionsProvider);
 
     // Create notification DateTime if time is selected
@@ -798,7 +870,7 @@ class _CalendarWidgetWindowState extends ConsumerState<CalendarWidgetWindow>
 
     actions.createTodo(
       title,
-      '', // description
+      description,
       date, // dueDate
       notificationTime: notificationDateTime,
     );
