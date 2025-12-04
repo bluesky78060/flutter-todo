@@ -769,5 +769,8 @@
   "update_failed": "업데이트 실패",
   "remove_failed": "삭제 실패",
   "error_loading_profile": "프로필 로딩 오류",
-  "email_cannot_be_changed": "이메일은 변경할 수 없습니다"
+  "email_cannot_be_changed": "이메일은 변경할 수 없습니다",
+
+  "exit": "종료",
+  "exit_confirm": "위젯을 종료하시겠습니까?"
 }
