@@ -21,6 +21,12 @@ jobs:
     - name: Get dependencies
       run: flutter pub get
 
+    - name: Create .env file
+      run: |
+        echo "# Environment configuration for build" > .env
+        echo "SUPABASE_URL=https://example.com" >> .env
+        echo "SUPABASE_ANON_KEY=example_key" >> .env
+
     - name: Build Windows
       run: flutter build windows --release
 
