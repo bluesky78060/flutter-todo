@@ -18,9 +18,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:todo_app/core/theme/app_colors.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:todo_app/presentation/providers/auth_providers.dart';
 import 'package:todo_app/presentation/providers/profile_provider.dart';
 import 'package:todo_app/presentation/providers/theme_provider.dart';
+import 'package:todo_app/core/utils/app_logger.dart';
 
 /// Profile editing screen widget.
 class ProfileEditScreen extends ConsumerStatefulWidget {
@@ -34,7 +36,12 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
   late TextEditingController _displayNameController;
+  late TextEditingController _passwordController;
+  late TextEditingController _confirmPasswordController;
   bool _isEditing = false;
+  bool _isSettingPassword = false;
+  bool _obscurePassword = true;
+  bool _obscureConfirmPassword = true;
 
   @override
   void initState() {
@@ -44,6 +51,8 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen>
       duration: const Duration(seconds: 20),
     )..repeat();
     _displayNameController = TextEditingController();
+    _passwordController = TextEditingController();
+    _confirmPasswordController = TextEditingController();
 
     // Initialize with current display name
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -62,6 +71,8 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen>
   void dispose() {
     _animationController.dispose();
     _displayNameController.dispose();
+    _passwordController.dispose();
+    _confirmPasswordController.dispose();
     super.dispose();
   }
 
@@ -174,6 +185,14 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen>
                               textColor,
                               subTextColor,
                               user.email,
+                            ),
+                            const SizedBox(height: 24),
+
+                            // Password Section (for SNS login users)
+                            _buildPasswordSection(
+                              isDarkMode,
+                              textColor,
+                              subTextColor,
                             ),
                             const SizedBox(height: 40),
                           ],
@@ -567,6 +586,199 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen>
         ],
       ),
     );
+  }
+
+  Widget _buildPasswordSection(
+    bool isDarkMode,
+    Color textColor,
+    Color subTextColor,
+  ) {
+    return _buildGlassCard(
+      isDarkMode: isDarkMode,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: isDarkMode
+                      ? Colors.white.withValues(alpha: 0.1)
+                      : Colors.black.withValues(alpha: 0.05),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(
+                  FluentIcons.key_24_regular,
+                  color: AppColors.primary,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Text(
+                'set_password'.tr(),
+                style: TextStyle(
+                  color: textColor,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'set_password_description'.tr(),
+            style: TextStyle(
+              color: subTextColor.withValues(alpha: 0.7),
+              fontSize: 13,
+            ),
+          ),
+          const SizedBox(height: 16),
+          // New Password Field
+          TextField(
+            controller: _passwordController,
+            obscureText: _obscurePassword,
+            style: TextStyle(color: textColor),
+            decoration: InputDecoration(
+              hintText: 'new_password'.tr(),
+              hintStyle: TextStyle(color: subTextColor),
+              filled: true,
+              fillColor: isDarkMode
+                  ? Colors.white.withValues(alpha: 0.05)
+                  : Colors.black.withValues(alpha: 0.03),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide.none,
+              ),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 14,
+              ),
+              suffixIcon: IconButton(
+                icon: Icon(
+                  _obscurePassword
+                      ? FluentIcons.eye_24_regular
+                      : FluentIcons.eye_off_24_regular,
+                  color: subTextColor,
+                ),
+                onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          // Confirm Password Field
+          TextField(
+            controller: _confirmPasswordController,
+            obscureText: _obscureConfirmPassword,
+            style: TextStyle(color: textColor),
+            decoration: InputDecoration(
+              hintText: 'confirm_password'.tr(),
+              hintStyle: TextStyle(color: subTextColor),
+              filled: true,
+              fillColor: isDarkMode
+                  ? Colors.white.withValues(alpha: 0.05)
+                  : Colors.black.withValues(alpha: 0.03),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide.none,
+              ),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 14,
+              ),
+              suffixIcon: IconButton(
+                icon: Icon(
+                  _obscureConfirmPassword
+                      ? FluentIcons.eye_24_regular
+                      : FluentIcons.eye_off_24_regular,
+                  color: subTextColor,
+                ),
+                onPressed: () => setState(() => _obscureConfirmPassword = !_obscureConfirmPassword),
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: _isSettingPassword ? null : _setPassword,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: Colors.white,
+                disabledBackgroundColor: isDarkMode
+                    ? Colors.white.withValues(alpha: 0.1)
+                    : Colors.black.withValues(alpha: 0.1),
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: _isSettingPassword
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                  : Text('set_password'.tr()),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _setPassword() async {
+    final password = _passwordController.text;
+    final confirmPassword = _confirmPasswordController.text;
+
+    // Validate password length
+    if (password.length < 6) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('password_min_length'.tr())),
+      );
+      return;
+    }
+
+    // Validate passwords match
+    if (password != confirmPassword) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('passwords_not_match'.tr())),
+      );
+      return;
+    }
+
+    setState(() => _isSettingPassword = true);
+
+    try {
+      logger.d('🔐 Setting password for user');
+      await Supabase.instance.client.auth.updateUser(
+        UserAttributes(password: password),
+      );
+      logger.d('✅ Password set successfully');
+
+      if (mounted) {
+        // Clear password fields
+        _passwordController.clear();
+        _confirmPasswordController.clear();
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('password_set_success'.tr())),
+        );
+      }
+    } catch (e) {
+      logger.e('❌ Failed to set password: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('${'password_set_failed'.tr()}: $e')),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isSettingPassword = false);
+      }
+    }
   }
 
   void _showAvatarOptions() {

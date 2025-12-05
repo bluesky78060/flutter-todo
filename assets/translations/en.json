@@ -780,5 +780,14 @@
   "email_cannot_be_changed": "Email cannot be changed",
 
   "exit": "Exit",
-  "exit_confirm": "Are you sure you want to exit the widget?"
+  "exit_confirm": "Are you sure you want to exit the widget?",
+
+  "set_password": "Set Password",
+  "set_password_description": "Set a password to also login with email and password",
+  "new_password": "New Password",
+  "confirm_password": "Confirm Password",
+  "password_min_length": "Password must be at least 6 characters",
+  "passwords_not_match": "Passwords do not match",
+  "password_set_success": "Password set successfully. You can now login with email",
+  "password_set_failed": "Failed to set password"
 }

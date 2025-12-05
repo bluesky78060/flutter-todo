@@ -159,6 +159,8 @@ Future<void> runAppWithErrorHandling() async {
         anonKey: SupabaseConfig.anonKey,
         authOptions: const FlutterAuthClientOptions(
           authFlowType: AuthFlowType.pkce,
+          // detectSessionInUri enables automatic deep link handling
+          detectSessionInUri: true,
         ),
       );
       logger.d('✅ Supabase initialized for mobile with PKCE auth flow');

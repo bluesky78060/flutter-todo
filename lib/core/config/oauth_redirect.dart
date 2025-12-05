@@ -1,12 +1,13 @@
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:supabase_flutter/supabase_flutter.dart';
 // Use universal_html package for cross-platform compatibility
 import 'package:universal_html/html.dart' as html;
 import 'package:todo_app/core/utils/app_logger.dart';
 
 /// Returns a redirect URL appropriate for the current runtime.
 /// - On web, returns the current origin + /oauth-callback path.
-/// - On mobile/desktop, returns null to use Supabase default deep link.
-String? oauthRedirectUrl() {
+/// - On mobile (Android/iOS), returns null to let Supabase SDK handle deep linking automatically.
+String? oauthRedirectUrl({OAuthProvider? provider}) {
   if (kIsWeb) {
     // On web, explicitly construct the callback URL from current origin + pathname
     final origin = html.window.location.origin;
@@ -23,9 +24,16 @@ String? oauthRedirectUrl() {
     return redirectUrl;
   }
 
-  // For non-web (iOS/Android/desktop), use deep link scheme
-  // Must match the scheme in AndroidManifest.xml / Info.plist
-  const redirectUrl = 'kr.bluesky.dodo://oauth-callback';
-  logger.d('🔗 OAuth Redirect URL (Mobile): $redirectUrl');
-  return redirectUrl;
+  // For mobile - Special handling for Kakao which doesn't work well with custom schemes
+  if (provider == OAuthProvider.kakao) {
+    // Use Supabase's built-in OAuth callback URL for Kakao
+    // This avoids the custom scheme conversion issues
+    const kakaoRedirectUrl = 'https://bulwfcsyqgsvmbadhlye.supabase.co/auth/v1/callback';
+    logger.d('🔗 OAuth Redirect URL (Mobile/Kakao): $kakaoRedirectUrl');
+    return kakaoRedirectUrl;
+  }
+
+  // For other providers (Google), let Supabase SDK handle deep linking automatically
+  logger.d('🔗 OAuth Redirect URL (Mobile): null (SDK handles automatically)');
+  return null;
 }
