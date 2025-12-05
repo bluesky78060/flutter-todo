@@ -136,11 +136,20 @@ class WidgetConfig {
       return;
     }
 
+    debugPrint('🔧 Widget: Starting window initialization...');
+
     await windowManager.ensureInitialized();
+    debugPrint('✅ Widget: windowManager initialized');
 
     final size = getSavedSize();
-    final position = await getSavedPosition();
+    var position = await getSavedPosition();
     final alwaysOnTop = getAlwaysOnTop();
+
+    debugPrint('📐 Widget: size=$size, position=$position, alwaysOnTop=$alwaysOnTop');
+
+    // Validate position is on screen
+    position = await _validatePosition(position, size);
+    debugPrint('📐 Widget: validated position=$position');
 
     final windowOptions = WindowOptions(
       size: size,
@@ -148,19 +157,60 @@ class WidgetConfig {
       maximumSize: maxSize,
       center: false,
       backgroundColor: Colors.transparent,
-      skipTaskbar: true,
+      skipTaskbar: false, // Changed: Show in taskbar for easier debugging
       alwaysOnTop: alwaysOnTop,
       titleBarStyle: TitleBarStyle.hidden,
     );
 
     await windowManager.waitUntilReadyToShow(windowOptions, () async {
+      debugPrint('🪟 Widget: Window ready to show');
       await windowManager.setPosition(position);
+      debugPrint('🪟 Widget: Position set');
       await windowManager.show();
+      debugPrint('🪟 Widget: Window shown');
+      await windowManager.focus();
+      debugPrint('🪟 Widget: Window focused');
       await windowManager.setAsFrameless();
+      debugPrint('✅ Widget: Window initialization complete');
     });
 
     // Listen for window position/size changes to save them
     _setupWindowListener();
+  }
+
+  /// Validate position is within screen bounds
+  Future<Offset> _validatePosition(Offset position, Size size) async {
+    try {
+      final primaryDisplay = await screenRetriever.getPrimaryDisplay();
+      final screenSize = primaryDisplay.size;
+
+      double x = position.dx;
+      double y = position.dy;
+
+      // Ensure window is on screen with at least 100px visible
+      const minVisible = 100.0;
+
+      // Check horizontal bounds
+      if (x < -size.width + minVisible) {
+        x = 0;
+      } else if (x > screenSize.width - minVisible) {
+        x = screenSize.width - size.width - 16;
+      }
+
+      // Check vertical bounds
+      if (y < -size.height + minVisible) {
+        y = 0;
+      } else if (y > screenSize.height - minVisible) {
+        y = screenSize.height - size.height - 64; // Account for taskbar
+      }
+
+      debugPrint('🖥️ Widget: Screen size=$screenSize, adjusted position=($x, $y)');
+      return Offset(x, y);
+    } catch (e) {
+      debugPrint('⚠️ Widget: Position validation failed: $e');
+      // Fallback to safe default position
+      return const Offset(100, 100);
+    }
   }
 
   void _setupWindowListener() {

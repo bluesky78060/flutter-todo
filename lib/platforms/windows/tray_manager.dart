@@ -18,22 +18,50 @@ class TrayManager with TrayListener {
   /// Initialize the system tray
   Future<void> init() async {
     if (!Platform.isWindows && !Platform.isMacOS && !Platform.isLinux) {
+      debugPrint('⚠️ Tray: Not a desktop platform, skipping tray init');
       return;
     }
 
-    if (_isInitialized) return;
+    if (_isInitialized) {
+      debugPrint('⚠️ Tray: Already initialized');
+      return;
+    }
 
     try {
+      debugPrint('🔧 Tray: Starting initialization...');
+
       // Add listener
       trayManager.addListener(this);
+      debugPrint('✅ Tray: Listener added');
 
       // Initialize system tray with icon
+      // Try multiple icon paths for robustness
       String iconPath = Platform.isWindows
           ? 'assets/icon/app_icon.ico'
           : 'assets/icon/app_icon.png';
 
-      await trayManager.setIcon(iconPath);
+      debugPrint('🔧 Tray: Setting icon from: $iconPath');
+
+      try {
+        await trayManager.setIcon(iconPath);
+        debugPrint('✅ Tray: Icon set successfully');
+      } catch (iconError) {
+        debugPrint('⚠️ Tray: Failed to set icon from $iconPath: $iconError');
+        // Try fallback - use executable directory
+        try {
+          final exePath = Platform.resolvedExecutable;
+          final exeDir = exePath.substring(0, exePath.lastIndexOf(Platform.pathSeparator));
+          final fallbackPath = '$exeDir${Platform.pathSeparator}data${Platform.pathSeparator}flutter_assets${Platform.pathSeparator}assets${Platform.pathSeparator}icon${Platform.pathSeparator}app_icon.ico';
+          debugPrint('🔧 Tray: Trying fallback icon: $fallbackPath');
+          await trayManager.setIcon(fallbackPath);
+          debugPrint('✅ Tray: Fallback icon set');
+        } catch (fallbackError) {
+          debugPrint('❌ Tray: Fallback icon also failed: $fallbackError');
+        }
+      }
+
       await trayManager.setToolTip('DoDo Todo Calendar Widget');
+      debugPrint('✅ Tray: Tooltip set');
 
       // Build context menu
       Menu menu = Menu(
@@ -60,10 +88,13 @@ class TrayManager with TrayListener {
       );
 
       await trayManager.setContextMenu(menu);
+      debugPrint('✅ Tray: Context menu set');
 
       _isInitialized = true;
-    } catch (e) {
-      debugPrint('Failed to initialize system tray: $e');
+      debugPrint('✅ Tray: Initialization complete');
+    } catch (e, stackTrace) {
+      debugPrint('❌ Tray: Failed to initialize system tray: $e');
+      debugPrint('❌ Tray: Stack trace: $stackTrace');
     }
   }
 

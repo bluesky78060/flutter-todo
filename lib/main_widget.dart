@@ -33,44 +33,70 @@ import 'package:todo_app/presentation/providers/auth_providers.dart';
 
 /// Widget-specific entry point
 void main() async {
+  logger.d('🚀 Widget: Starting main()...');
+  logger.d('🖥️ Widget: Platform = ${Platform.operatingSystem}');
+
   WidgetsFlutterBinding.ensureInitialized();
+  logger.d('✅ Widget: Flutter binding initialized');
+
   await EasyLocalization.ensureInitialized();
+  logger.d('✅ Widget: EasyLocalization initialized');
 
   // Load environment variables
   try {
     await dotenv.load(fileName: '.env');
-    logger.d('✅ Environment variables loaded for widget');
+    logger.d('✅ Widget: Environment variables loaded');
   } catch (e) {
-    logger.w('⚠️ Could not load .env file: $e');
+    logger.w('⚠️ Widget: Could not load .env file: $e');
   }
 
   // Initialize SharedPreferences
   final prefs = await SharedPreferences.getInstance();
+  logger.d('✅ Widget: SharedPreferences initialized');
 
   // Initialize Supabase for data sync
   try {
+    logger.d('🔧 Widget: Initializing Supabase...');
+    logger.d('🔧 Widget: URL=${SupabaseConfig.url}');
     await Supabase.initialize(
       url: SupabaseConfig.url,
       anonKey: SupabaseConfig.anonKey,
     );
-    logger.d('✅ Supabase initialized for widget');
-  } catch (e) {
-    logger.e('❌ Supabase initialization failed: $e');
+    logger.d('✅ Widget: Supabase initialized');
+  } catch (e, stackTrace) {
+    logger.e('❌ Widget: Supabase initialization failed: $e');
+    logger.e('❌ Widget: Stack trace: $stackTrace');
   }
 
   // Initialize widget configuration and window
   final widgetConfig = WidgetConfig(prefs);
+  logger.d('✅ Widget: WidgetConfig created');
 
   if (Platform.isWindows || Platform.isMacOS || Platform.isLinux) {
-    await widgetConfig.initializeWindow();
-    logger.d('✅ Widget window initialized');
+    logger.d('🔧 Widget: Initializing window...');
+    try {
+      await widgetConfig.initializeWindow();
+      logger.d('✅ Widget: Window initialized');
+    } catch (e, stackTrace) {
+      logger.e('❌ Widget: Window initialization failed: $e');
+      logger.e('❌ Widget: Stack trace: $stackTrace');
+    }
+  } else {
+    logger.d('⚠️ Widget: Not a desktop platform, skipping window init');
   }
 
   // Initialize system tray
+  logger.d('🔧 Widget: Initializing system tray...');
   final trayManager = TrayManager();
-  await trayManager.init();
-  logger.d('✅ System tray initialized');
+  try {
+    await trayManager.init();
+    logger.d('✅ Widget: System tray initialized');
+  } catch (e, stackTrace) {
+    logger.e('❌ Widget: System tray initialization failed: $e');
+    logger.e('❌ Widget: Stack trace: $stackTrace');
+  }
 
+  logger.d('🚀 Widget: Starting Flutter app...');
   runApp(
     EasyLocalization(
       supportedLocales: const [Locale('en'), Locale('ko')],
@@ -87,6 +113,7 @@ void main() async {
       ),
     ),
   );
+  logger.d('✅ Widget: runApp completed');
 }
 
 /// Calendar widget application
