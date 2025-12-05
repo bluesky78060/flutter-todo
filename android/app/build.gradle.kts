@@ -25,7 +25,7 @@ if (localPropertiesFile.exists()) {
 android {
     namespace = "kr.bluesky.dodo"
     compileSdk = flutter.compileSdkVersion
-    // ndkVersion = flutter.ndkVersion
+    ndkVersion = "28.2.13676358"
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
@@ -83,10 +83,10 @@ android {
                 "proguard-rules.pro"
             )
 
-            // 네이티브 디버그 심볼 - NONE으로 설정하여 빌드 에러 우회
-            // Play Console 경고는 무시 가능 (크래시 리포트는 여전히 작동함)
+            // 네이티브 디버그 심볼 - FULL로 설정하여 완전한 디버그 정보 생성
+            // Play Console에서 크래시 리포트를 위해 사용
             ndk {
-                debugSymbolLevel = "NONE"
+                debugSymbolLevel = "FULL"
             }
         }
     }
@@ -94,8 +94,6 @@ android {
     packaging {
         jniLibs {
             useLegacyPackaging = true
-            // 디버그 심볼 유지 (NDK llvm-strip 호환성 문제 우회)
-            keepDebugSymbols += "**/*.so"
             // ============================================================
             // ABI 필터링 (arm64-v8a: 95% 이상의 활성 Android 기기 지원)
             // ============================================================

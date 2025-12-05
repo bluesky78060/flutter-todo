@@ -54,18 +54,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
     try {
       // Supabase OAuth 플로우 사용 (웹에서 작동)
-      final redirectUrl = oauthRedirectUrl();
+      final redirectUrl = oauthRedirectUrl(provider: OAuthProvider.google);
       logger.d('🔗 Google OAuth redirectTo: $redirectUrl');
       logger.d('🔑 Supabase client initialized');
 
-      final response = redirectUrl == null
-          ? await Supabase.instance.client.auth.signInWithOAuth(
-              OAuthProvider.google,
-            )
-          : await Supabase.instance.client.auth.signInWithOAuth(
-              OAuthProvider.google,
-              redirectTo: redirectUrl,
-            );
+      final response = await Supabase.instance.client.auth.signInWithOAuth(
+        OAuthProvider.google,
+        redirectTo: redirectUrl,
+        authScreenLaunchMode: LaunchMode.inAppWebView, // 명시적으로 인앱 브라우저 사용
+      );
 
       logger.d('📱 OAuth response: $response');
 
@@ -89,33 +86,37 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 
   Future<void> _signInWithKakao() async {
+    logger.d('🚀 Kakao login button clicked');
     setState(() => _isLoading = true);
 
     try {
-      // Kakao OAuth는 Supabase에서 제공하는 OAuth 플로우 사용
-      final redirectUrl = oauthRedirectUrl();
+      // Use same pattern as Google OAuth - simpler and more reliable
+      final redirectUrl = oauthRedirectUrl(provider: OAuthProvider.kakao);
       logger.d('🔗 Kakao OAuth redirectTo: $redirectUrl');
 
-      final response = redirectUrl == null
-          ? await Supabase.instance.client.auth.signInWithOAuth(
-              OAuthProvider.kakao,
-            )
-          : await Supabase.instance.client.auth.signInWithOAuth(
-              OAuthProvider.kakao,
-              redirectTo: redirectUrl,
-            );
+      // Use same approach as Google - await the OAuth call with explicit launch mode
+      final response = await Supabase.instance.client.auth.signInWithOAuth(
+        OAuthProvider.kakao,
+        redirectTo: redirectUrl,
+        authScreenLaunchMode: LaunchMode.externalApplication, // 카카오톡 앱 우선 사용
+      );
+
+      logger.d('📱 Kakao OAuth response: $response');
 
       if (!response) {
+        logger.e('❌ Kakao OAuth returned false');
         throw 'kakao_login_failed'.tr();
       }
-    } catch (e) {
+
+      logger.d('✅ Kakao OAuth redirect initiated successfully');
+      // OAuth flow will automatically redirect on success
+    } catch (e, stackTrace) {
+      logger.e('❌ Kakao OAuth error: $e');
+      logger.e('Stack trace: $stackTrace');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('${'kakao_login_failed'.tr()}: ${e.toString()}')),
         );
-      }
-    } finally {
-      if (mounted) {
         setState(() => _isLoading = false);
       }
     }

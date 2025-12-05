@@ -181,14 +181,14 @@ class _StylishLoginScreenState extends ConsumerState<StylishLoginScreen>
       final response = redirectUrl == null
           ? await Supabase.instance.client.auth.signInWithOAuth(
               OAuthProvider.kakao,
-              // Use inAppWebView for popup-like experience with auto-close
-              authScreenLaunchMode: LaunchMode.inAppWebView,
+              // Use external app (KakaoTalk) for login
+              authScreenLaunchMode: LaunchMode.externalApplication,
             )
           : await Supabase.instance.client.auth.signInWithOAuth(
               OAuthProvider.kakao,
               redirectTo: redirectUrl,
-              // Use inAppWebView for popup-like experience with auto-close
-              authScreenLaunchMode: LaunchMode.inAppWebView,
+              // Use external app (KakaoTalk) for login
+              authScreenLaunchMode: LaunchMode.externalApplication,
             );
 
       if (!response) {
