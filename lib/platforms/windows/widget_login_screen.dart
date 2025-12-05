@@ -4,11 +4,16 @@
 /// Allows users to authenticate to sync their todos with Supabase.
 library;
 
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:window_manager/window_manager.dart';
+import 'package:todo_app/core/config/oauth_redirect.dart';
 import 'package:todo_app/core/theme/app_colors.dart';
+import 'package:todo_app/core/utils/app_logger.dart';
 import 'package:todo_app/presentation/providers/auth_providers.dart';
 import 'package:todo_app/presentation/providers/theme_provider.dart';
 import 'package:todo_app/presentation/providers/theme_customization_provider.dart';
@@ -25,8 +30,94 @@ class _WidgetLoginScreenState extends ConsumerState<WidgetLoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _isLoading = false;
+  bool _isOAuthLoading = false;
   String? _errorMessage;
   bool _obscurePassword = true;
+
+  /// Close the widget window
+  Future<void> _closeWidget() async {
+    if (Platform.isWindows || Platform.isMacOS || Platform.isLinux) {
+      await windowManager.close();
+    }
+  }
+
+  /// Google OAuth login
+  Future<void> _loginWithGoogle() async {
+    logger.d('🚀 Widget: Google login button clicked');
+    setState(() {
+      _isOAuthLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final redirectUrl = oauthRedirectUrl(provider: OAuthProvider.google);
+      logger.d('🔗 Widget: Google OAuth redirectTo: $redirectUrl');
+
+      final response = await Supabase.instance.client.auth.signInWithOAuth(
+        OAuthProvider.google,
+        redirectTo: redirectUrl,
+        authScreenLaunchMode: LaunchMode.externalApplication,
+      );
+
+      logger.d('📱 Widget: Google OAuth response: $response');
+
+      if (!response) {
+        logger.e('❌ Widget: Google OAuth returned false');
+        throw 'google_login_failed'.tr();
+      }
+
+      logger.d('✅ Widget: Google OAuth redirect initiated successfully');
+    } catch (e, stackTrace) {
+      logger.e('❌ Widget: Google OAuth error: $e');
+      logger.e('Stack trace: $stackTrace');
+
+      if (mounted) {
+        setState(() {
+          _errorMessage = 'google_login_failed'.tr();
+          _isOAuthLoading = false;
+        });
+      }
+    }
+  }
+
+  /// Kakao OAuth login
+  Future<void> _loginWithKakao() async {
+    logger.d('🚀 Widget: Kakao login button clicked');
+    setState(() {
+      _isOAuthLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final redirectUrl = oauthRedirectUrl(provider: OAuthProvider.kakao);
+      logger.d('🔗 Widget: Kakao OAuth redirectTo: $redirectUrl');
+
+      final response = await Supabase.instance.client.auth.signInWithOAuth(
+        OAuthProvider.kakao,
+        redirectTo: redirectUrl,
+        authScreenLaunchMode: LaunchMode.externalApplication,
+      );
+
+      logger.d('📱 Widget: Kakao OAuth response: $response');
+
+      if (!response) {
+        logger.e('❌ Widget: Kakao OAuth returned false');
+        throw 'kakao_login_failed'.tr();
+      }
+
+      logger.d('✅ Widget: Kakao OAuth redirect initiated successfully');
+    } catch (e, stackTrace) {
+      logger.e('❌ Widget: Kakao OAuth error: $e');
+      logger.e('Stack trace: $stackTrace');
+
+      if (mounted) {
+        setState(() {
+          _errorMessage = 'kakao_login_failed'.tr();
+          _isOAuthLoading = false;
+        });
+      }
+    }
+  }
 
   @override
   void dispose() {
@@ -96,6 +187,26 @@ class _WidgetLoginScreenState extends ConsumerState<WidgetLoginScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            // Close button row
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                IconButton(
+                  onPressed: _closeWidget,
+                  icon: Icon(
+                    FluentIcons.dismiss_24_regular,
+                    size: 20,
+                    color: AppColors.getTextSecondary(isDarkMode),
+                  ),
+                  tooltip: 'close'.tr(),
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(
+                    minWidth: 28,
+                    minHeight: 28,
+                  ),
+                ),
+              ],
+            ),
             // App icon and title
             Icon(
               FluentIcons.calendar_24_filled,
@@ -119,7 +230,7 @@ class _WidgetLoginScreenState extends ConsumerState<WidgetLoginScreen> {
                 color: AppColors.getTextSecondary(isDarkMode),
               ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 20),
 
             // Email field
             TextField(
@@ -238,7 +349,7 @@ class _WidgetLoginScreenState extends ConsumerState<WidgetLoginScreen> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: _isLoading ? null : _login,
+                onPressed: _isLoading || _isOAuthLoading ? null : _login,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: primaryColor,
                   foregroundColor: Colors.white,
@@ -264,6 +375,119 @@ class _WidgetLoginScreenState extends ConsumerState<WidgetLoginScreen> {
                           fontWeight: FontWeight.w600,
                         ),
                       ),
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // Divider with "or" text
+            Row(
+              children: [
+                Expanded(
+                  child: Divider(
+                    color: AppColors.getTextSecondary(isDarkMode).withOpacity(0.3),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  child: Text(
+                    'or'.tr(),
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: AppColors.getTextSecondary(isDarkMode),
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: Divider(
+                    color: AppColors.getTextSecondary(isDarkMode).withOpacity(0.3),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+
+            // Google login button
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: _isLoading || _isOAuthLoading ? null : _loginWithGoogle,
+                icon: _isOAuthLoading
+                    ? const SizedBox.shrink()
+                    : Image.asset(
+                        'assets/icon/google_logo.png',
+                        width: 18,
+                        height: 18,
+                      ),
+                label: _isOAuthLoading
+                    ? SizedBox(
+                        height: 16,
+                        width: 16,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            AppColors.getText(isDarkMode),
+                          ),
+                        ),
+                      )
+                    : Text(
+                        'google_login'.tr(),
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                          color: AppColors.getText(isDarkMode),
+                        ),
+                      ),
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  side: BorderSide(
+                    color: AppColors.getTextSecondary(isDarkMode).withOpacity(0.3),
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 10),
+
+            // Kakao login button
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: _isLoading || _isOAuthLoading ? null : _loginWithKakao,
+                icon: _isOAuthLoading
+                    ? const SizedBox.shrink()
+                    : Image.asset(
+                        'assets/icon/kakao_logo.png',
+                        width: 18,
+                        height: 18,
+                      ),
+                label: _isOAuthLoading
+                    ? SizedBox(
+                        height: 16,
+                        width: 16,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: const AlwaysStoppedAnimation<Color>(
+                            Color(0xFF3C1E1E),
+                          ),
+                        ),
+                      )
+                    : Text(
+                        'kakao_login'.tr(),
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                          color: Color(0xFF3C1E1E),
+                        ),
+                      ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFFEE500),
+                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
               ),
             ),
             const SizedBox(height: 16),
