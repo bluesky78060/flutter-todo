@@ -75,7 +75,17 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       // OAuth 플로우가 성공하면 자동으로 리디렉션됨
     } catch (e, stackTrace) {
       logger.e('❌ Google OAuth error: $e');
+      logger.e('Error type: ${e.runtimeType}');
       logger.e('Stack trace: $stackTrace');
+
+      // Log detailed error information for diagnosis
+      if (e is AuthApiException) {
+        logger.e('🔴 AuthApiException details:');
+        logger.e('   Message: ${e.message}');
+        logger.e('   Status Code: ${e.statusCode}');
+        logger.e('   Code: ${e.code}');
+      }
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('${'google_login_failed'.tr()}: ${e.toString()}')),
@@ -112,7 +122,17 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       // OAuth flow will automatically redirect on success
     } catch (e, stackTrace) {
       logger.e('❌ Kakao OAuth error: $e');
+      logger.e('Error type: ${e.runtimeType}');
       logger.e('Stack trace: $stackTrace');
+
+      // Log detailed error information for diagnosis
+      if (e is AuthApiException) {
+        logger.e('🔴 AuthApiException details:');
+        logger.e('   Message: ${e.message}');
+        logger.e('   Status Code: ${e.statusCode}');
+        logger.e('   Code: ${e.code}');
+      }
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('${'kakao_login_failed'.tr()}: ${e.toString()}')),

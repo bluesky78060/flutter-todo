@@ -22,15 +22,18 @@ class SupabaseConfig {
       }
     }
 
-    // Mobile/Desktop: Read from .env file
-    final url = dotenv.env['SUPABASE_URL'];
-    if (url == null || url.isEmpty) {
-      throw Exception(
-        'SUPABASE_URL not found in .env file. '
-        'Please copy .env.example to .env and fill in your credentials.',
-      );
+    // Mobile/Desktop: Read from .env file or use default
+    try {
+      final url = dotenv.env['SUPABASE_URL'];
+      if (url != null && url.isNotEmpty) {
+        return url;
+      }
+    } catch (e) {
+      // dotenv not initialized, use default
     }
-    return url;
+
+    // Default Supabase URL
+    return 'https://bulwfcsyqgsvmbadhlye.supabase.co';
   }
 
   /// Supabase anonymous key
@@ -44,14 +47,17 @@ class SupabaseConfig {
       }
     }
 
-    // Mobile/Desktop: Read from .env file
-    final key = dotenv.env['SUPABASE_ANON_KEY'];
-    if (key == null || key.isEmpty) {
-      throw Exception(
-        'SUPABASE_ANON_KEY not found in .env file. '
-        'Please copy .env.example to .env and fill in your credentials.',
-      );
+    // Mobile/Desktop: Read from .env file or use default
+    try {
+      final key = dotenv.env['SUPABASE_ANON_KEY'];
+      if (key != null && key.isNotEmpty) {
+        return key;
+      }
+    } catch (e) {
+      // dotenv not initialized, use default
     }
-    return key;
+
+    // Default Supabase anonymous key
+    return 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ1bHdmY3N5cWdzdm1iYWRobHllIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIxMzM1MjMsImV4cCI6MjA3NzcwOTUyM30._5Ft7sTK6m946oDSRHgjFgDBRc7YH-nD9KC8gLkHeo0';
   }
 }

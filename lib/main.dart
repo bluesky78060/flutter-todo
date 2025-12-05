@@ -85,9 +85,14 @@ void main() async {
     logger.d('✅ Naver Maps SDK for Web loaded via index.html script tag');
   }
 
-  // Load environment variables from .env file
-  await dotenv.load(fileName: '.env');
-  logger.d('✅ Environment variables loaded from .env');
+  // Load environment variables from .env file (optional for development)
+  try {
+    await dotenv.load(fileName: '.env');
+    logger.d('✅ Environment variables loaded from .env');
+  } catch (e) {
+    logger.w('⚠️ .env file not found - using default environment variables');
+    // Supabase config will use built-in defaults
+  }
 
   // TODO: Re-enable Sentry after resolving Kotlin version conflict
   // Get Sentry DSN from environment
@@ -141,10 +146,19 @@ void main() async {
 Future<void> runAppWithErrorHandling() async {
   // Initialize Supabase with platform-specific auth options
   try {
+    // Log credential diagnostics BEFORE initialization
+    final url = SupabaseConfig.url;
+    final anonKey = SupabaseConfig.anonKey;
+
+    logger.d('🔧 Supabase Initialization Diagnostics:');
+    logger.d('   URL: $url');
+    logger.d('   ANON_KEY length: ${anonKey.length}');
+    logger.d('   ANON_KEY (first 50 chars): ${anonKey.substring(0, (anonKey.length > 50 ? 50 : anonKey.length))}...');
+
     if (kIsWeb) {
       await Supabase.initialize(
-        url: SupabaseConfig.url,
-        anonKey: SupabaseConfig.anonKey,
+        url: url,
+        anonKey: anonKey,
         authOptions: const FlutterAuthClientOptions(
           authFlowType: AuthFlowType.pkce,
           // Force web to use current URL for OAuth redirects
@@ -155,8 +169,8 @@ Future<void> runAppWithErrorHandling() async {
       logger.d('✅ Supabase initialized for web with PKCE auth flow');
     } else {
       await Supabase.initialize(
-        url: SupabaseConfig.url,
-        anonKey: SupabaseConfig.anonKey,
+        url: url,
+        anonKey: anonKey,
         authOptions: const FlutterAuthClientOptions(
           authFlowType: AuthFlowType.pkce,
           // detectSessionInUri enables automatic deep link handling
@@ -165,6 +179,9 @@ Future<void> runAppWithErrorHandling() async {
       );
       logger.d('✅ Supabase initialized for mobile with PKCE auth flow');
     }
+
+    // Verify connection by checking if client is ready
+    logger.d('✅ Supabase client ready: ${Supabase.instance.client.auth.currentUser}');
   } catch (e, stackTrace) {
     logger.e('❌ Main: Failed to initialize Supabase',
         error: e, stackTrace: stackTrace);
