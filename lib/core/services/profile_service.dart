@@ -155,6 +155,9 @@ class ProfileService {
         ),
       );
 
+      // Refresh session to update currentUser with new avatar URL
+      await _supabase.auth.refreshSession();
+
       print('[ProfileService] Avatar uploaded successfully: $avatarUrl');
       return Right(avatarUrl);
     } catch (e) {
@@ -209,6 +212,9 @@ class ProfileService {
           },
         ),
       );
+
+      // Refresh session to update currentUser with new avatar URL
+      await _supabase.auth.refreshSession();
 
       print('[ProfileService] Avatar uploaded successfully: $avatarUrl');
       return Right(avatarUrl);

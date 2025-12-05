@@ -12,6 +12,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:todo_app/core/errors/failures.dart';
 import 'package:todo_app/core/services/profile_service.dart';
 import 'package:todo_app/core/utils/app_logger.dart';
+import 'package:todo_app/presentation/providers/auth_providers.dart';
 
 /// Helper function to extract error message from Failure.
 String _getFailureMessage(Failure failure) {
@@ -125,6 +126,8 @@ class ProfileNotifier extends Notifier<ProfileState> {
               avatarUrl: avatarUrl,
               isLoading: false,
             );
+            // Refresh currentUserProvider to update avatar in other screens
+            ref.invalidate(currentUserProvider);
             return true;
           },
         );
@@ -162,6 +165,8 @@ class ProfileNotifier extends Notifier<ProfileState> {
               avatarUrl: avatarUrl,
               isLoading: false,
             );
+            // Refresh currentUserProvider to update avatar in other screens
+            ref.invalidate(currentUserProvider);
             return true;
           },
         );
@@ -189,6 +194,8 @@ class ProfileNotifier extends Notifier<ProfileState> {
           avatarUrl: avatarUrl,
           isLoading: false,
         );
+        // Refresh currentUserProvider to update avatar in other screens
+        ref.invalidate(currentUserProvider);
         return true;
       },
     );
@@ -214,6 +221,8 @@ class ProfileNotifier extends Notifier<ProfileState> {
           avatarUrl: null,
           isLoading: false,
         );
+        // Refresh currentUserProvider to update avatar in other screens
+        ref.invalidate(currentUserProvider);
         return true;
       },
     );
