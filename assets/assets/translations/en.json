@@ -100,6 +100,7 @@
   "google_login_failed": "Google login failed",
   "kakao_login_failed": "Kakao login failed",
   "apple_login_failed": "Apple login failed",
+  "login_timeout": "Login timed out. Please try again.",
 
   "my_work_status": "My Work Status 📊",
   "overall_progress": "Overall Progress",
