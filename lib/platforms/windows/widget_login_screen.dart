@@ -12,9 +12,9 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:window_manager/window_manager.dart';
-import 'package:todo_app/core/config/oauth_redirect.dart';
 import 'package:todo_app/core/theme/app_colors.dart';
 import 'package:todo_app/core/utils/app_logger.dart';
+import 'package:todo_app/platforms/windows/desktop_oauth_helper.dart';
 import 'package:todo_app/presentation/providers/auth_providers.dart';
 import 'package:todo_app/presentation/providers/theme_provider.dart';
 import 'package:todo_app/presentation/providers/theme_customization_provider.dart';
@@ -34,58 +34,30 @@ class _WidgetLoginScreenState extends ConsumerState<WidgetLoginScreen> {
   bool _isOAuthLoading = false;
   String? _errorMessage;
   bool _obscurePassword = true;
-  Timer? _sessionPollTimer;
+  DesktopOAuthHelper? _oauthHelper;
+  StreamSubscription<AuthState>? _authSubscription;
+
+  @override
+  void initState() {
+    super.initState();
+    // Listen for auth state changes
+    _authSubscription = Supabase.instance.client.auth.onAuthStateChange.listen((data) {
+      logger.d('🔄 Widget: Auth state changed: ${data.event}');
+      if (data.event == AuthChangeEvent.signedIn && mounted) {
+        logger.d('✅ Widget: User signed in via OAuth');
+        ref.invalidate(currentUserProvider);
+        setState(() {
+          _isOAuthLoading = false;
+        });
+      }
+    });
+  }
 
   /// Close the widget window
   Future<void> _closeWidget() async {
     if (Platform.isWindows || Platform.isMacOS || Platform.isLinux) {
       await windowManager.close();
     }
-  }
-
-  /// Start polling for session changes after OAuth
-  void _startSessionPolling() {
-    _sessionPollTimer?.cancel();
-    _sessionPollTimer = Timer.periodic(const Duration(seconds: 2), (timer) async {
-      logger.d('🔄 Widget: Polling for session...');
-      try {
-        // Try to refresh the session
-        final response = await Supabase.instance.client.auth.refreshSession();
-        if (response.session != null) {
-          logger.d('✅ Widget: Session detected after OAuth!');
-          timer.cancel();
-          if (mounted) {
-            // Invalidate auth provider to trigger UI update
-            ref.invalidate(currentUserProvider);
-            setState(() {
-              _isOAuthLoading = false;
-            });
-          }
-        }
-      } catch (e) {
-        logger.d('🔄 Widget: No session yet, continuing to poll...');
-      }
-    });
-
-    // Stop polling after 2 minutes (timeout)
-    Future.delayed(const Duration(minutes: 2), () {
-      if (_sessionPollTimer?.isActive == true) {
-        logger.d('⏰ Widget: Session polling timeout');
-        _sessionPollTimer?.cancel();
-        if (mounted) {
-          setState(() {
-            _isOAuthLoading = false;
-            _errorMessage = 'login_timeout'.tr();
-          });
-        }
-      }
-    });
-  }
-
-  /// Stop session polling
-  void _stopSessionPolling() {
-    _sessionPollTimer?.cancel();
-    _sessionPollTimer = null;
   }
 
   /// Google OAuth login
@@ -97,27 +69,19 @@ class _WidgetLoginScreenState extends ConsumerState<WidgetLoginScreen> {
     });
 
     try {
-      final redirectUrl = oauthRedirectUrl(provider: OAuthProvider.google);
-      logger.d('🔗 Widget: Google OAuth redirectTo: $redirectUrl');
+      _oauthHelper = DesktopOAuthHelper();
+      final success = await _oauthHelper!.signInWithOAuth(OAuthProvider.google);
 
-      final response = await Supabase.instance.client.auth.signInWithOAuth(
-        OAuthProvider.google,
-        redirectTo: redirectUrl,
-        authScreenLaunchMode: LaunchMode.externalApplication,
-      );
-
-      logger.d('📱 Widget: Google OAuth response: $response');
-
-      if (!response) {
-        logger.e('❌ Widget: Google OAuth returned false');
-        throw 'google_login_failed'.tr();
+      if (!success) {
+        logger.e('❌ Widget: Google OAuth failed to start');
+        if (mounted) {
+          setState(() {
+            _errorMessage = 'google_login_failed'.tr();
+            _isOAuthLoading = false;
+          });
+        }
       }
-
-      logger.d('✅ Widget: Google OAuth redirect initiated successfully');
-      // Start polling for session changes (desktop only)
-      if (Platform.isWindows || Platform.isMacOS || Platform.isLinux) {
-        _startSessionPolling();
-      }
+      // If successful, the auth state listener will handle the rest
     } catch (e, stackTrace) {
       logger.e('❌ Widget: Google OAuth error: $e');
       logger.e('Stack trace: $stackTrace');
@@ -140,27 +104,19 @@ class _WidgetLoginScreenState extends ConsumerState<WidgetLoginScreen> {
     });
 
     try {
-      final redirectUrl = oauthRedirectUrl(provider: OAuthProvider.kakao);
-      logger.d('🔗 Widget: Kakao OAuth redirectTo: $redirectUrl');
+      _oauthHelper = DesktopOAuthHelper();
+      final success = await _oauthHelper!.signInWithOAuth(OAuthProvider.kakao);
 
-      final response = await Supabase.instance.client.auth.signInWithOAuth(
-        OAuthProvider.kakao,
-        redirectTo: redirectUrl,
-        authScreenLaunchMode: LaunchMode.externalApplication,
-      );
-
-      logger.d('📱 Widget: Kakao OAuth response: $response');
-
-      if (!response) {
-        logger.e('❌ Widget: Kakao OAuth returned false');
-        throw 'kakao_login_failed'.tr();
+      if (!success) {
+        logger.e('❌ Widget: Kakao OAuth failed to start');
+        if (mounted) {
+          setState(() {
+            _errorMessage = 'kakao_login_failed'.tr();
+            _isOAuthLoading = false;
+          });
+        }
       }
-
-      logger.d('✅ Widget: Kakao OAuth redirect initiated successfully');
-      // Start polling for session changes (desktop only)
-      if (Platform.isWindows || Platform.isMacOS || Platform.isLinux) {
-        _startSessionPolling();
-      }
+      // If successful, the auth state listener will handle the rest
     } catch (e, stackTrace) {
       logger.e('❌ Widget: Kakao OAuth error: $e');
       logger.e('Stack trace: $stackTrace');
@@ -176,7 +132,8 @@ class _WidgetLoginScreenState extends ConsumerState<WidgetLoginScreen> {
 
   @override
   void dispose() {
-    _stopSessionPolling();
+    _authSubscription?.cancel();
+    _oauthHelper?.dispose();
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
