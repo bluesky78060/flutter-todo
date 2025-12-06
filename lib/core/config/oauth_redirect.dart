@@ -1,3 +1,4 @@
+import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:supabase_flutter/supabase_flutter.dart';
 // Use universal_html package for cross-platform compatibility
@@ -6,6 +7,7 @@ import 'package:todo_app/core/utils/app_logger.dart';
 
 /// Returns a redirect URL appropriate for the current runtime.
 /// - On web, returns the current origin + /oauth-callback path.
+/// - On desktop (Windows/macOS/Linux), returns Supabase callback URL.
 /// - On mobile (Android/iOS), returns null to let Supabase SDK handle deep linking automatically.
 String? oauthRedirectUrl({OAuthProvider? provider}) {
   if (kIsWeb) {
@@ -22,6 +24,14 @@ String? oauthRedirectUrl({OAuthProvider? provider}) {
 
     logger.d('🔗 OAuth Redirect URL (Web): $redirectUrl');
     return redirectUrl;
+  }
+
+  // For desktop platforms (Windows, macOS, Linux)
+  // Use Supabase's built-in callback URL - the app listens to auth state changes
+  if (Platform.isWindows || Platform.isMacOS || Platform.isLinux) {
+    const desktopRedirectUrl = 'https://bulwfcsyqgsvmbadhlye.supabase.co/auth/v1/callback';
+    logger.d('🔗 OAuth Redirect URL (Desktop): $desktopRedirectUrl');
+    return desktopRedirectUrl;
   }
 
   // For mobile - Special handling for Kakao which doesn't work well with custom schemes

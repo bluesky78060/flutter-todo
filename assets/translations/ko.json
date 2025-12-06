@@ -100,6 +100,7 @@
   "google_login_failed": "Google 로그인 실패",
   "kakao_login_failed": "Kakao 로그인 실패",
   "apple_login_failed": "Apple 로그인 실패",
+  "login_timeout": "로그인 시간 초과. 다시 시도해주세요.",
 
   "my_work_status": "나의 업무 현황 📊",
   "overall_progress": "전체 진행률",

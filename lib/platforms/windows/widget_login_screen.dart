@@ -4,6 +4,7 @@
 /// Allows users to authenticate to sync their todos with Supabase.
 library;
 
+import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -33,12 +34,58 @@ class _WidgetLoginScreenState extends ConsumerState<WidgetLoginScreen> {
   bool _isOAuthLoading = false;
   String? _errorMessage;
   bool _obscurePassword = true;
+  Timer? _sessionPollTimer;
 
   /// Close the widget window
   Future<void> _closeWidget() async {
     if (Platform.isWindows || Platform.isMacOS || Platform.isLinux) {
       await windowManager.close();
     }
+  }
+
+  /// Start polling for session changes after OAuth
+  void _startSessionPolling() {
+    _sessionPollTimer?.cancel();
+    _sessionPollTimer = Timer.periodic(const Duration(seconds: 2), (timer) async {
+      logger.d('🔄 Widget: Polling for session...');
+      try {
+        // Try to refresh the session
+        final response = await Supabase.instance.client.auth.refreshSession();
+        if (response.session != null) {
+          logger.d('✅ Widget: Session detected after OAuth!');
+          timer.cancel();
+          if (mounted) {
+            // Invalidate auth provider to trigger UI update
+            ref.invalidate(currentUserProvider);
+            setState(() {
+              _isOAuthLoading = false;
+            });
+          }
+        }
+      } catch (e) {
+        logger.d('🔄 Widget: No session yet, continuing to poll...');
+      }
+    });
+
+    // Stop polling after 2 minutes (timeout)
+    Future.delayed(const Duration(minutes: 2), () {
+      if (_sessionPollTimer?.isActive == true) {
+        logger.d('⏰ Widget: Session polling timeout');
+        _sessionPollTimer?.cancel();
+        if (mounted) {
+          setState(() {
+            _isOAuthLoading = false;
+            _errorMessage = 'login_timeout'.tr();
+          });
+        }
+      }
+    });
+  }
+
+  /// Stop session polling
+  void _stopSessionPolling() {
+    _sessionPollTimer?.cancel();
+    _sessionPollTimer = null;
   }
 
   /// Google OAuth login
@@ -67,6 +114,10 @@ class _WidgetLoginScreenState extends ConsumerState<WidgetLoginScreen> {
       }
 
       logger.d('✅ Widget: Google OAuth redirect initiated successfully');
+      // Start polling for session changes (desktop only)
+      if (Platform.isWindows || Platform.isMacOS || Platform.isLinux) {
+        _startSessionPolling();
+      }
     } catch (e, stackTrace) {
       logger.e('❌ Widget: Google OAuth error: $e');
       logger.e('Stack trace: $stackTrace');
@@ -106,6 +157,10 @@ class _WidgetLoginScreenState extends ConsumerState<WidgetLoginScreen> {
       }
 
       logger.d('✅ Widget: Kakao OAuth redirect initiated successfully');
+      // Start polling for session changes (desktop only)
+      if (Platform.isWindows || Platform.isMacOS || Platform.isLinux) {
+        _startSessionPolling();
+      }
     } catch (e, stackTrace) {
       logger.e('❌ Widget: Kakao OAuth error: $e');
       logger.e('Stack trace: $stackTrace');
@@ -121,6 +176,7 @@ class _WidgetLoginScreenState extends ConsumerState<WidgetLoginScreen> {
 
   @override
   void dispose() {
+    _stopSessionPolling();
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
