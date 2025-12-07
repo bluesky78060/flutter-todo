@@ -1,7 +1,7 @@
 # 향후 추가 기능 및 개선 사항
 
-현재 버전: **1.0.17+49** (Google Play 업로드용 AAB)
-최종 업데이트: **2025-12-03**
+현재 버전: **1.0.17+53** (캘린더 셀 UI 개선)
+최종 업데이트: **2025-12-07**
 
 ## 우선순위 분류
 - 🔴 **High**: 핵심 기능, 사용자 경험에 직접적 영향
@@ -11,6 +11,56 @@
 ---
 
 ## ✅ 완료된 작업 (Completed)
+
+### 2025-12-07 - 캘린더 셀 UI 개선 ✨
+- ✅ **캘린더 셀 UI 대폭 개선**
+  - 셀 세로 높이 증가: 48 → 52
+  - 폰트 크기 증가: 7pt → 8pt
+  - 캘린더 전체 높이 증가: 380 → 400
+  - 할일 텍스트 두껍게: FontWeight.w600 적용
+
+- ✅ **할일 2줄 표시 기능**
+  - 첫 번째 할일: 제목 5자까지 표시 + ellipsis
+  - 두 번째 할일: 제목 5자까지 표시 또는 "+N" 형식
+  - 3개 이상: "+2", "+3" 등 primaryColor로 표시
+
+- ✅ **할일 있는 셀 배경 하이라이트**
+  - 다크 모드: primaryColor.withOpacity(0.15)
+  - 라이트 모드: primaryColor.withOpacity(0.06)
+  - 선택/오늘 배경과 적절히 조화
+
+- **수정된 파일**:
+  - `lib/presentation/widgets/calendar_day_cell.dart` - 2줄 표시, 배경색, 폰트
+  - `lib/presentation/screens/calendar_view_screen.dart` - 셀 높이, 캘린더 높이
+  - `lib/core/services/korean_holiday_service.dart` - 휴일 서비스 개선
+
+- **커밋**: 196af7d - feat(calendar): Enhance calendar day cell UI with todo display
+
+### 2025-12-07 - 캘린더 뷰 및 서브태스크 아이콘 버그 수정 ✨
+- ✅ **캘린더 뷰 화면 추가**
+  - 새 화면: `lib/presentation/screens/calendar_view_screen.dart`
+  - 월간 캘린더 뷰에서 할일 목록 확인 가능
+  - 날짜별 할일 개수 표시
+  - 날짜 선택 시 해당 날짜의 할일 목록 표시
+
+- ✅ **서브태스크 아이콘 지속성 버그 수정**
+  - **문제**: 서브태스크 아이콘이 새로 작성하면 나타났다가 다시 빌드 하면 사라짐
+  - **원인**: `subtaskStatsProvider`가 로컬 DB만 읽어서 인증된 사용자의 Supabase 데이터를 가져오지 못함
+  - **해결**: `subtaskStatsProvider`가 인증 상태를 확인하고, 인증된 사용자는 remote repository에서 먼저 읽도록 수정
+  - **수정된 파일**: `lib/presentation/providers/subtask_providers.dart`
+
+- ✅ **키보드 오버플로우 수정**
+  - 할일 폼 다이얼로그 열릴 때 배경 캘린더에서 키보드 오버플로우 발생 수정
+
+- ✅ **하단 네비게이션 바 패딩 축소**
+  - 네비게이션 아이템 패딩 조정으로 더 컴팩트한 UI
+  - **수정된 파일**: `lib/presentation/widgets/nav_item.dart`
+
+- ✅ **프로필 내보내기/가져오기 기능**
+  - 프로필 편집 화면에서 내보내기/가져오기 버튼 추가
+  - JSON 형식으로 프로필 데이터 백업 및 복원
+
+- **커밋**: feat: Add calendar view and fix subtask icon persistence
 
 ### 2025-12-03 - Windows 위젯 Supabase 동기화 및 버그 수정 ✨
 - ✅ **Windows 캘린더 위젯 Supabase 동기화 완전 구현**
@@ -1007,4 +1057,4 @@
 
 ---
 
-**문서 최종 업데이트**: 2025-12-03 KST
+**문서 최종 업데이트**: 2025-12-07 KST

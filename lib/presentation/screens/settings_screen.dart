@@ -36,7 +36,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:todo_app/core/services/backup_service.dart';
 import 'package:todo_app/core/theme/app_colors.dart';
-import 'package:todo_app/core/utils/samsung_device_utils.dart';
+import 'package:todo_app/core/utils/device_utils.dart';
 import 'package:todo_app/presentation/providers/admin_providers.dart';
 import 'package:todo_app/presentation/providers/auth_providers.dart';
 import 'package:todo_app/presentation/providers/backup_provider.dart';
@@ -61,8 +61,7 @@ class SettingsScreen extends ConsumerStatefulWidget {
 class _SettingsScreenState extends ConsumerState<SettingsScreen> with SingleTickerProviderStateMixin {
   String _version = '';
   String _buildNumber = '';
-  bool _isSamsungDevice = false;
-  String? _oneUIVersion;
+  DeviceInfo? _deviceInfo;
   bool _isBatteryOptimizationIgnored = false;
 
   late AnimationController _animationController;
@@ -94,23 +93,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> with SingleTick
 
   Future<void> _loadDeviceInfo() async {
     try {
-      final isSamsung = await SamsungDeviceUtils.isSamsungDevice();
-      String? oneUIVersion;
-      bool batteryOptimized = false;
-      bool isFoldable = false;
-      String? model;
-
-      if (isSamsung) {
-        oneUIVersion = await SamsungDeviceUtils.getOneUIVersion();
-        batteryOptimized = await SamsungDeviceUtils.isIgnoringBatteryOptimizations();
-        isFoldable = await SamsungDeviceUtils.isFoldableDevice();
-        model = await SamsungDeviceUtils.getDeviceModel();
-      }
+      final deviceInfo = await DeviceUtils.getDeviceInfo();
+      final batteryOptimized = await DeviceUtils.isIgnoringBatteryOptimizations();
 
       if (mounted) {
         setState(() {
-          _isSamsungDevice = isSamsung;
-          _oneUIVersion = oneUIVersion;
+          _deviceInfo = deviceInfo;
           _isBatteryOptimizationIgnored = batteryOptimized;
         });
       }
@@ -233,13 +221,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> with SingleTick
                       ),
                       const SizedBox(height: 24),
 
-                      // Samsung Device Info
-                      if (_isSamsungDevice) ...[
-                        _buildSectionHeader('samsung_device_info'.tr(), subTextColor),
+                      // Device Info - 모든 기기에 표시
+                      if (_deviceInfo != null) ...[
+                        _buildSectionHeader('device_info'.tr(), subTextColor),
                         const SizedBox(height: 12),
                         _buildGlassCard(
                           isDarkMode: isDarkMode,
-                          child: _buildSamsungInfoContent(isDarkMode, textColor),
+                          child: _buildDeviceInfoContent(isDarkMode, textColor),
                         ),
                         const SizedBox(height: 24),
                       ],
@@ -818,34 +806,130 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> with SingleTick
     );
   }
 
-  Widget _buildSamsungInfoContent(bool isDarkMode, Color textColor) {
+  Widget _buildDeviceInfoContent(bool isDarkMode, Color textColor) {
+    final info = _deviceInfo!;
+    final isAndroid = info.deviceType == 'Android';
+
     return Column(
       children: [
+        // 기기 제조사 및 모델 - 클릭 시 상세 정보 다이얼로그
         _buildListTile(
           icon: FluentIcons.phone_24_regular,
-          title: 'samsung_device_detected'.tr(),
-          subtitle: 'One UI ${_oneUIVersion ?? 'model_checking'.tr()}',
-          onTap: () {},
+          title: 'device_model'.tr(),
+          subtitle: info.displayName,
+          onTap: () => _showDeviceInfoDialog(isDarkMode),
           isDarkMode: isDarkMode,
           textColor: textColor,
         ),
-        const Divider(),
-        _buildListTile(
-          icon: FluentIcons.battery_saver_24_regular,
-          title: 'battery_optimization_status'.tr(),
-          subtitle: _isBatteryOptimizationIgnored
-              ? 'battery_optimization_disabled'.tr()
-              : 'battery_optimization_enabled'.tr(),
-          onTap: !_isBatteryOptimizationIgnored
-              ? () async {
-                  await SamsungDeviceUtils.requestBatteryOptimizationExemption();
-                  _loadDeviceInfo();
-                }
-              : null,
-          isDarkMode: isDarkMode,
-          textColor: textColor,
-        ),
+        // Android인 경우 배터리 최적화 표시
+        if (isAndroid) ...[
+          const Divider(),
+          _buildListTile(
+            icon: FluentIcons.battery_saver_24_regular,
+            title: 'battery_optimization_status'.tr(),
+            subtitle: _isBatteryOptimizationIgnored
+                ? 'battery_optimization_disabled'.tr()
+                : 'battery_optimization_enabled'.tr(),
+            onTap: !_isBatteryOptimizationIgnored
+                ? () async {
+                    await DeviceUtils.requestBatteryOptimizationExemption();
+                    _loadDeviceInfo();
+                  }
+                : null,
+            isDarkMode: isDarkMode,
+            textColor: textColor,
+          ),
+        ],
       ],
+    );
+  }
+
+  void _showDeviceInfoDialog(bool isDarkMode) {
+    final info = _deviceInfo!;
+    final textColor = isDarkMode ? Colors.white : Colors.black87;
+    final subTextColor = isDarkMode ? Colors.white70 : Colors.black54;
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: isDarkMode ? const Color(0xFF1E293B) : Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Row(
+          children: [
+            Icon(FluentIcons.phone_24_filled, color: AppColors.primary),
+            const SizedBox(width: 12),
+            Text(
+              'device_info'.tr(),
+              style: TextStyle(color: textColor, fontWeight: FontWeight.bold),
+            ),
+          ],
+        ),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _buildDeviceInfoRow('device_type'.tr(), info.deviceType, textColor, subTextColor, isDarkMode),
+              _buildDeviceInfoRow('manufacturer'.tr(), info.manufacturer, textColor, subTextColor, isDarkMode),
+              _buildDeviceInfoRow('device_model'.tr(), info.model, textColor, subTextColor, isDarkMode),
+              _buildDeviceInfoRow('os_version'.tr(), info.osVersion, textColor, subTextColor, isDarkMode),
+              if (info.sdkVersion != null)
+                _buildDeviceInfoRow('sdk_version'.tr(), info.sdkVersion!, textColor, subTextColor, isDarkMode),
+              if (info.brand != null)
+                _buildDeviceInfoRow('brand'.tr(), info.brand!, textColor, subTextColor, isDarkMode),
+              if (info.device != null)
+                _buildDeviceInfoRow('device_codename'.tr(), info.device!, textColor, subTextColor, isDarkMode),
+              if (info.product != null)
+                _buildDeviceInfoRow('product'.tr(), info.product!, textColor, subTextColor, isDarkMode),
+              if (info.hardware != null)
+                _buildDeviceInfoRow('hardware'.tr(), info.hardware!, textColor, subTextColor, isDarkMode),
+              if (info.displayResolution != null)
+                _buildDeviceInfoRow('display_resolution'.tr(), info.displayResolution!, textColor, subTextColor, isDarkMode),
+              _buildDeviceInfoRow('physical_device'.tr(), info.isPhysicalDevice ? 'yes'.tr() : 'no'.tr(), textColor, subTextColor, isDarkMode),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('close'.tr(), style: TextStyle(color: AppColors.primary)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDeviceInfoRow(String label, String value, Color textColor, Color subTextColor, bool isDarkMode) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            flex: 2,
+            child: Text(
+              label,
+              style: TextStyle(
+                color: subTextColor,
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            flex: 3,
+            child: Text(
+              value,
+              style: TextStyle(
+                color: textColor,
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              ),
+              textAlign: TextAlign.right,
+            ),
+          ),
+        ],
+      ),
     );
   }
 

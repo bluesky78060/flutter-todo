@@ -7,7 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 Flutter Todo app with Supabase backend, featuring OAuth authentication (Google/Kakao), local/cloud sync, notifications, and multi-platform support (Web, Android, iOS).
 
 **Package**: `kr.bluesky.dodo`
-**Current Version**: 1.0.3+15 (see pubspec.yaml)
+**Current Version**: 1.0.17+53 (see pubspec.yaml)
 
 ## Development Commands
 
@@ -88,18 +88,18 @@ flutter build ios --release --build-name=1.0.6 --build-number=16 --no-codesign
 **버전 관리 전략**:
 - Android와 iOS는 독립적인 버전 번호 사용 가능
 - 각 스토어별로 빌드 번호는 항상 증가해야 함
-- **현재 업로드된 버전**: Android: **1.0.16+48** (Google Play), iOS: 1.0.5+15
+- **현재 업로드된 버전**: Android: **1.0.17+53** (Google Play), iOS: 1.0.5+15
 
 **CRITICAL: 빌드 전 최신 업로드 버전 확인 필수**
 ```bash
 # Google Play Console에서 최신 업로드된 빌드 번호 확인
 # Settings > App integrity > App bundles > 최신 버전 번호 확인
 #
-# 현재 상황: Google Play Console에 1.0.16+48이 업로드되어 있음
-# 새 빌드는 반드시 49 이상이어야 함
+# 현재 상황: Google Play Console에 1.0.17+53이 업로드되어 있음
+# 새 빌드는 반드시 54 이상이어야 함
 #
-# WRONG: ./scripts/build_android.sh 1.0.17 47  # 47 < 48 (거부됨)
-# RIGHT: ./scripts/build_android.sh 1.0.17 49  # 49 > 48 (승인됨)
+# WRONG: ./scripts/build_android.sh 1.0.18 52  # 52 < 53 (거부됨)
+# RIGHT: ./scripts/build_android.sh 1.0.18 54  # 54 > 53 (승인됨)
 ```
 
 **빌드 번호 규칙**:

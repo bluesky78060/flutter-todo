@@ -320,23 +320,29 @@ class StatisticsScreen extends ConsumerWidget {
     // Weekly statistics
     final weekCompleted = todos.where((t) {
       if (t.completedAt == null) return false;
-      return t.completedAt!.isAfter(weekStart);
+      // Convert to local time and compare date parts
+      final completedLocal = t.completedAt!.toLocal();
+      final completedDate = DateTime(completedLocal.year, completedLocal.month, completedLocal.day);
+      return !completedDate.isBefore(weekStart);
     }).length;
 
     // Daily completion data for the week (numeric values for chart)
+    // NOTE: Use raw English keys for consistency, translate only for display
     final dailyCompletions = <int, int>{};
     final dailyCompletionsNamed = <String, int>{};
-    final dayKeys = ['monday'.tr(), 'tuesday'.tr(), 'wednesday'.tr(), 'thursday'.tr(), 'friday'.tr(), 'saturday'.tr(), 'sunday'.tr()];
+    final dayKeys = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
 
     for (int i = 0; i < 7; i++) {
       final day = weekStart.add(Duration(days: i));
       final dayKey = dayKeys[i];
-      final dayStart = DateTime(day.year, day.month, day.day);
-      final dayEnd = dayStart.add(const Duration(days: 1));
+      final targetDate = DateTime(day.year, day.month, day.day);
 
       final count = todos.where((t) {
         if (t.completedAt == null) return false;
-        return t.completedAt!.isAfter(dayStart) && t.completedAt!.isBefore(dayEnd);
+        // Convert to local time and compare only the date part
+        final completedLocal = t.completedAt!.toLocal();
+        final completedDate = DateTime(completedLocal.year, completedLocal.month, completedLocal.day);
+        return completedDate.isAtSameMomentAs(targetDate);
       }).length;
 
       dailyCompletions[i] = count;
@@ -351,7 +357,10 @@ class StatisticsScreen extends ConsumerWidget {
 
       final count = todos.where((t) {
         if (t.completedAt == null) return false;
-        return t.completedAt!.isAfter(weekStartDate) && t.completedAt!.isBefore(weekEndDate);
+        // Convert to local time and compare date parts
+        final completedLocal = t.completedAt!.toLocal();
+        final completedDate = DateTime(completedLocal.year, completedLocal.month, completedLocal.day);
+        return !completedDate.isBefore(weekStartDate) && completedDate.isBefore(weekEndDate);
       }).length;
 
       monthlyCompletions[3 - i] = count; // Reverse order (oldest first)
@@ -378,12 +387,14 @@ class StatisticsScreen extends ConsumerWidget {
     int streak = 0;
     DateTime checkDate = today;
     while (true) {
-      final dayStart = DateTime(checkDate.year, checkDate.month, checkDate.day);
-      final dayEnd = dayStart.add(const Duration(days: 1));
+      final targetDate = DateTime(checkDate.year, checkDate.month, checkDate.day);
 
       final hasCompletion = todos.any((t) {
         if (t.completedAt == null) return false;
-        return t.completedAt!.isAfter(dayStart) && t.completedAt!.isBefore(dayEnd);
+        // Convert to local time and compare date parts
+        final completedLocal = t.completedAt!.toLocal();
+        final completedDate = DateTime(completedLocal.year, completedLocal.month, completedLocal.day);
+        return completedDate.isAtSameMomentAs(targetDate);
       });
 
       if (hasCompletion) {
@@ -398,7 +409,9 @@ class StatisticsScreen extends ConsumerWidget {
     final Map<String, int> allDayCompletions = {};
     for (final todo in todos) {
       if (todo.completedAt != null) {
-        final dateKey = '${todo.completedAt!.year}-${todo.completedAt!.month.toString().padLeft(2, '0')}-${todo.completedAt!.day.toString().padLeft(2, '0')}';
+        // Convert to local time for date key
+        final completedLocal = todo.completedAt!.toLocal();
+        final dateKey = '${completedLocal.year}-${completedLocal.month.toString().padLeft(2, '0')}-${completedLocal.day.toString().padLeft(2, '0')}';
         allDayCompletions[dateKey] = (allDayCompletions[dateKey] ?? 0) + 1;
       }
     }
@@ -423,8 +436,8 @@ class StatisticsScreen extends ConsumerWidget {
       avgCompletionHours = totalHours / completedWithTimes.length;
     }
 
-    // Most productive day of week
-    String mostProductiveDay = 'monday'.tr();
+    // Most productive day of week (stored as raw English key)
+    String mostProductiveDay = 'monday';
     int maxCompletions = 0;
     dailyCompletionsNamed.forEach((day, count) {
       if (count > maxCompletions) {
@@ -1406,7 +1419,7 @@ class _TimeBasedStatisticsCard extends ConsumerWidget {
                 child: _TimeInfoCard(
                   icon: FluentIcons.star_24_regular,
                   label: 'most_productive_day'.tr(),
-                  value: stats.mostProductiveDay,
+                  value: stats.mostProductiveDay.tr(),
                 ),
               ),
             ],
@@ -2033,6 +2046,7 @@ class _WeeklyPatternCard extends ConsumerWidget {
     final isDarkMode = ref.watch(isDarkModeProvider);
 
     // Get completion counts for each day of week
+    // NOTE: dailyCompletionsNamed uses raw English keys, translate only for display
     final days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
     final dayCompletions = <String, int>{};
     int maxCompletions = 0;
@@ -2207,9 +2221,9 @@ class _InsightsCard extends ConsumerWidget {
     // Generate insights
     final insights = <String>[];
 
-    // Insight 1: Most productive day
+    // Insight 1: Most productive day (translate the day name)
     if (stats.mostProductiveDay.isNotEmpty) {
-      insights.add('insight_productive_day|${stats.mostProductiveDay}');
+      insights.add('insight_productive_day|${stats.mostProductiveDay.tr()}');
     }
 
     // Insight 2: Overall completion rate

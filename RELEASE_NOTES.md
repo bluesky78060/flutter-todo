@@ -1,11 +1,72 @@
 # DoDo 앱 출시 노트
 
-## 최신 버전: 1.0.17+50 🚀
+## 최신 버전: 1.0.17+53 🚀
 
-**최종 업데이트**: 2025년 12월 3일
-**현재 상태**: 프로필 관리 및 테마 커스터마이징 완료
+**최종 업데이트**: 2025년 12월 7일
+**현재 상태**: 캘린더 셀 UI 대폭 개선
 **패키지 이름**: kr.bluesky.dodo
 **플랫폼**: Android 6.0 (API 23) 이상, iOS 11.0 이상, Web
+
+---
+
+## 버전 1.0.17+53 - 캘린더 셀 UI 개선 📅
+
+**출시일**: 2025년 12월 7일
+
+### 신규 기능 ✨
+
+#### 캘린더 셀 UI 대폭 개선
+- ✅ **셀 크기 및 폰트 개선**
+  - 셀 세로 높이 증가: 48 → 52
+  - 폰트 크기 증가: 7pt → 8pt
+  - 캘린더 전체 높이: 380 → 400
+  - 더 넓고 가독성 좋은 캘린더 레이아웃
+
+- ✅ **할일 2줄 표시 기능**
+  - 첫 번째 할일: 제목 5자까지 표시 + ellipsis (…)
+  - 두 번째 할일: 제목 5자까지 또는 "+N" 형식 표시
+  - 3개 이상 할일: "+2", "+3" 등 primaryColor로 강조
+  - 할일 없는 날짜는 기존처럼 표시
+
+- ✅ **할일 있는 셀 배경 하이라이트**
+  - 다크 모드: primaryColor.withOpacity(0.15) - 은은한 강조
+  - 라이트 모드: primaryColor.withOpacity(0.06) - 부드러운 강조
+  - 선택된 날짜, 오늘 날짜와 자연스럽게 조화
+
+- ✅ **할일 텍스트 가독성 향상**
+  - FontWeight.w600 (semi-bold) 적용
+  - 더 선명하고 읽기 쉬운 할일 제목
+
+### 기술 구현 🔧
+
+**수정된 파일**:
+- `lib/presentation/widgets/calendar_day_cell.dart`
+  - 2줄 할일 표시 Column 구조
+  - 조건부 배경색 로직 (hasTodos && !isOutsideMonth)
+  - semi-bold 폰트 적용
+
+- `lib/presentation/screens/calendar_view_screen.dart`
+  - rowHeight: 48 → 52
+  - desiredCalendarHeight: 380 → 400
+
+- `lib/core/services/korean_holiday_service.dart`
+  - 휴일 서비스 관련 개선
+
+### 파일 변경 요약 📝
+
+| 파일 | 변경 | 라인 수 |
+|------|------|--------|
+| calendar_day_cell.dart | 2줄 표시, 배경색, 폰트 | +40 |
+| calendar_view_screen.dart | 셀/캘린더 높이 증가 | +4 |
+| korean_holiday_service.dart | 휴일 서비스 개선 | +10 |
+
+**총 변경**: ~54줄 수정, 3개 파일
+
+### 커밋 정보 📌
+
+- **커밋 해시**: 196af7d
+- **커밋 메시지**: feat(calendar): Enhance calendar day cell UI with todo display
+- **푸시 날짜**: 2025-12-07
 
 ---
 
