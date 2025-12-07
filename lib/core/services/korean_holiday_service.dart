@@ -193,6 +193,33 @@ class KoreanHolidayService {
     return holidays.contains(day);
   }
 
+  /// Get holiday names map for a specific month
+  /// Returns a Map of day number to holiday name (Korean)
+  static Future<Map<int, String>> getHolidayNamesForMonth(int year, int month) async {
+    final holidayInfoList = await getHolidayInfoForMonth(year, month);
+    final holidayNames = <int, String>{};
+
+    for (final info in holidayInfoList) {
+      holidayNames[info.day] = info.nameKo;
+    }
+
+    // Also add holiday days that might not have info (e.g., multi-day holidays)
+    final holidays = await getHolidaysForMonth(year, month);
+    for (final day in holidays) {
+      if (!holidayNames.containsKey(day)) {
+        // Find the closest holiday name (for multi-day holidays like 설날, 추석)
+        for (final info in holidayInfoList) {
+          if ((day - info.day).abs() <= 2) {
+            holidayNames[day] = info.nameKo;
+            break;
+          }
+        }
+      }
+    }
+
+    return holidayNames;
+  }
+
   /// Get holiday information (name and description) for a specific month
   static Future<List<HolidayInfo>> getHolidayInfoForMonth(int year, int month) async {
     final cacheKey = '$year-$month';

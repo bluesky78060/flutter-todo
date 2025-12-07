@@ -14,6 +14,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:todo_app/core/theme/app_colors.dart';
+import 'package:todo_app/core/services/korean_holiday_service.dart';
 import 'package:todo_app/domain/entities/todo.dart';
 import 'package:todo_app/presentation/providers/calendar_providers.dart';
 import 'package:todo_app/presentation/providers/category_providers.dart';
@@ -35,11 +36,35 @@ class CalendarViewScreen extends ConsumerStatefulWidget {
 class _CalendarViewScreenState extends ConsumerState<CalendarViewScreen> {
   late DateTime _focusedDay;
   CalendarFormat _calendarFormat = CalendarFormat.month;
+  Map<int, String> _holidayNames = {};
 
   @override
   void initState() {
     super.initState();
     _focusedDay = DateTime.now();
+    _loadHolidaysForMonth(_focusedDay.year, _focusedDay.month);
+  }
+
+  Future<void> _loadHolidaysForMonth(int year, int month) async {
+    try {
+      final holidayNames = await KoreanHolidayService.getHolidayNamesForMonth(year, month);
+      if (mounted) {
+        setState(() {
+          _holidayNames = holidayNames;
+        });
+      }
+    } catch (e) {
+      debugPrint('Failed to load holidays: $e');
+    }
+  }
+
+  void _goToToday() {
+    final today = DateTime.now();
+    ref.read(selectedDateProvider.notifier).setDate(today);
+    setState(() {
+      _focusedDay = today;
+    });
+    _loadHolidaysForMonth(today.year, today.month);
   }
 
   void _onDaySelected(DateTime selectedDay, DateTime focusedDay) {
@@ -71,28 +96,26 @@ class _CalendarViewScreenState extends ConsumerState<CalendarViewScreen> {
     return LayoutBuilder(
       builder: (context, constraints) {
         // Fixed height elements
-        const headerHeight = 50.0; // _buildDateHeader
-        const buttonHeight = 90.0; // _buildAddTodoButton with SafeArea
+        const headerHeight = 40.0; // _buildDateHeader (compact)
         const dividerHeight = 1.0; // Divider
-        const minTodoListHeight = 50.0; // Minimum todo list height
+        const minTodoListHeight = 80.0; // Minimum todo list height
 
         // Maximum calendar height based on available space
         final maxCalendarHeight = constraints.maxHeight -
             headerHeight -
-            buttonHeight -
             dividerHeight -
             minTodoListHeight;
 
         // Desired calendar height based on format
-        // month: ~350px, twoWeeks: ~180px, week: ~120px
+        // month: ~400px, twoWeeks: ~220px, week: ~130px
         final desiredCalendarHeight = _calendarFormat == CalendarFormat.month
-            ? 350.0
+            ? 400.0
             : _calendarFormat == CalendarFormat.twoWeeks
-                ? 180.0
+                ? 200.0
                 : 120.0;
 
         // Use the smaller of desired and max available height
-        final calendarHeight = desiredCalendarHeight.clamp(80.0, maxCalendarHeight.clamp(80.0, 400.0));
+        final calendarHeight = desiredCalendarHeight.clamp(80.0, maxCalendarHeight.clamp(80.0, 450.0));
 
         return Column(
           children: [
@@ -127,9 +150,6 @@ class _CalendarViewScreenState extends ConsumerState<CalendarViewScreen> {
                   ? _buildEmptyState(isDarkMode)
                   : _buildTodoList(selectedTodos, isDarkMode),
             ),
-
-            // Add todo button - fixed at bottom
-            _buildAddTodoButton(isDarkMode, primaryColor),
           ],
         );
       },
@@ -157,6 +177,7 @@ class _CalendarViewScreenState extends ConsumerState<CalendarViewScreen> {
       },
       onPageChanged: (focusedDay) {
         _focusedDay = focusedDay;
+        _loadHolidaysForMonth(focusedDay.year, focusedDay.month);
       },
       eventLoader: (day) {
         final normalizedDay = DateTime(day.year, day.month, day.day);
@@ -190,7 +211,7 @@ class _CalendarViewScreenState extends ConsumerState<CalendarViewScreen> {
           color: AppColors.getText(isDarkMode),
           size: 20,
         ),
-        headerPadding: const EdgeInsets.symmetric(vertical: 4),
+        headerPadding: EdgeInsets.zero,
       ),
       // Days of week style
       daysOfWeekStyle: DaysOfWeekStyle(
@@ -252,22 +273,63 @@ class _CalendarViewScreenState extends ConsumerState<CalendarViewScreen> {
       ),
       // Custom builders
       calendarBuilders: CalendarBuilders<Todo>(
+        // Header with Today button
+        headerTitleBuilder: (context, day) {
+          return Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                DateFormat('yyyy년 M월', context.locale.toString()).format(day),
+                style: TextStyle(
+                  color: AppColors.getText(isDarkMode),
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(width: 8),
+              GestureDetector(
+                onTap: _goToToday,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: primaryColor.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: primaryColor.withOpacity(0.3)),
+                  ),
+                  child: Text(
+                    'today'.tr(),
+                    style: TextStyle(
+                      color: primaryColor,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
         // Custom day cell with todo title
         defaultBuilder: (context, day, focusedDay) {
           final normalizedDay = DateTime(day.year, day.month, day.day);
           final todos = todosByDate[normalizedDay];
+          // Get holiday name for this day (only for current month)
+          final holidayName = day.month == focusedDay.month ? _holidayNames[day.day] : null;
           return CalendarDayCell(
             date: day,
             todos: todos,
+            holidayName: holidayName,
             onTap: () => _onDaySelected(day, focusedDay),
           );
         },
         selectedBuilder: (context, day, focusedDay) {
           final normalizedDay = DateTime(day.year, day.month, day.day);
           final todos = todosByDate[normalizedDay];
+          final holidayName = day.month == focusedDay.month ? _holidayNames[day.day] : null;
           return CalendarDayCell(
             date: day,
             isSelected: true,
+            holidayName: holidayName,
             todos: todos,
             onTap: () => _onDaySelected(day, focusedDay),
           );
@@ -276,10 +338,12 @@ class _CalendarViewScreenState extends ConsumerState<CalendarViewScreen> {
           final normalizedDay = DateTime(day.year, day.month, day.day);
           final todos = todosByDate[normalizedDay];
           final isSelected = isSameDay(ref.read(selectedDateProvider), day);
+          final holidayName = day.month == focusedDay.month ? _holidayNames[day.day] : null;
           return CalendarDayCell(
             date: day,
             isToday: true,
             isSelected: isSelected,
+            holidayName: holidayName,
             todos: todos,
             onTap: () => _onDaySelected(day, focusedDay),
           );
@@ -299,8 +363,8 @@ class _CalendarViewScreenState extends ConsumerState<CalendarViewScreen> {
           return const SizedBox.shrink();
         },
       ),
-      // Row height for showing todo titles
-      rowHeight: 48,
+      // Row height for showing todo titles (52px for larger cells)
+      rowHeight: 52,
     );
   }
 
@@ -314,7 +378,7 @@ class _CalendarViewScreenState extends ConsumerState<CalendarViewScreen> {
     final formattedDate = dateFormat.format(selectedDate);
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Row(
         children: [
           Text(
@@ -325,7 +389,7 @@ class _CalendarViewScreenState extends ConsumerState<CalendarViewScreen> {
               color: AppColors.getText(isDarkMode),
             ),
           ),
-          const Spacer(),
+          const SizedBox(width: 8),
           if (todoCount > 0)
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -342,6 +406,18 @@ class _CalendarViewScreenState extends ConsumerState<CalendarViewScreen> {
                 ),
               ),
             ),
+          const Spacer(),
+          // Add todo button
+          IconButton(
+            onPressed: _showAddTodoDialog,
+            icon: Icon(
+              FluentIcons.add_circle_24_filled,
+              color: primaryColor,
+              size: 28,
+            ),
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(),
+          ),
         ],
       ),
     );
@@ -638,27 +714,4 @@ class _CalendarViewScreenState extends ConsumerState<CalendarViewScreen> {
     );
   }
 
-  Widget _buildAddTodoButton(bool isDarkMode, Color primaryColor) {
-    return SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: SizedBox(
-          width: double.infinity,
-          child: ElevatedButton.icon(
-            onPressed: _showAddTodoDialog,
-            icon: const Icon(FluentIcons.add_24_regular),
-            label: Text('add_new_todo'.tr()),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: primaryColor,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(vertical: 14),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
 }
