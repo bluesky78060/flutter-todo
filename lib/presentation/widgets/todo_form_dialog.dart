@@ -1059,6 +1059,10 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
   @override
   Widget build(BuildContext context) {
     final isDarkMode = ref.watch(isDarkModeProvider);
+    final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
+    final screenHeight = MediaQuery.of(context).size.height;
+    // Calculate max height considering keyboard
+    final maxDialogHeight = screenHeight - keyboardHeight - 40; // 40 for safety margin
 
     return Dialog(
       backgroundColor: AppColors.getCard(isDarkMode),
@@ -1069,7 +1073,7 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
         padding: const EdgeInsets.all(24),
         constraints: BoxConstraints(
           maxWidth: 400,
-          maxHeight: MediaQuery.of(context).size.height * 0.9,
+          maxHeight: maxDialogHeight.clamp(300, screenHeight * 0.9),
         ),
         child: SingleChildScrollView(
           child: Column(
@@ -1210,7 +1214,8 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
                           value: _selectedCategoryId,
                           isExpanded: true,
                           dropdownColor: AppColors.getCard(isDarkMode),
-                          menuMaxHeight: 300,
+                          menuMaxHeight: 200,
+                          itemHeight: 48,
                           icon: Icon(
                             FluentIcons.chevron_down_24_regular,
                             color: AppColors.getTextSecondary(isDarkMode),
@@ -1227,6 +1232,58 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
                               fontSize: AppColors.scaledFontSize(16),
                             ),
                           ),
+                          selectedItemBuilder: (BuildContext context) {
+                            return [
+                              // No category option
+                              Align(
+                                alignment: Alignment.centerLeft,
+                                child: Text(
+                                  'no_category'.tr(),
+                                  style: TextStyle(
+                                    color: AppColors.getTextSecondary(isDarkMode),
+                                    fontSize: AppColors.scaledFontSize(16),
+                                  ),
+                                ),
+                              ),
+                              // Category options
+                              ...categories.map((category) {
+                                return Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Container(
+                                        width: 16,
+                                        height: 16,
+                                        decoration: BoxDecoration(
+                                          color: ColorUtils.parseColor(category.color),
+                                          shape: BoxShape.circle,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 10),
+                                      if (category.icon != null) ...[
+                                        Text(
+                                          category.icon!,
+                                          style: TextStyle(fontSize: AppColors.scaledFontSize(16)),
+                                        ),
+                                        const SizedBox(width: 6),
+                                      ],
+                                      Flexible(
+                                        child: Text(
+                                          category.name,
+                                          style: TextStyle(
+                                            color: AppColors.getText(isDarkMode),
+                                            fontSize: AppColors.scaledFontSize(16),
+                                          ),
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              }),
+                            ];
+                          },
                           items: [
                             DropdownMenuItem<int?>(
                               value: null,

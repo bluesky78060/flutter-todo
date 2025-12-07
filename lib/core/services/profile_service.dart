@@ -145,12 +145,13 @@ class ProfileService {
       // Get public URL
       final avatarUrl = _supabase.storage.from(avatarBucket).getPublicUrl(fileName);
 
-      // Update user metadata with avatar URL
+      // Update user metadata with custom avatar URL
+      // Use 'custom_avatar_url' key to prevent OAuth from overwriting it
       await _supabase.auth.updateUser(
         UserAttributes(
           data: {
             ...user.userMetadata ?? {},
-            'avatar_url': avatarUrl,
+            'custom_avatar_url': avatarUrl,
           },
         ),
       );
@@ -203,12 +204,13 @@ class ProfileService {
       // Get public URL
       final avatarUrl = _supabase.storage.from(avatarBucket).getPublicUrl(storagePath);
 
-      // Update user metadata with avatar URL
+      // Update user metadata with custom avatar URL
+      // Use 'custom_avatar_url' key to prevent OAuth from overwriting it
       await _supabase.auth.updateUser(
         UserAttributes(
           data: {
             ...user.userMetadata ?? {},
-            'avatar_url': avatarUrl,
+            'custom_avatar_url': avatarUrl,
           },
         ),
       );
@@ -251,9 +253,9 @@ class ProfileService {
       // Delete avatar files
       await _deleteOldAvatars(user.id);
 
-      // Remove avatar URL from metadata
+      // Remove custom avatar URL from metadata
       final metadata = Map<String, dynamic>.from(user.userMetadata ?? {});
-      metadata.remove('avatar_url');
+      metadata.remove('custom_avatar_url');
 
       await _supabase.auth.updateUser(
         UserAttributes(data: metadata),
@@ -274,8 +276,54 @@ class ProfileService {
   }
 
   /// Gets the current user's avatar URL from metadata.
+  /// Prioritizes custom_avatar_url (user-uploaded) over OAuth provider's avatar.
   String? getAvatarUrl() {
     final user = _supabase.auth.currentUser;
-    return user?.userMetadata?['avatar_url'] as String?;
+    final metadata = user?.userMetadata;
+    // Check custom avatar first (won't be overwritten by OAuth)
+    String? avatarUrl = metadata?['custom_avatar_url'] as String?;
+
+    // If no custom_avatar_url, check if avatar_url is a Supabase Storage URL
+    // (which means it's a user-uploaded avatar from before the migration)
+    if (avatarUrl == null) {
+      final legacyAvatarUrl = metadata?['avatar_url'] as String?;
+      if (legacyAvatarUrl != null && _isSupabaseStorageUrl(legacyAvatarUrl)) {
+        // This is a custom avatar stored in the old key, migrate it
+        _migrateAvatarUrl(legacyAvatarUrl);
+        return legacyAvatarUrl;
+      }
+      avatarUrl = legacyAvatarUrl;
+    }
+
+    // Fall back to OAuth provider's avatar
+    avatarUrl ??= metadata?['picture'] as String?;
+    return avatarUrl;
+  }
+
+  /// Checks if the URL is a Supabase Storage URL (user-uploaded avatar)
+  bool _isSupabaseStorageUrl(String url) {
+    return url.contains('supabase.co/storage') ||
+           url.contains('bulwfcsyqgsvmbadhlye');
+  }
+
+  /// Migrates avatar_url to custom_avatar_url for existing users
+  Future<void> _migrateAvatarUrl(String avatarUrl) async {
+    try {
+      final user = _supabase.auth.currentUser;
+      if (user == null) return;
+
+      print('[ProfileService] Migrating legacy avatar_url to custom_avatar_url');
+      await _supabase.auth.updateUser(
+        UserAttributes(
+          data: {
+            ...user.userMetadata ?? {},
+            'custom_avatar_url': avatarUrl,
+          },
+        ),
+      );
+      print('[ProfileService] Avatar URL migration complete');
+    } catch (e) {
+      print('[ProfileService] Avatar migration failed: $e');
+    }
   }
 }

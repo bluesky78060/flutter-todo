@@ -71,11 +71,38 @@ final subtaskListProvider =
 /// Provides completion statistics for a todo's subtasks.
 ///
 /// Returns a map with 'total' and 'completed' counts.
+/// Uses remote repository for authenticated users with local fallback.
 final subtaskStatsProvider =
     FutureProvider.family<Map<String, int>, int>((ref, todoId) async {
-  final localRepo = ref.read(subtaskRepositoryProvider);
-  final result = await localRepo.getSubtaskStats(todoId);
-  return result.getOrElse((l) => {'total': 0, 'completed': 0});
+  // Check if user is authenticated
+  final authState = ref.watch(currentUserProvider);
+
+  return await authState.when(
+    data: (session) async {
+      if (session != null) {
+        // User is authenticated - try remote first, fallback to local
+        final remoteRepo = ref.read(remoteSubtaskRepositoryProvider);
+        final result = await remoteRepo.getSubtaskStats(todoId);
+
+        return result.fold(
+          (failure) async {
+            // If remote fails, fallback to local
+            final localRepo = ref.read(subtaskRepositoryProvider);
+            final localResult = await localRepo.getSubtaskStats(todoId);
+            return localResult.getOrElse((l) => {'total': 0, 'completed': 0});
+          },
+          (stats) => stats,
+        );
+      } else {
+        // User is not authenticated - use local only
+        final localRepo = ref.read(subtaskRepositoryProvider);
+        final result = await localRepo.getSubtaskStats(todoId);
+        return result.getOrElse((l) => {'total': 0, 'completed': 0});
+      }
+    },
+    loading: () => {'total': 0, 'completed': 0},
+    error: (_, __) => {'total': 0, 'completed': 0},
+  );
 });
 
 /// Provides the [SubtaskActions] instance for subtask operations.

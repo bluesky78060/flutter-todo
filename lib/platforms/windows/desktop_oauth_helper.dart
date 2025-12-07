@@ -9,6 +9,7 @@ library;
 
 import 'dart:async';
 import 'dart:io';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:todo_app/core/utils/app_logger.dart';
@@ -152,12 +153,17 @@ class DesktopOAuthHelper {
 
   /// Send response to browser and close the page
   Future<void> _sendResponse(HttpRequest request, bool success, String? error) async {
+    final successTitle = tr('login_success_title');
+    final failedTitle = tr('login_failed_title');
+    final successMessage = tr('login_success_message');
+    final unknownError = tr('login_unknown_error');
+
     final html = '''
 <!DOCTYPE html>
 <html>
 <head>
   <meta charset="utf-8">
-  <title>${success ? '로그인 성공' : '로그인 실패'}</title>
+  <title>${success ? successTitle : failedTitle}</title>
   <style>
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -181,8 +187,8 @@ class DesktopOAuthHelper {
 </head>
 <body>
   <div class="container">
-    <h1>${success ? '✅ 로그인 성공!' : '❌ 로그인 실패'}</h1>
-    <p>${success ? '이 창을 닫고 앱으로 돌아가세요.' : (error ?? '알 수 없는 오류가 발생했습니다.')}</p>
+    <h1>${success ? '✅ $successTitle!' : '❌ $failedTitle'}</h1>
+    <p>${success ? successMessage : (error ?? unknownError)}</p>
     ${success ? '<script>setTimeout(() => window.close(), 2000);</script>' : ''}
   </div>
 </body>

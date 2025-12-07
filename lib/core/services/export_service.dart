@@ -59,25 +59,25 @@ class ExportService {
       final List<List<dynamic>> csvData = [
         [
           'ID',
-          '제목',
-          '설명',
-          '상태',
-          '마감일',
-          '카테고리',
-          '생성일',
+          tr('export_header_title'),
+          tr('export_header_description'),
+          tr('export_header_status'),
+          tr('export_header_due_date'),
+          tr('export_header_category'),
+          tr('export_header_created_at'),
         ],
       ];
 
       // Add todo rows
       for (final todo in todos) {
-        final status = todo.isCompleted ? '완료' : '미완료';
+        final status = todo.isCompleted ? tr('export_status_completed') : tr('export_status_incomplete');
         final dueDate = todo.dueDate != null
             ? DateFormat('yyyy-MM-dd').format(todo.dueDate!)
             : '';
         final createdDate = DateFormat('yyyy-MM-dd').format(todo.createdAt);
         final categoryName = todo.categoryId != null
-            ? categoryMap[todo.categoryId] ?? '미분류'
-            : '미분류';
+            ? categoryMap[todo.categoryId] ?? tr('uncategorized')
+            : tr('uncategorized');
 
         csvData.add([
           todo.id,
@@ -177,19 +177,19 @@ class ExportService {
                 crossAxisAlignment: pw.CrossAxisAlignment.start,
                 children: [
                   pw.Text(
-                    '요약',
+                    tr('export_summary'),
                     style: pw.TextStyle(
                       fontSize: AppColors.scaledFontSize(14),
                       fontWeight: pw.FontWeight.bold,
                     ),
                   ),
                   pw.SizedBox(height: 8),
-                  pw.Text('총 할 일: ${todos.length}'),
-                  pw.Text('완료: ${todos.where((t) => t.isCompleted).length}'),
+                  pw.Text('${tr('export_total_todos_label')}: ${todos.length}'),
+                  pw.Text('${tr('export_completed_label')}: ${todos.where((t) => t.isCompleted).length}'),
                   pw.Text(
-                    '완료율: ${todos.isEmpty ? '0' : ((todos.where((t) => t.isCompleted).length / todos.length) * 100).toStringAsFixed(1)}%',
+                    '${tr('export_completion_rate_label')}: ${todos.isEmpty ? '0' : ((todos.where((t) => t.isCompleted).length / todos.length) * 100).toStringAsFixed(1)}%',
                   ),
-                  pw.Text('카테고리: ${categories.length}'),
+                  pw.Text('${tr('export_categories_label')}: ${categories.length}'),
                 ],
               ),
             ),
@@ -198,7 +198,7 @@ class ExportService {
             // Todos table
             if (todos.isNotEmpty) ...[
               pw.Text(
-                '할 일 목록',
+                tr('export_todo_list_title'),
                 style: pw.TextStyle(
                   fontSize: AppColors.scaledFontSize(14),
                   fontWeight: pw.FontWeight.bold,
@@ -206,7 +206,7 @@ class ExportService {
               ),
               pw.SizedBox(height: 8),
               pw.TableHelper.fromTextArray(
-                headers: ['제목', '상태', '마감일', '카테고리'],
+                headers: [tr('export_header_title'), tr('export_header_status'), tr('export_header_due_date'), tr('export_header_category')],
                 data: todos.map((todo) {
                   final status = todo.isCompleted ? '✓' : '';
                   final dueDate = todo.dueDate != null
@@ -234,7 +234,7 @@ class ExportService {
                 cellPadding: const pw.EdgeInsets.symmetric(horizontal: 4, vertical: 4),
               ),
             ] else ...[
-              pw.Text('할 일 없음'),
+              pw.Text(tr('export_no_todos')),
             ],
           ],
         ),

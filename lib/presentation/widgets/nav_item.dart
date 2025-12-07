@@ -49,7 +49,7 @@ class NavItem extends ConsumerWidget {
         onTap: onTap,
         borderRadius: BorderRadius.circular(12),
         child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 8),
+          padding: const EdgeInsets.symmetric(vertical: 4),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(12),
           ),
@@ -60,7 +60,7 @@ class NavItem extends ConsumerWidget {
                 Container(
                   width: 32,
                   height: 3,
-                  margin: const EdgeInsets.only(bottom: 4),
+                  margin: const EdgeInsets.only(bottom: 2),
                   decoration: BoxDecoration(
                     gradient: AppColors.primaryGradient,
                     borderRadius: const BorderRadius.vertical(
@@ -69,7 +69,7 @@ class NavItem extends ConsumerWidget {
                   ),
                 )
               else
-                const SizedBox(height: 7),
+                const SizedBox(height: 5),
               Icon(
                 icon,
                 size: 24,
@@ -77,7 +77,7 @@ class NavItem extends ConsumerWidget {
                     ? AppColors.primary
                     : AppColors.getTextSecondary(isDarkMode),
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: 2),
               Text(
                 label,
                 style: TextStyle(

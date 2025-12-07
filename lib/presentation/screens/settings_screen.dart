@@ -48,6 +48,7 @@ import 'package:todo_app/presentation/screens/theme_preview_screen.dart';
 import 'package:todo_app/presentation/widgets/color_picker_widget.dart';
 import 'package:todo_app/presentation/widgets/font_size_slider_widget.dart';
 import 'package:todo_app/presentation/providers/profile_provider.dart';
+import 'package:todo_app/presentation/providers/view_mode_provider.dart';
 
 /// Settings screen with app preferences and account management.
 class SettingsScreen extends ConsumerStatefulWidget {
@@ -211,6 +212,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> with SingleTick
                             _buildThemeCustomizationContent(isDarkMode, textColor),
                           ],
                         ),
+                      ),
+                      const SizedBox(height: 24),
+
+                      // Display Settings
+                      _buildSectionHeader('display_settings'.tr(), subTextColor),
+                      const SizedBox(height: 12),
+                      _buildGlassCard(
+                        isDarkMode: isDarkMode,
+                        child: _buildDisplaySettingsContent(isDarkMode, textColor),
                       ),
                       const SizedBox(height: 24),
 
@@ -677,6 +687,101 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> with SingleTick
           ),
         ],
       ],
+    );
+  }
+
+  Widget _buildDisplaySettingsContent(bool isDarkMode, Color textColor) {
+    final viewMode = ref.watch(viewModeProvider);
+    final primaryColor = ref.watch(primaryColorProvider);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'default_view_mode'.tr(),
+          style: TextStyle(
+            color: textColor,
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: 16),
+        Row(
+          children: [
+            Expanded(
+              child: _buildViewModeButton(
+                icon: FluentIcons.list_24_regular,
+                label: 'list_view'.tr(),
+                isSelected: viewMode == ViewMode.list,
+                onTap: () => ref.read(viewModeProvider.notifier).setViewMode(ViewMode.list),
+                isDarkMode: isDarkMode,
+                primaryColor: primaryColor,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _buildViewModeButton(
+                icon: FluentIcons.calendar_24_regular,
+                label: 'calendar_view'.tr(),
+                isSelected: viewMode == ViewMode.calendar,
+                onTap: () => ref.read(viewModeProvider.notifier).setViewMode(ViewMode.calendar),
+                isDarkMode: isDarkMode,
+                primaryColor: primaryColor,
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildViewModeButton({
+    required IconData icon,
+    required String label,
+    required bool isSelected,
+    required VoidCallback onTap,
+    required bool isDarkMode,
+    required Color primaryColor,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? primaryColor.withOpacity(0.15)
+              : (isDarkMode
+                  ? Colors.white.withOpacity(0.05)
+                  : Colors.black.withOpacity(0.03)),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isSelected
+                ? primaryColor
+                : (isDarkMode
+                    ? Colors.white.withOpacity(0.1)
+                    : Colors.black.withOpacity(0.1)),
+            width: isSelected ? 2 : 1,
+          ),
+        ),
+        child: Column(
+          children: [
+            Icon(
+              icon,
+              size: 28,
+              color: isSelected ? primaryColor : AppColors.getTextSecondary(isDarkMode),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                color: isSelected ? primaryColor : AppColors.getText(isDarkMode),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 

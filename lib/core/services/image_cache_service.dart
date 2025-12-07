@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:image/image.dart' as img;
 import 'package:path_provider/path_provider.dart';
@@ -83,14 +84,14 @@ class ImageCacheService {
   /// 이미지 해상도 최적화 (메모리 효율)
   Future<File> getOptimizedImage(File imageFile) async {
     try {
-      logger.d('🔧 이미지 최적화 시작: ${imageFile.path}');
+      logger.d('🔧 ${tr('image_optimization_start')}: ${imageFile.path}');
 
       // 원본 이미지 읽기
       final bytes = await imageFile.readAsBytes();
       final image = img.decodeImage(bytes);
 
       if (image == null) {
-        throw Exception('이미지 디코딩 실패');
+        throw Exception(tr('image_decoding_failed'));
       }
 
       // 해상도 계산 (최대 1200x1200)

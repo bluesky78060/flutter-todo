@@ -7,6 +7,7 @@
 library;
 
 import 'dart:io';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:tray_manager/tray_manager.dart';
 import 'package:window_manager/window_manager.dart';
@@ -68,21 +69,21 @@ class TrayManager with TrayListener {
         items: [
           MenuItem(
             key: 'show_widget',
-            label: '위젯 표시',
+            label: tr('show_widget'),
           ),
           MenuItem(
             key: 'hide_widget',
-            label: '위젯 숨기기',
+            label: tr('hide_widget'),
           ),
           MenuItem.separator(),
           MenuItem(
             key: 'toggle_always_on_top',
-            label: '항상 위에 표시',
+            label: tr('always_on_top'),
           ),
           MenuItem.separator(),
           MenuItem(
             key: 'exit_app',
-            label: '종료',
+            label: tr('exit'),
           ),
         ],
       );

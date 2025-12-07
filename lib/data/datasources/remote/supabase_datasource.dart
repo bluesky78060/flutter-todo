@@ -396,11 +396,22 @@ class SupabaseAuthDataSource {
     if (user == null) return null;
 
     // Get avatar URL from various possible sources in user metadata
-    // OAuth providers store it in different keys: avatar_url, picture, etc.
+    // Priority: custom_avatar_url (user-uploaded) > Supabase Storage URL in avatar_url > OAuth provider's avatar
     final metadata = user.userMetadata;
-    String? avatarUrl = metadata?['avatar_url'] as String?;
-    avatarUrl ??= metadata?['picture'] as String?;
-    avatarUrl ??= metadata?['avatar'] as String?;
+    String? avatarUrl = metadata?['custom_avatar_url'] as String?;  // User-uploaded avatar (won't be overwritten by OAuth)
+
+    // If no custom_avatar_url, check if avatar_url is a Supabase Storage URL (legacy custom avatar)
+    if (avatarUrl == null) {
+      final legacyAvatarUrl = metadata?['avatar_url'] as String?;
+      if (legacyAvatarUrl != null && _isSupabaseStorageUrl(legacyAvatarUrl)) {
+        avatarUrl = legacyAvatarUrl;  // Use legacy custom avatar
+      } else {
+        avatarUrl = legacyAvatarUrl;  // Use OAuth avatar_url
+      }
+    }
+
+    avatarUrl ??= metadata?['picture'] as String?;     // Google OAuth uses 'picture' key
+    avatarUrl ??= metadata?['avatar'] as String?;      // Some providers use 'avatar' key
 
     // Get display name from various possible sources
     String? displayName = metadata?['display_name'] as String?;
@@ -416,6 +427,12 @@ class SupabaseAuthDataSource {
       avatarUrl: avatarUrl,
       createdAt: user.createdAt.isNotEmpty ? DateTime.parse(user.createdAt) : null,
     );
+  }
+
+  /// Checks if the URL is a Supabase Storage URL (user-uploaded avatar)
+  bool _isSupabaseStorageUrl(String url) {
+    return url.contains('supabase.co/storage') ||
+           url.contains('bulwfcsyqgsvmbadhlye');
   }
 
   // Login
@@ -451,12 +468,35 @@ class SupabaseAuthDataSource {
       final user = data.session?.user;
       if (user == null) return null;
 
+      // Get avatar URL with same priority as getCurrentUser()
+      final metadata = user.userMetadata;
+      String? avatarUrl = metadata?['custom_avatar_url'] as String?;
+
+      // If no custom_avatar_url, check if avatar_url is a Supabase Storage URL (legacy custom avatar)
+      if (avatarUrl == null) {
+        final legacyAvatarUrl = metadata?['avatar_url'] as String?;
+        if (legacyAvatarUrl != null && _isSupabaseStorageUrl(legacyAvatarUrl)) {
+          avatarUrl = legacyAvatarUrl;  // Use legacy custom avatar
+        } else {
+          avatarUrl = legacyAvatarUrl;  // Use OAuth avatar_url
+        }
+      }
+
+      avatarUrl ??= metadata?['picture'] as String?;
+      avatarUrl ??= metadata?['avatar'] as String?;
+
+      // Get display name from various possible sources
+      String? displayName = metadata?['display_name'] as String?;
+      displayName ??= metadata?['full_name'] as String?;
+
       return domain.AuthUser(
         // ignore: deprecated_member_use_from_same_package
         id: user.id.hashCode,  // Legacy: hash UUID to int
         uuid: user.id,  // Primary: Supabase UUID
         email: user.email ?? '',
-        name: user.userMetadata?['name'] as String? ?? user.email ?? '',
+        name: metadata?['name'] as String? ?? user.email ?? '',
+        displayName: displayName,
+        avatarUrl: avatarUrl,
         createdAt: user.createdAt.isNotEmpty ? DateTime.parse(user.createdAt) : null,
       );
     });

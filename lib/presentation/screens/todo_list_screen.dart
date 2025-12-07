@@ -47,6 +47,8 @@ import 'package:todo_app/presentation/widgets/filter_chip.dart' as todo_widgets;
 import 'package:todo_app/presentation/widgets/recurring_todo_group.dart';
 import 'package:todo_app/presentation/widgets/nav_item.dart';
 import 'package:todo_app/presentation/services/permission_request_service.dart';
+import 'package:todo_app/presentation/providers/view_mode_provider.dart';
+import 'package:todo_app/presentation/screens/calendar_view_screen.dart';
 import 'package:todo_app/presentation/utils/todo_grouping_utils.dart';
 import 'package:todo_app/presentation/utils/todo_reorder_utils.dart';
 import 'package:todo_app/presentation/utils/layout_builders_utils.dart';
@@ -325,8 +327,11 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> with WidgetsBin
     AsyncValue<List<Todo>> todosAsync,
     TodoFilter currentFilter,
   ) {
+    final viewMode = ref.watch(viewModeProvider);
+
     return Scaffold(
       backgroundColor: AppColors.getBackground(isDarkMode),
+      resizeToAvoidBottomInset: false, // 다이얼로그 키보드로 인한 백그라운드 오버플로우 방지
       body: SafeArea(
         child: Column(
           children: [
@@ -339,36 +344,43 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> with WidgetsBin
               ref: ref,
               handleClearCompleted: _handleClearCompleted,
             ),
-            // Filter Chips
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: buildFilterChips(
-                todosAsync: todosAsync,
-                currentFilter: currentFilter,
-                ref: ref,
-              ),
-            ),
-            const SizedBox(height: 12),
-            // Search Bar
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: buildSearchBar(
-                isDarkMode: isDarkMode,
-                searchController: _searchController,
-                ref: ref,
-              ),
-            ),
-            // Category Filter
-            buildCategoryFilter(ref: ref),
-            // Quick Add Input
-            buildQuickAddInput(
-              isDarkMode: isDarkMode,
-              inputController: _inputController,
-              onSubmitted: _addTodoFromInput,
-            ),
 
-            // Todo List
-            Expanded(
+            // View mode branching: Calendar or List
+            if (viewMode == ViewMode.calendar) ...[
+              // Calendar View
+              const Expanded(child: CalendarViewScreen()),
+            ] else ...[
+              // List View (existing)
+              // Filter Chips
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: buildFilterChips(
+                  todosAsync: todosAsync,
+                  currentFilter: currentFilter,
+                  ref: ref,
+                ),
+              ),
+              const SizedBox(height: 12),
+              // Search Bar
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: buildSearchBar(
+                  isDarkMode: isDarkMode,
+                  searchController: _searchController,
+                  ref: ref,
+                ),
+              ),
+              // Category Filter
+              buildCategoryFilter(ref: ref),
+              // Quick Add Input
+              buildQuickAddInput(
+                isDarkMode: isDarkMode,
+                inputController: _inputController,
+                onSubmitted: _addTodoFromInput,
+              ),
+
+              // Todo List
+              Expanded(
               child: todosAsync.when(
                 data: (todos) {
                   if (todos.isEmpty) {
@@ -464,6 +476,7 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> with WidgetsBin
                 ),
               ),
             ),
+            ], // end of else (list view)
 
             // Bottom Navigation
             Container(
@@ -476,55 +489,50 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> with WidgetsBin
                   ),
                 ),
               ),
-              child: Column(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: NavItem(
-                            icon: FluentIcons.task_list_square_ltr_24_filled,
-                            label: 'todos'.tr(),
-                            isActive: true,
-                            onTap: () {},
-                          ),
-                        ),
-                        Expanded(
-                          child: NavItem(
-                            icon: FluentIcons.data_histogram_24_regular,
-                            label: 'statistics'.tr(),
-                            isActive: false,
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => const StatisticsScreen(),
-                                ),
-                              );
-                            },
-                          ),
-                        ),
-                        Expanded(
-                          child: NavItem(
-                            icon: FluentIcons.settings_24_regular,
-                            label: 'settings'.tr(),
-                            isActive: false,
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => const SettingsScreen(),
-                                ),
-                              );
-                            },
-                          ),
-                        ),
-                      ],
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 4, 16, 4),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: NavItem(
+                        icon: FluentIcons.task_list_square_ltr_24_filled,
+                        label: 'todos'.tr(),
+                        isActive: true,
+                        onTap: () {},
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 8),
-                ],
+                    Expanded(
+                      child: NavItem(
+                        icon: FluentIcons.data_histogram_24_regular,
+                        label: 'statistics'.tr(),
+                        isActive: false,
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const StatisticsScreen(),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                    Expanded(
+                      child: NavItem(
+                        icon: FluentIcons.settings_24_regular,
+                        label: 'settings'.tr(),
+                        isActive: false,
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const SettingsScreen(),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ],
@@ -542,6 +550,7 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> with WidgetsBin
   ) {
     return Scaffold(
       backgroundColor: AppColors.getBackground(isDarkMode),
+      resizeToAvoidBottomInset: false, // 다이얼로그 키보드로 인한 백그라운드 오버플로우 방지
       body: Row(
         children: [
           // Master panel: Todo list
