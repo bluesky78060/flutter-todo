@@ -790,5 +790,39 @@
   "password_min_length": "Password must be at least 6 characters",
   "passwords_not_match": "Passwords do not match",
   "password_set_success": "Password set successfully. You can now login with email",
-  "password_set_failed": "Failed to set password"
+  "password_set_failed": "Failed to set password",
+
+  "display_settings": "Display Settings",
+  "default_view_mode": "Default View Mode",
+  "list_view": "List",
+  "calendar_view": "Calendar",
+  "add_new_todo": "Add New Todo",
+
+  "export_header_title": "Title",
+  "export_header_description": "Description",
+  "export_header_status": "Status",
+  "export_header_due_date": "Due Date",
+  "export_header_category": "Category",
+  "export_header_created_at": "Created At",
+  "export_status_completed": "Completed",
+  "export_status_incomplete": "Incomplete",
+  "export_summary": "Summary",
+  "export_total_todos_label": "Total Todos",
+  "export_completed_label": "Completed",
+  "export_completion_rate_label": "Completion Rate",
+  "export_categories_label": "Categories",
+  "export_todo_list_title": "Todo List",
+  "export_no_todos": "No Todos",
+
+  "show_widget": "Show Widget",
+  "hide_widget": "Hide Widget",
+  "always_on_top": "Always On Top",
+
+  "login_success_title": "Login Successful",
+  "login_failed_title": "Login Failed",
+  "login_success_message": "Close this window and return to the app.",
+  "login_unknown_error": "An unknown error occurred.",
+
+  "image_decoding_failed": "Image decoding failed",
+  "image_optimization_start": "Starting image optimization"
 }

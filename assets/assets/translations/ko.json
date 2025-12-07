@@ -782,5 +782,39 @@
   "password_min_length": "비밀번호는 최소 6자 이상이어야 합니다",
   "passwords_not_match": "비밀번호가 일치하지 않습니다",
   "password_set_success": "비밀번호가 설정되었습니다. 이제 이메일로도 로그인할 수 있습니다",
-  "password_set_failed": "비밀번호 설정 실패"
+  "password_set_failed": "비밀번호 설정 실패",
+
+  "display_settings": "표시 설정",
+  "default_view_mode": "기본 뷰 모드",
+  "list_view": "리스트",
+  "calendar_view": "캘린더",
+  "add_new_todo": "새로운 할 일 추가",
+
+  "export_header_title": "제목",
+  "export_header_description": "설명",
+  "export_header_status": "상태",
+  "export_header_due_date": "마감일",
+  "export_header_category": "카테고리",
+  "export_header_created_at": "생성일",
+  "export_status_completed": "완료",
+  "export_status_incomplete": "미완료",
+  "export_summary": "요약",
+  "export_total_todos_label": "총 할 일",
+  "export_completed_label": "완료",
+  "export_completion_rate_label": "완료율",
+  "export_categories_label": "카테고리",
+  "export_todo_list_title": "할 일 목록",
+  "export_no_todos": "할 일 없음",
+
+  "show_widget": "위젯 표시",
+  "hide_widget": "위젯 숨기기",
+  "always_on_top": "항상 위에 표시",
+
+  "login_success_title": "로그인 성공",
+  "login_failed_title": "로그인 실패",
+  "login_success_message": "이 창을 닫고 앱으로 돌아가세요.",
+  "login_unknown_error": "알 수 없는 오류가 발생했습니다.",
+
+  "image_decoding_failed": "이미지 디코딩 실패",
+  "image_optimization_start": "이미지 최적화 시작"
 }
