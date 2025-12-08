@@ -61,18 +61,19 @@ jobs:
           }
         shell: powershell
 
-      - name: Package Widget
-        run: |
-          cd build/windows/x64/runner/Release
-          Compress-Archive -Path * -DestinationPath ../../../../../DoDo-Calendar-Widget-Windows.zip
-        shell: powershell
-
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: DoDo-Calendar-Widget-Windows
-          path: DoDo-Calendar-Widget-Windows.zip
+          path: build/windows/x64/runner/Release/
           retention-days: 30
+
+      - name: Package for Release
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          cd build/windows/x64/runner/Release
+          Compress-Archive -Path * -DestinationPath ../../../../../DoDo-Calendar-Widget-Windows.zip
+        shell: powershell
 
       - name: Create Release (on tag)
         if: startsWith(github.ref, 'refs/tags/')

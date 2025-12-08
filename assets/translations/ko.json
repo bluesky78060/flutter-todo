@@ -835,5 +835,11 @@
   "none": "없음",
   "category": "카테고리",
   "recurrence": "반복",
-  "no_repeat": "안 함"
+  "no_repeat": "안 함",
+
+  "todo_detail": "할 일 상세",
+  "due_time": "마감 시간",
+  "created_at": "생성일",
+  "completed_at": "완료일",
+  "select_todo_to_view": "할 일을 선택하여 상세 정보를 확인하세요"
 }
