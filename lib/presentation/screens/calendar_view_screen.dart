@@ -93,66 +93,37 @@ class _CalendarViewScreenState extends ConsumerState<CalendarViewScreen> {
     final todosByDate = ref.watch(todosByDateProvider);
     final selectedTodos = ref.watch(selectedDateTodosProvider);
 
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        // Fixed height elements
-        const headerHeight = 40.0; // _buildDateHeader (compact)
-        const dividerHeight = 1.0; // Divider
-        const minTodoListHeight = 80.0; // Minimum todo list height
+    return Column(
+      children: [
+        // Calendar - uses intrinsic height based on format
+        _buildCalendar(
+          isDarkMode: isDarkMode,
+          primaryColor: primaryColor,
+          selectedDate: selectedDate,
+          todosByDate: todosByDate,
+        ),
 
-        // Maximum calendar height based on available space
-        final maxCalendarHeight = constraints.maxHeight -
-            headerHeight -
-            dividerHeight -
-            minTodoListHeight;
+        // Divider
+        Divider(
+          height: 1,
+          color: AppColors.getTextSecondary(isDarkMode).withOpacity(0.2),
+        ),
 
-        // Desired calendar height based on format
-        // month: ~400px, twoWeeks: ~220px, week: ~130px
-        final desiredCalendarHeight = _calendarFormat == CalendarFormat.month
-            ? 400.0
-            : _calendarFormat == CalendarFormat.twoWeeks
-                ? 200.0
-                : 120.0;
+        // Selected date header
+        _buildDateHeader(
+          selectedDate: selectedDate,
+          todoCount: selectedTodos.length,
+          isDarkMode: isDarkMode,
+          primaryColor: primaryColor,
+        ),
 
-        // Use the smaller of desired and max available height
-        final calendarHeight = desiredCalendarHeight.clamp(80.0, maxCalendarHeight.clamp(80.0, 450.0));
-
-        return Column(
-          children: [
-            // Calendar with fixed height based on format
-            SizedBox(
-              height: calendarHeight,
-              child: _buildCalendar(
-                isDarkMode: isDarkMode,
-                primaryColor: primaryColor,
-                selectedDate: selectedDate,
-                todosByDate: todosByDate,
-              ),
-            ),
-
-            // Divider
-            Divider(
-              height: 1,
-              color: AppColors.getTextSecondary(isDarkMode).withOpacity(0.2),
-            ),
-
-            // Selected date header
-            _buildDateHeader(
-              selectedDate: selectedDate,
-              todoCount: selectedTodos.length,
-              isDarkMode: isDarkMode,
-              primaryColor: primaryColor,
-            ),
-
-            // Todo list for selected date (fills remaining space)
-            Expanded(
-              child: selectedTodos.isEmpty
-                  ? _buildEmptyState(isDarkMode)
-                  : _buildTodoList(selectedTodos, isDarkMode),
-            ),
-          ],
-        );
-      },
+        // Todo list for selected date (fills remaining space)
+        Expanded(
+          child: selectedTodos.isEmpty
+              ? _buildEmptyState(isDarkMode)
+              : _buildTodoList(selectedTodos, isDarkMode),
+        ),
+      ],
     );
   }
 
@@ -167,6 +138,12 @@ class _CalendarViewScreenState extends ConsumerState<CalendarViewScreen> {
       lastDay: DateTime.utc(2030, 12, 31),
       focusedDay: _focusedDay,
       calendarFormat: _calendarFormat,
+      availableCalendarFormats: const {
+        CalendarFormat.month: '월',
+        CalendarFormat.twoWeeks: '2주',
+        CalendarFormat.week: '주',
+      },
+      rowHeight: 52,
       startingDayOfWeek: StartingDayOfWeek.sunday,
       selectedDayPredicate: (day) => isSameDay(selectedDate, day),
       onDaySelected: _onDaySelected,
@@ -363,8 +340,6 @@ class _CalendarViewScreenState extends ConsumerState<CalendarViewScreen> {
           return const SizedBox.shrink();
         },
       ),
-      // Row height for showing todo titles (52px for larger cells)
-      rowHeight: 52,
     );
   }
 

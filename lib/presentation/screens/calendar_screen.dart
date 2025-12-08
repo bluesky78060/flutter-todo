@@ -43,6 +43,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
   Set<int> _holidays = {};
   List<holiday_service.HolidayInfo> _holidayInfoList = [];
   holiday_service.HolidayInfo? _holidayInfoForSelectedDay;
+  CalendarFormat _calendarFormat = CalendarFormat.month;
 
   @override
   void initState() {
@@ -162,17 +163,34 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
       body: todosAsync.when(
         data: (todos) => Column(
           children: [
-            // Calendar
-            Container(
-              margin: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: AppColors.getCard(isDarkMode),
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: TableCalendar(
+            // Calendar - TableCalendar 내장 애니메이션으로 동적 높이 변화
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: AppColors.getCard(isDarkMode),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(16),
+                  child: TableCalendar(
                 firstDay: DateTime.utc(2020, 1, 1),
                 lastDay: DateTime.utc(2030, 12, 31),
                 focusedDay: _focusedDay,
+                calendarFormat: _calendarFormat,
+                onFormatChanged: (format) {
+                  setState(() {
+                    _calendarFormat = format;
+                  });
+                },
+                sixWeekMonthsEnforced: false,  // 필요한 주 수만 표시 (4~6주)
+                rowHeight: 48,  // 명시적 행 높이 설정
+                daysOfWeekHeight: 32,  // 요일 헤더 높이
+                availableCalendarFormats: const {
+                  CalendarFormat.month: '월',
+                  CalendarFormat.twoWeeks: '2주',
+                  CalendarFormat.week: '주',
+                },
                 selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
                 onDaySelected: (selectedDay, focusedDay) {
                   setState(() {
@@ -281,8 +299,10 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                     fontWeight: FontWeight.w500,
                   ),
                 ),
-              ),
-            ),
+                ),  // TableCalendar
+              ),  // ClipRRect
+            ),  // Container
+          ),  // Padding
 
             // Selected day's todos
             if (_selectedDay != null) ...[
