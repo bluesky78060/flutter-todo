@@ -841,5 +841,11 @@
   "due_time": "마감 시간",
   "created_at": "생성일",
   "completed_at": "완료일",
-  "select_todo_to_view": "할 일을 선택하여 상세 정보를 확인하세요"
+  "select_todo_to_view": "할 일을 선택하여 상세 정보를 확인하세요",
+
+  "delete_todo_confirm": "이 할 일을 삭제하시겠습니까?",
+  "disabled": "비활성화",
+  "due_time_optional": "마감 시간 (선택)",
+  "edit": "수정",
+  "enabled": "활성화"
 }
