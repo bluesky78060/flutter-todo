@@ -830,5 +830,10 @@
   "login_unknown_error": "알 수 없는 오류가 발생했습니다.",
 
   "image_decoding_failed": "이미지 디코딩 실패",
-  "image_optimization_start": "이미지 최적화 시작"
+  "image_optimization_start": "이미지 최적화 시작",
+
+  "none": "없음",
+  "category": "카테고리",
+  "recurrence": "반복",
+  "no_repeat": "안 함"
 }
