@@ -843,5 +843,11 @@
   "none": "None",
   "category": "Category",
   "recurrence": "Recurrence",
-  "no_repeat": "No repeat"
+  "no_repeat": "No repeat",
+
+  "todo_detail": "Todo Detail",
+  "due_time": "Due Time",
+  "created_at": "Created at",
+  "completed_at": "Completed at",
+  "select_todo_to_view": "Select a todo to view details"
 }
