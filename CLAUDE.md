@@ -7,7 +7,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 Flutter Todo app with Supabase backend, featuring OAuth authentication (Google/Kakao), local/cloud sync, notifications, and multi-platform support (Web, Android, iOS).
 
 **Package**: `kr.bluesky.dodo`
-**Current Version**: 1.0.17+53 (see pubspec.yaml)
+**Current Version**: 1.0.17+56 (see pubspec.yaml)
+**Latest Uploaded to Play Store**: 1.0.17+53
 
 ## Development Commands
 
@@ -88,7 +89,8 @@ flutter build ios --release --build-name=1.0.6 --build-number=16 --no-codesign
 **버전 관리 전략**:
 - Android와 iOS는 독립적인 버전 번호 사용 가능
 - 각 스토어별로 빌드 번호는 항상 증가해야 함
-- **현재 업로드된 버전**: Android: **1.0.17+53** (Google Play), iOS: 1.0.5+15
+- **현재 빌드**: Android: **1.0.17+56** (AAB 준비), iOS: 1.0.5+15
+- **마지막 업로드**: Android: **1.0.17+53** (Google Play), iOS: 1.0.5+15
 
 **CRITICAL: 빌드 전 최신 업로드 버전 확인 필수**
 ```bash
@@ -107,7 +109,15 @@ flutter build ios --release --build-name=1.0.6 --build-number=16 --no-codesign
 - 빌드 전 항상 Google Play Console에서 최신 버전 확인
 - 빌드 번호가 작으면 업로드 시 "Version code X has already been used" 오류 발생
 
-**IMPORTANT**: 빌드 스크립트 사용 시 버전 번호가 포함된 파일이 자동 생성되므로 수동 복사 불필요
+**현재 상황**:
+- Google Play Console: **1.0.17+53** (업로드됨)
+- 다음 빌드: **1.0.17+56** 이상이어야 함 (AAB 빌드 완료)
+
+**IMPORTANT**: 빌드 스크립트 사용 시 버전 번호가 포함된 파일이 자동 생성되므로 수동 복사 불필요. 수동으로 AAB 빌드할 때는 다음 명령어로:
+```bash
+flutter build appbundle --release --build-name=1.0.17 --build-number=56
+cp build/app/outputs/bundle/release/app-release.aab build/app/outputs/bundle/release/app-release-1.0.17+56.aab
+```
 
 ### Code Generation
 
@@ -224,6 +234,14 @@ lib/
 - `StreamProvider` for real-time Supabase auth
 - `StateProvider` for simple state (theme, selected filter)
 
+**5. Theme Customization (Pending/Applied Pattern)**
+- Pending state: User's current selections (preview)
+- Applied state: Actually used by the app (persisted)
+- `ThemeCustomizationNotifier` manages both states
+- UI components use `pendingColorProvider` and `pendingFontScaleProvider` for live preview
+- "Apply Theme" button commits pending to applied and saves to SharedPreferences
+- See: [lib/presentation/providers/theme_customization_provider.dart](lib/presentation/providers/theme_customization_provider.dart)
+
 ## Critical Implementation Details
 
 ### Android Permissions (Crash-Prone Area)
@@ -323,8 +341,9 @@ storeFile=/path/to/upload-keystore.jks
 **Build Optimizations** (enabled in [android/app/build.gradle.kts](android/app/build.gradle.kts)):
 - R8 code shrinking: `isMinifyEnabled = true`
 - Resource shrinking: `isShrinkResources = true`
-- Native debug symbols: `debugSymbolLevel = "FULL"`
+- Native debug symbols: Disabled for Apple Silicon compatibility (`flutter.stripDebugSymbols=false`)
 - ProGuard rules: `proguard-rules.pro`
+- NDK version: 27.0.12077973 (Apple Silicon compatible)
 
 **Version Management**: Update in [pubspec.yaml](pubspec.yaml) (format: `major.minor.patch+buildNumber`)
 
@@ -345,6 +364,28 @@ storeFile=/path/to/upload-keystore.jks
 - Notifications: `notification_time_optional`, `select_notification_time`
 
 **Translation Structure**: Flat JSON (no nesting) - use underscore-separated keys like `category_optional`
+
+## UI Architecture & Patterns
+
+### Settings Screen
+- Redesigned with clean card-based layout (recent update)
+- Removed glassmorphism in favor of clarity
+- Theme customization with pending/applied pattern
+- Color picker observes `pendingColorProvider` for live preview
+- Font size slider observes `pendingFontScaleProvider` for live preview
+- "Apply Theme" button appears only when there are unsaved changes
+- See: [lib/presentation/screens/settings_screen.dart](lib/presentation/screens/settings_screen.dart)
+
+### Calendar & Statistics Views
+- Calendar view with dynamic height for format switching
+- Statistics screen with weekly and monthly trend charts
+- Windows calendar widget with Korean holidays and todo detail view
+- Gauge-style settings panel for device visualization
+
+### Form Dialogs & Modals
+- Todo form dialog with cleaner card-based layout
+- Drag-to-dismiss capability
+- Support for categories and reminders
 
 ## Common Issues & Troubleshooting
 
