@@ -25,7 +25,7 @@ if (localPropertiesFile.exists()) {
 android {
     namespace = "kr.bluesky.dodo"
     compileSdk = flutter.compileSdkVersion
-    ndkVersion = "28.2.13676358"
+    ndkVersion = "27.0.12077973"
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
@@ -83,23 +83,15 @@ android {
                 "proguard-rules.pro"
             )
 
-            // 네이티브 디버그 심볼 - FULL로 설정하여 완전한 디버그 정보 생성
-            // Play Console에서 크래시 리포트를 위해 사용
-            ndk {
-                debugSymbolLevel = "FULL"
-            }
+            // 네이티브 디버그 심볼 비활성화 (Apple Silicon strip 문제)
+            // Flutter 3.38에서 내부 strip 프로세스가 실패하므로 완전히 제거
+            // ndk { debugSymbolLevel = "none" }
         }
     }
 
     packaging {
         jniLibs {
             useLegacyPackaging = true
-            // ============================================================
-            // ABI 필터링 (arm64-v8a: 95% 이상의 활성 Android 기기 지원)
-            // ============================================================
-            // excludes += "armeabi-v7a/libc++_shared.so"
-            // excludes += "x86/libc++_shared.so"
-            // excludes += "x86_64/libc++_shared.so"
         }
     }
 }

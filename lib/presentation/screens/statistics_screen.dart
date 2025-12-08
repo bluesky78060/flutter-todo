@@ -190,48 +190,43 @@ class StatisticsScreen extends ConsumerWidget {
                   ),
                 ),
               ),
-              child: Column(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: _NavItem(
-                            icon: FluentIcons.task_list_square_ltr_24_regular,
-                            label: 'work'.tr(),
-                            isActive: false,
-                            onTap: () => Navigator.pop(context),
-                          ),
-                        ),
-                        Expanded(
-                          child: _NavItem(
-                            icon: FluentIcons.data_histogram_24_filled,
-                            label: 'statistics'.tr(),
-                            isActive: true,
-                            onTap: () {},
-                          ),
-                        ),
-                        Expanded(
-                          child: _NavItem(
-                            icon: FluentIcons.settings_24_regular,
-                            label: 'settings'.tr(),
-                            isActive: false,
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => const SettingsScreen(),
-                                ),
-                              );
-                            },
-                          ),
-                        ),
-                      ],
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 4, 16, 4),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: _NavItem(
+                        icon: FluentIcons.task_list_square_ltr_24_regular,
+                        label: 'todos'.tr(),
+                        isActive: false,
+                        onTap: () => Navigator.pop(context),
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 20),
-                ],
+                    Expanded(
+                      child: _NavItem(
+                        icon: FluentIcons.data_histogram_24_filled,
+                        label: 'statistics'.tr(),
+                        isActive: true,
+                        onTap: () {},
+                      ),
+                    ),
+                    Expanded(
+                      child: _NavItem(
+                        icon: FluentIcons.settings_24_regular,
+                        label: 'settings'.tr(),
+                        isActive: false,
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const SettingsScreen(),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ],
@@ -246,15 +241,11 @@ class StatisticsScreen extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Overall Progress Card with Pie Chart
+          // Overall Progress Card with Pie Chart (purple gradient)
           _OverallProgressCard(stats: stats),
           const SizedBox(height: 16),
 
-          // Streak and Productivity Card
-          _StreakCard(stats: stats),
-          const SizedBox(height: 16),
-
-          // Weekly Bar Chart Card
+          // Weekly Bar Chart Card (with subtitle)
           _WeeklyBarChartCard(stats: stats),
           const SizedBox(height: 16),
 
@@ -262,17 +253,11 @@ class StatisticsScreen extends ConsumerWidget {
           _MonthlyLineChartCard(stats: stats),
           const SizedBox(height: 16),
 
-          // Category Analysis Card
-          if (stats.categoryStats.isNotEmpty)
-            _CategoryAnalysisCard(stats: stats),
-          if (stats.categoryStats.isNotEmpty)
-            const SizedBox(height: 16),
-
-          // Monthly Analysis Card (12-month trend)
+          // Monthly Analysis Card (simplified)
           _MonthlyAnalysisCard(stats: stats),
           const SizedBox(height: 16),
 
-          // Weekly Pattern Card (day of week analysis)
+          // Weekly Pattern Card (circle icons)
           _WeeklyPatternCard(stats: stats),
           const SizedBox(height: 16),
 
@@ -286,6 +271,12 @@ class StatisticsScreen extends ConsumerWidget {
 
           // Time-based Statistics
           _TimeBasedStatisticsCard(stats: stats),
+
+          // Category Analysis Card (moved to bottom, optional)
+          if (stats.categoryStats.isNotEmpty)
+            const SizedBox(height: 16),
+          if (stats.categoryStats.isNotEmpty)
+            _CategoryAnalysisCard(stats: stats),
         ],
       ),
     );
@@ -562,7 +553,7 @@ class _CategoryStats {
   });
 }
 
-// Overall Progress Card with Pie Chart
+// Overall Progress Card with Pie Chart - Purple gradient design
 class _OverallProgressCard extends ConsumerWidget {
   final _StatisticsData stats;
 
@@ -576,11 +567,18 @@ class _OverallProgressCard extends ConsumerWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        gradient: AppColors.getProgressGradient(isDarkMode),
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Color(0xFF7C3AED), // Purple
+            Color(0xFF6366F1), // Indigo
+          ],
+        ),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: AppColors.primary.withValues(alpha: 0.2),
+            color: const Color(0xFF7C3AED).withValues(alpha: 0.3),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -589,26 +587,27 @@ class _OverallProgressCard extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Header
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(10),
+                padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: isDarkMode ? Colors.white.withValues(alpha: 0.2) : AppColors.primary.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(12),
+                  color: Colors.white.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(10),
                 ),
                 child: const Icon(
                   FluentIcons.chart_multiple_24_filled,
                   color: Colors.white,
-                  size: 24,
+                  size: 20,
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 10),
               Text(
                 'overall_progress'.tr(),
                 style: TextStyle(
-                  color: isDarkMode ? Colors.white : AppColors.textDark,
-                  fontSize: AppColors.scaledFontSize(18),
+                  color: Colors.white,
+                  fontSize: AppColors.scaledFontSize(16),
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -616,94 +615,83 @@ class _OverallProgressCard extends ConsumerWidget {
           ),
           const SizedBox(height: 20),
 
-          // Pie Chart and Stats Row
+          // Stats and Pie Chart Row
           Row(
             children: [
-              // Pie Chart
-              SizedBox(
-                width: 100,
-                height: 100,
-                child: PieChart(
-                  PieChartData(
-                    sectionsSpace: 2,
-                    centerSpaceRadius: 25,
-                    sections: [
-                      PieChartSectionData(
-                        value: stats.completedTodos.toDouble(),
-                        title: '',
-                        color: const Color(0xFF4CAF50),
-                        radius: 22,
-                      ),
-                      PieChartSectionData(
-                        value: incomplete.toDouble(),
-                        title: '',
-                        color: isDarkMode
-                            ? Colors.white.withValues(alpha: 0.3)
-                            : const Color(0xFFE0E0E0),
-                        radius: 20,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(width: 20),
-
-              // Stats
+              // Left side - Stats list
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _MiniStatRow(
-                      icon: FluentIcons.apps_list_24_regular,
+                    _ProgressStatRow(
                       label: 'total'.tr(),
-                      value: '${stats.totalTodos}',
-                      color: isDarkMode ? Colors.white : AppColors.textDark,
+                      value: stats.totalTodos,
+                      dotColor: Colors.white,
                     ),
                     const SizedBox(height: 8),
-                    _MiniStatRow(
-                      icon: FluentIcons.checkmark_circle_24_regular,
+                    _ProgressStatRow(
                       label: 'completed'.tr(),
-                      value: '${stats.completedTodos}',
-                      color: const Color(0xFF4CAF50),
+                      value: stats.completedTodos,
+                      dotColor: const Color(0xFF4ADE80), // Green
                     ),
                     const SizedBox(height: 8),
-                    _MiniStatRow(
-                      icon: FluentIcons.circle_24_regular,
+                    _ProgressStatRow(
                       label: 'incomplete'.tr(),
-                      value: '$incomplete',
-                      color: const Color(0xFFFF9800),
+                      value: incomplete,
+                      dotColor: const Color(0xFFFBBF24), // Orange/Yellow
                     ),
                   ],
                 ),
               ),
 
-              // Completion Rate
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                decoration: BoxDecoration(
-                  color: isDarkMode
-                      ? Colors.white.withValues(alpha: 0.2)
-                      : AppColors.primary.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Column(
+              // Right side - Large Pie Chart with percentage
+              SizedBox(
+                width: 120,
+                height: 120,
+                child: Stack(
+                  alignment: Alignment.center,
                   children: [
-                    Text(
-                      '${stats.completionRate.toStringAsFixed(0)}%',
-                      style: TextStyle(
-                        color: isDarkMode ? Colors.white : AppColors.primary,
-                        fontSize: AppColors.scaledFontSize(24),
-                        fontWeight: FontWeight.bold,
+                    PieChart(
+                      PieChartData(
+                        sectionsSpace: 0,
+                        centerSpaceRadius: 40,
+                        startDegreeOffset: -90,
+                        sections: [
+                          PieChartSectionData(
+                            value: stats.completedTodos.toDouble(),
+                            title: '',
+                            color: const Color(0xFF4ADE80),
+                            radius: 16,
+                          ),
+                          PieChartSectionData(
+                            value: incomplete > 0 ? incomplete.toDouble() : (stats.totalTodos == 0 ? 1 : 0),
+                            title: '',
+                            color: Colors.white.withValues(alpha: 0.3),
+                            radius: 14,
+                          ),
+                        ],
                       ),
                     ),
-                    Text(
-                      'completion_rate'.tr(),
-                      style: TextStyle(
-                        color: isDarkMode
-                            ? Colors.white.withValues(alpha: 0.7)
-                            : AppColors.textGrayDark,
-                        fontSize: AppColors.scaledFontSize(10),
-                      ),
+                    // Center percentage
+                    Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          '${stats.completionRate.toStringAsFixed(0)}%',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: AppColors.scaledFontSize(22),
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Text(
+                          'completion_rate'.tr(),
+                          style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.7),
+                            fontSize: AppColors.scaledFontSize(9),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -712,6 +700,52 @@ class _OverallProgressCard extends ConsumerWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+// Progress stat row for the purple card
+class _ProgressStatRow extends StatelessWidget {
+  final String label;
+  final int value;
+  final Color dotColor;
+
+  const _ProgressStatRow({
+    required this.label,
+    required this.value,
+    required this.dotColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Container(
+          width: 8,
+          height: 8,
+          decoration: BoxDecoration(
+            color: dotColor,
+            shape: BoxShape.circle,
+          ),
+        ),
+        const SizedBox(width: 8),
+        Text(
+          label,
+          style: TextStyle(
+            color: Colors.white.withValues(alpha: 0.8),
+            fontSize: AppColors.scaledFontSize(13),
+          ),
+        ),
+        const SizedBox(width: 8),
+        Text(
+          '$value',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: AppColors.scaledFontSize(13),
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ],
     );
   }
 }
@@ -872,7 +906,7 @@ class _StreakItem extends ConsumerWidget {
   }
 }
 
-// Weekly Bar Chart Card
+// Weekly Bar Chart Card - Simple design with subtitle
 class _WeeklyBarChartCard extends ConsumerWidget {
   final _StatisticsData stats;
 
@@ -894,48 +928,41 @@ class _WeeklyBarChartCard extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Header with icon and title
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  gradient: AppColors.primaryGradient,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Icon(
+                  FluentIcons.data_bar_horizontal_24_filled,
+                  color: Colors.white,
+                  size: 18,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      gradient: AppColors.primaryGradient,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Icon(
-                      FluentIcons.data_bar_horizontal_24_filled,
-                      color: Colors.white,
-                      size: 20,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
                   Text(
                     'weekly_trend'.tr(),
                     style: TextStyle(
                       color: AppColors.getText(isDarkMode),
-                      fontSize: AppColors.scaledFontSize(18),
+                      fontSize: AppColors.scaledFontSize(16),
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                ],
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  gradient: AppColors.primaryGradient,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
-                  'completed_count'.tr(namedArgs: {'count': '${stats.weekCompleted}'}),
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: AppColors.scaledFontSize(12),
-                    fontWeight: FontWeight.bold,
+                  Text(
+                    'recent_7_days'.tr(),
+                    style: TextStyle(
+                      color: AppColors.getTextSecondary(isDarkMode),
+                      fontSize: AppColors.scaledFontSize(12),
+                    ),
                   ),
-                ),
+                ],
               ),
             ],
           ),
@@ -1451,9 +1478,18 @@ class _TimeInfoCard extends ConsumerWidget {
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, color: AppColors.primary, size: 24),
-          const SizedBox(height: 12),
+          // Label on top
+          Text(
+            label,
+            style: TextStyle(
+              color: AppColors.getTextSecondary(isDarkMode),
+              fontSize: AppColors.scaledFontSize(12),
+            ),
+          ),
+          const SizedBox(height: 4),
+          // Value below
           Text(
             value,
             style: TextStyle(
@@ -1461,16 +1497,6 @@ class _TimeInfoCard extends ConsumerWidget {
               fontSize: AppColors.scaledFontSize(18),
               fontWeight: FontWeight.bold,
             ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 4),
-          Text(
-            label,
-            style: TextStyle(
-              color: AppColors.getTextSecondary(isDarkMode),
-              fontSize: AppColors.scaledFontSize(11),
-            ),
-            textAlign: TextAlign.center,
           ),
         ],
       ),
@@ -1701,7 +1727,7 @@ class _CategoryAnalysisCard extends ConsumerWidget {
   }
 }
 
-// Monthly Analysis Card with Annual Trend Line Chart
+// Monthly Analysis Card - Simplified version (no chart, only stats)
 class _MonthlyAnalysisCard extends ConsumerWidget {
   final _StatisticsData stats;
 
@@ -1721,33 +1747,16 @@ class _MonthlyAnalysisCard extends ConsumerWidget {
 
     // Calculate statistics
     final yearlyValues = stats.yearlyCompletions.values.toList();
-    final maxValue = yearlyValues.isNotEmpty ? yearlyValues.reduce((a, b) => a > b ? a : b) : 0;
     final avgValue = yearlyValues.isNotEmpty ? (yearlyValues.fold<int>(0, (a, b) => a + b) / yearlyValues.length).round() : 0;
-    final totalYear = yearlyValues.fold<int>(0, (a, b) => a + b);
 
-    // Find trend
-    final firstHalf = yearlyValues.sublist(0, 6).fold<int>(0, (a, b) => a + b);
-    final secondHalf = yearlyValues.sublist(6).fold<int>(0, (a, b) => a + b);
-    final trend = secondHalf > firstHalf ? '↑' : (secondHalf < firstHalf ? '↓' : '→');
-
-    // Find best and worst months
-    int bestMonth = 0, worstMonth = 0;
-    int bestValue = 0, worstValue = yearlyValues.isNotEmpty ? yearlyValues[0] : 0;
+    // Find best month
+    int bestMonth = 0;
+    int bestValue = 0;
     for (int i = 0; i < yearlyValues.length; i++) {
       if (yearlyValues[i] > bestValue) {
         bestValue = yearlyValues[i];
         bestMonth = i;
       }
-      if (yearlyValues[i] < worstValue) {
-        worstValue = yearlyValues[i];
-        worstMonth = i;
-      }
-    }
-
-    // Build line chart data
-    final lineChartSpots = <FlSpot>[];
-    for (int i = 0; i < yearlyValues.length; i++) {
-      lineChartSpots.add(FlSpot(i.toDouble(), yearlyValues[i].toDouble()));
     }
 
     return Container(
@@ -1764,279 +1773,91 @@ class _MonthlyAnalysisCard extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Header
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    '월간 추이 분석',
-                    style: TextStyle(
-                      color: AppColors.getText(isDarkMode),
-                      fontSize: AppColors.scaledFontSize(16),
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    '지난 12개월 완료 추이',
-                    style: TextStyle(
-                      color: AppColors.getTextSecondary(isDarkMode),
-                      fontSize: AppColors.scaledFontSize(12),
-                    ),
-                  ),
-                ],
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  trend,
-                  style: TextStyle(
-                    color: AppColors.primary,
-                    fontSize: AppColors.scaledFontSize(14),
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ],
+          Text(
+            '월간 추이 분석',
+            style: TextStyle(
+              color: AppColors.getText(isDarkMode),
+              fontSize: AppColors.scaledFontSize(16),
+              fontWeight: FontWeight.bold,
+            ),
           ),
           const SizedBox(height: 16),
 
-          // Statistics Summary
+          // Statistics Summary - Only 월평균 and 최고기록
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    '연간 총합',
-                    style: TextStyle(
-                      color: AppColors.getTextSecondary(isDarkMode),
-                      fontSize: AppColors.scaledFontSize(12),
-                    ),
+              // 월평균
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: AppColors.getInput(isDarkMode),
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    '$totalYear개',
-                    style: TextStyle(
-                      color: AppColors.getText(isDarkMode),
-                      fontSize: AppColors.scaledFontSize(14),
-                      fontWeight: FontWeight.bold,
-                    ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '월평균',
+                        style: TextStyle(
+                          color: AppColors.getTextSecondary(isDarkMode),
+                          fontSize: AppColors.scaledFontSize(12),
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        '$avgValue개',
+                        style: TextStyle(
+                          color: AppColors.getText(isDarkMode),
+                          fontSize: AppColors.scaledFontSize(18),
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    '월평균',
-                    style: TextStyle(
-                      color: AppColors.getTextSecondary(isDarkMode),
-                      fontSize: AppColors.scaledFontSize(12),
-                    ),
+              const SizedBox(width: 12),
+              // 최고기록
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: AppColors.getInput(isDarkMode),
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    '$avgValue개',
-                    style: TextStyle(
-                      color: AppColors.getText(isDarkMode),
-                      fontSize: AppColors.scaledFontSize(14),
-                      fontWeight: FontWeight.bold,
-                    ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '최고기록',
+                        style: TextStyle(
+                          color: AppColors.getTextSecondary(isDarkMode),
+                          fontSize: AppColors.scaledFontSize(12),
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        yearlyValues.isNotEmpty ? '${monthLabels[bestMonth]} $bestValue개' : '-',
+                        style: TextStyle(
+                          color: AppColors.successGreen,
+                          fontSize: AppColors.scaledFontSize(14),
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    '최고기록',
-                    style: TextStyle(
-                      color: AppColors.getTextSecondary(isDarkMode),
-                      fontSize: AppColors.scaledFontSize(12),
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    '${monthLabels[bestMonth]} $bestValue개',
-                    style: TextStyle(
-                      color: AppColors.successGreen,
-                      fontSize: AppColors.scaledFontSize(12),
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
+                ),
               ),
             ],
           ),
-          const SizedBox(height: 20),
-
-          // Line Chart
-          if (lineChartSpots.isNotEmpty)
-            SizedBox(
-              height: 200,
-              child: LineChart(
-                LineChartData(
-                  gridData: FlGridData(
-                    show: true,
-                    drawVerticalLine: false,
-                    horizontalInterval: maxValue > 0 ? (maxValue / 4).ceil().toDouble() : 10,
-                    getDrawingHorizontalLine: (value) {
-                      return FlLine(
-                        color: AppColors.getBorder(isDarkMode),
-                        strokeWidth: 0.5,
-                      );
-                    },
-                  ),
-                  titlesData: FlTitlesData(
-                    show: true,
-                    rightTitles: const AxisTitles(
-                      sideTitles: SideTitles(showTitles: false),
-                    ),
-                    topTitles: const AxisTitles(
-                      sideTitles: SideTitles(showTitles: false),
-                    ),
-                    bottomTitles: AxisTitles(
-                      sideTitles: SideTitles(
-                        showTitles: true,
-                        interval: 1,
-                        getTitlesWidget: (value, meta) {
-                          final index = value.toInt();
-                          if (index < 0 || index >= monthLabels.length) return const Text('');
-                          return Padding(
-                            padding: const EdgeInsets.only(top: 8),
-                            child: Text(
-                              monthLabels[index],
-                              style: TextStyle(
-                                color: AppColors.getTextSecondary(isDarkMode),
-                                fontSize: AppColors.scaledFontSize(10),
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                    leftTitles: AxisTitles(
-                      sideTitles: SideTitles(
-                        showTitles: true,
-                        interval: maxValue > 0 ? (maxValue / 4).ceil().toDouble() : 10,
-                        getTitlesWidget: (value, meta) {
-                          return Text(
-                            value.toInt().toString(),
-                            style: TextStyle(
-                              color: AppColors.getTextSecondary(isDarkMode),
-                              fontSize: AppColors.scaledFontSize(10),
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                  ),
-                  borderData: FlBorderData(
-                    show: true,
-                    border: Border(
-                      left: BorderSide(
-                        color: AppColors.getBorder(isDarkMode),
-                        width: 1,
-                      ),
-                      bottom: BorderSide(
-                        color: AppColors.getBorder(isDarkMode),
-                        width: 1,
-                      ),
-                    ),
-                  ),
-                  minX: 0,
-                  maxX: (yearlyValues.length - 1).toDouble(),
-                  minY: 0,
-                  maxY: maxValue > 0 ? maxValue.toDouble() : 10,
-                  lineBarsData: [
-                    LineChartBarData(
-                      spots: lineChartSpots,
-                      isCurved: true,
-                      color: AppColors.primary,
-                      barWidth: 2,
-                      isStrokeCapRound: true,
-                      dotData: FlDotData(
-                        show: true,
-                        getDotPainter: (spot, percent, barData, index) {
-                          final isSpecial = index == bestMonth || index == worstMonth;
-                          return FlDotCirclePainter(
-                            radius: isSpecial ? 4 : 3,
-                            color: isSpecial
-                                ? (index == bestMonth ? AppColors.successGreen : AppColors.dangerRed)
-                                : AppColors.primary,
-                            strokeWidth: 0,
-                          );
-                        },
-                      ),
-                      belowBarData: BarAreaData(
-                        show: true,
-                        gradient: LinearGradient(
-                          colors: [
-                            AppColors.primary.withValues(alpha: 0.3),
-                            AppColors.primary.withValues(alpha: 0.0),
-                          ],
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                        ),
-                      ),
-                    ),
-                  ],
-                  lineTouchData: LineTouchData(
-                    handleBuiltInTouches: true,
-                    touchTooltipData: LineTouchTooltipData(
-                      getTooltipItems: (List<LineBarSpot> touchedBarSpots) {
-                        return touchedBarSpots.map((barSpot) {
-                          return LineTooltipItem(
-                            '${monthLabels[barSpot.x.toInt()]}\n${barSpot.y.toInt()}개',
-                            TextStyle(
-                              color: AppColors.getText(isDarkMode),
-                              fontWeight: FontWeight.bold,
-                            ),
-                          );
-                        }).toList();
-                      },
-                    ),
-                  ),
-                ),
-              ),
-            ),
-
-          // Average line indicator
-          if (avgValue > 0) ...[
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Container(
-                  width: 8,
-                  height: 2,
-                  color: AppColors.accentOrange,
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  '평균선: $avgValue개',
-                  style: TextStyle(
-                    color: AppColors.getTextSecondary(isDarkMode),
-                    fontSize: AppColors.scaledFontSize(11),
-                  ),
-                ),
-              ],
-            ),
-          ],
         ],
       ),
     );
   }
 }
 
-// Weekly Pattern Card - Shows day-by-day completion patterns
+// Weekly Pattern Card - Shows day-by-day completion patterns with circle icons
 class _WeeklyPatternCard extends ConsumerWidget {
   final _StatisticsData stats;
   const _WeeklyPatternCard({required this.stats});
@@ -2080,128 +1901,64 @@ class _WeeklyPatternCard extends ConsumerWidget {
               fontWeight: FontWeight.bold,
             ),
           ),
-          Text(
-            'weekly_pattern_subtitle'.tr(),
-            style: TextStyle(
-              color: AppColors.getTextSecondary(isDarkMode),
-              fontSize: AppColors.scaledFontSize(12),
-            ),
-          ),
           const SizedBox(height: 16),
 
-          // Day bars
+          // Day circles
           Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: List.generate(7, (index) {
               final day = days[index];
               final count = dayCompletions[day] ?? 0;
-              final maxHeight = 80.0;
-              final barHeight = maxCompletions > 0
-                  ? (count / maxCompletions) * maxHeight
-                  : 0.0;
               final isDayMostProductive = day == mostProductiveDay;
 
-              return Expanded(
-                child: Column(
-                  children: [
-                    Container(
-                      height: barHeight + 20,
-                      margin: const EdgeInsets.symmetric(horizontal: 4),
-                      decoration: BoxDecoration(
-                        color: isDayMostProductive
-                            ? const Color(0xFF4CAF50)
-                            : AppColors.primary,
-                        borderRadius: const BorderRadius.vertical(
-                          top: Radius.circular(8),
-                        ),
-                      ),
-                      child: isDayMostProductive
-                          ? const Align(
-                              alignment: Alignment.topCenter,
-                              child: Padding(
-                                padding: EdgeInsets.only(top: 4),
-                                child: Icon(
-                                  FluentIcons.star_24_filled,
-                                  color: Colors.white,
-                                  size: 14,
-                                ),
-                              ),
-                            )
+              // Calculate opacity based on completion count
+              final opacity = maxCompletions > 0
+                  ? 0.3 + (count / maxCompletions) * 0.7
+                  : 0.3;
+
+              return Column(
+                children: [
+                  Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: isDayMostProductive
+                          ? AppColors.successGreen.withValues(alpha: opacity)
+                          : AppColors.primary.withValues(alpha: opacity),
+                      border: isDayMostProductive
+                          ? Border.all(color: AppColors.successGreen, width: 2)
                           : null,
                     ),
-                    const SizedBox(height: 8),
-                    Text(
-                      '${'${day}_short'.tr()}\n$count',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: isDayMostProductive
-                            ? const Color(0xFF4CAF50)
-                            : AppColors.getText(isDarkMode),
-                        fontSize: AppColors.scaledFontSize(10),
-                        fontWeight: isDayMostProductive
-                            ? FontWeight.bold
-                            : FontWeight.normal,
+                    child: Center(
+                      child: Text(
+                        '$count',
+                        style: TextStyle(
+                          color: isDayMostProductive
+                              ? AppColors.successGreen
+                              : AppColors.getText(isDarkMode),
+                          fontSize: AppColors.scaledFontSize(14),
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    '${day}_short'.tr(),
+                    style: TextStyle(
+                      color: isDayMostProductive
+                          ? AppColors.successGreen
+                          : AppColors.getTextSecondary(isDarkMode),
+                      fontSize: AppColors.scaledFontSize(12),
+                      fontWeight: isDayMostProductive
+                          ? FontWeight.bold
+                          : FontWeight.normal,
+                    ),
+                  ),
+                ],
               );
             }),
-          ),
-          const SizedBox(height: 16),
-
-          // Stats
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: AppColors.getBackground(isDarkMode),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'most_productive_day'.tr(),
-                      style: TextStyle(
-                        color: AppColors.getTextSecondary(isDarkMode),
-                        fontSize: AppColors.scaledFontSize(11),
-                      ),
-                    ),
-                    Text(
-                      mostProductiveDay.tr(),
-                      style: TextStyle(
-                        color: AppColors.getText(isDarkMode),
-                        fontSize: AppColors.scaledFontSize(13),
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(
-                      'peak_day_count'.tr(),
-                      style: TextStyle(
-                        color: AppColors.getTextSecondary(isDarkMode),
-                        fontSize: AppColors.scaledFontSize(11),
-                      ),
-                    ),
-                    Text(
-                      '$maxCompletions',
-                      style: TextStyle(
-                        color: const Color(0xFF4CAF50),
-                        fontSize: AppColors.scaledFontSize(13),
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
           ),
         ],
       ),

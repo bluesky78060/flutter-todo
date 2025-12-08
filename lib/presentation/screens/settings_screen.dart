@@ -25,8 +25,6 @@
 /// - [BackupActions] for data export/import
 library;
 
-import 'dart:ui';
-import 'dart:math' as math;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -37,18 +35,16 @@ import 'package:share_plus/share_plus.dart';
 import 'package:todo_app/core/services/backup_service.dart';
 import 'package:todo_app/core/theme/app_colors.dart';
 import 'package:todo_app/core/utils/device_utils.dart';
-import 'package:todo_app/presentation/providers/admin_providers.dart';
 import 'package:todo_app/presentation/providers/auth_providers.dart';
 import 'package:todo_app/presentation/providers/backup_provider.dart';
 import 'package:todo_app/presentation/providers/theme_provider.dart';
 import 'package:todo_app/presentation/providers/theme_customization_provider.dart';
 import 'package:todo_app/presentation/screens/geofence_settings_screen.dart';
 import 'package:todo_app/presentation/screens/profile_edit_screen.dart';
-import 'package:todo_app/presentation/screens/theme_preview_screen.dart';
-import 'package:todo_app/presentation/widgets/color_picker_widget.dart';
-import 'package:todo_app/presentation/widgets/font_size_slider_widget.dart';
 import 'package:todo_app/presentation/providers/profile_provider.dart';
 import 'package:todo_app/presentation/providers/view_mode_provider.dart';
+import 'package:fluentui_system_icons/fluentui_system_icons.dart';
+import 'package:todo_app/core/theme/app_colors.dart';
 
 /// Settings screen with app preferences and account management.
 class SettingsScreen extends ConsumerStatefulWidget {
@@ -58,29 +54,17 @@ class SettingsScreen extends ConsumerStatefulWidget {
   ConsumerState<SettingsScreen> createState() => _SettingsScreenState();
 }
 
-class _SettingsScreenState extends ConsumerState<SettingsScreen> with SingleTickerProviderStateMixin {
+class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   String _version = '';
   String _buildNumber = '';
   DeviceInfo? _deviceInfo;
   bool _isBatteryOptimizationIgnored = false;
-
-  late AnimationController _animationController;
 
   @override
   void initState() {
     super.initState();
     _loadAppInfo();
     _loadDeviceInfo();
-    _animationController = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 20),
-    )..repeat();
-  }
-
-  @override
-  void dispose() {
-    _animationController.dispose();
-    super.dispose();
   }
 
   Future<void> _loadAppInfo() async {
@@ -111,375 +95,247 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> with SingleTick
   Widget build(BuildContext context) {
     final isDarkMode = ref.watch(isDarkModeProvider);
     final authState = ref.watch(currentUserProvider);
+    final primaryColor = ref.watch(primaryColorProvider);
+    final fontScale = ref.watch(fontSizeScaleProvider);
+    final pendingColor = ref.watch(pendingColorProvider);
+    final pendingFontScale = ref.watch(pendingFontScaleProvider);
 
-    // Dynamic Colors for Glassmorphism
-    final gradientColors = isDarkMode
-        ? [
-            const Color(0xFF1E293B), // Slate 800
-            const Color(0xFF0F172A), // Slate 900
-            const Color(0xFF020617), // Slate 950
-          ]
-        : [
-            const Color(0xFFF0F9FF), // Sky 50
-            const Color(0xFFE0F2FE), // Sky 100
-            const Color(0xFFBAE6FD), // Sky 200
-          ];
+    final backgroundColor = isDarkMode ? const Color(0xFF1a1a1a) : Colors.grey.shade50;
+    final cardColor = isDarkMode ? const Color(0xFF2d2d2d) : Colors.white;
+    final textColor = isDarkMode ? Colors.white : Colors.grey.shade900;
+    final subTextColor = isDarkMode ? Colors.grey.shade400 : Colors.grey.shade600;
+    final dividerColor = isDarkMode ? Colors.grey.shade700 : Colors.grey.shade200;
 
-    final textColor = isDarkMode ? Colors.white : const Color(0xFF1E293B);
-    final subTextColor = isDarkMode ? Colors.white.withValues(alpha: 0.7) : const Color(0xFF475569);
-    
     return Scaffold(
-      body: Stack(
-        children: [
-          // Animated Gradient Background
-          Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: gradientColors,
-              ),
-            ),
-          ),
-
-          // Floating Orbs
-          AnimatedBuilder(
-            animation: _animationController,
-            builder: (context, child) {
-              const orbOpacity = 0.15;
-              return Stack(
+      backgroundColor: backgroundColor,
+      body: SafeArea(
+        child: Column(
+          children: [
+            // Header
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              child: Row(
                 children: [
-                  _buildFloatingOrb(
-                    color: const Color(0xFF475569).withValues(alpha: orbOpacity),
-                    offset: Offset(
-                      100 * math.sin(_animationController.value * 2 * math.pi),
-                      -100 * math.cos(_animationController.value * 2 * math.pi),
-                    ),
-                    top: 80,
-                    left: 80,
+                  IconButton(
+                    icon: Icon(Icons.arrow_back, color: textColor),
+                    onPressed: () => Navigator.pop(context),
                   ),
-                  _buildFloatingOrb(
-                    color: const Color(0xFF334155).withValues(alpha: orbOpacity),
-                    offset: Offset(
-                      -100 * math.sin(_animationController.value * 2 * math.pi * 0.75),
-                      100 * math.cos(_animationController.value * 2 * math.pi * 0.75),
+                  Text(
+                    'settings'.tr(),
+                    style: TextStyle(
+                      color: textColor,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w600,
                     ),
-                    bottom: 80,
-                    right: 80,
                   ),
                 ],
-              );
-            },
-          ),
-
-          // Content
-          SafeArea(
-            child: Column(
-              children: [
-                // Header
-                _buildHeader(context, isDarkMode, textColor),
-
-                // Settings List
-                Expanded(
-                  child: ListView(
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                    children: [
-                      // Profile Section
-                      _buildProfileCard(authState, isDarkMode),
-                      const SizedBox(height: 24),
-
-                      // Theme Customization
-                      _buildSectionHeader('theme_customization'.tr(), subTextColor),
-                      const SizedBox(height: 12),
-                      _buildGlassCard(
-                        isDarkMode: isDarkMode,
-                        child: Column(
-                          children: [
-                            _buildThemeToggleRow(isDarkMode, textColor),
-                            const Divider(height: 32),
-                            _buildThemeCustomizationContent(isDarkMode, textColor),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-
-                      // Display Settings
-                      _buildSectionHeader('display_settings'.tr(), subTextColor),
-                      const SizedBox(height: 12),
-                      _buildGlassCard(
-                        isDarkMode: isDarkMode,
-                        child: _buildDisplaySettingsContent(isDarkMode, textColor),
-                      ),
-                      const SizedBox(height: 24),
-
-                      // Data Management
-                      _buildSectionHeader('data'.tr(), subTextColor),
-                      const SizedBox(height: 12),
-                      _buildGlassCard(
-                        isDarkMode: isDarkMode,
-                        child: _buildDataContent(isDarkMode, textColor),
-                      ),
-                      const SizedBox(height: 24),
-
-                      // Device Info - 모든 기기에 표시
-                      if (_deviceInfo != null) ...[
-                        _buildSectionHeader('device_info'.tr(), subTextColor),
-                        const SizedBox(height: 12),
-                        _buildGlassCard(
-                          isDarkMode: isDarkMode,
-                          child: _buildDeviceInfoContent(isDarkMode, textColor),
-                        ),
-                        const SizedBox(height: 24),
-                      ],
-
-                      // Categories
-                      _buildSectionHeader('categories'.tr(), subTextColor),
-                      const SizedBox(height: 12),
-                      _buildGlassCard(
-                        isDarkMode: isDarkMode,
-                        child: _buildCategoryContent(isDarkMode, textColor),
-                      ),
-                      const SizedBox(height: 24),
-
-                      // Admin Dashboard
-                      ...ref.watch(isAdminProvider).when(
-                            data: (isAdmin) => isAdmin
-                                ? [
-                                    _buildSectionHeader('admin_dashboard'.tr(), subTextColor),
-                                    const SizedBox(height: 12),
-                                    _buildGlassCard(
-                                      isDarkMode: isDarkMode,
-                                      child: _buildAdminContent(isDarkMode, textColor),
-                                    ),
-                                    const SizedBox(height: 24),
-                                  ]
-                                : [],
-                            loading: () => [],
-                            error: (_, __) => [],
-                          ),
-
-                      // Geofencing/Location-based Notifications
-                      _buildSectionHeader('geofencing_settings'.tr(), subTextColor),
-                      const SizedBox(height: 12),
-                      _buildGlassCard(
-                        isDarkMode: isDarkMode,
-                        child: Column(
-                          children: [
-                            _buildListTile(
-                              icon: FluentIcons.location_24_regular,
-                              title: 'geofencing_settings'.tr(),
-                              subtitle: 'geofencing_status'.tr(),
-                              onTap: () {
-                                Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                    builder: (context) => const GeofenceSettingsScreen(),
-                                  ),
-                                );
-                              },
-                              isDarkMode: isDarkMode,
-                              textColor: textColor,
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-
-                      // Licenses and Feedback
-                      _buildSectionHeader('info'.tr(), subTextColor),
-                      const SizedBox(height: 12),
-                      _buildGlassCard(
-                        isDarkMode: isDarkMode,
-                        child: Column(
-                          children: [
-                            _buildListTile(
-                              icon: FluentIcons.document_24_regular,
-                              title: 'open_source_licenses'.tr(),
-                              subtitle: 'open_source_licenses_desc'.tr(),
-                              onTap: () {
-                                showLicensePage(context: context);
-                              },
-                              isDarkMode: isDarkMode,
-                              textColor: textColor,
-                            ),
-                            const Divider(height: 32),
-                            _buildListTile(
-                              icon: FluentIcons.chat_24_regular,
-                              title: 'send_feedback'.tr(),
-                              subtitle: 'send_feedback_desc'.tr(),
-                              onTap: () {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(content: Text('coming_soon'.tr().replaceFirst('{feature}', 'send_feedback'.tr()))),
-                                );
-                              },
-                              isDarkMode: isDarkMode,
-                              textColor: textColor,
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-
-                      // App Info
-                      Center(
-                        child: Text(
-                          'Version $_version ($_buildNumber)',
-                          style: TextStyle(
-                            color: subTextColor,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 40),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildFloatingOrb({
-    required Color color,
-    required Offset offset,
-    double? top,
-    double? bottom,
-    double? left,
-    double? right,
-  }) {
-    return Positioned(
-      top: top != null ? top + offset.dy : null,
-      bottom: bottom != null ? bottom + offset.dy : null,
-      left: left != null ? left + offset.dx : null,
-      right: right != null ? right + offset.dx : null,
-      child: Container(
-        width: 288,
-        height: 288,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color: color,
-        ),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 60, sigmaY: 60),
-          child: Container(
-            decoration: const BoxDecoration(
-              shape: BoxShape.circle,
-              color: Colors.transparent,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildHeader(BuildContext context, bool isDarkMode, Color textColor) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      child: Row(
-        children: [
-          _buildGlassIconButton(
-            icon: FluentIcons.arrow_left_24_regular,
-            onPressed: () => Navigator.pop(context),
-            isDarkMode: isDarkMode,
-            color: textColor,
-          ),
-          const SizedBox(width: 16),
-          Text(
-            'settings'.tr(),
-            style: TextStyle(
-              color: textColor,
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildGlassIconButton({
-    required IconData icon,
-    required VoidCallback onPressed,
-    required bool isDarkMode,
-    required Color color,
-  }) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(12),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-        child: Container(
-          decoration: BoxDecoration(
-            color: isDarkMode ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.05),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: isDarkMode ? Colors.white.withValues(alpha: 0.2) : Colors.black.withValues(alpha: 0.1),
-            ),
-          ),
-          child: IconButton(
-            icon: Icon(icon, color: color),
-            onPressed: onPressed,
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildGlassCard({required bool isDarkMode, required Widget child}) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(24),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-        child: Container(
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            color: isDarkMode ? Colors.white.withValues(alpha: 0.08) : Colors.white.withValues(alpha: 0.6),
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(
-              color: isDarkMode ? Colors.white.withValues(alpha: 0.1) : Colors.white.withValues(alpha: 0.4),
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.05),
-                blurRadius: 16,
-                offset: const Offset(0, 4),
               ),
-            ],
-          ),
-          child: child,
+            ),
+
+            // Settings List
+            Expanded(
+              child: ListView(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                children: [
+                  // Profile Section
+                  _buildProfileSection(authState, isDarkMode, cardColor, textColor, subTextColor),
+                  const SizedBox(height: 20),
+
+                  // Theme Customization
+                  _buildSectionTitle('theme_customization'.tr(), subTextColor),
+                  const SizedBox(height: 8),
+                  _buildCard(
+                    cardColor: cardColor,
+                    child: Column(
+                      children: [
+                        _buildLightModeToggle(isDarkMode, textColor, primaryColor),
+                        Divider(color: dividerColor, height: 1),
+                        const SizedBox(height: 16),
+                        _buildColorPicker(textColor, pendingColor),
+                        const SizedBox(height: 16),
+                        _buildFontSizeSlider(textColor, pendingFontScale),
+                        _buildApplyButton(isDarkMode),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Display Settings
+                  _buildSectionTitle('display_settings'.tr(), subTextColor),
+                  const SizedBox(height: 8),
+                  _buildCard(
+                    cardColor: cardColor,
+                    child: _buildViewModeRow(textColor, subTextColor),
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Data Section
+                  _buildSectionTitle('data'.tr(), subTextColor),
+                  const SizedBox(height: 8),
+                  _buildCard(
+                    cardColor: cardColor,
+                    child: Column(
+                      children: [
+                        _buildSettingRow(
+                          icon: Icons.cloud_upload,
+                          title: 'backup_and_restore'.tr(),
+                          onTap: () => _showBackupRestoreOptions(context),
+                          textColor: textColor,
+                          subTextColor: subTextColor,
+                        ),
+                        Divider(color: dividerColor, height: 1),
+                        _buildSettingRow(
+                          icon: Icons.import_export,
+                          title: 'export_data'.tr(),
+                          onTap: _handleExport,
+                          textColor: textColor,
+                          subTextColor: subTextColor,
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Other Settings
+                  _buildSectionTitle('others'.tr(), subTextColor),
+                  const SizedBox(height: 8),
+                  _buildCard(
+                    cardColor: cardColor,
+                    child: Column(
+                      children: [
+                        _buildSettingRow(
+                          icon: Icons.category,
+                          title: 'category_management'.tr(),
+                          onTap: () => context.push('/categories'),
+                          textColor: textColor,
+                          subTextColor: subTextColor,
+                        ),
+                        Divider(color: dividerColor, height: 1),
+                        _buildSettingRow(
+                          icon: Icons.location_on,
+                          title: 'location_based_notifications'.tr(),
+                          onTap: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) => const GeofenceSettingsScreen(),
+                              ),
+                            );
+                          },
+                          textColor: textColor,
+                          subTextColor: subTextColor,
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Info Section
+                  _buildSectionTitle('info'.tr(), subTextColor),
+                  const SizedBox(height: 8),
+                  _buildCard(
+                    cardColor: cardColor,
+                    child: Column(
+                      children: [
+                        _buildSettingRow(
+                          icon: Icons.description,
+                          title: 'device_info'.tr(),
+                          onTap: () => _showDeviceInfoDialog(isDarkMode),
+                          textColor: textColor,
+                          subTextColor: subTextColor,
+                        ),
+                        Divider(color: dividerColor, height: 1),
+                        _buildSettingRow(
+                          icon: Icons.chat_bubble_outline,
+                          title: 'send_feedback'.tr(),
+                          onTap: () {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('coming_soon'.tr().replaceFirst('{feature}', 'send_feedback'.tr()))),
+                            );
+                          },
+                          textColor: textColor,
+                          subTextColor: subTextColor,
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Version Info
+                  _buildCard(
+                    cardColor: cardColor,
+                    child: _buildVersionInfo(textColor, subTextColor),
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Logout Section (if logged in)
+                  authState.when(
+                    data: (user) => user != null
+                        ? Column(
+                            children: [
+                              _buildLogoutSection(isDarkMode, cardColor, textColor, subTextColor),
+                              const SizedBox(height: 20),
+                            ],
+                          )
+                        : const SizedBox.shrink(),
+                    loading: () => const SizedBox.shrink(),
+                    error: (_, __) => const SizedBox.shrink(),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
 
-  Widget _buildSectionHeader(String title, Color color) {
+  Widget _buildSectionTitle(String title, Color color) {
     return Padding(
-      padding: const EdgeInsets.only(left: 8),
+      padding: const EdgeInsets.only(left: 4),
       child: Text(
         title,
         style: TextStyle(
           color: color,
-          fontSize: 14,
+          fontSize: 13,
           fontWeight: FontWeight.w600,
-          letterSpacing: 0.5,
+          letterSpacing: 0.3,
         ),
       ),
     );
   }
 
-  Widget _buildProfileCard(AsyncValue authState, bool isDarkMode) {
+  Widget _buildCard({required Color cardColor, required Widget child}) {
+    return Container(
+      decoration: BoxDecoration(
+        color: cardColor,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.06),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: child,
+      ),
+    );
+  }
+
+  Widget _buildProfileSection(AsyncValue authState, bool isDarkMode, Color cardColor, Color textColor, Color subTextColor) {
     final profileState = ref.watch(profileProvider);
 
-    return _buildGlassCard(
-      isDarkMode: isDarkMode,
+    return _buildCard(
+      cardColor: cardColor,
       child: authState.when(
         data: (user) {
           if (user == null) {
             return Center(
               child: Text(
                 'login_required'.tr(),
-                style: TextStyle(color: isDarkMode ? Colors.white : Colors.black),
+                style: TextStyle(color: textColor),
               ),
             );
           }
@@ -489,101 +345,379 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> with SingleTick
 
           return Row(
             children: [
-              // Avatar with tap to edit
-              GestureDetector(
-                onTap: () => _navigateToProfileEdit(),
-                child: Container(
-                  width: 60,
-                  height: 60,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    gradient: avatarUrl == null ? AppColors.primaryGradient : null,
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppColors.primary.withValues(alpha: 0.3),
-                        blurRadius: 12,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: avatarUrl != null
-                      ? ClipOval(
-                          child: Image.network(
-                            avatarUrl,
-                            fit: BoxFit.cover,
-                            width: 60,
-                            height: 60,
-                            errorBuilder: (_, __, ___) => Center(
-                              child: Text(
-                                displayName[0].toUpperCase(),
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.bold,
-                                ),
+              // Avatar
+              Container(
+                width: 56,
+                height: 56,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: avatarUrl == null
+                      ? LinearGradient(
+                          colors: [
+                            Colors.orange.shade400,
+                            Colors.deepOrange.shade400,
+                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        )
+                      : null,
+                ),
+                child: avatarUrl != null
+                    ? ClipOval(
+                        child: Image.network(
+                          avatarUrl,
+                          fit: BoxFit.cover,
+                          width: 56,
+                          height: 56,
+                          errorBuilder: (_, __, ___) => Center(
+                            child: Text(
+                              displayName[0].toUpperCase(),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 22,
+                                fontWeight: FontWeight.bold,
                               ),
                             ),
                           ),
-                        )
-                      : Center(
-                          child: Text(
-                            displayName[0].toUpperCase(),
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
                         ),
-                ),
+                      )
+                    : Center(
+                        child: Icon(
+                          Icons.person,
+                          color: Colors.white,
+                          size: 28,
+                        ),
+                      ),
               ),
               const SizedBox(width: 16),
               Expanded(
-                child: GestureDetector(
-                  onTap: () => _navigateToProfileEdit(),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        displayName,
-                        style: TextStyle(
-                          color: isDarkMode ? Colors.white : Colors.black,
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      displayName,
+                      style: TextStyle(
+                        color: textColor,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
                       ),
-                      Text(
-                        user.email,
-                        style: TextStyle(
-                          color: isDarkMode ? Colors.white.withValues(alpha: 0.7) : Colors.black.withValues(alpha: 0.6),
-                          fontSize: 14,
-                        ),
+                    ),
+                    Text(
+                      user.email,
+                      style: TextStyle(
+                        color: subTextColor,
+                        fontSize: 14,
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'tap_to_edit_profile'.tr(),
-                        style: TextStyle(
-                          color: AppColors.primary,
-                          fontSize: 12,
-                        ),
-                      ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
-              IconButton(
-                icon: Icon(
-                  FluentIcons.sign_out_24_regular,
-                  color: Colors.red.withValues(alpha: 0.8),
+              TextButton(
+                onPressed: () => _navigateToProfileEdit(),
+                child: Text(
+                  'edit'.tr(),
+                  style: TextStyle(
+                    color: Colors.blue,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
-                onPressed: _showLogoutDialog,
               ),
             ],
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (_, __) => const Text('Error'),
+        error: (_, __) => Text('Error', style: TextStyle(color: textColor)),
       ),
+    );
+  }
+
+  Widget _buildLogoutSection(bool isDarkMode, Color cardColor, Color textColor, Color subTextColor) {
+    return _buildCard(
+      cardColor: cardColor,
+      child: InkWell(
+        onTap: _showLogoutDialog,
+        borderRadius: BorderRadius.circular(8),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 4),
+          child: Row(
+            children: [
+              Icon(Icons.logout, color: Colors.red, size: 22),
+              const SizedBox(width: 16),
+              Text(
+                'logout'.tr(),
+                style: TextStyle(
+                  color: Colors.red,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSettingRow({
+    required IconData icon,
+    required String title,
+    required VoidCallback? onTap,
+    required Color textColor,
+    required Color subTextColor,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
+        child: Row(
+          children: [
+            Icon(icon, color: subTextColor, size: 22),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Text(
+                title,
+                style: TextStyle(
+                  color: textColor,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+            Icon(Icons.chevron_right, color: subTextColor, size: 20),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLightModeToggle(bool isDarkMode, Color textColor, Color primaryColor) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Row(
+          children: [
+            Icon(
+              isDarkMode ? Icons.dark_mode : Icons.light_mode,
+              color: textColor,
+              size: 22,
+            ),
+            const SizedBox(width: 12),
+            Text(
+              'light_mode'.tr(),
+              style: TextStyle(
+                color: textColor,
+                fontSize: 15,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+        Switch.adaptive(
+          value: !isDarkMode,
+          onChanged: (_) => ref.read(themeProvider.notifier).toggleTheme(),
+          activeColor: primaryColor,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildColorPicker(Color textColor, Color primaryColor) {
+    final colors = [
+      Colors.blue,
+      Colors.teal,
+      Colors.purple,
+      Colors.pink,
+      Colors.orange,
+      Colors.red,
+    ];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'primary_color'.tr(),
+          style: TextStyle(
+            color: textColor,
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        const SizedBox(height: 12),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: colors.map((color) {
+            final isSelected = color.value == primaryColor.value;
+            return GestureDetector(
+              onTap: () => ref.read(themeCustomizationProvider.notifier).setPrimaryColor(color),
+              child: Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: color,
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: isSelected ? Colors.white : Colors.transparent,
+                    width: 3,
+                  ),
+                  boxShadow: isSelected
+                      ? [
+                          BoxShadow(
+                            color: color.withOpacity(0.4),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ]
+                      : null,
+                ),
+                child: isSelected
+                    ? const Icon(
+                        Icons.check,
+                        color: Colors.white,
+                        size: 20,
+                      )
+                    : null,
+              ),
+            );
+          }).toList(),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildFontSizeSlider(Color textColor, double fontScale) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'font_size'.tr(),
+              style: TextStyle(
+                color: textColor,
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            Text(
+              '${(fontScale * 100).round()}%',
+              style: TextStyle(
+                color: Colors.blue,
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        SliderTheme(
+          data: SliderThemeData(
+            activeTrackColor: Colors.blue,
+            inactiveTrackColor: Colors.blue.withOpacity(0.2),
+            thumbColor: Colors.blue,
+            overlayColor: Colors.blue.withOpacity(0.2),
+            thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8),
+            trackHeight: 4,
+          ),
+          child: Slider(
+            value: fontScale,
+            min: 0.8,
+            max: 1.2,
+            divisions: 8,
+            onChanged: (value) {
+              ref.read(themeCustomizationProvider.notifier).setFontSizeScale(value);
+            },
+          ),
+        ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text('small'.tr(), style: TextStyle(color: textColor.withOpacity(0.6), fontSize: 12)),
+            Text('default'.tr(), style: TextStyle(color: textColor.withOpacity(0.6), fontSize: 12)),
+            Text('large'.tr(), style: TextStyle(color: textColor.withOpacity(0.6), fontSize: 12)),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildApplyButton(bool isDarkMode) {
+    final hasUnsavedChanges = ref.watch(hasUnsavedThemeChangesProvider);
+
+    if (!hasUnsavedChanges) return const SizedBox.shrink();
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 16),
+      child: SizedBox(
+        width: double.infinity,
+        child: ElevatedButton(
+          onPressed: () {
+            ref.read(themeCustomizationProvider.notifier).applyTheme();
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('theme_applied'.tr())),
+            );
+          },
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.blue,
+            foregroundColor: Colors.white,
+            padding: const EdgeInsets.symmetric(vertical: 12),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+          ),
+          child: Text('apply_theme'.tr()),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildViewModeRow(Color textColor, Color subTextColor) {
+    final viewMode = ref.watch(viewModeProvider);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildSettingRow(
+          icon: viewMode == ViewMode.calendar ? Icons.calendar_month : Icons.list,
+          title: 'default_view'.tr(),
+          onTap: () => _showViewModeOptions(context),
+          textColor: textColor,
+          subTextColor: subTextColor,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildVersionInfo(Color textColor, Color subTextColor) {
+    return Row(
+      children: [
+        Icon(Icons.info_outline, color: subTextColor, size: 22),
+        const SizedBox(width: 16),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'app_version'.tr(),
+                style: TextStyle(
+                  color: textColor,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              Text(
+                '$_version ($_buildNumber)',
+                style: TextStyle(
+                  color: subTextColor,
+                  fontSize: 13,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
@@ -595,252 +729,82 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> with SingleTick
     );
   }
 
-  Widget _buildThemeToggleRow(bool isDarkMode, Color textColor) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Row(
-          children: [
-            Icon(
-              isDarkMode ? FluentIcons.weather_moon_24_regular : FluentIcons.weather_sunny_24_regular,
-              color: textColor,
-            ),
-            const SizedBox(width: 12),
-            Text(
-              isDarkMode ? 'dark_mode'.tr() : 'light_mode'.tr(),
-              style: TextStyle(
-                color: textColor,
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ],
-        ),
-        Switch.adaptive(
-          value: isDarkMode,
-          onChanged: (_) => ref.read(themeProvider.notifier).toggleTheme(),
-          activeColor: AppColors.primary,
-        ),
-      ],
-    );
-  }
-
-  Widget _buildThemeCustomizationContent(bool isDarkMode, Color textColor) {
-    final hasUnsavedChanges = ref.watch(hasUnsavedThemeChangesProvider);
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'primary_color'.tr(),
-          style: TextStyle(
-            color: textColor,
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        const SizedBox(height: 16),
-        ColorPickerWidget(isDarkMode: isDarkMode),
-        const SizedBox(height: 24),
-        Text(
-          'font_size_scale'.tr(),
-          style: TextStyle(
-            color: textColor,
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        const SizedBox(height: 16),
-        FontSizeSliderWidget(isDarkMode: isDarkMode),
-        if (hasUnsavedChanges) ...[
-          const SizedBox(height: 24),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: () {
-                ref.read(themeCustomizationProvider.notifier).applyTheme();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('theme_applied'.tr())),
-                );
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              child: Text('apply_theme'.tr()),
-            ),
-          ),
-        ],
-      ],
-    );
-  }
-
-  Widget _buildDisplaySettingsContent(bool isDarkMode, Color textColor) {
+  void _showViewModeOptions(BuildContext context) {
+    final isDarkMode = ref.watch(isDarkModeProvider);
     final viewMode = ref.watch(viewModeProvider);
-    final primaryColor = ref.watch(primaryColorProvider);
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'default_view_mode'.tr(),
-          style: TextStyle(
-            color: textColor,
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        const SizedBox(height: 16),
-        Row(
-          children: [
-            Expanded(
-              child: _buildViewModeButton(
-                icon: FluentIcons.list_24_regular,
-                label: 'list_view'.tr(),
-                isSelected: viewMode == ViewMode.list,
-                onTap: () => ref.read(viewModeProvider.notifier).setViewMode(ViewMode.list),
-                isDarkMode: isDarkMode,
-                primaryColor: primaryColor,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _buildViewModeButton(
-                icon: FluentIcons.calendar_24_regular,
-                label: 'calendar_view'.tr(),
-                isSelected: viewMode == ViewMode.calendar,
-                onTap: () => ref.read(viewModeProvider.notifier).setViewMode(ViewMode.calendar),
-                isDarkMode: isDarkMode,
-                primaryColor: primaryColor,
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildViewModeButton({
-    required IconData icon,
-    required String label,
-    required bool isSelected,
-    required VoidCallback onTap,
-    required bool isDarkMode,
-    required Color primaryColor,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? primaryColor.withOpacity(0.15)
-              : (isDarkMode
-                  ? Colors.white.withOpacity(0.05)
-                  : Colors.black.withOpacity(0.03)),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: isSelected
-                ? primaryColor
-                : (isDarkMode
-                    ? Colors.white.withOpacity(0.1)
-                    : Colors.black.withOpacity(0.1)),
-            width: isSelected ? 2 : 1,
-          ),
-        ),
-        child: Column(
-          children: [
-            Icon(
-              icon,
-              size: 28,
-              color: isSelected ? primaryColor : AppColors.getTextSecondary(isDarkMode),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                color: isSelected ? primaryColor : AppColors.getText(isDarkMode),
-              ),
-            ),
-          ],
-        ),
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: isDarkMode ? const Color(0xFF2d2d2d) : Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-    );
-  }
-
-  Widget _buildDataContent(bool isDarkMode, Color textColor) {
-    return Column(
-      children: [
-        _buildListTile(
-          icon: FluentIcons.arrow_download_24_regular,
-          title: 'backup'.tr(),
-          subtitle: 'backup_desc'.tr(),
-          onTap: _handleBackup,
-          isDarkMode: isDarkMode,
-          textColor: textColor,
-        ),
-        const Divider(),
-        _buildListTile(
-          icon: FluentIcons.arrow_upload_24_regular,
-          title: 'restore'.tr(),
-          subtitle: 'restore_desc'.tr(),
-          onTap: _handleRestore,
-          isDarkMode: isDarkMode,
-          textColor: textColor,
-        ),
-        const Divider(),
-        _buildListTile(
-          icon: FluentIcons.document_24_regular,
-          title: 'export_data'.tr(),
-          subtitle: 'export_data_desc'.tr(),
-          onTap: _handleExport,
-          isDarkMode: isDarkMode,
-          textColor: textColor,
-        ),
-      ],
-    );
-  }
-
-  Widget _buildDeviceInfoContent(bool isDarkMode, Color textColor) {
-    final info = _deviceInfo!;
-    final isAndroid = info.deviceType == 'Android';
-
-    return Column(
-      children: [
-        // 기기 제조사 및 모델 - 클릭 시 상세 정보 다이얼로그
-        _buildListTile(
-          icon: FluentIcons.phone_24_regular,
-          title: 'device_model'.tr(),
-          subtitle: info.displayName,
-          onTap: () => _showDeviceInfoDialog(isDarkMode),
-          isDarkMode: isDarkMode,
-          textColor: textColor,
-        ),
-        // Android인 경우 배터리 최적화 표시
-        if (isAndroid) ...[
-          const Divider(),
-          _buildListTile(
-            icon: FluentIcons.battery_saver_24_regular,
-            title: 'battery_optimization_status'.tr(),
-            subtitle: _isBatteryOptimizationIgnored
-                ? 'battery_optimization_disabled'.tr()
-                : 'battery_optimization_enabled'.tr(),
-            onTap: !_isBatteryOptimizationIgnored
-                ? () async {
-                    await DeviceUtils.requestBatteryOptimizationExemption();
-                    _loadDeviceInfo();
-                  }
-                : null,
-            isDarkMode: isDarkMode,
-            textColor: textColor,
+      builder: (context) {
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: 20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: Icon(Icons.calendar_month, color: isDarkMode ? Colors.white : Colors.black),
+                title: Text('calendar_view'.tr(), style: TextStyle(color: isDarkMode ? Colors.white : Colors.black)),
+                trailing: viewMode == ViewMode.calendar ? const Icon(Icons.check, color: Colors.blue) : null,
+                onTap: () {
+                  ref.read(viewModeProvider.notifier).setViewMode(ViewMode.calendar);
+                  Navigator.pop(context);
+                },
+              ),
+              ListTile(
+                leading: Icon(Icons.list, color: isDarkMode ? Colors.white : Colors.black),
+                title: Text('list_view'.tr(), style: TextStyle(color: isDarkMode ? Colors.white : Colors.black)),
+                trailing: viewMode == ViewMode.list ? const Icon(Icons.check, color: Colors.blue) : null,
+                onTap: () {
+                  ref.read(viewModeProvider.notifier).setViewMode(ViewMode.list);
+                  Navigator.pop(context);
+                },
+              ),
+            ],
           ),
-        ],
-      ],
+        );
+      },
+    );
+  }
+
+  void _showBackupRestoreOptions(BuildContext context) {
+    final isDarkMode = ref.watch(isDarkModeProvider);
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: isDarkMode ? const Color(0xFF2d2d2d) : Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: 20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: Icon(Icons.cloud_upload, color: isDarkMode ? Colors.white : Colors.black),
+                title: Text('backup'.tr(), style: TextStyle(color: isDarkMode ? Colors.white : Colors.black)),
+                onTap: () {
+                  Navigator.pop(context);
+                  _handleBackup();
+                },
+              ),
+              ListTile(
+                leading: Icon(Icons.cloud_download, color: isDarkMode ? Colors.white : Colors.black),
+                title: Text('restore'.tr(), style: TextStyle(color: isDarkMode ? Colors.white : Colors.black)),
+                onTap: () {
+                  Navigator.pop(context);
+                  _handleRestore();
+                },
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -933,67 +897,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> with SingleTick
     );
   }
 
-  Widget _buildCategoryContent(bool isDarkMode, Color textColor) {
-    return _buildListTile(
-      icon: FluentIcons.tag_24_regular,
-      title: 'manage_categories'.tr(),
-      subtitle: 'manage_categories_desc'.tr(),
-      onTap: () => context.push('/categories'),
-      isDarkMode: isDarkMode,
-      textColor: textColor,
-    );
-  }
-
-  Widget _buildAdminContent(bool isDarkMode, Color textColor) {
-    return _buildListTile(
-      icon: FluentIcons.data_bar_vertical_24_regular,
-      title: 'admin_dashboard'.tr(),
-      subtitle: 'anonymized_statistics'.tr(),
-      onTap: () => context.push('/admin-dashboard'),
-      isDarkMode: isDarkMode,
-      textColor: textColor,
-    );
-  }
-
-  Widget _buildListTile({
-    required IconData icon,
-    required String title,
-    required String subtitle,
-    required VoidCallback? onTap,
-    required bool isDarkMode,
-    required Color textColor,
-  }) {
-    return ListTile(
-      leading: Container(
-        padding: const EdgeInsets.all(8),
-        decoration: BoxDecoration(
-          color: isDarkMode ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.05),
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: Icon(icon, color: AppColors.primary),
-      ),
-      title: Text(
-        title,
-        style: TextStyle(
-          color: textColor,
-          fontWeight: FontWeight.w500,
-        ),
-      ),
-      subtitle: Text(
-        subtitle,
-        style: TextStyle(
-          color: textColor.withValues(alpha: 0.6),
-          fontSize: 12,
-        ),
-      ),
-      trailing: Icon(
-        FluentIcons.chevron_right_24_regular,
-        color: textColor.withValues(alpha: 0.4),
-      ),
-      onTap: onTap,
-      contentPadding: EdgeInsets.zero,
-    );
-  }
 
   void _showLogoutDialog() {
     showDialog(
@@ -1059,7 +962,21 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> with SingleTick
   }
 
   void _handleExport() async {
-    // Implementation remains same as original
-    // Simplified for mockup
+    final backupActions = ref.read(backupActionsProvider);
+    try {
+      final exportPath = await backupActions.exportData();
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('data_exported_successfully'.tr() + ': $exportPath')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('data_export_failed'.tr() + ': $e')),
+        );
+      }
+    }
   }
 }
