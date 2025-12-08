@@ -849,5 +849,11 @@
   "due_time": "Due Time",
   "created_at": "Created at",
   "completed_at": "Completed at",
-  "select_todo_to_view": "Select a todo to view details"
+  "select_todo_to_view": "Select a todo to view details",
+
+  "delete_todo_confirm": "Are you sure you want to delete this todo?",
+  "disabled": "Disabled",
+  "due_time_optional": "Due Time (optional)",
+  "edit": "Edit",
+  "enabled": "Enabled"
 }
