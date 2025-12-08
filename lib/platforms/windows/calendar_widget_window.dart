@@ -51,8 +51,30 @@ class _CalendarWidgetWindowState extends ConsumerState<CalendarWidgetWindow>
     with WindowListener {
   DateTime _focusedDay = DateTime.now();
   DateTime? _selectedDay;
+  CalendarFormat _calendarFormat = CalendarFormat.month;
   bool _isAlwaysOnTop = true;
   bool _isResizing = false;
+  bool _isTransparentMode = false;
+  double _transparencyLevel = 0.7; // 0.3 ~ 1.0
+  bool _showSettingsPanel = false; // Settings panel visibility
+
+  // Text styling options
+  Color? _customTextColor; // null means use default
+  bool _isBoldText = false;
+
+  // Preset colors for text
+  static const List<Color> _presetColors = [
+    Colors.white,
+    Colors.black,
+    Color(0xFFFF5252), // Red
+    Color(0xFFFF9800), // Orange
+    Color(0xFFFFEB3B), // Yellow
+    Color(0xFF4CAF50), // Green
+    Color(0xFF2196F3), // Blue
+    Color(0xFF9C27B0), // Purple
+    Color(0xFF00BCD4), // Cyan
+    Color(0xFFE91E63), // Pink
+  ];
 
   // Min/max window sizes for resizing
   static const double _minWidth = 320;
@@ -97,10 +119,10 @@ class _CalendarWidgetWindowState extends ConsumerState<CalendarWidgetWindow>
           Container(
             decoration: BoxDecoration(
               color: isDarkMode
-                  ? AppColors.darkBackground.withOpacity(0.95)
-                  : Colors.white.withOpacity(0.95),
+                  ? AppColors.darkBackground.withOpacity(_isTransparentMode ? _transparencyLevel : 0.95)
+                  : Colors.white.withOpacity(_isTransparentMode ? _transparencyLevel : 0.95),
               borderRadius: BorderRadius.circular(16),
-              boxShadow: [
+              boxShadow: _isTransparentMode ? null : [
                 BoxShadow(
                   color: Colors.black.withOpacity(isDarkMode ? 0.3 : 0.15),
                   blurRadius: 20,
@@ -177,7 +199,9 @@ class _CalendarWidgetWindowState extends ConsumerState<CalendarWidgetWindow>
         height: 36,
         padding: const EdgeInsets.symmetric(horizontal: 12),
         decoration: BoxDecoration(
-          color: primaryColor,
+          color: _isTransparentMode
+              ? primaryColor.withOpacity(_transparencyLevel)
+              : primaryColor,
           borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
         ),
         child: Row(
@@ -209,6 +233,32 @@ class _CalendarWidgetWindowState extends ConsumerState<CalendarWidgetWindow>
               ),
               const SizedBox(width: 4),
             ],
+            // Transparent mode toggle (click: toggle, long press: show settings panel)
+            _buildWindowButton(
+              _isTransparentMode
+                  ? FluentIcons.drop_24_filled
+                  : FluentIcons.drop_24_regular,
+              () {
+                setState(() {
+                  if (_isTransparentMode) {
+                    // Toggle settings panel when already in transparent mode
+                    _showSettingsPanel = !_showSettingsPanel;
+                  } else {
+                    // Enable transparent mode
+                    _isTransparentMode = true;
+                    _showSettingsPanel = true;
+                  }
+                });
+              },
+              onLongPress: () {
+                // Disable transparent mode completely
+                setState(() {
+                  _isTransparentMode = false;
+                  _showSettingsPanel = false;
+                });
+              },
+            ),
+            const SizedBox(width: 4),
             // Always on top toggle
             _buildWindowButton(
               _isAlwaysOnTop
@@ -247,14 +297,260 @@ class _CalendarWidgetWindowState extends ConsumerState<CalendarWidgetWindow>
     );
   }
 
-  Widget _buildWindowButton(IconData icon, VoidCallback onPressed) {
-    return InkWell(
+  Widget _buildWindowButton(IconData icon, VoidCallback onPressed, {VoidCallback? onLongPress}) {
+    return GestureDetector(
       onTap: onPressed,
-      borderRadius: BorderRadius.circular(4),
-      child: Padding(
+      onLongPress: onLongPress,
+      child: Container(
         padding: const EdgeInsets.all(4),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(4),
+        ),
         child: Icon(icon, color: Colors.white, size: 14),
       ),
+    );
+  }
+
+  // Build inline settings panel (gauge-style)
+  Widget _buildSettingsPanel(bool isDarkMode, Color primaryColor) {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 200),
+      height: _showSettingsPanel ? null : 0,
+      child: _showSettingsPanel
+          ? Container(
+              margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: isDarkMode
+                    ? Colors.black.withOpacity(0.4)
+                    : Colors.white.withOpacity(0.8),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(
+                  color: primaryColor.withOpacity(0.3),
+                  width: 1,
+                ),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Header with close button
+                  Row(
+                    children: [
+                      Icon(FluentIcons.settings_24_regular,
+                          color: primaryColor, size: 14),
+                      const SizedBox(width: 6),
+                      Text(
+                        '위젯 설정',
+                        style: TextStyle(
+                          color: _customTextColor ?? AppColors.getText(isDarkMode),
+                          fontSize: 11,
+                          fontWeight: _isBoldText ? FontWeight.bold : FontWeight.w600,
+                        ),
+                      ),
+                      const Spacer(),
+                      GestureDetector(
+                        onTap: () => setState(() => _showSettingsPanel = false),
+                        child: Icon(FluentIcons.dismiss_12_regular,
+                            color: AppColors.getTextSecondary(isDarkMode),
+                            size: 12),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+
+                  // Transparency slider (gauge style)
+                  Row(
+                    children: [
+                      Icon(FluentIcons.drop_12_regular,
+                          color: AppColors.getTextSecondary(isDarkMode),
+                          size: 12),
+                      const SizedBox(width: 6),
+                      Text(
+                        '투명도',
+                        style: TextStyle(
+                          color: _customTextColor ?? AppColors.getText(isDarkMode),
+                          fontSize: 10,
+                          fontWeight: _isBoldText ? FontWeight.bold : FontWeight.normal,
+                        ),
+                      ),
+                      const Spacer(),
+                      Text(
+                        '${(_transparencyLevel * 100).toInt()}%',
+                        style: TextStyle(
+                          color: primaryColor,
+                          fontSize: 10,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  // Transparency gauge
+                  SizedBox(
+                    height: 20,
+                    child: SliderTheme(
+                      data: SliderTheme.of(context).copyWith(
+                        trackHeight: 6,
+                        thumbShape: const RoundSliderThumbShape(
+                            enabledThumbRadius: 8),
+                        overlayShape: const RoundSliderOverlayShape(
+                            overlayRadius: 14),
+                        activeTrackColor: primaryColor,
+                        inactiveTrackColor: primaryColor.withOpacity(0.2),
+                        thumbColor: primaryColor,
+                        overlayColor: primaryColor.withOpacity(0.2),
+                      ),
+                      child: Slider(
+                        value: _transparencyLevel,
+                        min: 0.3,
+                        max: 1.0,
+                        divisions: 7,
+                        onChanged: (value) {
+                          setState(() => _transparencyLevel = value);
+                        },
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+
+                  // Text color selection
+                  Row(
+                    children: [
+                      Icon(FluentIcons.color_24_regular,
+                          color: AppColors.getTextSecondary(isDarkMode),
+                          size: 12),
+                      const SizedBox(width: 6),
+                      Text(
+                        '글씨 색상',
+                        style: TextStyle(
+                          color: _customTextColor ?? AppColors.getText(isDarkMode),
+                          fontSize: 10,
+                          fontWeight: _isBoldText ? FontWeight.bold : FontWeight.normal,
+                        ),
+                      ),
+                      const Spacer(),
+                      // Reset button
+                      if (_customTextColor != null)
+                        GestureDetector(
+                          onTap: () => setState(() => _customTextColor = null),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: primaryColor.withOpacity(0.2),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text(
+                              '초기화',
+                              style: TextStyle(
+                                color: primaryColor,
+                                fontSize: 8,
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  // Color palette
+                  Wrap(
+                    spacing: 6,
+                    runSpacing: 6,
+                    children: _presetColors.map((color) {
+                      final isSelected = _customTextColor == color;
+                      return GestureDetector(
+                        onTap: () => setState(() => _customTextColor = color),
+                        child: Container(
+                          width: 22,
+                          height: 22,
+                          decoration: BoxDecoration(
+                            color: color,
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: isSelected
+                                  ? primaryColor
+                                  : (color == Colors.white
+                                      ? Colors.grey.shade400
+                                      : Colors.transparent),
+                              width: isSelected ? 2 : 1,
+                            ),
+                            boxShadow: isSelected
+                                ? [
+                                    BoxShadow(
+                                      color: primaryColor.withOpacity(0.5),
+                                      blurRadius: 4,
+                                      spreadRadius: 1,
+                                    ),
+                                  ]
+                                : null,
+                          ),
+                          child: isSelected
+                              ? Icon(
+                                  FluentIcons.checkmark_12_filled,
+                                  size: 12,
+                                  color: color.computeLuminance() > 0.5
+                                      ? Colors.black
+                                      : Colors.white,
+                                )
+                              : null,
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                  const SizedBox(height: 10),
+
+                  // Bold text toggle
+                  Row(
+                    children: [
+                      Icon(FluentIcons.text_bold_16_regular,
+                          color: AppColors.getTextSecondary(isDarkMode),
+                          size: 12),
+                      const SizedBox(width: 6),
+                      Text(
+                        '굵은 글씨',
+                        style: TextStyle(
+                          color: _customTextColor ?? AppColors.getText(isDarkMode),
+                          fontSize: 10,
+                          fontWeight: _isBoldText ? FontWeight.bold : FontWeight.normal,
+                        ),
+                      ),
+                      const Spacer(),
+                      GestureDetector(
+                        onTap: () => setState(() => _isBoldText = !_isBoldText),
+                        child: Container(
+                          width: 36,
+                          height: 18,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(9),
+                            color: _isBoldText
+                                ? primaryColor
+                                : AppColors.getTextSecondary(isDarkMode)
+                                    .withOpacity(0.3),
+                          ),
+                          child: AnimatedAlign(
+                            duration: const Duration(milliseconds: 150),
+                            alignment: _isBoldText
+                                ? Alignment.centerRight
+                                : Alignment.centerLeft,
+                            child: Container(
+                              width: 14,
+                              height: 14,
+                              margin: const EdgeInsets.symmetric(horizontal: 2),
+                              decoration: const BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            )
+          : const SizedBox.shrink(),
     );
   }
 
@@ -395,21 +691,37 @@ class _CalendarWidgetWindowState extends ConsumerState<CalendarWidgetWindow>
   Widget _buildCalendarContent(List<Todo> todos, bool isDarkMode, Color primaryColor) {
     final eventsByDate = _groupTodosByDate(todos);
 
+    // Determine text color based on settings
+    final textColor = _customTextColor ?? AppColors.getText(isDarkMode);
+    final textSecondaryColor = _customTextColor?.withOpacity(0.7) ?? AppColors.getTextSecondary(isDarkMode);
+    final fontWeight = _isBoldText ? FontWeight.bold : FontWeight.normal;
+
     return Column(
       children: [
+        // Settings panel (shows when transparent mode is active and panel is visible)
+        if (_isTransparentMode)
+          _buildSettingsPanel(isDarkMode, primaryColor),
+
         // Compact calendar
         TableCalendar<Todo>(
           firstDay: DateTime.utc(2020, 1, 1),
           lastDay: DateTime.utc(2030, 12, 31),
           focusedDay: _focusedDay,
           selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
-          calendarFormat: CalendarFormat.month,
+          calendarFormat: _calendarFormat,
           startingDayOfWeek: StartingDayOfWeek.sunday,
           availableCalendarFormats: const {
-            CalendarFormat.month: 'Month',
+            CalendarFormat.month: '월',
+            CalendarFormat.twoWeeks: '2주',
+            CalendarFormat.week: '주',
+          },
+          onFormatChanged: (format) {
+            setState(() {
+              _calendarFormat = format;
+            });
           },
 
-          // Compact style
+          // Compact style with custom text settings
           calendarStyle: CalendarStyle(
             cellMargin: const EdgeInsets.all(2),
             todayDecoration: BoxDecoration(
@@ -429,28 +741,40 @@ class _CalendarWidgetWindowState extends ConsumerState<CalendarWidgetWindow>
             outsideDaysVisible: false,
             defaultTextStyle: TextStyle(
               fontSize: 11,
-              color: AppColors.getText(isDarkMode),
+              color: textColor,
+              fontWeight: fontWeight,
             ),
             weekendTextStyle: TextStyle(
               fontSize: 11,
-              color: Colors.red.shade300,
+              color: _customTextColor ?? Colors.red.shade300,
+              fontWeight: fontWeight,
             ),
             todayTextStyle: TextStyle(
               fontSize: 11,
-              fontWeight: FontWeight.bold,
-              color: AppColors.getText(isDarkMode),
+              fontWeight: _isBoldText ? FontWeight.w900 : FontWeight.bold,
+              color: textColor,
             ),
-            selectedTextStyle: const TextStyle(
+            selectedTextStyle: TextStyle(
               fontSize: 11,
-              fontWeight: FontWeight.bold,
+              fontWeight: _isBoldText ? FontWeight.w900 : FontWeight.bold,
               color: Colors.white,
             ),
           ),
 
-          // Header style
+          // Header style with custom text settings
           headerStyle: HeaderStyle(
-            formatButtonVisible: false,
+            formatButtonVisible: true,
             titleCentered: true,
+            formatButtonDecoration: BoxDecoration(
+              border: Border.all(color: primaryColor.withOpacity(0.5)),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            formatButtonTextStyle: TextStyle(
+              fontSize: 11,
+              color: primaryColor,
+              fontWeight: fontWeight,
+            ),
+            formatButtonPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             leftChevronPadding: EdgeInsets.zero,
             rightChevronPadding: EdgeInsets.zero,
             leftChevronMargin: const EdgeInsets.only(left: 8),
@@ -458,30 +782,32 @@ class _CalendarWidgetWindowState extends ConsumerState<CalendarWidgetWindow>
             headerPadding: const EdgeInsets.symmetric(vertical: 8),
             titleTextStyle: TextStyle(
               fontSize: 13,
-              fontWeight: FontWeight.bold,
-              color: AppColors.getText(isDarkMode),
+              fontWeight: _isBoldText ? FontWeight.w900 : FontWeight.bold,
+              color: textColor,
             ),
             leftChevronIcon: Icon(
               Icons.chevron_left,
               size: 18,
-              color: AppColors.getText(isDarkMode),
+              color: textColor,
             ),
             rightChevronIcon: Icon(
               Icons.chevron_right,
               size: 18,
-              color: AppColors.getText(isDarkMode),
+              color: textColor,
             ),
           ),
 
-          // Days of week style
+          // Days of week style with custom text settings
           daysOfWeekStyle: DaysOfWeekStyle(
             weekdayStyle: TextStyle(
               fontSize: 10,
-              color: AppColors.getTextSecondary(isDarkMode),
+              color: textSecondaryColor,
+              fontWeight: fontWeight,
             ),
             weekendStyle: TextStyle(
               fontSize: 10,
-              color: Colors.red.shade300,
+              color: _customTextColor ?? Colors.red.shade300,
+              fontWeight: fontWeight,
             ),
           ),
 
@@ -546,6 +872,11 @@ class _CalendarWidgetWindowState extends ConsumerState<CalendarWidgetWindow>
     );
     final todos = eventsByDate[normalizedDate] ?? [];
 
+    // Apply custom text styling
+    final textColor = _customTextColor ?? AppColors.getText(isDarkMode);
+    final textSecondaryColor = _customTextColor?.withOpacity(0.7) ?? AppColors.getTextSecondary(isDarkMode);
+    final fontWeight = _isBoldText ? FontWeight.bold : FontWeight.normal;
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       child: Column(
@@ -559,9 +890,9 @@ class _CalendarWidgetWindowState extends ConsumerState<CalendarWidgetWindow>
                 DateFormat('M/d (E)', context.locale.languageCode)
                     .format(selectedDate),
                 style: TextStyle(
-                  fontWeight: FontWeight.bold,
+                  fontWeight: _isBoldText ? FontWeight.w900 : FontWeight.bold,
                   fontSize: 12,
-                  color: AppColors.getText(isDarkMode),
+                  color: textColor,
                 ),
               ),
               // Quick add button
@@ -584,7 +915,7 @@ class _CalendarWidgetWindowState extends ConsumerState<CalendarWidgetWindow>
                         style: TextStyle(
                           fontSize: 10,
                           color: primaryColor,
-                          fontWeight: FontWeight.w500,
+                          fontWeight: _isBoldText ? FontWeight.bold : FontWeight.w500,
                         ),
                       ),
                     ],
@@ -602,8 +933,9 @@ class _CalendarWidgetWindowState extends ConsumerState<CalendarWidgetWindow>
                     child: Text(
                       'no_todos'.tr(),
                       style: TextStyle(
-                        color: AppColors.getTextSecondary(isDarkMode),
+                        color: textSecondaryColor,
                         fontSize: 11,
+                        fontWeight: fontWeight,
                       ),
                     ),
                   )
@@ -626,6 +958,11 @@ class _CalendarWidgetWindowState extends ConsumerState<CalendarWidgetWindow>
 
   Widget _buildCompactTodoItem(Todo todo, bool isDarkMode, Color primaryColor) {
     final hasDescription = todo.description.isNotEmpty;
+
+    // Apply custom text color and font weight settings
+    final textColor = _customTextColor ?? AppColors.getText(isDarkMode);
+    final textSecondaryColor = _customTextColor?.withOpacity(0.7) ?? AppColors.getTextSecondary(isDarkMode);
+    final fontWeight = _isBoldText ? FontWeight.bold : FontWeight.normal;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 6),
@@ -659,7 +996,7 @@ class _CalendarWidgetWindowState extends ConsumerState<CalendarWidgetWindow>
                         ? FluentIcons.checkmark_circle_24_filled
                         : FluentIcons.circle_24_regular,
                     size: 16,
-                    color: todo.isCompleted ? primaryColor : AppColors.getTextSecondary(isDarkMode),
+                    color: todo.isCompleted ? primaryColor : textSecondaryColor,
                   ),
                 ),
               ),
@@ -670,10 +1007,8 @@ class _CalendarWidgetWindowState extends ConsumerState<CalendarWidgetWindow>
                   todo.title,
                   style: TextStyle(
                     fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                    color: todo.isCompleted
-                        ? AppColors.getTextSecondary(isDarkMode)
-                        : AppColors.getText(isDarkMode),
+                    fontWeight: todo.isCompleted ? fontWeight : FontWeight.lerp(fontWeight, FontWeight.w500, 0.5),
+                    color: todo.isCompleted ? textSecondaryColor : textColor,
                     decoration: todo.isCompleted ? TextDecoration.lineThrough : null,
                   ),
                   maxLines: 2,
@@ -696,14 +1031,15 @@ class _CalendarWidgetWindowState extends ConsumerState<CalendarWidgetWindow>
                             Icon(
                               FluentIcons.clock_12_regular,
                               size: 10,
-                              color: AppColors.getTextSecondary(isDarkMode),
+                              color: textSecondaryColor,
                             ),
                             const SizedBox(width: 2),
                             Text(
                               DateFormat('HH:mm').format(todo.dueDate!),
                               style: TextStyle(
                                 fontSize: 10,
-                                color: AppColors.getTextSecondary(isDarkMode),
+                                fontWeight: fontWeight,
+                                color: textSecondaryColor,
                               ),
                             ),
                           ],
@@ -742,7 +1078,8 @@ class _CalendarWidgetWindowState extends ConsumerState<CalendarWidgetWindow>
                 todo.description,
                 style: TextStyle(
                   fontSize: 10,
-                  color: AppColors.getTextSecondary(isDarkMode),
+                  fontWeight: fontWeight,
+                  color: textSecondaryColor,
                   height: 1.3,
                   decoration: todo.isCompleted ? TextDecoration.lineThrough : null,
                 ),
