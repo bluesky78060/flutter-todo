@@ -838,5 +838,10 @@
   "login_unknown_error": "An unknown error occurred.",
 
   "image_decoding_failed": "Image decoding failed",
-  "image_optimization_start": "Starting image optimization"
+  "image_optimization_start": "Starting image optimization",
+
+  "none": "None",
+  "category": "Category",
+  "recurrence": "Recurrence",
+  "no_repeat": "No repeat"
 }

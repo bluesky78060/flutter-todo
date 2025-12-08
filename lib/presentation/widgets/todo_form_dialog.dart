@@ -246,13 +246,6 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
     );
   }
 
-  String _formatDueDate(DateTime date, {bool isAllDay = false}) {
-    if (isAllDay) {
-      return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')} (${'all_day'.tr()})';
-    }
-    return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')} ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
-  }
-
   Future<void> _selectLocation() async {
     if (!mounted) return;
 
@@ -640,7 +633,7 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
               onPressed: () => Navigator.pop(context, true),
               child: Text(
                 'delete'.tr(),
-                style: TextStyle(color: Colors.redAccent),
+                style: const TextStyle(color: Colors.redAccent),
               ),
             ),
           ],
@@ -659,85 +652,6 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
         );
       }
     }
-  }
-
-  void _previewImage(File file) {
-    final isDarkMode = ref.read(isDarkModeProvider);
-    final fileName = file.path.split('/').last;
-
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          backgroundColor: AppColors.getCard(isDarkMode),
-          title: Text(
-            'view_attachment'.tr(),
-            style: TextStyle(
-              color: AppColors.getText(isDarkMode),
-              fontSize: AppColors.scaledFontSize(18),
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(12),
-                    color: AppColors.getInput(isDarkMode),
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
-                    child: Image.file(
-                      file,
-                      fit: BoxFit.cover,
-                      width: double.infinity,
-                      height: 300,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Container(
-                          width: double.infinity,
-                          height: 300,
-                          color: AppColors.getInput(isDarkMode),
-                          child: Center(
-                            child: Icon(
-                              FluentIcons.image_24_regular,
-                              color: AppColors.getTextSecondary(isDarkMode),
-                              size: 48,
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  fileName,
-                  style: TextStyle(
-                    color: AppColors.getText(isDarkMode),
-                    fontSize: AppColors.scaledFontSize(14),
-                    fontWeight: FontWeight.w500,
-                  ),
-                  textAlign: TextAlign.center,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text(
-                'close'.tr(),
-                style: TextStyle(color: AppColors.primary),
-              ),
-            ),
-          ],
-        );
-      },
-    );
   }
 
   Future<void> _selectNotificationTime() async {
@@ -1065,12 +979,12 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
     final maxDialogHeight = screenHeight - keyboardHeight - 40; // 40 for safety margin
 
     return Dialog(
-      backgroundColor: AppColors.getCard(isDarkMode),
+      backgroundColor: AppColors.getBackground(isDarkMode),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
       ),
       child: Container(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
         constraints: BoxConstraints(
           maxWidth: 400,
           maxHeight: maxDialogHeight.clamp(300, screenHeight * 0.9),
@@ -1080,50 +994,29 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-            // Header
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  _isEditMode ? 'edit_todo'.tr() : 'new_todo'.tr(),
-                  style: TextStyle(
-                    color: AppColors.getText(isDarkMode),
-                    fontSize: AppColors.scaledFontSize(24),
-                    fontWeight: FontWeight.bold,
-                  ),
+            // Header - centered title only
+            Center(
+              child: Text(
+                _isEditMode ? 'edit_todo'.tr() : 'new_todo'.tr(),
+                style: TextStyle(
+                  color: AppColors.getText(isDarkMode),
+                  fontSize: AppColors.scaledFontSize(18),
+                  fontWeight: FontWeight.w600,
                 ),
-                IconButton(
-                  onPressed: () => Navigator.pop(context),
-                  icon: Icon(
-                    FluentIcons.dismiss_24_regular,
-                    color: AppColors.getTextSecondary(isDarkMode),
-                  ),
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
-                ),
-              ],
+              ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 20),
 
-            // Title Input
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'title'.tr(),
-                  style: TextStyle(
-                    color: AppColors.getTextSecondary(isDarkMode),
-                    fontSize: AppColors.scaledFontSize(14),
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Container(
-                  decoration: BoxDecoration(
-                    color: AppColors.getInput(isDarkMode),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: TextField(
+            // Title & Description Card
+            Container(
+              decoration: BoxDecoration(
+                color: AppColors.getCard(isDarkMode),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Column(
+                children: [
+                  // Title Input
+                  TextField(
                     controller: _titleController,
                     autofocus: !_isEditMode,
                     style: TextStyle(
@@ -1131,7 +1024,7 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
                       fontSize: AppColors.scaledFontSize(16),
                     ),
                     decoration: InputDecoration(
-                      hintText: 'title_hint'.tr(),
+                      hintText: 'title'.tr(),
                       hintStyle: TextStyle(
                         color: AppColors.getTextSecondary(isDarkMode),
                       ),
@@ -1142,38 +1035,20 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
                       ),
                     ),
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
-
-            // Description Input
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'description_optional'.tr(),
-                  style: TextStyle(
-                    color: AppColors.getTextSecondary(isDarkMode),
-                    fontSize: AppColors.scaledFontSize(14),
-                    fontWeight: FontWeight.w500,
+                  Divider(
+                    height: 1,
+                    color: AppColors.getBorder(isDarkMode).withOpacity(0.3),
                   ),
-                ),
-                const SizedBox(height: 8),
-                Container(
-                  decoration: BoxDecoration(
-                    color: AppColors.getInput(isDarkMode),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: TextField(
+                  // Description Input
+                  TextField(
                     controller: _descriptionController,
-                    maxLines: 4,
+                    maxLines: 3,
                     style: TextStyle(
                       color: AppColors.getText(isDarkMode),
                       fontSize: AppColors.scaledFontSize(16),
                     ),
                     decoration: InputDecoration(
-                      hintText: 'description_hint'.tr(),
+                      hintText: 'description'.tr(),
                       hintStyle: TextStyle(
                         color: AppColors.getTextSecondary(isDarkMode),
                       ),
@@ -1184,768 +1059,354 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
                       ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 16),
 
-            // Category Dropdown
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'category_optional'.tr(),
-                  style: TextStyle(
-                    color: AppColors.getTextSecondary(isDarkMode),
-                    fontSize: AppColors.scaledFontSize(14),
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                ref.watch(categoriesProvider).when(
-                  data: (categories) {
-                    return Container(
-                      decoration: BoxDecoration(
-                        color: AppColors.getInput(isDarkMode),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: DropdownButtonHideUnderline(
-                        child: DropdownButton<int?>(
-                          value: _selectedCategoryId,
-                          isExpanded: true,
-                          dropdownColor: AppColors.getCard(isDarkMode),
-                          menuMaxHeight: 200,
-                          itemHeight: 48,
-                          icon: Icon(
-                            FluentIcons.chevron_down_24_regular,
-                            color: AppColors.getTextSecondary(isDarkMode),
-                            size: 20,
-                          ),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 8,
-                          ),
-                          hint: Text(
-                            'select_category'.tr(),
-                            style: TextStyle(
-                              color: AppColors.getTextSecondary(isDarkMode),
-                              fontSize: AppColors.scaledFontSize(16),
-                            ),
-                          ),
-                          selectedItemBuilder: (BuildContext context) {
-                            return [
-                              // No category option
-                              Align(
-                                alignment: Alignment.centerLeft,
-                                child: Text(
-                                  'no_category'.tr(),
-                                  style: TextStyle(
-                                    color: AppColors.getTextSecondary(isDarkMode),
-                                    fontSize: AppColors.scaledFontSize(16),
-                                  ),
-                                ),
-                              ),
-                              // Category options
-                              ...categories.map((category) {
-                                return Align(
-                                  alignment: Alignment.centerLeft,
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Container(
-                                        width: 16,
-                                        height: 16,
-                                        decoration: BoxDecoration(
-                                          color: ColorUtils.parseColor(category.color),
-                                          shape: BoxShape.circle,
-                                        ),
-                                      ),
-                                      const SizedBox(width: 10),
-                                      if (category.icon != null) ...[
-                                        Text(
-                                          category.icon!,
-                                          style: TextStyle(fontSize: AppColors.scaledFontSize(16)),
-                                        ),
-                                        const SizedBox(width: 6),
-                                      ],
-                                      Flexible(
-                                        child: Text(
-                                          category.name,
-                                          style: TextStyle(
-                                            color: AppColors.getText(isDarkMode),
-                                            fontSize: AppColors.scaledFontSize(16),
-                                          ),
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                );
-                              }),
-                            ];
-                          },
-                          items: [
-                            DropdownMenuItem<int?>(
-                              value: null,
-                              child: Text(
-                                'no_category'.tr(),
-                                style: TextStyle(
-                                  color: AppColors.getTextSecondary(isDarkMode),
-                                  fontSize: AppColors.scaledFontSize(16),
-                                ),
-                              ),
-                            ),
-                            ...categories.map((category) {
-                              return DropdownMenuItem<int?>(
-                                value: category.id,
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Container(
-                                      width: 16,
-                                      height: 16,
-                                      decoration: BoxDecoration(
-                                        color: ColorUtils.parseColor(category.color),
-                                        shape: BoxShape.circle,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 10),
-                                    if (category.icon != null) ...[
-                                      Text(
-                                        category.icon!,
-                                        style: TextStyle(fontSize: AppColors.scaledFontSize(16)),
-                                      ),
-                                      const SizedBox(width: 6),
-                                    ],
-                                    Flexible(
-                                      child: Text(
-                                        category.name,
-                                        style: TextStyle(
-                                          color: AppColors.getText(isDarkMode),
-                                          fontSize: AppColors.scaledFontSize(16),
-                                        ),
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              );
-                            }),
-                          ],
-                          onChanged: (value) {
-                            setState(() {
-                              _selectedCategoryId = value;
-                            });
-                          },
-                        ),
-                      ),
-                    );
-                  },
-                  loading: () => CircularProgressIndicator(),
-                  error: (error, stack) => Text(
-                    '${'category_load_failed'.tr()}: $error',
-                    style: TextStyle(color: Colors.red),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
-
-            // Due Date Picker
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'due_date_optional'.tr(),
-                  style: TextStyle(
-                    color: AppColors.getTextSecondary(isDarkMode),
-                    fontSize: AppColors.scaledFontSize(14),
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                InkWell(
-                  onTap: _selectDate,
-                  borderRadius: BorderRadius.circular(12),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 14,
+            // Category, Due Date, All Day Card
+            Container(
+              decoration: BoxDecoration(
+                color: AppColors.getCard(isDarkMode),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Column(
+                children: [
+                  // Category Row
+                  ref.watch(categoriesProvider).when(
+                    data: (categories) {
+                      return _buildListTile(
+                        isDarkMode: isDarkMode,
+                        icon: FluentIcons.folder_24_regular,
+                        title: 'category'.tr(),
+                        value: _selectedCategoryId != null
+                            ? categories.firstWhere(
+                                (c) => c.id == _selectedCategoryId,
+                                orElse: () => categories.first,
+                              ).name
+                            : 'none'.tr(),
+                        onTap: () => _showCategoryPicker(categories, isDarkMode),
+                        showDivider: true,
+                      );
+                    },
+                    loading: () => _buildListTile(
+                      isDarkMode: isDarkMode,
+                      icon: FluentIcons.folder_24_regular,
+                      title: 'category'.tr(),
+                      value: '...',
+                      onTap: null,
+                      showDivider: true,
                     ),
-                    decoration: BoxDecoration(
-                      color: AppColors.getInput(isDarkMode),
-                      borderRadius: BorderRadius.circular(12),
+                    error: (_, __) => _buildListTile(
+                      isDarkMode: isDarkMode,
+                      icon: FluentIcons.folder_24_regular,
+                      title: 'category'.tr(),
+                      value: 'error'.tr(),
+                      onTap: null,
+                      showDivider: true,
                     ),
+                  ),
+                  // Due Date Row
+                  _buildListTile(
+                    isDarkMode: isDarkMode,
+                    icon: FluentIcons.calendar_24_regular,
+                    title: 'due_date'.tr(),
+                    value: _selectedDueDate != null
+                        ? _formatShortDate(_selectedDueDate!)
+                        : 'none'.tr(),
+                    onTap: _selectDate,
+                    showDivider: true,
+                  ),
+                  // All Day Toggle Row
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                     child: Row(
                       children: [
                         Icon(
-                          FluentIcons.calendar_24_regular,
+                          FluentIcons.clock_24_regular,
                           color: AppColors.getTextSecondary(isDarkMode),
-                          size: 20,
+                          size: 22,
                         ),
                         const SizedBox(width: 12),
                         Expanded(
                           child: Text(
-                            _selectedDueDate != null
-                                ? _formatDueDate(_selectedDueDate!, isAllDay: _isAllDay)
-                                : 'select_due_date'.tr(),
+                            'all_day'.tr(),
                             style: TextStyle(
-                              color: _selectedDueDate != null
-                                  ? AppColors.getText(isDarkMode)
-                                  : AppColors.getTextSecondary(isDarkMode),
+                              color: AppColors.getText(isDarkMode),
                               fontSize: AppColors.scaledFontSize(16),
                             ),
                           ),
                         ),
-                        if (_selectedDueDate != null)
+                        Switch(
+                          value: _isAllDay,
+                          onChanged: (value) {
+                            setState(() {
+                              _isAllDay = value;
+                              if (value && _selectedDueDate != null) {
+                                _selectedDueDate = DateTime(
+                                  _selectedDueDate!.year,
+                                  _selectedDueDate!.month,
+                                  _selectedDueDate!.day,
+                                  23,
+                                  59,
+                                  59,
+                                );
+                              }
+                            });
+                          },
+                          activeColor: AppColors.primary,
+                          activeTrackColor: AppColors.primary.withOpacity(0.5),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // Priority Selector - Standalone segment control
+            Container(
+              decoration: BoxDecoration(
+                color: AppColors.getCard(isDarkMode),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              padding: const EdgeInsets.all(6),
+              child: Row(
+                children: [
+                  for (final priority in PriorityConstants.all)
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            _selectedPriority = priority;
+                          });
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          decoration: BoxDecoration(
+                            color: _selectedPriority == priority
+                                ? AppColors.primary.withOpacity(0.2)
+                                : Colors.transparent,
+                            borderRadius: BorderRadius.circular(12),
+                            border: _selectedPriority == priority
+                                ? Border.all(
+                                    color: AppColors.primary.withOpacity(0.5),
+                                    width: 1,
+                                  )
+                                : null,
+                          ),
+                          child: Center(
+                            child: Text(
+                              PriorityConstants.getDisplayName(priority).tr(),
+                              style: TextStyle(
+                                color: _selectedPriority == priority
+                                    ? AppColors.primary
+                                    : AppColors.getTextSecondary(isDarkMode),
+                                fontSize: AppColors.scaledFontSize(14),
+                                fontWeight: _selectedPriority == priority
+                                    ? FontWeight.w600
+                                    : FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // Notification, Recurrence, Location Card
+            Container(
+              decoration: BoxDecoration(
+                color: AppColors.getCard(isDarkMode),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Column(
+                children: [
+                  // Notification Row
+                  _buildListTile(
+                    isDarkMode: isDarkMode,
+                    icon: FluentIcons.alert_24_regular,
+                    title: 'notification'.tr(),
+                    value: _selectedNotificationTime != null
+                        ? _formatShortDateTime(_selectedNotificationTime!)
+                        : 'none'.tr(),
+                    onTap: _selectNotificationTime,
+                    showDivider: true,
+                  ),
+                  // Recurrence Row
+                  _buildListTile(
+                    isDarkMode: isDarkMode,
+                    icon: FluentIcons.arrow_repeat_all_24_regular,
+                    title: 'recurrence'.tr(),
+                    value: _recurrenceRule != null
+                        ? RecurrenceUtils.getDescription(_recurrenceRule)
+                        : 'no_repeat'.tr(),
+                    onTap: _selectRecurrence,
+                    showDivider: true,
+                  ),
+                  // Location Row
+                  _buildListTile(
+                    isDarkMode: isDarkMode,
+                    icon: FluentIcons.location_24_regular,
+                    title: 'location'.tr(),
+                    value: _locationName ?? 'none'.tr(),
+                    onTap: _selectLocation,
+                    showDivider: false,
+                  ),
+                ],
+              ),
+            ),
+
+            // Attachments Section (Mobile only)
+            if (!kIsWeb && _selectedFiles.isNotEmpty) ...[
+              const SizedBox(height: 16),
+              Container(
+                decoration: BoxDecoration(
+                  color: AppColors.getCard(isDarkMode),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                padding: const EdgeInsets.all(12),
+                child: Column(
+                  children: List.generate(_selectedFiles.length, (index) {
+                    final file = _selectedFiles[index];
+                    final fileName = file.path.split('/').last;
+                    final isImage = fileName.toLowerCase().endsWith('.jpg') ||
+                        fileName.toLowerCase().endsWith('.jpeg') ||
+                        fileName.toLowerCase().endsWith('.png') ||
+                        fileName.toLowerCase().endsWith('.gif');
+
+                    return Container(
+                      margin: EdgeInsets.only(bottom: index < _selectedFiles.length - 1 ? 8 : 0),
+                      child: Row(
+                        children: [
+                          if (isImage)
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(8),
+                              child: Image.file(
+                                file,
+                                width: 40,
+                                height: 40,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return Container(
+                                    width: 40,
+                                    height: 40,
+                                    color: AppColors.getInput(isDarkMode),
+                                    child: Icon(
+                                      FluentIcons.image_24_regular,
+                                      color: AppColors.getTextSecondary(isDarkMode),
+                                      size: 20,
+                                    ),
+                                  );
+                                },
+                              ),
+                            )
+                          else
+                            Container(
+                              width: 40,
+                              height: 40,
+                              decoration: BoxDecoration(
+                                color: AppColors.getInput(isDarkMode),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Icon(
+                                FluentIcons.document_24_regular,
+                                color: AppColors.getTextSecondary(isDarkMode),
+                                size: 20,
+                              ),
+                            ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              fileName,
+                              style: TextStyle(
+                                color: AppColors.getText(isDarkMode),
+                                fontSize: AppColors.scaledFontSize(14),
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
                           IconButton(
-                            onPressed: () {
-                              setState(() {
-                                _selectedDueDate = null;
-                                _isAllDay = false;
-                              });
-                            },
+                            onPressed: () => _showDeleteConfirmation(index),
                             icon: Icon(
-                              FluentIcons.dismiss_24_regular,
+                              FluentIcons.dismiss_circle_24_regular,
                               color: AppColors.getTextSecondary(isDarkMode),
-                              size: 18,
+                              size: 20,
                             ),
                             padding: EdgeInsets.zero,
                             constraints: const BoxConstraints(),
                           ),
-                      ],
-                    ),
-                  ),
+                        ],
+                      ),
+                    );
+                  }),
                 ),
-                // All Day Toggle
-                const SizedBox(height: 12),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 10,
-                  ),
+              ),
+            ],
+
+            // Add attachment button (Mobile only)
+            if (!kIsWeb) ...[
+              const SizedBox(height: 12),
+              GestureDetector(
+                onTap: _pickAttachment,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(vertical: 12),
                   decoration: BoxDecoration(
-                    color: AppColors.getInput(isDarkMode),
-                    borderRadius: BorderRadius.circular(12),
+                    color: AppColors.getCard(isDarkMode),
+                    borderRadius: BorderRadius.circular(16),
                   ),
                   child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Icon(
-                        FluentIcons.clock_24_regular,
+                        FluentIcons.attach_24_regular,
                         color: AppColors.getTextSecondary(isDarkMode),
                         size: 20,
                       ),
-                      const SizedBox(width: 12),
+                      const SizedBox(width: 8),
                       Text(
-                        'all_day'.tr(),
+                        'attach_file'.tr(),
                         style: TextStyle(
-                          color: AppColors.getText(isDarkMode),
-                          fontSize: AppColors.scaledFontSize(16),
+                          color: AppColors.getTextSecondary(isDarkMode),
+                          fontSize: AppColors.scaledFontSize(14),
                         ),
-                      ),
-                      const Spacer(),
-                      Switch(
-                        value: _isAllDay,
-                        onChanged: (value) {
-                          setState(() {
-                            _isAllDay = value;
-                            // If turning on all-day and date is already selected, reset time to 00:00
-                            if (value && _selectedDueDate != null) {
-                              _selectedDueDate = DateTime(
-                                _selectedDueDate!.year,
-                                _selectedDueDate!.month,
-                                _selectedDueDate!.day,
-                                0,
-                                0,
-                              );
-                            }
-                          });
-                        },
-                        activeColor: AppColors.primary,
-                        activeTrackColor: AppColors.primary.withOpacity(0.5),
                       ),
                     ],
                   ),
                 ),
-              ],
-            ),
-            const SizedBox(height: 20),
-
-            // Priority Selector
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'priority_label'.tr(),
-                  style: TextStyle(
-                    color: AppColors.getTextSecondary(isDarkMode),
-                    fontSize: AppColors.scaledFontSize(14),
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    for (final priority in PriorityConstants.all)
-                      Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 4),
-                          child: Material(
-                            color: Colors.transparent,
-                            child: InkWell(
-                              onTap: () {
-                                setState(() {
-                                  _selectedPriority = priority;
-                                });
-                              },
-                              borderRadius: BorderRadius.circular(12),
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                  vertical: 10,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: _selectedPriority == priority
-                                      ? AppColors.primary
-                                      : AppColors.getInput(isDarkMode),
-                                  borderRadius: BorderRadius.circular(12),
-                                  border: _selectedPriority == priority
-                                      ? Border.all(
-                                          color: AppColors.primary,
-                                          width: 2,
-                                        )
-                                      : null,
-                                ),
-                                child: Center(
-                                  child: Text(
-                                    PriorityConstants.getDisplayName(priority).tr(),
-                                    style: TextStyle(
-                                      color: _selectedPriority == priority
-                                          ? Colors.white
-                                          : AppColors.getText(isDarkMode),
-                                      fontSize: AppColors.scaledFontSize(13),
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
-
-            // Notification Time Picker
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'notification_time_optional'.tr(),
-                  style: TextStyle(
-                    color: AppColors.getTextSecondary(isDarkMode),
-                    fontSize: AppColors.scaledFontSize(14),
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                InkWell(
-                  onTap: _selectNotificationTime,
-                  borderRadius: BorderRadius.circular(12),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 14,
-                    ),
-                    decoration: BoxDecoration(
-                      color: AppColors.getInput(isDarkMode),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(
-                          FluentIcons.alert_24_regular,
-                          color: AppColors.getTextSecondary(isDarkMode),
-                          size: 20,
-                        ),
-                        const SizedBox(width: 12),
-                        Text(
-                          _selectedNotificationTime != null
-                              ? _formatDueDate(_selectedNotificationTime!)
-                              : 'select_notification_time'.tr(),
-                          style: TextStyle(
-                            color: _selectedNotificationTime != null
-                                ? AppColors.getText(isDarkMode)
-                                : AppColors.getTextSecondary(isDarkMode),
-                            fontSize: AppColors.scaledFontSize(16),
-                          ),
-                        ),
-                        const Spacer(),
-                        if (_selectedNotificationTime != null)
-                          IconButton(
-                            onPressed: () {
-                              setState(() {
-                                _selectedNotificationTime = null;
-                              });
-                            },
-                            icon: Icon(
-                              FluentIcons.dismiss_24_regular,
-                              color: AppColors.getTextSecondary(isDarkMode),
-                              size: 18,
-                            ),
-                            padding: EdgeInsets.zero,
-                            constraints: const BoxConstraints(),
-                          ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
-
-            // Recurrence Settings
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'recurrence_optional'.tr(),
-                  style: TextStyle(
-                    color: AppColors.getTextSecondary(isDarkMode),
-                    fontSize: AppColors.scaledFontSize(14),
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                InkWell(
-                  onTap: _selectRecurrence,
-                  borderRadius: BorderRadius.circular(12),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 14,
-                    ),
-                    decoration: BoxDecoration(
-                      color: AppColors.getInput(isDarkMode),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(
-                          FluentIcons.arrow_repeat_all_24_regular,
-                          color: AppColors.getTextSecondary(isDarkMode),
-                          size: 20,
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Text(
-                            _recurrenceRule != null
-                                ? RecurrenceUtils.getDescription(_recurrenceRule)
-                                : 'no_recurrence'.tr(),
-                            style: TextStyle(
-                              color: _recurrenceRule != null
-                                  ? AppColors.getText(isDarkMode)
-                                  : AppColors.getTextSecondary(isDarkMode),
-                              fontSize: AppColors.scaledFontSize(16),
-                            ),
-                          ),
-                        ),
-                        if (_recurrenceRule != null)
-                          IconButton(
-                            onPressed: () {
-                              setState(() {
-                                _recurrenceRule = null;
-                              });
-                            },
-                            icon: Icon(
-                              FluentIcons.dismiss_24_regular,
-                              color: AppColors.getTextSecondary(isDarkMode),
-                              size: 18,
-                            ),
-                            padding: EdgeInsets.zero,
-                            constraints: const BoxConstraints(),
-                          ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
-
-            // Location Selection
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'location_based_reminder_optional'.tr(),
-                  style: TextStyle(
-                    color: AppColors.getTextSecondary(isDarkMode),
-                    fontSize: AppColors.scaledFontSize(14),
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                InkWell(
-                  onTap: _selectLocation,
-                  borderRadius: BorderRadius.circular(12),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 14,
-                    ),
-                    decoration: BoxDecoration(
-                      color: AppColors.getInput(isDarkMode),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(
-                          FluentIcons.location_24_regular,
-                          color: AppColors.getTextSecondary(isDarkMode),
-                          size: 20,
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Text(
-                            _locationName ?? 'set_location'.tr(),
-                            style: TextStyle(
-                              color: _locationName != null
-                                  ? AppColors.getText(isDarkMode)
-                                  : AppColors.getTextSecondary(isDarkMode),
-                              fontSize: AppColors.scaledFontSize(16),
-                            ),
-                          ),
-                        ),
-                        if (_locationName != null)
-                          IconButton(
-                            onPressed: () {
-                              setState(() {
-                                _locationLatitude = null;
-                                _locationLongitude = null;
-                                _locationName = null;
-                                _locationRadius = null;
-                              });
-                            },
-                            icon: Icon(
-                              FluentIcons.dismiss_24_regular,
-                              color: AppColors.getTextSecondary(isDarkMode),
-                              size: 18,
-                            ),
-                            padding: EdgeInsets.zero,
-                            constraints: const BoxConstraints(),
-                          ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
-
-            // Attachments Section (Mobile only)
-            if (!kIsWeb) ...[
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'attachments_optional'.tr(),
-                    style: TextStyle(
-                      color: AppColors.getTextSecondary(isDarkMode),
-                      fontSize: AppColors.scaledFontSize(14),
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  // Add attachment button
-                  InkWell(
-                    onTap: _pickAttachment,
-                    borderRadius: BorderRadius.circular(12),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 14,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppColors.getInput(isDarkMode),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(
-                            FluentIcons.attach_24_regular,
-                            color: AppColors.getTextSecondary(isDarkMode),
-                            size: 20,
-                          ),
-                          const SizedBox(width: 12),
-                          Text(
-                            'attach_file'.tr(),
-                            style: TextStyle(
-                              color: AppColors.getTextSecondary(isDarkMode),
-                              fontSize: AppColors.scaledFontSize(16),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  // Selected files list
-                  if (_selectedFiles.isNotEmpty) ...[
-                    const SizedBox(height: 12),
-                    ...List.generate(_selectedFiles.length, (index) {
-                      final file = _selectedFiles[index];
-                      final fileName = file.path.split('/').last;
-                      final isImage = fileName.toLowerCase().endsWith('.jpg') ||
-                          fileName.toLowerCase().endsWith('.jpeg') ||
-                          fileName.toLowerCase().endsWith('.png') ||
-                          fileName.toLowerCase().endsWith('.gif');
-
-                      return Container(
-                        margin: const EdgeInsets.only(bottom: 8),
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: AppColors.getInput(isDarkMode),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Row(
-                          children: [
-                            // Thumbnail or icon
-                            if (isImage)
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(8),
-                                child: Image.file(
-                                  file,
-                                  width: 50,
-                                  height: 50,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (context, error, stackTrace) {
-                                    return Container(
-                                      width: 50,
-                                      height: 50,
-                                      color: AppColors.getCard(isDarkMode),
-                                      child: Icon(
-                                        FluentIcons.image_24_regular,
-                                        color: AppColors.getTextSecondary(isDarkMode),
-                                      ),
-                                    );
-                                  },
-                                ),
-                              )
-                            else
-                              Container(
-                                width: 50,
-                                height: 50,
-                                decoration: BoxDecoration(
-                                  color: AppColors.getCard(isDarkMode),
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Icon(
-                                  FluentIcons.document_24_regular,
-                                  color: AppColors.getTextSecondary(isDarkMode),
-                                ),
-                              ),
-                            const SizedBox(width: 12),
-                            // File name
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Text(
-                                    fileName,
-                                    style: TextStyle(
-                                      color: AppColors.getText(isDarkMode),
-                                      fontSize: AppColors.scaledFontSize(14),
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                  const SizedBox(height: 2),
-                                  Text(
-                                    '${(file.lengthSync() / 1024).toStringAsFixed(1)} KB',
-                                    style: TextStyle(
-                                      color: AppColors.getTextSecondary(isDarkMode),
-                                      fontSize: AppColors.scaledFontSize(12),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            // Preview button (for images, show in gallery)
-                            if (isImage)
-                              Container(
-                                decoration: BoxDecoration(
-                                  color: AppColors.primary.withOpacity(0.1),
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: IconButton(
-                                  onPressed: () => _previewImage(file),
-                                  icon: Icon(
-                                    FluentIcons.eye_24_regular,
-                                    color: AppColors.primary,
-                                    size: 18,
-                                  ),
-                                  padding: const EdgeInsets.all(4),
-                                  constraints: const BoxConstraints(),
-                                  tooltip: 'view_attachment'.tr(),
-                                ),
-                              ),
-                            if (isImage) const SizedBox(width: 4),
-                            // Delete button with confirmation
-                            Container(
-                              decoration: BoxDecoration(
-                                color: Colors.redAccent.withOpacity(0.1),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: IconButton(
-                                onPressed: () => _showDeleteConfirmation(index),
-                                icon: Icon(
-                                  FluentIcons.delete_24_regular,
-                                  color: Colors.redAccent,
-                                  size: 18,
-                                ),
-                                padding: const EdgeInsets.all(4),
-                                constraints: const BoxConstraints(),
-                                tooltip: 'delete_attachment'.tr(),
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                    }),
-                  ],
-                ],
               ),
             ],
-            const SizedBox(height: 32),
+            const SizedBox(height: 20),
 
             // Action Buttons
             Row(
               children: [
                 Expanded(
-                  child: OutlinedButton(
-                    onPressed: () => Navigator.pop(context),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: AppColors.getTextSecondary(isDarkMode),
-                      side: BorderSide(
-                        color: AppColors.getBorder(isDarkMode),
-                        width: 1.5,
-                      ),
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: AppColors.getCard(isDarkMode),
+                      borderRadius: BorderRadius.circular(12),
                     ),
-                    child: Text(
-                      'cancel'.tr(),
-                      style: TextStyle(
-                        fontSize: AppColors.scaledFontSize(16),
-                        fontWeight: FontWeight.w600,
+                    child: TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      style: TextButton.styleFrom(
+                        foregroundColor: AppColors.getText(isDarkMode),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: Text(
+                        'cancel'.tr(),
+                        style: TextStyle(
+                          fontSize: AppColors.scaledFontSize(16),
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
                   ),
@@ -1954,22 +1415,13 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
                 Expanded(
                   child: Container(
                     decoration: BoxDecoration(
-                      gradient: AppColors.primaryGradient,
+                      color: AppColors.primary,
                       borderRadius: BorderRadius.circular(12),
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppColors.primary.withValues(alpha: 0.3),
-                          blurRadius: 12,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
                     ),
-                    child: ElevatedButton(
+                    child: TextButton(
                       onPressed: _save,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.transparent,
+                      style: TextButton.styleFrom(
                         foregroundColor: Colors.white,
-                        shadowColor: Colors.transparent,
                         padding: const EdgeInsets.symmetric(vertical: 14),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -1991,6 +1443,157 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
           ),
         ),
       ),
+    );
+  }
+
+  // Helper method to build list tile style rows
+  Widget _buildListTile({
+    required bool isDarkMode,
+    required IconData icon,
+    required String title,
+    required String value,
+    required VoidCallback? onTap,
+    required bool showDivider,
+  }) {
+    return Column(
+      children: [
+        InkWell(
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            child: Row(
+              children: [
+                Icon(
+                  icon,
+                  color: AppColors.getTextSecondary(isDarkMode),
+                  size: 22,
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  title,
+                  style: TextStyle(
+                    color: AppColors.getText(isDarkMode),
+                    fontSize: AppColors.scaledFontSize(16),
+                  ),
+                ),
+                const Spacer(),
+                Text(
+                  value,
+                  style: TextStyle(
+                    color: AppColors.getTextSecondary(isDarkMode),
+                    fontSize: AppColors.scaledFontSize(14),
+                  ),
+                ),
+                const SizedBox(width: 4),
+                Icon(
+                  FluentIcons.chevron_right_24_regular,
+                  color: AppColors.getTextSecondary(isDarkMode),
+                  size: 18,
+                ),
+              ],
+            ),
+          ),
+        ),
+        if (showDivider)
+          Divider(
+            height: 1,
+            indent: 50,
+            color: AppColors.getBorder(isDarkMode).withOpacity(0.3),
+          ),
+      ],
+    );
+  }
+
+  // Helper method to format short date
+  String _formatShortDate(DateTime date) {
+    return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+  }
+
+  // Helper method to format short date time
+  String _formatShortDateTime(DateTime date) {
+    return '${date.month}/${date.day} ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
+  }
+
+  // Show category picker bottom sheet
+  Future<void> _showCategoryPicker(List<dynamic> categories, bool isDarkMode) async {
+    await showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.getCard(isDarkMode),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: 12),
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: AppColors.getBorder(isDarkMode),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 16),
+              ListTile(
+                leading: Icon(
+                  FluentIcons.dismiss_circle_24_regular,
+                  color: AppColors.getTextSecondary(isDarkMode),
+                ),
+                title: Text(
+                  'no_category'.tr(),
+                  style: TextStyle(color: AppColors.getText(isDarkMode)),
+                ),
+                onTap: () {
+                  setState(() {
+                    _selectedCategoryId = null;
+                  });
+                  Navigator.pop(context);
+                },
+              ),
+              ...categories.map((category) {
+                return ListTile(
+                  leading: Container(
+                    width: 24,
+                    height: 24,
+                    decoration: BoxDecoration(
+                      color: ColorUtils.parseColor(category.color),
+                      shape: BoxShape.circle,
+                    ),
+                    child: category.icon != null
+                        ? Center(
+                            child: Text(
+                              category.icon!,
+                              style: const TextStyle(fontSize: 12),
+                            ),
+                          )
+                        : null,
+                  ),
+                  title: Text(
+                    category.name,
+                    style: TextStyle(color: AppColors.getText(isDarkMode)),
+                  ),
+                  trailing: _selectedCategoryId == category.id
+                      ? Icon(
+                          FluentIcons.checkmark_24_regular,
+                          color: AppColors.primary,
+                        )
+                      : null,
+                  onTap: () {
+                    setState(() {
+                      _selectedCategoryId = category.id;
+                    });
+                    Navigator.pop(context);
+                  },
+                );
+              }),
+              const SizedBox(height: 16),
+            ],
+          ),
+        );
+      },
     );
   }
 }

@@ -219,6 +219,14 @@ class _CalendarWidgetWindowState extends ConsumerState<CalendarWidgetWindow>
             const Spacer(),
             // Logout button (only show when logged in)
             if (showLogout) ...[
+              // Refresh button
+              _buildWindowButton(
+                FluentIcons.arrow_sync_24_regular,
+                () {
+                  ref.invalidate(todosProvider);
+                },
+              ),
+              const SizedBox(width: 4),
               _buildWindowButton(
                 FluentIcons.sign_out_24_regular,
                 () => _showLogoutConfirmDialog(),
@@ -846,15 +854,17 @@ class _CalendarWidgetWindowState extends ConsumerState<CalendarWidgetWindow>
 
   Map<DateTime, List<Todo>> _groupTodosByDate(List<Todo> todos) {
     final grouped = <DateTime, List<Todo>>{};
+    final today = DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day);
+
     for (final todo in todos) {
-      if (todo.dueDate != null) {
-        final date = DateTime(
-          todo.dueDate!.year,
-          todo.dueDate!.month,
-          todo.dueDate!.day,
-        );
-        grouped.putIfAbsent(date, () => []).add(todo);
-      }
+      final date = todo.dueDate != null
+          ? DateTime(
+              todo.dueDate!.year,
+              todo.dueDate!.month,
+              todo.dueDate!.day,
+            )
+          : today; // dueDate가 없으면 오늘 날짜에 표시
+      grouped.putIfAbsent(date, () => []).add(todo);
     }
     return grouped;
   }

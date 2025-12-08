@@ -4,7 +4,7 @@
 # 사용법: ./scripts/build_android.sh [version] [build-number] [build-type]
 # 예: ./scripts/build_android.sh 1.0.10 34 release
 
-set -e  # 오류 발생 시 스크립트 중단
+# set -e 제거: flutter build 경고가 스크립트를 중단시키는 문제 해결
 
 # Flutter 경로 설정
 export PATH="$PATH:/opt/homebrew/share/flutter/bin"
@@ -55,14 +55,28 @@ if [ "$BUILD_TYPE" = "release" ]; then
     flutter build appbundle \
         --release \
         --build-name=${VERSION} \
-        --build-number=${BUILD_NUMBER}
+        --build-number=${BUILD_NUMBER} || true
+
+    # AAB 빌드 결과 확인
+    if [ ! -f "build/app/outputs/bundle/release/app-release.aab" ]; then
+        echo -e "${RED}❌ AAB 빌드 실패${NC}"
+        mv pubspec.yaml.backup pubspec.yaml 2>/dev/null
+        exit 1
+    fi
 
     # APK (직접 배포용)
     echo -e "${BLUE}Building APK...${NC}"
     flutter build apk \
         --release \
         --build-name=${VERSION} \
-        --build-number=${BUILD_NUMBER}
+        --build-number=${BUILD_NUMBER} || true
+
+    # APK 빌드 결과 확인
+    if [ ! -f "build/app/outputs/flutter-apk/app-release.apk" ]; then
+        echo -e "${RED}❌ APK 빌드 실패${NC}"
+        mv pubspec.yaml.backup pubspec.yaml 2>/dev/null
+        exit 1
+    fi
 
     # 빌드 파일 복사 (버전 번호 포함)
     echo -e "${YELLOW}📦 빌드 파일 복사 중...${NC}"
