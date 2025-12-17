@@ -230,7 +230,10 @@ class WidgetService {
       // Also save upcoming events in the same batch
       _addUpcomingEventsFutures(saveFutures, todos);
 
-      // Execute ALL saves in parallel (calendar + events)
+      // Save day-specific todos for calendar day click feature
+      _addDayTodosFutures(saveFutures, todos, now.year, now.month);
+
+      // Execute ALL saves in parallel (calendar + events + day todos)
       await Future.wait(saveFutures);
 
       // Notify native widget
@@ -241,6 +244,61 @@ class WidgetService {
       print('✅ Calendar widget updated');
     } catch (e) {
       print('❌ Error updating calendar widget: $e');
+    }
+  }
+
+  /// Add day-specific todos for calendar day click feature
+  /// Format: "day_todos_12_17" = "title1|time1;;title2|time2;;title3|time3"
+  void _addDayTodosFutures(List<Future<void>> futures, List<Todo> todos, int year, int month) {
+    final lastDayOfMonth = DateTime(year, month + 1, 0).day;
+
+    // Group todos by day
+    final Map<int, List<Todo>> todosByDay = {};
+    for (final todo in todos) {
+      if (todo.dueDate != null &&
+          todo.dueDate!.year == year &&
+          todo.dueDate!.month == month &&
+          !todo.isCompleted) {
+        final day = todo.dueDate!.day;
+        todosByDay.putIfAbsent(day, () => []);
+        todosByDay[day]!.add(todo);
+      }
+    }
+
+    // Save todos for each day (up to 5 per day)
+    for (int day = 1; day <= lastDayOfMonth; day++) {
+      final dayTodos = todosByDay[day] ?? [];
+      if (dayTodos.isNotEmpty) {
+        // Sort by time, then by position
+        dayTodos.sort((a, b) {
+          final timeA = a.notificationTime ?? a.dueDate;
+          final timeB = b.notificationTime ?? b.dueDate;
+          if (timeA != null && timeB != null) {
+            final cmp = timeA.compareTo(timeB);
+            if (cmp != 0) return cmp;
+          }
+          return (a.position ?? 999999).compareTo(b.position ?? 999999);
+        });
+
+        // Format: "title1|time1;;title2|time2"
+        final todosStr = dayTodos.take(5).map((todo) {
+          String timeStr = '';
+          if (todo.notificationTime != null) {
+            final t = todo.notificationTime!;
+            timeStr = '${t.hour.toString().padLeft(2, '0')}:${t.minute.toString().padLeft(2, '0')}';
+          } else if (todo.dueDate != null &&
+              (todo.dueDate!.hour != 0 || todo.dueDate!.minute != 0)) {
+            timeStr = '${todo.dueDate!.hour.toString().padLeft(2, '0')}:${todo.dueDate!.minute.toString().padLeft(2, '0')}';
+          }
+          return '${todo.title}|$timeStr';
+        }).join(';;');
+
+        futures.add(HomeWidget.saveWidgetData<String>('day_todos_${month}_$day', todosStr));
+        print('   📆 Day $day todos: ${dayTodos.length} items saved');
+      } else {
+        // Clear day data if no todos
+        futures.add(HomeWidget.saveWidgetData<String>('day_todos_${month}_$day', ''));
+      }
     }
   }
 

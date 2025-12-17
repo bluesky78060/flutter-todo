@@ -41,6 +41,8 @@ import 'package:todo_app/presentation/providers/theme_provider.dart';
 import 'package:todo_app/presentation/providers/theme_customization_provider.dart';
 import 'package:todo_app/presentation/screens/geofence_settings_screen.dart';
 import 'package:todo_app/presentation/screens/profile_edit_screen.dart';
+import 'package:todo_app/presentation/screens/widget_config_screen.dart';
+import 'dart:io' show Platform;
 import 'package:todo_app/presentation/providers/profile_provider.dart';
 import 'package:todo_app/presentation/providers/view_mode_provider.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
@@ -224,6 +226,23 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           textColor: textColor,
                           subTextColor: subTextColor,
                         ),
+                        // Widget settings (Android only)
+                        if (Platform.isAndroid) ...[
+                          Divider(color: dividerColor, height: 1),
+                          _buildSettingRow(
+                            icon: Icons.widgets,
+                            title: 'widget_settings'.tr(),
+                            onTap: () {
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (context) => const WidgetConfigScreen(),
+                                ),
+                              );
+                            },
+                            textColor: textColor,
+                            subTextColor: subTextColor,
+                          ),
+                        ],
                       ],
                     ),
                   ),

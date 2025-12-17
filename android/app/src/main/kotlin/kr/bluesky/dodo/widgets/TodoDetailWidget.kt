@@ -214,13 +214,7 @@ class TodoDetailWidget : HomeWidgetProvider() {
         }
         views.setTextColor(R.id.widget_detail_title, titleColor)
 
-        // Apply menu button color
-        val menuColor = when (theme) {
-            THEME_LIGHT -> Color.parseColor("#757575")
-            THEME_TRANSPARENT -> Color.parseColor("#CCCCCC")
-            else -> Color.parseColor("#888888")
-        }
-        views.setTextColor(R.id.widget_detail_menu_button, menuColor)
+        // Menu button removed from new design
     }
 
     /**

@@ -5,51 +5,43 @@
     android:layout_height="match_parent"
     android:background="@drawable/widget_background_dark"
     android:orientation="vertical"
-    android:padding="16dp">
+    android:padding="12dp">
 
-    <!-- Header with title, progress, add button, and menu -->
+    <!-- Header with title and add button -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:gravity="center_vertical"
-        android:paddingBottom="12dp">
+        android:paddingBottom="10dp">
 
-        <!-- Title and Progress Container -->
-        <LinearLayout
+        <!-- Title -->
+        <TextView
+            android:id="@+id/widget_title"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:orientation="vertical">
+            android:text="@string/widget_today_tasks"
+            android:textColor="#FFFFFF"
+            android:textSize="16sp"
+            android:textStyle="bold" />
 
-            <!-- Title -->
-            <TextView
-                android:id="@+id/widget_title"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/widget_today_tasks"
-                android:textColor="#FFFFFF"
-                android:textSize="18sp"
-                android:textStyle="bold" />
+        <!-- Progress badge -->
+        <TextView
+            android:id="@+id/widget_progress"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text=""
+            android:textColor="#888888"
+            android:textSize="12sp"
+            android:paddingEnd="12dp"
+            android:visibility="gone" />
 
-            <!-- Progress Text (e.g., "2/5 completed") -->
-            <TextView
-                android:id="@+id/widget_progress"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text=""
-                android:textColor="#888888"
-                android:textSize="12sp"
-                android:paddingTop="2dp"
-                android:visibility="gone" />
-        </LinearLayout>
-
-        <!-- Add Button (blue circle with +) -->
+        <!-- Add Button -->
         <FrameLayout
             android:id="@+id/widget_add_button"
-            android:layout_width="36dp"
-            android:layout_height="36dp"
-            android:layout_marginEnd="8dp"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
             android:background="@drawable/widget_add_button">
 
             <TextView
@@ -58,87 +50,98 @@
                 android:layout_gravity="center"
                 android:text="+"
                 android:textColor="#FFFFFF"
-                android:textSize="24sp"
+                android:textSize="20sp"
                 android:textStyle="bold" />
         </FrameLayout>
-
-        <!-- Menu Button (three dots) -->
-        <TextView
-            android:id="@+id/widget_menu_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="⋮"
-            android:textColor="#888888"
-            android:textSize="20sp"
-            android:paddingStart="8dp"
-            android:paddingEnd="4dp" />
     </LinearLayout>
 
-    <!-- Divider (using TextView since View is not allowed in RemoteViews) -->
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:background="#444444" />
-
-    <!-- Date Group Label 1 (Today, Tomorrow, etc.) -->
+    <!-- Date Group Label 1 -->
     <TextView
         android:id="@+id/widget_todo_1_group"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text=""
-        android:textColor="#4FC3F7"
-        android:textSize="12sp"
+        android:textColor="#7B61FF"
+        android:textSize="11sp"
         android:textStyle="bold"
-        android:paddingTop="10dp"
-        android:paddingBottom="4dp"
+        android:paddingTop="4dp"
+        android:paddingBottom="6dp"
         android:visibility="gone" />
 
-    <!-- Todo Item 1 -->
+    <!-- Todo Card 1 with Color Bar -->
     <LinearLayout
         android:id="@+id/widget_todo_1_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:paddingTop="8dp"
-        android:paddingBottom="6dp">
+        android:background="@drawable/widget_card_background"
+        android:layout_marginBottom="8dp">
 
-        <!-- Checkbox -->
-        <ImageView
-            android:id="@+id/widget_todo_1_checkbox"
-            android:layout_width="22dp"
-            android:layout_height="22dp"
-            android:layout_marginEnd="12dp"
-            android:src="@drawable/widget_checkbox_unchecked" />
+        <!-- Color Bar (left side) -->
+        <TextView
+            android:id="@+id/widget_todo_1_color_bar"
+            android:layout_width="4dp"
+            android:layout_height="match_parent"
+            android:background="@drawable/widget_color_bar_purple" />
 
-        <!-- Text Container -->
+        <!-- Content area -->
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:orientation="vertical">
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:padding="10dp">
 
-            <TextView
-                android:id="@+id/widget_todo_1_text"
-                android:layout_width="match_parent"
+            <!-- Checkbox -->
+            <ImageView
+                android:id="@+id/widget_todo_1_checkbox"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_marginEnd="10dp"
+                android:src="@drawable/widget_checkbox_unchecked" />
+
+            <!-- Text Container -->
+            <LinearLayout
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:text=""
-                android:textColor="#FFFFFF"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                android:maxLines="1"
-                android:ellipsize="end" />
+                android:layout_weight="1"
+                android:orientation="vertical">
 
+                <TextView
+                    android:id="@+id/widget_todo_1_text"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text=""
+                    android:textColor="#FFFFFF"
+                    android:textSize="14sp"
+                    android:maxLines="1"
+                    android:ellipsize="end" />
+
+                <TextView
+                    android:id="@+id/widget_todo_1_time"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text=""
+                    android:textColor="#888888"
+                    android:textSize="11sp"
+                    android:paddingTop="2dp"
+                    android:visibility="gone" />
+            </LinearLayout>
+
+            <!-- Category tag -->
             <TextView
-                android:id="@+id/widget_todo_1_time"
+                android:id="@+id/widget_todo_1_category"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text=""
-                android:textColor="#888888"
-                android:textSize="11sp"
-                android:paddingTop="2dp" />
+                android:textColor="#7B61FF"
+                android:textSize="10sp"
+                android:background="@drawable/widget_category_badge"
+                android:paddingHorizontal="6dp"
+                android:paddingVertical="2dp"
+                android:visibility="gone" />
         </LinearLayout>
-
     </LinearLayout>
 
     <!-- Date Group Label 2 -->
@@ -147,57 +150,170 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text=""
-        android:textColor="#4FC3F7"
-        android:textSize="12sp"
+        android:textColor="#7B61FF"
+        android:textSize="11sp"
         android:textStyle="bold"
-        android:paddingTop="10dp"
-        android:paddingBottom="4dp"
+        android:paddingTop="4dp"
+        android:paddingBottom="6dp"
         android:visibility="gone" />
 
-    <!-- Todo Item 2 -->
+    <!-- Todo Card 2 with Color Bar -->
     <LinearLayout
         android:id="@+id/widget_todo_2_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:paddingTop="6dp"
-        android:paddingBottom="6dp">
+        android:background="@drawable/widget_card_background"
+        android:layout_marginBottom="8dp">
 
-        <ImageView
-            android:id="@+id/widget_todo_2_checkbox"
-            android:layout_width="22dp"
-            android:layout_height="22dp"
-            android:layout_marginEnd="12dp"
-            android:src="@drawable/widget_checkbox_unchecked" />
+        <!-- Color Bar -->
+        <TextView
+            android:id="@+id/widget_todo_2_color_bar"
+            android:layout_width="4dp"
+            android:layout_height="match_parent"
+            android:background="@drawable/widget_color_bar_blue" />
 
+        <!-- Content area -->
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:orientation="vertical">
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:padding="10dp">
 
-            <TextView
-                android:id="@+id/widget_todo_2_text"
-                android:layout_width="match_parent"
+            <ImageView
+                android:id="@+id/widget_todo_2_checkbox"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_marginEnd="10dp"
+                android:src="@drawable/widget_checkbox_unchecked" />
+
+            <LinearLayout
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:text=""
-                android:textColor="#FFFFFF"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                android:maxLines="1"
-                android:ellipsize="end" />
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/widget_todo_2_text"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text=""
+                    android:textColor="#FFFFFF"
+                    android:textSize="14sp"
+                    android:maxLines="1"
+                    android:ellipsize="end" />
+
+                <TextView
+                    android:id="@+id/widget_todo_2_time"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text=""
+                    android:textColor="#888888"
+                    android:textSize="11sp"
+                    android:paddingTop="2dp"
+                    android:visibility="gone" />
+            </LinearLayout>
 
             <TextView
-                android:id="@+id/widget_todo_2_time"
+                android:id="@+id/widget_todo_2_category"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text=""
-                android:textColor="#888888"
-                android:textSize="11sp"
-                android:paddingTop="2dp" />
+                android:textColor="#42A5F5"
+                android:textSize="10sp"
+                android:background="@drawable/widget_category_badge"
+                android:paddingHorizontal="6dp"
+                android:paddingVertical="2dp"
+                android:visibility="gone" />
         </LinearLayout>
-
     </LinearLayout>
+
+    <!-- Todo Card 3 with Color Bar -->
+    <LinearLayout
+        android:id="@+id/widget_todo_3_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:background="@drawable/widget_card_background"
+        android:layout_marginBottom="8dp"
+        android:visibility="gone">
+
+        <!-- Color Bar -->
+        <TextView
+            android:id="@+id/widget_todo_3_color_bar"
+            android:layout_width="4dp"
+            android:layout_height="match_parent"
+            android:background="@drawable/widget_color_bar_green" />
+
+        <!-- Content area -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:padding="10dp">
+
+            <ImageView
+                android:id="@+id/widget_todo_3_checkbox"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_marginEnd="10dp"
+                android:src="@drawable/widget_checkbox_unchecked" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/widget_todo_3_text"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text=""
+                    android:textColor="#FFFFFF"
+                    android:textSize="14sp"
+                    android:maxLines="1"
+                    android:ellipsize="end" />
+
+                <TextView
+                    android:id="@+id/widget_todo_3_time"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text=""
+                    android:textColor="#888888"
+                    android:textSize="11sp"
+                    android:paddingTop="2dp"
+                    android:visibility="gone" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/widget_todo_3_category"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text=""
+                android:textColor="#66BB6A"
+                android:textSize="10sp"
+                android:background="@drawable/widget_category_badge"
+                android:paddingHorizontal="6dp"
+                android:paddingVertical="2dp"
+                android:visibility="gone" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- Empty state -->
+    <TextView
+        android:id="@+id/widget_empty_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/widget_no_todos"
+        android:textColor="#666666"
+        android:textSize="13sp"
+        android:gravity="center"
+        android:paddingTop="16dp"
+        android:visibility="gone" />
 
 </LinearLayout>

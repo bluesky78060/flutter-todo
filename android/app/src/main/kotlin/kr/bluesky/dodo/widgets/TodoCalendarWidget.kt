@@ -30,7 +30,10 @@ class TodoCalendarWidget : HomeWidgetProvider() {
 
         const val ACTION_PREV_MONTH = "kr.bluesky.dodo.widgets.PREV_MONTH"
         const val ACTION_NEXT_MONTH = "kr.bluesky.dodo.widgets.NEXT_MONTH"
+        const val ACTION_SELECT_DAY = "kr.bluesky.dodo.widgets.SELECT_DAY"
         const val PREF_MONTH_OFFSET = "calendar_month_offset"
+        const val PREF_SELECTED_DAY = "calendar_selected_day"
+        const val EXTRA_SELECTED_DAY = "selected_day"
     }
 
     override fun onReceive(context: Context, intent: Intent) {
@@ -42,7 +45,11 @@ class TodoCalendarWidget : HomeWidgetProvider() {
                 val currentOffset = prefs.getInt(PREF_MONTH_OFFSET, 0)
                 val newOffset = if (intent.action == ACTION_PREV_MONTH) currentOffset - 1 else currentOffset + 1
 
-                prefs.edit().putInt(PREF_MONTH_OFFSET, newOffset).apply()
+                // Clear selected day when changing month
+                prefs.edit()
+                    .putInt(PREF_MONTH_OFFSET, newOffset)
+                    .putInt(PREF_SELECTED_DAY, 0)
+                    .apply()
 
                 // Request widget update
                 val appWidgetManager = AppWidgetManager.getInstance(context)
@@ -50,6 +57,28 @@ class TodoCalendarWidget : HomeWidgetProvider() {
                 val appWidgetIds = appWidgetManager.getAppWidgetIds(componentName)
 
                 // Trigger onUpdate
+                val updateIntent = Intent(context, TodoCalendarWidget::class.java).apply {
+                    action = AppWidgetManager.ACTION_APPWIDGET_UPDATE
+                    putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, appWidgetIds)
+                }
+                context.sendBroadcast(updateIntent)
+            }
+            ACTION_SELECT_DAY -> {
+                val selectedDay = intent.getIntExtra(EXTRA_SELECTED_DAY, 0)
+                android.util.Log.d("CalendarWidget", "Day selected: $selectedDay")
+
+                val prefs = context.getSharedPreferences("HomeWidgetPreferences", Context.MODE_PRIVATE)
+                val currentSelected = prefs.getInt(PREF_SELECTED_DAY, 0)
+
+                // Toggle selection: if same day clicked, deselect
+                val newSelected = if (currentSelected == selectedDay) 0 else selectedDay
+                prefs.edit().putInt(PREF_SELECTED_DAY, newSelected).apply()
+
+                // Request widget update
+                val appWidgetManager = AppWidgetManager.getInstance(context)
+                val componentName = android.content.ComponentName(context, TodoCalendarWidget::class.java)
+                val appWidgetIds = appWidgetManager.getAppWidgetIds(componentName)
+
                 val updateIntent = Intent(context, TodoCalendarWidget::class.java).apply {
                     action = AppWidgetManager.ACTION_APPWIDGET_UPDATE
                     putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, appWidgetIds)
@@ -65,10 +94,11 @@ class TodoCalendarWidget : HomeWidgetProvider() {
         appWidgetIds: IntArray,
         widgetData: SharedPreferences
     ) {
-        // Get month offset from preferences
+        // Get month offset and selected day from preferences
         val prefs = context.getSharedPreferences("HomeWidgetPreferences", Context.MODE_PRIVATE)
         val monthOffset = prefs.getInt(PREF_MONTH_OFFSET, 0)
-        android.util.Log.d("CalendarWidget", "onUpdate: monthOffset = $monthOffset")
+        val selectedDay = prefs.getInt(PREF_SELECTED_DAY, 0)
+        android.util.Log.d("CalendarWidget", "onUpdate: monthOffset = $monthOffset, selectedDay = $selectedDay")
 
         appWidgetIds.forEach { widgetId ->
             val views = RemoteViews(context.packageName, R.layout.widget_calendar).apply {
@@ -140,11 +170,12 @@ class TodoCalendarWidget : HomeWidgetProvider() {
                     }
                 }
 
-                // Fill in the days
+                // Fill in the days and set click listeners
                 for (day in 1..daysInMonth) {
                     val gridPosition = firstWeekday + day
                     val resId = context.resources.getIdentifier("calendar_day_$gridPosition", "id", context.packageName)
                     if (resId != 0) {
+                        var hasTask = false
                         // For current month (offset == 0), use Flutter data which includes task indicators
                         if (monthOffset == 0) {
                             val dayKey = "calendar_day_$gridPosition"
@@ -152,29 +183,109 @@ class TodoCalendarWidget : HomeWidgetProvider() {
                             // Debug log for ALL days that have task indicator
                             if (dayText.contains("●")) {
                                 android.util.Log.d("CalendarWidget", "HAS TASK: day=$day, key=$dayKey, rawValue='$dayText', resId=$resId")
+                                hasTask = true
                             }
                             val isHoliday = dayText.contains("★")
                             dayText = dayText.replace("★", "")
 
-                            // Log setTextViewText call
-                            android.util.Log.d("CalendarWidget", "setTextViewText: resId=$resId, text='$dayText'")
-                            setTextViewText(resId, dayText)
+                            // Get todo title for this day (NEW: show todo text below day number)
+                            val dayTodosKey = "day_todos_${displayMonth + 1}_$day"
+                            val dayTodosData = widgetData.getString(dayTodosKey, "") ?: ""
+                            var todoText = ""
+                            var todoCount = 0
+                            if (dayTodosData.isNotEmpty()) {
+                                val todoItems = dayTodosData.split(";;").filter { it.isNotEmpty() }
+                                todoCount = todoItems.size
+                                if (todoItems.isNotEmpty()) {
+                                    val firstTodo = todoItems[0].split("|")[0]
+                                    // Truncate to 4 chars for compact display
+                                    todoText = if (firstTodo.length > 4) firstTodo.take(4) + ".." else firstTodo
+                                }
+                            }
 
-                            if (isHoliday && dayText.isNotEmpty()) {
+                            // Get holiday name if this day is a holiday
+                            val holidayName = if (isHoliday) getHolidayName(displayYear, displayMonth + 1, day) else null
+
+                            // Build day cell text: day number + holiday/todo text on second line
+                            // Use actual day number if dayText is empty (fallback)
+                            val dayNumber = dayText.replace("●", "").ifEmpty { day.toString() }
+                            val cellText = when {
+                                // Priority: holiday name > todo text
+                                holidayName != null -> {
+                                    if (todoCount > 0) {
+                                        "$dayNumber\n$holidayName\n+$todoCount"
+                                    } else {
+                                        "$dayNumber\n$holidayName"
+                                    }
+                                }
+                                todoText.isNotEmpty() -> {
+                                    if (todoCount > 1) {
+                                        "$dayNumber\n$todoText\n+${todoCount - 1}"
+                                    } else {
+                                        "$dayNumber\n$todoText"
+                                    }
+                                }
+                                hasTask -> "$dayNumber●"
+                                else -> dayNumber
+                            }
+
+                            // Highlight selected day
+                            val finalText = if (selectedDay == day) {
+                                "[$cellText]"
+                            } else {
+                                cellText
+                            }
+
+                            android.util.Log.d("CalendarWidget", "setTextViewText: resId=$resId, text='$finalText'")
+                            setTextViewText(resId, finalText)
+
+                            if (isHoliday && finalText.isNotEmpty()) {
                                 setTextColor(resId, holidayColor)
                             }
                         } else {
                             // For other months, just show the day number
                             // Check if it's a known holiday from pre-calculated data
                             val isHoliday = holidays.contains(day) || isKnownHoliday(displayYear, displayMonth + 1, day)
-                            val hasTask = tasksFromFlutter.contains(day)
-                            val dayText = if (hasTask) "$day●" else "$day"
-                            setTextViewText(resId, dayText)
+                            hasTask = tasksFromFlutter.contains(day)
+
+                            // Get holiday name for display
+                            val holidayName = getHolidayName(displayYear, displayMonth + 1, day)
+
+                            // Build cell text with holiday name
+                            val cellText = when {
+                                holidayName != null -> {
+                                    if (hasTask) "$day\n$holidayName\n●" else "$day\n$holidayName"
+                                }
+                                hasTask -> "$day●"
+                                else -> "$day"
+                            }
+
+                            // Highlight selected day
+                            val finalText = if (selectedDay == day) {
+                                "[$cellText]"
+                            } else {
+                                cellText
+                            }
+
+                            setTextViewText(resId, finalText)
 
                             if (isHoliday) {
                                 setTextColor(resId, holidayColor)
                             }
                         }
+
+                        // Set click listener for each day cell
+                        val dayClickIntent = Intent(context, TodoCalendarWidget::class.java).apply {
+                            action = ACTION_SELECT_DAY
+                            putExtra(EXTRA_SELECTED_DAY, day)
+                        }
+                        val dayPendingIntent = PendingIntent.getBroadcast(
+                            context,
+                            200 + day, // Unique request code for each day
+                            dayClickIntent,
+                            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                        )
+                        setOnClickPendingIntent(resId, dayPendingIntent)
                     }
                 }
 
@@ -213,8 +324,27 @@ class TodoCalendarWidget : HomeWidgetProvider() {
                 )
                 setOnClickPendingIntent(R.id.calendar_title, appPendingIntent)
 
-                // Update events section
-                updateEventsSection(context, this, widgetData, displayYear, displayMonth + 1, theme, locale.language == "ko")
+                // Set click action for Add Todo button - opens app with add_todo action
+                val addTodoIntent = Intent(context, MainActivity::class.java).apply {
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+                    action = "kr.bluesky.dodo.ADD_TODO"
+                    // Pass selected day if available
+                    if (selectedDay > 0) {
+                        putExtra("selected_day", selectedDay)
+                        putExtra("selected_month", displayMonth + 1)
+                        putExtra("selected_year", displayYear)
+                    }
+                }
+                val addTodoPendingIntent = PendingIntent.getActivity(
+                    context,
+                    102,
+                    addTodoIntent,
+                    PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                )
+                setOnClickPendingIntent(R.id.btn_add_todo, addTodoPendingIntent)
+
+                // Update events section (show selected day's todos or upcoming events)
+                updateEventsSection(context, this, widgetData, displayYear, displayMonth + 1, theme, locale.language == "ko", selectedDay)
             }
 
             appWidgetManager.updateAppWidget(widgetId, views)
@@ -222,7 +352,7 @@ class TodoCalendarWidget : HomeWidgetProvider() {
     }
 
     /**
-     * Update the events section with upcoming todos (across all months)
+     * Update the events section with selected day's todos or upcoming events
      */
     private fun updateEventsSection(
         context: Context,
@@ -231,9 +361,10 @@ class TodoCalendarWidget : HomeWidgetProvider() {
         year: Int,
         month: Int,
         theme: String,
-        isKorean: Boolean
+        isKorean: Boolean,
+        selectedDay: Int
     ) {
-        android.util.Log.d("CalendarWidget", "updateEventsSection: loading upcoming events")
+        android.util.Log.d("CalendarWidget", "updateEventsSection: selectedDay=$selectedDay")
 
         // Event item IDs: container, date, title, time
         data class EventViewIds(val container: Int, val date: Int, val title: Int, val time: Int)
@@ -243,50 +374,91 @@ class TodoCalendarWidget : HomeWidgetProvider() {
             EventViewIds(R.id.event_item_3, R.id.event_3_date, R.id.event_3_title, R.id.event_3_time)
         )
 
-        // Get upcoming events from SharedPreferences
-        // Format: "upcoming_event_1" = "10|15|14:00|회의", "upcoming_event_2" = "11|3||프로젝트 마감"
         data class EventItem(val month: Int, val day: Int, val time: String, val title: String)
         val events = mutableListOf<EventItem>()
 
-        // Debug: Log all keys in SharedPreferences
-        val allKeys = widgetData.all.keys.filter { it.contains("upcoming") }
-        android.util.Log.d("CalendarWidget", "Upcoming event keys in prefs: $allKeys")
-
-        for (i in 1..5) {
-            val eventKey = "upcoming_event_$i"
-            val eventData = widgetData.getString(eventKey, null)
-            android.util.Log.d("CalendarWidget", "Checking $eventKey = $eventData")
-            // Check for both null and empty string (Flutter saves "" to clear events)
-            if (!eventData.isNullOrEmpty() && eventData.contains("|")) {
-                val parts = eventData.split("|", limit = 4)
-                val eventMonth = parts[0].toIntOrNull()
-                val eventDay = parts.getOrNull(1)?.toIntOrNull()
-                val time = parts.getOrNull(2) ?: ""
-                val title = parts.getOrNull(3) ?: ""
-                if (eventMonth != null && eventDay != null && title.isNotEmpty()) {
-                    events.add(EventItem(eventMonth, eventDay, time, title))
-                    android.util.Log.d("CalendarWidget", "Added upcoming event: month=$eventMonth, day=$eventDay, time=$time, title=$title")
-                }
-            }
-        }
-
-        android.util.Log.d("CalendarWidget", "Total upcoming events found: ${events.size}")
-
         // Apply theme colors
         val (headerColor, dateColor, titleColor, emptyColor) = getEventColors(theme)
+        val selectedDateColor = Color.parseColor("#7B61FF") // Purple accent for selected date
 
         views.setTextColor(R.id.events_header, headerColor)
         views.setTextColor(R.id.events_count, dateColor)
         views.setTextColor(R.id.events_empty, emptyColor)
+        views.setTextColor(R.id.selected_date_label, selectedDateColor)
 
-        // Update header text
-        val headerText = if (isKorean) "다가오는 이벤트" else "Upcoming Events"
-        views.setTextViewText(R.id.events_header, headerText)
+        // Check if a day is selected - show that day's todos
+        if (selectedDay > 0) {
+            android.util.Log.d("CalendarWidget", "Loading todos for day $selectedDay")
+
+            // Update header to show selected date
+            val headerText = if (isKorean) "${selectedDay}일 할 일" else "Tasks for Day $selectedDay"
+            views.setTextViewText(R.id.events_header, headerText)
+
+            // Show selected date label
+            val selectedDateText = if (isKorean) "${month}월 ${selectedDay}일" else "$month/$selectedDay"
+            views.setTextViewText(R.id.selected_date_label, selectedDateText)
+            views.setViewVisibility(R.id.selected_date_label, android.view.View.VISIBLE)
+
+            // Get todos for the selected day from SharedPreferences
+            // Format: "day_todos_17" = "title1|time1;;title2|time2;;title3|time3"
+            val dayTodosKey = "day_todos_${month}_$selectedDay"
+            val dayTodosData = widgetData.getString(dayTodosKey, "") ?: ""
+            android.util.Log.d("CalendarWidget", "Day todos key: $dayTodosKey, data: $dayTodosData")
+
+            if (dayTodosData.isNotEmpty()) {
+                val todoItems = dayTodosData.split(";;")
+                for (item in todoItems) {
+                    if (item.isNotEmpty()) {
+                        val parts = item.split("|", limit = 2)
+                        val title = parts.getOrNull(0) ?: ""
+                        val time = parts.getOrNull(1) ?: ""
+                        if (title.isNotEmpty()) {
+                            events.add(EventItem(month, selectedDay, time, title))
+                        }
+                    }
+                }
+            }
+
+            android.util.Log.d("CalendarWidget", "Found ${events.size} todos for day $selectedDay")
+        } else {
+            // No day selected - show upcoming events
+            views.setViewVisibility(R.id.selected_date_label, android.view.View.GONE)
+
+            // Update header text
+            val headerText = if (isKorean) "다가오는 이벤트" else "Upcoming Events"
+            views.setTextViewText(R.id.events_header, headerText)
+
+            // Get upcoming events from SharedPreferences
+            // Format: "upcoming_event_1" = "10|15|14:00|회의"
+            val allKeys = widgetData.all.keys.filter { it.contains("upcoming") }
+            android.util.Log.d("CalendarWidget", "Upcoming event keys in prefs: $allKeys")
+
+            for (i in 1..5) {
+                val eventKey = "upcoming_event_$i"
+                val eventData = widgetData.getString(eventKey, null)
+                if (!eventData.isNullOrEmpty() && eventData.contains("|")) {
+                    val parts = eventData.split("|", limit = 4)
+                    val eventMonth = parts[0].toIntOrNull()
+                    val eventDay = parts.getOrNull(1)?.toIntOrNull()
+                    val time = parts.getOrNull(2) ?: ""
+                    val title = parts.getOrNull(3) ?: ""
+                    if (eventMonth != null && eventDay != null && title.isNotEmpty()) {
+                        events.add(EventItem(eventMonth, eventDay, time, title))
+                    }
+                }
+            }
+        }
+
+        android.util.Log.d("CalendarWidget", "Total events to display: ${events.size}")
 
         if (events.isEmpty()) {
             // Show empty message
             views.setViewVisibility(R.id.events_empty, android.view.View.VISIBLE)
-            val emptyText = if (isKorean) "일정이 없습니다" else "No events"
+            val emptyText = if (selectedDay > 0) {
+                if (isKorean) "할 일이 없습니다" else "No tasks"
+            } else {
+                if (isKorean) "일정이 없습니다" else "No events"
+            }
             views.setTextViewText(R.id.events_empty, emptyText)
             views.setTextViewText(R.id.events_count, "")
 
@@ -309,18 +481,42 @@ class TodoCalendarWidget : HomeWidgetProvider() {
                     val event = displayEvents[index]
                     views.setViewVisibility(eventIds.container, android.view.View.VISIBLE)
 
-                    // Show date as "10월\n15" style (month on top, day below)
-                    val monthStr = if (isKorean) "${event.month}월" else getMonthAbbr(event.month)
-                    val dateText = "$monthStr\n${event.day}"
-                    views.setTextViewText(eventIds.date, dateText)
+                    // For selected day view, show simpler date or hide date box
+                    if (selectedDay > 0) {
+                        // Show just time or "·" as bullet
+                        val dateText = if (event.time.isNotEmpty()) {
+                            formatTimeString(event.time, isKorean)
+                        } else {
+                            "•"
+                        }
+                        views.setTextViewText(eventIds.date, dateText)
+                    } else {
+                        // Show date as "10월 15\n14:00" style (date on top, time below)
+                        val monthStr = if (isKorean) "${event.month}월" else getMonthAbbr(event.month)
+                        val timeStr = if (event.time.isNotEmpty()) {
+                            "\n${formatTimeString(event.time, isKorean)}"
+                        } else {
+                            ""
+                        }
+                        val dateText = "$monthStr ${event.day}$timeStr"
+                        views.setTextViewText(eventIds.date, dateText)
+                    }
 
-                    // Show title (13sp, bold) and time (11sp) in separate TextViews
+                    // Show title
                     views.setTextViewText(eventIds.title, event.title)
 
-                    val timeText = if (event.time.isNotEmpty()) {
-                        formatTimeString(event.time, isKorean)
+                    // Show time (hidden for upcoming events since it's now in date box)
+                    val timeText = if (selectedDay > 0) {
+                        // For selected day, time is already shown in date box
+                        ""
                     } else {
-                        if (isKorean) "하루 종일" else "All day"
+                        // For upcoming events, time is now shown in date box
+                        // Show "All day" only if no time specified
+                        if (event.time.isEmpty()) {
+                            if (isKorean) "하루 종일" else "All day"
+                        } else {
+                            ""
+                        }
                     }
                     views.setTextViewText(eventIds.time, timeText)
 
@@ -331,7 +527,6 @@ class TodoCalendarWidget : HomeWidgetProvider() {
                     views.setViewVisibility(eventIds.container, android.view.View.GONE)
                 }
             }
-
         }
     }
 
@@ -409,37 +604,57 @@ class TodoCalendarWidget : HomeWidgetProvider() {
      * This is a fallback for months where Flutter hasn't provided holiday data
      */
     private fun isKnownHoliday(year: Int, month: Int, day: Int): Boolean {
+        return getHolidayName(year, month, day) != null
+    }
+
+    /**
+     * Get Korean holiday name for a given date.
+     * Returns short name (2-3 chars) for display in calendar cells.
+     */
+    private fun getHolidayName(year: Int, month: Int, day: Int): String? {
         // Fixed holidays (양력)
-        val fixedHolidays = setOf(
-            Pair(1, 1),   // 신정
-            Pair(3, 1),   // 삼일절
-            Pair(5, 5),   // 어린이날
-            Pair(6, 6),   // 현충일
-            Pair(8, 15),  // 광복절
-            Pair(10, 3),  // 개천절
-            Pair(10, 9),  // 한글날
-            Pair(12, 25)  // 성탄절
+        val fixedHolidays = mapOf(
+            Pair(1, 1) to "신정",
+            Pair(3, 1) to "삼일절",
+            Pair(5, 5) to "어린이",
+            Pair(6, 6) to "현충일",
+            Pair(8, 15) to "광복절",
+            Pair(10, 3) to "개천절",
+            Pair(10, 9) to "한글날",
+            Pair(12, 25) to "성탄절"
         )
 
-        if (fixedHolidays.contains(Pair(month, day))) {
-            return true
-        }
+        fixedHolidays[Pair(month, day)]?.let { return it }
 
         // Lunar holidays for specific years (pre-calculated)
-        val lunarHolidays = mapOf(
-            2025 to setOf(
-                Pair(1, 28), Pair(1, 29), Pair(1, 30), // 설날
-                Pair(5, 5), Pair(5, 6), // 부처님오신날 + 대체공휴일
-                Pair(10, 5), Pair(10, 6), Pair(10, 7), Pair(10, 8) // 추석
-            ),
-            2026 to setOf(
-                Pair(2, 16), Pair(2, 17), Pair(2, 18), // 설날
-                Pair(5, 24), Pair(5, 25), // 부처님오신날
-                Pair(9, 24), Pair(9, 25), Pair(9, 26) // 추석
-            )
+        val lunarHolidays2025 = mapOf(
+            Pair(1, 28) to "설날",
+            Pair(1, 29) to "설날",
+            Pair(1, 30) to "설날",
+            Pair(5, 5) to "석가탄",
+            Pair(5, 6) to "대체",
+            Pair(10, 5) to "추석",
+            Pair(10, 6) to "추석",
+            Pair(10, 7) to "추석",
+            Pair(10, 8) to "대체"
         )
 
-        return lunarHolidays[year]?.contains(Pair(month, day)) == true
+        val lunarHolidays2026 = mapOf(
+            Pair(2, 16) to "설날",
+            Pair(2, 17) to "설날",
+            Pair(2, 18) to "설날",
+            Pair(5, 24) to "석가탄",
+            Pair(5, 25) to "대체",
+            Pair(9, 24) to "추석",
+            Pair(9, 25) to "추석",
+            Pair(9, 26) to "추석"
+        )
+
+        return when (year) {
+            2025 -> lunarHolidays2025[Pair(month, day)]
+            2026 -> lunarHolidays2026[Pair(month, day)]
+            else -> null
+        }
     }
 
     /**

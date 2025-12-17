@@ -38,5 +38,6 @@
     <!-- Progress strings -->
     <string name="widget_progress_format">%d/%d completed</string>
     <string name="widget_no_tasks">No tasks</string>
+    <string name="widget_no_todos">No tasks to show</string>
     <string name="widget_delete_confirm">Deleted</string>
 </resources>

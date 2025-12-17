@@ -254,13 +254,7 @@ class TodoListWidget : HomeWidgetProvider() {
         }
         views.setTextColor(R.id.widget_title, titleColor)
 
-        // Apply menu button color
-        val menuColor = when (theme) {
-            THEME_LIGHT -> Color.parseColor("#757575")
-            THEME_TRANSPARENT -> Color.parseColor("#CCCCCC") // Light gray for dark wallpaper
-            else -> Color.parseColor("#888888")
-        }
-        views.setTextColor(R.id.widget_menu_button, menuColor)
+        // Menu button removed from new design
     }
 
     /**
