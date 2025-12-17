@@ -18,7 +18,7 @@ const RESOURCES = {"sql-wasm.wasm": "8f5029a1d3545424d4f25647673e5e32",
 "assets/assets/icon/app_icon.jpg": "3df857e7ed140a69a2caabaa1529de50",
 "assets/assets/translations/en.json": "4f398f30557a1abbff6199f7aa3fc2d4",
 "assets/assets/translations/ko.json": "e1e077e96973af63cb51202e0f83fd7c",
-"assets/fonts/MaterialIcons-Regular.otf": "c20ae308de36c4a7458bbf79dc383305",
+"assets/fonts/MaterialIcons-Regular.otf": "f87cbd2d16c8daf31a16f0dab739ef30",
 "assets/NOTICES": "e4495076e4b30475a91ed3a7c3ccdeb6",
 "assets/packages/flutter_naver_map/assets/font/Inter-fnm-scalebar-ss540.otf": "0dcd56f6f89392eb4a438991e0e4692d",
 "assets/packages/flutter_naver_map/assets/icon/location_overlay_sub_icon_face.png": "7068b8f349f637d4f1e0403da60cd11b",
@@ -57,10 +57,10 @@ const RESOURCES = {"sql-wasm.wasm": "8f5029a1d3545424d4f25647673e5e32",
 "naver_map_diagnostic.html": "8fb381c9813f37c85303092f5610dcbb",
 "sql-wasm.js": "6bd05b179c947cce4eea15193868ef14",
 "404.html": "6f797132280938311cb25cfd924321da",
-"flutter_bootstrap.js": "9a138ec5b8dd719e0cf354045c0654a6",
+"flutter_bootstrap.js": "25949d8aa52c944e79360f2082d3fd86",
 "version.json": "58d69bc2e4a3fc5a024621525687720c",
 "naver_map_bridge.js": "7172b9ca94791a91e881f6e1e2427e40",
-"main.dart.js": "8554b86553f85e1006fcacb30f3aeb28"};
+"main.dart.js": "c59517af3daf658426d9e36297d23f64"};
 // The application shell files that are downloaded before a service worker can
 // start.
 const CORE = ["main.dart.js",
