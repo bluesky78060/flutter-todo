@@ -68,7 +68,6 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> with WidgetsBin
   final TextEditingController _searchController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   bool _isRequestingPermissions = false; // 중복 요청 방지 플래그
-  bool _isSearching = false;
   Timer? _debounceTimer;
   int? _selectedTodoId; // Track selected todo for split view on tablet
 
@@ -459,7 +458,7 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> with WidgetsBin
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(
+                      const Icon(
                         FluentIcons.error_circle_24_regular,
                         size: 48,
                         color: Colors.red,
@@ -467,7 +466,7 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> with WidgetsBin
                       const SizedBox(height: 16),
                       Text(
                         '${'error'}: $error',
-                        style: TextStyle(
+                        style: const TextStyle(
                           color: AppColors.textGray,
                         ),
                       ),
@@ -790,7 +789,7 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> with WidgetsBin
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(
+                            const Icon(
                               FluentIcons.error_circle_24_regular,
                               size: 40,
                               color: Colors.red,
@@ -798,7 +797,7 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> with WidgetsBin
                             const SizedBox(height: 12),
                             Text(
                               '${'error'}: $error',
-                              style: TextStyle(
+                              style: const TextStyle(
                                 color: AppColors.textGray,
                               ),
                             ),

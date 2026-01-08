@@ -402,7 +402,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           ),
                         ),
                       )
-                    : Center(
+                    : const Center(
                         child: Icon(
                           Icons.person,
                           color: Colors.white,
@@ -437,7 +437,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 onPressed: () => _navigateToProfileEdit(),
                 child: Text(
                   'edit'.tr(),
-                  style: TextStyle(
+                  style: const TextStyle(
                     color: Colors.blue,
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
@@ -463,11 +463,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           padding: const EdgeInsets.symmetric(vertical: 4),
           child: Row(
             children: [
-              Icon(Icons.logout, color: Colors.red, size: 22),
+              const Icon(Icons.logout, color: Colors.red, size: 22),
               const SizedBox(width: 16),
               Text(
                 'logout'.tr(),
-                style: TextStyle(
+                style: const TextStyle(
                   color: Colors.red,
                   fontSize: 15,
                   fontWeight: FontWeight.w500,
@@ -624,7 +624,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ),
             Text(
               '${(fontScale * 100).round()}%',
-              style: TextStyle(
+              style: const TextStyle(
                 color: Colors.blue,
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
