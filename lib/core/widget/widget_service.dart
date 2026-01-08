@@ -1,10 +1,11 @@
 import 'dart:async' show unawaited;
 
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart' show kIsWeb, kDebugMode;
 import 'package:flutter/services.dart';
 import 'package:home_widget/home_widget.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:todo_app/core/services/korean_holiday_service.dart';
+import 'package:todo_app/core/utils/app_logger.dart';
 import 'package:todo_app/core/widget/widget_models.dart';
 import 'package:todo_app/domain/entities/todo.dart';
 import 'package:todo_app/domain/repositories/todo_repository.dart';
@@ -87,7 +88,7 @@ class WidgetService {
     // Save to App Group for iOS native widget
     await HomeWidget.setAppGroupId('group.kr.bluesky.dodo');
     await HomeWidget.saveWidgetData<double>(_cardOpacityDarkKey, clampedOpacity);
-    print('📱 [WidgetService] Saved cardOpacityDark: $clampedOpacity');
+    logger.d('📱 [WidgetService] Saved cardOpacityDark: $clampedOpacity');
   }
 
   /// Set card opacity for light mode
@@ -98,7 +99,7 @@ class WidgetService {
     // Save to App Group for iOS native widget
     await HomeWidget.setAppGroupId('group.kr.bluesky.dodo');
     await HomeWidget.saveWidgetData<double>(_cardOpacityLightKey, clampedOpacity);
-    print('📱 [WidgetService] Saved cardOpacityLight: $clampedOpacity');
+    logger.d('📱 [WidgetService] Saved cardOpacityLight: $clampedOpacity');
   }
 
   /// Set both card opacities at once
@@ -132,12 +133,12 @@ class WidgetService {
         iOSName: 'TodoCalendarWidget',
       );
 
-      print('📱 [WidgetService] All widgets updated for opacity change');
+      logger.d('📱 [WidgetService] All widgets updated for opacity change');
 
       // Also trigger native update
       await _forceNativeWidgetUpdate();
     } catch (e) {
-      print('❌ [WidgetService] Error updating widgets for opacity: $e');
+      logger.e('❌ [WidgetService] Error updating widgets for opacity: $e');
     }
   }
 
@@ -190,14 +191,14 @@ class WidgetService {
 
   /// Update widget display based on current configuration (optimized)
   Future<void> updateWidget() async {
-    print('📱 WidgetService.updateWidget() called (optimized)');
+    logger.d('📱 WidgetService.updateWidget() called (optimized)');
     final stopwatch = Stopwatch()..start();
     try {
       final config = getWidgetConfig();
-      print('   Config: viewType=${config.viewType}, isEnabled=${config.isEnabled}');
+      logger.d('   Config: viewType=${config.viewType}, isEnabled=${config.isEnabled}');
 
       if (!config.isEnabled) {
-        print('   Widget disabled, clearing data');
+        logger.d('   Widget disabled, clearing data');
         await HomeWidget.setAppGroupId('group.kr.bluesky.dodo');
         await HomeWidget.saveWidgetData<String>('view_type', 'none');
         return;
@@ -209,7 +210,7 @@ class WidgetService {
         (failure) => <Todo>[],
         (todos) => todos,
       );
-      print('   Fetched ${todos.length} todos in ${stopwatch.elapsedMilliseconds}ms');
+      logger.d('   Fetched ${todos.length} todos in ${stopwatch.elapsedMilliseconds}ms');
 
       // Update widgets SEQUENTIALLY to avoid SharedPreferences conflicts
       // (parallel execution causes data race on same keys)
@@ -234,14 +235,14 @@ class WidgetService {
         try {
           await _forceNativeWidgetUpdate();
         } catch (e) {
-          print('⚠️ [WidgetService] Delayed widget update failed: $e');
+          logger.w('⚠️ [WidgetService] Delayed widget update failed: $e');
         }
       }));
 
       stopwatch.stop();
-      print('   Widget update completed in ${stopwatch.elapsedMilliseconds}ms');
+      logger.d('   Widget update completed in ${stopwatch.elapsedMilliseconds}ms');
     } catch (e) {
-      print('❌ Error updating widget: $e');
+      logger.e('❌ Error updating widget: $e');
     }
   }
 
@@ -252,10 +253,10 @@ class WidgetService {
 
     try {
       await _widgetChannel.invokeMethod('forceUpdateWidgets');
-      print('   Native widget force update triggered');
+      logger.d('   Native widget force update triggered');
     } catch (e) {
       // Silently ignore if channel not available (e.g., app in background)
-      print('   Native force update skipped: $e');
+      logger.d('   Native force update skipped: $e');
     }
   }
 
@@ -268,15 +269,17 @@ class WidgetService {
       final calendarData = CalendarData.fromTodos(todos, now);
 
       // Debug: Log todos that have due dates in current month
-      final thisMonthTodos = todos.where((t) =>
-        t.dueDate != null &&
-        t.dueDate!.year == now.year &&
-        t.dueDate!.month == now.month
-      ).toList();
-      print('📅 WidgetService: Updating calendar widget (with shared data)');
-      print('   Total todos: ${todos.length}, This month todos: ${thisMonthTodos.length}');
-      for (final todo in thisMonthTodos) {
-        print('   - Day ${todo.dueDate!.day}: "${todo.title}" (completed: ${todo.isCompleted})');
+      if (kDebugMode) {
+        final thisMonthTodos = todos.where((t) =>
+          t.dueDate != null &&
+          t.dueDate!.year == now.year &&
+          t.dueDate!.month == now.month
+        ).toList();
+        logger.d('📅 WidgetService: Updating calendar widget (with shared data)');
+        logger.d('   Total todos: ${todos.length}, This month todos: ${thisMonthTodos.length}');
+        for (final todo in thisMonthTodos) {
+          logger.d('   - Day ${todo.dueDate!.day}: "${todo.title}" (completed: ${todo.isCompleted})');
+        }
       }
 
       // Calculate calendar grid (Sunday first layout)
@@ -290,7 +293,7 @@ class WidgetService {
       try {
         holidays = await KoreanHolidayService.getHolidaysForMonth(now.year, now.month);
       } catch (e) {
-        print('   Failed to fetch holidays: $e');
+        logger.w('   Failed to fetch holidays: $e');
       }
 
       // Prepare all calendar day data
@@ -330,9 +333,9 @@ class WidgetService {
         qualifiedAndroidName: 'kr.bluesky.dodo.widgets.TodoCalendarWidget',
         iOSName: 'TodoCalendarWidget',
       );
-      print('✅ Calendar widget updated');
+      logger.d('✅ Calendar widget updated');
     } catch (e) {
-      print('❌ Error updating calendar widget: $e');
+      logger.e('❌ Error updating calendar widget: $e');
     }
   }
 
@@ -383,7 +386,9 @@ class WidgetService {
         }).join(';;');
 
         futures.add(HomeWidget.saveWidgetData<String>('day_todos_${month}_$day', todosStr));
-        print('   📆 Day $day todos: ${dayTodos.length} items saved');
+        if (kDebugMode) {
+          logger.d('   📆 Day $day todos: ${dayTodos.length} items saved');
+        }
       } else {
         // Clear day data if no todos
         futures.add(HomeWidget.saveWidgetData<String>('day_todos_${month}_$day', ''));
@@ -431,8 +436,8 @@ class WidgetService {
       await HomeWidget.setAppGroupId('group.kr.bluesky.dodo');
 
       final todoData = TodoListData.fromTodos(todos);
-      print('📱 WidgetService: Updating todo list widget (with shared data)');
-      print('   Today\'s todos count: ${todoData.todos.length}');
+      logger.d('📱 WidgetService: Updating todo list widget (with shared data)');
+      logger.d('   Today\'s todos count: ${todoData.todos.length}');
 
       // Calculate progress (completed / total for today)
       final todayTodos = _getTodayTodos(todos);
@@ -441,17 +446,23 @@ class WidgetService {
 
       // Sort and categorize todos by date group (incomplete only)
       final incompleteTodos = todos.where((t) => !t.isCompleted).toList();
-      final noDueDateCount = incompleteTodos.where((t) => t.dueDate == null).length;
-      print('   Incomplete todos: ${incompleteTodos.length}, No due date: $noDueDateCount');
+      if (kDebugMode) {
+        final noDueDateCount = incompleteTodos.where((t) => t.dueDate == null).length;
+        logger.d('   Incomplete todos: ${incompleteTodos.length}, No due date: $noDueDateCount');
+      }
 
       // Sort by user's position (drag-and-drop order) instead of date groups
       final sortedTodos = _sortTodosByPosition(incompleteTodos);
-      print('   Sorted todos count: ${sortedTodos.length}');
+      if (kDebugMode) {
+        logger.d('   Sorted todos count: ${sortedTodos.length}');
+      }
 
       // Get top 10 todos to save (display 2, but save 10 for multiple shift operations on completion)
       // This allows up to 8 consecutive completions without reopening the app
       final displayTodos = sortedTodos.take(10).toList();
-      print('   Buffer todos (10 max): ${displayTodos.map((t) => "${t.title} (dueDate: ${t.dueDate})").toList()}');
+      if (kDebugMode) {
+        logger.d('   Buffer todos (10 max): ${displayTodos.map((t) => "${t.title} (dueDate: ${t.dueDate})").toList()}');
+      }
 
       // Prepare all widget data in parallel
       final List<Future<void>> todoFutures = [
@@ -513,9 +524,9 @@ class WidgetService {
         qualifiedAndroidName: 'kr.bluesky.dodo.widgets.TodoDetailWidget',
         iOSName: 'TodoDetailWidget',
       );
-      print('✅ Todo list widgets updated (list + detail)');
+      logger.d('✅ Todo list widgets updated (list + detail)');
     } catch (e) {
-      print('❌ Error updating todo list widget: $e');
+      logger.e('❌ Error updating todo list widget: $e');
     }
   }
 
@@ -597,7 +608,7 @@ class WidgetService {
       await HomeWidget.saveWidgetData<String>('view_type', 'none');
       await setWidgetEnabled(false);
     } catch (e) {
-      print('Error disabling widgets: $e');
+      logger.e('Error disabling widgets: $e');
     }
   }
 
@@ -609,7 +620,7 @@ class WidgetService {
       await HomeWidget.saveWidgetData<String>('calendar_data', '');
       await HomeWidget.saveWidgetData<String>('todo_data', '');
     } catch (e) {
-      print('Error clearing widget data: $e');
+      logger.e('Error clearing widget data: $e');
     }
   }
 

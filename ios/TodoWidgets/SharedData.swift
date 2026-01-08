@@ -134,10 +134,13 @@ class SharedDataManager {
     // Note: iOS home_widget does NOT use "flutter." prefix (unlike Android)
     func getTodosForMonth(year: Int, month: Int) -> [Int: [TodoItem]] {
         guard let defaults = sharedDefaults else {
+            #if DEBUG
             print("⚠️ [Widget] SharedDefaults is nil for group: \(appGroupId)")
+            #endif
             return [:]
         }
 
+        #if DEBUG
         // Debug: Print all keys in UserDefaults
         let allKeys = defaults.dictionaryRepresentation().keys
         print("📱 [Widget] All UserDefaults keys (\(allKeys.count) total):")
@@ -145,6 +148,7 @@ class SharedDataManager {
             let value = defaults.object(forKey: key)
             print("   - \(key): \(String(describing: value).prefix(50))")
         }
+        #endif
 
         var todosByDay: [Int: [TodoItem]] = [:]
 
@@ -269,7 +273,9 @@ struct WidgetAppearance {
     /// UserDefaults에서 Double 값을 유연하게 읽음 (NSNumber, Double, String 지원)
     private static func readDouble(from defaults: UserDefaults?, forKey key: String, default defaultValue: Double) -> Double {
         guard let defaults = defaults else {
+            #if DEBUG
             print("📱 [WidgetAppearance] \(key): defaults is nil, using default: \(defaultValue)")
+            #endif
             return defaultValue
         }
 
@@ -277,46 +283,62 @@ struct WidgetAppearance {
         defaults.synchronize()
 
         guard let obj = defaults.object(forKey: key) else {
+            #if DEBUG
             print("📱 [WidgetAppearance] \(key): key not found, using default: \(defaultValue)")
+            #endif
             return defaultValue
         }
 
+        #if DEBUG
         print("📱 [WidgetAppearance] \(key): raw type=\(type(of: obj)), value=\(obj)")
+        #endif
 
         // Try NSNumber (most common from Flutter)
         if let num = obj as? NSNumber {
             let value = num.doubleValue
+            #if DEBUG
             print("📱 [WidgetAppearance] \(key): parsed as NSNumber -> \(value)")
+            #endif
             return value
         }
 
         // Try Double directly
         if let value = obj as? Double {
+            #if DEBUG
             print("📱 [WidgetAppearance] \(key): parsed as Double -> \(value)")
+            #endif
             return value
         }
 
         // Try String (fallback - some versions of home_widget may use this)
         if let str = obj as? String, let value = Double(str) {
+            #if DEBUG
             print("📱 [WidgetAppearance] \(key): parsed as String -> \(value)")
+            #endif
             return value
         }
 
+        #if DEBUG
         print("📱 [WidgetAppearance] \(key): could not parse, using default: \(defaultValue)")
+        #endif
         return defaultValue
     }
 
     static var cardOpacityDark: Double {
         let defaults = UserDefaults(suiteName: appGroupId)
         let value = readDouble(from: defaults, forKey: "widget_card_opacity_dark", default: 0.15)
+        #if DEBUG
         print("📱 [WidgetAppearance] cardOpacityDark final value: \(value)")
+        #endif
         return value
     }
 
     static var cardOpacityLight: Double {
         let defaults = UserDefaults(suiteName: appGroupId)
         let value = readDouble(from: defaults, forKey: "widget_card_opacity_light", default: 0.7)
+        #if DEBUG
         print("📱 [WidgetAppearance] cardOpacityLight final value: \(value)")
+        #endif
         return value
     }
 
