@@ -41,6 +41,7 @@ class SharedDataManager {
         }
 
         var todos: [TodoItem] = []
+        let calendar = Calendar.current
 
         // Flutter saves up to 10 todos with individual keys
         for i in 1...10 {
@@ -55,32 +56,7 @@ class SharedDataManager {
             let timeStr = defaults.string(forKey: "todo_\(i)_time") ?? ""
 
             // Parse time string to Date (format: "HH:mm" or "M/d")
-            var dueDate: Date? = nil
-            if !timeStr.isEmpty {
-                let formatter = DateFormatter()
-                if timeStr.contains("/") {
-                    // Date format: M/d
-                    formatter.dateFormat = "M/d"
-                    if let parsed = formatter.date(from: timeStr) {
-                        let calendar = Calendar.current
-                        var components = calendar.dateComponents([.month, .day], from: parsed)
-                        components.year = calendar.component(.year, from: Date())
-                        dueDate = calendar.date(from: components)
-                    }
-                } else if timeStr.contains(":") {
-                    // Time format: HH:mm
-                    formatter.dateFormat = "HH:mm"
-                    if let parsed = formatter.date(from: timeStr) {
-                        let calendar = Calendar.current
-                        let today = calendar.startOfDay(for: Date())
-                        let timeComponents = calendar.dateComponents([.hour, .minute], from: parsed)
-                        dueDate = calendar.date(bySettingHour: timeComponents.hour ?? 0,
-                                                minute: timeComponents.minute ?? 0,
-                                                second: 0,
-                                                of: today)
-                    }
-                }
-            }
+            let dueDate = parseDateString(timeStr, calendar: calendar)
 
             let todo = TodoItem(
                 id: id,
@@ -99,11 +75,49 @@ class SharedDataManager {
         return todos
     }
 
+    /// 시간 문자열을 Date로 파싱 (안전한 옵셔널 처리)
+    /// - Parameter timeStr: "HH:mm" 또는 "M/d" 형식의 문자열
+    /// - Parameter calendar: 사용할 Calendar 인스턴스
+    /// - Returns: 파싱된 Date 또는 nil
+    private func parseDateString(_ timeStr: String, calendar: Calendar) -> Date? {
+        guard !timeStr.isEmpty else { return nil }
+
+        let formatter = DateFormatter()
+
+        if timeStr.contains("/") {
+            // Date format: M/d
+            formatter.dateFormat = "M/d"
+            guard let parsed = formatter.date(from: timeStr) else { return nil }
+
+            var components = calendar.dateComponents([.month, .day], from: parsed)
+            components.year = calendar.component(.year, from: Date())
+            return calendar.date(from: components)
+
+        } else if timeStr.contains(":") {
+            // Time format: HH:mm
+            formatter.dateFormat = "HH:mm"
+            guard let parsed = formatter.date(from: timeStr) else { return nil }
+
+            let today = calendar.startOfDay(for: Date())
+            let timeComponents = calendar.dateComponents([.hour, .minute], from: parsed)
+            return calendar.date(bySettingHour: timeComponents.hour ?? 0,
+                                 minute: timeComponents.minute ?? 0,
+                                 second: 0,
+                                 of: today)
+        }
+
+        return nil
+    }
+
     func getTodayTodos() -> [TodoItem] {
         let todos = getTodos()
         let calendar = Calendar.current
         let today = calendar.startOfDay(for: Date())
-        let tomorrow = calendar.date(byAdding: .day, value: 1, to: today)!
+
+        // 안전한 옵셔널 처리: tomorrow 계산 실패 시 빈 배열 반환
+        guard let tomorrow = calendar.date(byAdding: .day, value: 1, to: today) else {
+            return []
+        }
 
         return todos.filter { todo in
             guard let dueDate = todo.dueDate else { return false }

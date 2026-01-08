@@ -1,3 +1,5 @@
+import 'dart:async' show unawaited;
+
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/services.dart';
 import 'package:home_widget/home_widget.dart';
@@ -227,9 +229,14 @@ class WidgetService {
 
       // Double-update mechanism: trigger a second update after a brief delay
       // This catches any race conditions where the first read gets stale data
-      Future.delayed(const Duration(milliseconds: 500), () {
-        _forceNativeWidgetUpdate();
-      });
+      // Using unawaited() to explicitly mark this as intentional fire-and-forget
+      unawaited(Future.delayed(const Duration(milliseconds: 500), () async {
+        try {
+          await _forceNativeWidgetUpdate();
+        } catch (e) {
+          print('⚠️ [WidgetService] Delayed widget update failed: $e');
+        }
+      }));
 
       stopwatch.stop();
       print('   Widget update completed in ${stopwatch.elapsedMilliseconds}ms');

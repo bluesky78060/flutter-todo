@@ -293,39 +293,51 @@ class _MyAppState extends ConsumerState<MyApp> {
     });
   }
 
+  /// 사용자 인증 완료 시 호출되는 핸들러
+  /// - 액세스 토큰 저장 (위젯 백그라운드 동기화용)
+  /// - 반복 할 일 인스턴스 생성
+  Future<void> _onUserAuthenticated(WidgetRef ref) async {
+    try {
+      // Save access token to SharedPreferences for widget background sync
+      final session = Supabase.instance.client.auth.currentSession;
+      if (session != null) {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('supabase_access_token', session.accessToken);
+        logger.d('✅ Main: Saved access token to SharedPreferences for widget sync');
+      }
+
+      final recurringService = ref.read(recurringTodoServiceProvider);
+      logger.d('🔄 Main: Authenticated - generating recurring todo instances');
+      await recurringService.generateUpcomingInstances(lookAheadDays: 30);
+      logger.d('✅ Main: Recurring instances generation completed');
+    } catch (e, stackTrace) {
+      logger.e('❌ Main: Failed to generate recurring instances after auth',
+          error: e, stackTrace: stackTrace);
+    }
+  }
+
+  /// 사용자 로그아웃 시 호출되는 핸들러
+  /// - 액세스 토큰 삭제
+  Future<void> _onUserLoggedOut() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove('supabase_access_token');
+      logger.d('✅ Main: Cleared access token from SharedPreferences');
+    } catch (e) {
+      logger.e('❌ Main: Failed to clear access token', error: e);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     // Generate recurring todo instances AFTER authentication
     // Listen to auth state and trigger once when authenticated
-    ref.listen<bool>(isAuthenticatedProvider, (prev, next) async {
+    ref.listen<bool>(isAuthenticatedProvider, (prev, next) {
       // Trigger only on transition to authenticated
       if (next == true && prev != true) {
-        try {
-          // Save access token to SharedPreferences for widget background sync
-          final session = Supabase.instance.client.auth.currentSession;
-          if (session != null) {
-            final prefs = await SharedPreferences.getInstance();
-            await prefs.setString('supabase_access_token', session.accessToken);
-            logger.d('✅ Main: Saved access token to SharedPreferences for widget sync');
-          }
-
-          final recurringService = ref.read(recurringTodoServiceProvider);
-          logger.d('🔄 Main: Authenticated - generating recurring todo instances');
-          await recurringService.generateUpcomingInstances(lookAheadDays: 30);
-          logger.d('✅ Main: Recurring instances generation completed');
-        } catch (e, stackTrace) {
-          logger.e('❌ Main: Failed to generate recurring instances after auth',
-              error: e, stackTrace: stackTrace);
-        }
+        _onUserAuthenticated(ref);
       } else if (next == false && prev == true) {
-        // Clear access token on logout
-        try {
-          final prefs = await SharedPreferences.getInstance();
-          await prefs.remove('supabase_access_token');
-          logger.d('✅ Main: Cleared access token from SharedPreferences');
-        } catch (e) {
-          logger.e('❌ Main: Failed to clear access token', error: e);
-        }
+        _onUserLoggedOut();
       }
     });
 
