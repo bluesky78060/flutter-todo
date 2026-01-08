@@ -43,6 +43,9 @@ final currentUserProvider = StreamProvider<domain.AuthUser?>((ref) async* {
 
   logger.d('🎯 currentUserProvider: Starting auth stream');
 
+  // Keep track of last emitted state to avoid duplicate emissions
+  domain.AuthUser? lastEmittedUser;
+
   // Emit initial auth state immediately to avoid long loading on startup
   try {
     final initial = await repository.getCurrentUser();
@@ -54,6 +57,7 @@ final currentUserProvider = StreamProvider<domain.AuthUser?>((ref) async* {
       (user) => user,
     );
     logger.d('🚀 Initial auth user: ${initialUser != null}');
+    lastEmittedUser = initialUser;
     yield initialUser;
   } catch (e) {
     logger.d('⚠️ Initial auth check error: $e');
@@ -62,7 +66,20 @@ final currentUserProvider = StreamProvider<domain.AuthUser?>((ref) async* {
 
   // Then listen to Supabase auth state changes
   await for (final authState in Supabase.instance.client.auth.onAuthStateChange) {
-    logger.d('🔐 Auth stream update: ${authState.event}, session=${authState.session != null}');
+    logger.d('🔐 Auth stream update: event=${authState.event}, session=${authState.session != null}');
+
+    // Only process significant auth events
+    // Ignore tokenRefreshed events as they don't change auth state
+    if (authState.event == AuthChangeEvent.tokenRefreshed) {
+      logger.d('⏭️ Skipping tokenRefreshed event');
+      continue;
+    }
+
+    // For signedIn event, wait a moment for session to stabilize
+    if (authState.event == AuthChangeEvent.signedIn) {
+      logger.d('🔑 SignedIn event - waiting for session to stabilize...');
+      await Future.delayed(const Duration(milliseconds: 500));
+    }
 
     if (authState.session?.user != null) {
       // User is authenticated, fetch current user
@@ -73,15 +90,35 @@ final currentUserProvider = StreamProvider<domain.AuthUser?>((ref) async* {
           return null;
         },
         (user) {
-          logger.d('✅ User loaded from repository: ${user?.id}');
+          logger.d('✅ User loaded from repository: ${user?.uuid}');
           return user;
         },
       );
-      yield user;
+
+      // Only emit if user state actually changed
+      if (user != null) {
+        final lastUuid = lastEmittedUser?.uuid;
+        final shouldEmit = lastUuid == null || lastUuid != user.uuid;
+        logger.d('📤 Should emit user? $shouldEmit (lastUuid=$lastUuid, newUuid=${user.uuid})');
+        if (shouldEmit) {
+          lastEmittedUser = user;
+          yield user;
+        }
+      } else if (lastEmittedUser != null) {
+        logger.d('📤 User became null, emitting null');
+        lastEmittedUser = null;
+        yield null;
+      }
+    } else if (authState.event == AuthChangeEvent.signedOut) {
+      // Only emit null on explicit signOut event
+      logger.d('👋 User signed out');
+      if (lastEmittedUser != null) {
+        lastEmittedUser = null;
+        yield null;
+      }
     } else {
-      // No session, user is null
-      logger.d('👋 No authenticated user in session');
-      yield null;
+      // Session is null but not signedOut - might be initialSignedIn without session yet
+      logger.d('⚠️ Session null but event is ${authState.event} - waiting...');
     }
   }
 });

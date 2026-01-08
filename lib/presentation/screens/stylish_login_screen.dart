@@ -142,29 +142,57 @@ class _StylishLoginScreenState extends ConsumerState<StylishLoginScreen>
     setState(() => _isLoading = true);
 
     try {
-      // Use oauthRedirectUrl() for platform-appropriate redirect
-      final redirectUrl = oauthRedirectUrl();
-      logger.d('🔗 Google OAuth redirectTo: $redirectUrl');
+      // On iOS, don't use redirectTo - let Supabase SDK handle it with platformDefault
+      // This uses ASWebAuthenticationSession which properly maintains PKCE state
+      final isIOS = !kIsWeb && Platform.isIOS;
 
-      final response = redirectUrl == null
-          ? await Supabase.instance.client.auth.signInWithOAuth(
-              OAuthProvider.google,
-              // Use inAppWebView for popup-like experience with auto-close
-              authScreenLaunchMode: LaunchMode.inAppWebView,
-            )
-          : await Supabase.instance.client.auth.signInWithOAuth(
-              OAuthProvider.google,
-              redirectTo: redirectUrl,
-              // Use inAppWebView for popup-like experience with auto-close
-              authScreenLaunchMode: LaunchMode.inAppWebView,
-            );
+      if (isIOS) {
+        // iOS: Use externalApplication to open Safari
+        // Safari will show "Open in DoDo?" prompt when redirecting to custom URL scheme
+        // DeepLinkService will receive the callback and exchange code for session
+        final redirectUrl = oauthRedirectUrl();
+        logger.d('🔗 Google OAuth: Using externalApplication for iOS with redirect: $redirectUrl');
+        final response = await Supabase.instance.client.auth.signInWithOAuth(
+          OAuthProvider.google,
+          redirectTo: redirectUrl,
+          authScreenLaunchMode: LaunchMode.externalApplication,
+        );
+        logger.d('🔗 Google OAuth response: $response');
+        // externalApplication opens Safari, DeepLinkService handles the callback
+        // Reset loading state - auth stream will handle navigation
+        if (mounted) {
+          setState(() => _isLoading = false);
+        }
+        // Don't show error for iOS - the response can be false but auth still succeeds via callback
+        return;
+      } else {
+        // Other platforms: Use custom redirect URL
+        final redirectUrl = oauthRedirectUrl();
+        logger.d('🔗 Google OAuth redirectTo: $redirectUrl');
 
-      if (!response) {
-        throw 'google_login_failed'.tr();
+        final response = redirectUrl == null
+            ? await Supabase.instance.client.auth.signInWithOAuth(
+                OAuthProvider.google,
+                authScreenLaunchMode: LaunchMode.inAppWebView,
+              )
+            : await Supabase.instance.client.auth.signInWithOAuth(
+                OAuthProvider.google,
+                redirectTo: redirectUrl,
+                authScreenLaunchMode: LaunchMode.inAppWebView,
+              );
+
+        if (!response) {
+          throw 'google_login_failed'.tr();
+        }
       }
     } catch (e) {
+      // On iOS, Safari session closure can throw errors even on successful auth
+      // DeepLinkService will handle the callback, so we ignore errors on iOS
+      final isIOS = !kIsWeb && Platform.isIOS;
       if (mounted) {
-        _showSnackBar('${'google_login_failed'.tr()}: ${e.toString()}');
+        if (!isIOS) {
+          _showSnackBar('${'google_login_failed'.tr()}: ${e.toString()}');
+        }
         setState(() => _isLoading = false);
       }
     }
@@ -174,29 +202,57 @@ class _StylishLoginScreenState extends ConsumerState<StylishLoginScreen>
     setState(() => _isLoading = true);
 
     try {
-      // Use oauthRedirectUrl() for platform-appropriate redirect
-      final redirectUrl = oauthRedirectUrl();
-      logger.d('🔗 Kakao OAuth redirectTo: $redirectUrl');
+      // On iOS, don't use redirectTo - let Supabase SDK handle it with platformDefault
+      // This uses ASWebAuthenticationSession which properly maintains PKCE state
+      final isIOS = !kIsWeb && Platform.isIOS;
 
-      final response = redirectUrl == null
-          ? await Supabase.instance.client.auth.signInWithOAuth(
-              OAuthProvider.kakao,
-              // Use external app (KakaoTalk) for login
-              authScreenLaunchMode: LaunchMode.externalApplication,
-            )
-          : await Supabase.instance.client.auth.signInWithOAuth(
-              OAuthProvider.kakao,
-              redirectTo: redirectUrl,
-              // Use external app (KakaoTalk) for login
-              authScreenLaunchMode: LaunchMode.externalApplication,
-            );
+      if (isIOS) {
+        // iOS: Use externalApplication to open Safari
+        // Safari will show "Open in DoDo?" prompt when redirecting to custom URL scheme
+        // DeepLinkService will receive the callback and exchange code for session
+        final redirectUrl = oauthRedirectUrl(provider: OAuthProvider.kakao);
+        logger.d('🔗 Kakao OAuth: Using externalApplication for iOS with redirect: $redirectUrl');
+        final response = await Supabase.instance.client.auth.signInWithOAuth(
+          OAuthProvider.kakao,
+          redirectTo: redirectUrl,
+          authScreenLaunchMode: LaunchMode.externalApplication,
+        );
+        logger.d('🔗 Kakao OAuth response: $response');
+        // externalApplication opens Safari, DeepLinkService handles the callback
+        // Reset loading state - auth stream will handle navigation
+        if (mounted) {
+          setState(() => _isLoading = false);
+        }
+        // Don't show error for iOS - the response can be false but auth still succeeds via callback
+        return;
+      } else {
+        // Other platforms: Use custom redirect URL
+        final redirectUrl = oauthRedirectUrl(provider: OAuthProvider.kakao);
+        logger.d('🔗 Kakao OAuth redirectTo: $redirectUrl');
 
-      if (!response) {
-        throw 'kakao_login_failed'.tr();
+        final response = redirectUrl == null
+            ? await Supabase.instance.client.auth.signInWithOAuth(
+                OAuthProvider.kakao,
+                authScreenLaunchMode: LaunchMode.externalApplication,
+              )
+            : await Supabase.instance.client.auth.signInWithOAuth(
+                OAuthProvider.kakao,
+                redirectTo: redirectUrl,
+                authScreenLaunchMode: LaunchMode.externalApplication,
+              );
+
+        if (!response) {
+          throw 'kakao_login_failed'.tr();
+        }
       }
     } catch (e) {
+      // On iOS, Safari session closure can throw errors even on successful auth
+      // DeepLinkService will handle the callback, so we ignore errors on iOS
+      final isIOS = !kIsWeb && Platform.isIOS;
       if (mounted) {
-        _showSnackBar('${'kakao_login_failed'.tr()}: ${e.toString()}');
+        if (!isIOS) {
+          _showSnackBar('${'kakao_login_failed'.tr()}: ${e.toString()}');
+        }
         setState(() => _isLoading = false);
       }
     }

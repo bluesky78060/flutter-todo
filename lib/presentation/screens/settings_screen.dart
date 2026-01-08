@@ -226,8 +226,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           textColor: textColor,
                           subTextColor: subTextColor,
                         ),
-                        // Widget settings (Android only)
-                        if (Platform.isAndroid) ...[
+                        // Widget settings (Android and iOS)
+                        if (Platform.isAndroid || Platform.isIOS) ...[
                           Divider(color: dividerColor, height: 1),
                           _buildSettingRow(
                             icon: Icons.widgets,

@@ -1,0 +1,1247 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calendar Widget Design Inspiration</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            color: #fff;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(90deg, #667eea, #764ba2, #f093fb);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 16px;
+        }
+
+        .subtitle {
+            color: #a0a0a0;
+            font-size: 1.1rem;
+        }
+
+        .current-design {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 60px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .current-design h2 {
+            color: #ff6b6b;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .current-widget {
+            display: flex;
+            gap: 40px;
+            flex-wrap: wrap;
+        }
+
+        .widget-preview {
+            background: #2D2D2D;
+            border-radius: 24px;
+            padding: 16px;
+            width: 320px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+        }
+
+        .widget-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #444;
+        }
+
+        .widget-title {
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .nav-btn {
+            width: 28px;
+            height: 28px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+
+        .days-header {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            padding: 12px 0 8px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .days-header span {
+            text-align: center;
+            color: #888;
+        }
+
+        .days-header span:first-child { color: #E53935; }
+        .days-header span:last-child { color: #1976D2; }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 2px;
+        }
+
+        .day-cell {
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: #ccc;
+            border-radius: 50%;
+        }
+
+        .day-cell.today {
+            background: #667eea;
+            color: #fff;
+            font-weight: bold;
+        }
+
+        .day-cell.sunday { color: #E53935; }
+        .day-cell.saturday { color: #1976D2; }
+        .day-cell.other-month { color: #555; }
+
+        .events-section {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .events-header {
+            font-size: 13px;
+            color: #bbb;
+            margin-bottom: 8px;
+        }
+
+        .event-item {
+            display: flex;
+            gap: 10px;
+            padding: 8px 0;
+            align-items: center;
+        }
+
+        .event-date {
+            background: rgba(100, 181, 246, 0.2);
+            border: 1px solid #64B5F6;
+            border-radius: 8px;
+            padding: 4px 8px;
+            text-align: center;
+            min-width: 46px;
+        }
+
+        .event-date .month {
+            font-size: 10px;
+            color: #64B5F6;
+        }
+
+        .event-date .day {
+            font-size: 14px;
+            font-weight: bold;
+            color: #64B5F6;
+        }
+
+        .event-info {
+            flex: 1;
+        }
+
+        .event-title {
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .event-time {
+            font-size: 11px;
+            color: #888;
+        }
+
+        .issues-list {
+            flex: 1;
+            min-width: 300px;
+        }
+
+        .issues-list h3 {
+            color: #ffd93d;
+            margin-bottom: 16px;
+        }
+
+        .issue-item {
+            background: rgba(255, 107, 107, 0.1);
+            border-left: 3px solid #ff6b6b;
+            padding: 12px 16px;
+            margin-bottom: 10px;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .designs-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+
+        .design-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .design-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(102, 126, 234, 0.2);
+        }
+
+        .design-preview {
+            height: 280px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .design-info {
+            padding: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .design-info h3 {
+            font-size: 1.2rem;
+            margin-bottom: 8px;
+            color: #fff;
+        }
+
+        .design-info p {
+            color: #a0a0a0;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            margin-bottom: 12px;
+        }
+
+        .design-features {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .feature-tag {
+            background: rgba(102, 126, 234, 0.2);
+            color: #667eea;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+        }
+
+        .color-palette {
+            display: flex;
+            gap: 6px;
+            margin-top: 12px;
+        }
+
+        .color-dot {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        /* Design 1: Material You */
+        .design-1 .widget-mock {
+            background: linear-gradient(145deg, #f5f5f5, #e0e0e0);
+            border-radius: 28px;
+            padding: 20px;
+            width: 280px;
+            color: #1c1b1f;
+        }
+
+        .design-1 .widget-mock.dark {
+            background: linear-gradient(145deg, #2d2d2d, #1c1b1f);
+            color: #e6e1e5;
+        }
+
+        /* Design 2: Glassmorphism */
+        .design-2 .widget-mock {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            padding: 20px;
+            width: 280px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        /* Design 3: Gradient Card */
+        .design-3 .widget-mock {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 24px;
+            padding: 20px;
+            width: 280px;
+            box-shadow: 0 10px 40px rgba(102, 126, 234, 0.4);
+        }
+
+        /* Design 4: Neumorphism */
+        .design-4 .widget-mock {
+            background: #e0e5ec;
+            border-radius: 24px;
+            padding: 20px;
+            width: 280px;
+            box-shadow: 8px 8px 16px #a3b1c6, -8px -8px 16px #ffffff;
+            color: #4a5568;
+        }
+
+        /* Design 5: Split View */
+        .design-5 .widget-mock {
+            background: #1f2937;
+            border-radius: 20px;
+            padding: 16px;
+            width: 320px;
+            display: flex;
+            gap: 12px;
+        }
+
+        /* Design 6: Colorful Events */
+        .design-6 .widget-mock {
+            background: #f8fafc;
+            border-radius: 20px;
+            padding: 16px;
+            width: 280px;
+            color: #1e293b;
+        }
+
+        /* Mock Calendar Styles */
+        .mock-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .mock-title {
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .mock-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+            margin-bottom: 16px;
+        }
+
+        .mock-day {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            border-radius: 50%;
+        }
+
+        .mock-day.selected {
+            background: #667eea;
+            color: #fff;
+        }
+
+        .mock-day.has-event::after {
+            content: '';
+            position: absolute;
+            bottom: 2px;
+            width: 4px;
+            height: 4px;
+            background: #ef4444;
+            border-radius: 50%;
+        }
+
+        .mock-events {
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 12px;
+        }
+
+        .mock-event {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            margin-bottom: 6px;
+        }
+
+        .mock-event-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .mock-event-text {
+            font-size: 13px;
+        }
+
+        .recommendation {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(52, 211, 153, 0.1));
+            border: 2px solid #10b981;
+            border-radius: 20px;
+            padding: 30px;
+            margin-top: 60px;
+        }
+
+        .recommendation h2 {
+            color: #10b981;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .recommendation-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+        }
+
+        .rec-widget {
+            background: linear-gradient(145deg, #1e1e2e, #2d2d3d);
+            border-radius: 28px;
+            padding: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+        }
+
+        .rec-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .rec-title {
+            font-size: 18px;
+            font-weight: 700;
+            background: linear-gradient(90deg, #60a5fa, #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .rec-nav {
+            display: flex;
+            gap: 8px;
+        }
+
+        .rec-nav-btn {
+            width: 32px;
+            height: 32px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+        }
+
+        .rec-nav-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .rec-days-header {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            margin-bottom: 8px;
+        }
+
+        .rec-days-header span {
+            text-align: center;
+            font-size: 11px;
+            font-weight: 600;
+            color: #6b7280;
+            padding: 8px 0;
+        }
+
+        .rec-days-header span:first-child { color: #f87171; }
+        .rec-days-header span:last-child { color: #60a5fa; }
+
+        .rec-calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+        }
+
+        .rec-day {
+            aspect-ratio: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            border-radius: 12px;
+            transition: all 0.2s;
+            position: relative;
+            color: #e5e7eb;
+        }
+
+        .rec-day:hover {
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .rec-day.today {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: #fff;
+            font-weight: 700;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .rec-day.has-event::after {
+            content: '';
+            position: absolute;
+            bottom: 4px;
+            width: 4px;
+            height: 4px;
+            background: #f87171;
+            border-radius: 50%;
+        }
+
+        .rec-day.holiday {
+            color: #f87171;
+        }
+
+        .rec-day.saturday {
+            color: #60a5fa;
+        }
+
+        .rec-day.other-month {
+            color: #4b5563;
+        }
+
+        .rec-events {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .rec-events-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .rec-events-title {
+            font-size: 13px;
+            color: #9ca3af;
+            font-weight: 600;
+        }
+
+        .rec-events-count {
+            font-size: 12px;
+            color: #60a5fa;
+        }
+
+        .rec-event-item {
+            display: flex;
+            gap: 12px;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.04);
+            border-radius: 14px;
+            margin-bottom: 8px;
+            align-items: center;
+            transition: background 0.2s;
+        }
+
+        .rec-event-item:hover {
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .rec-event-date {
+            min-width: 50px;
+            text-align: center;
+            padding: 8px;
+            background: linear-gradient(135deg, rgba(96, 165, 250, 0.2), rgba(167, 139, 250, 0.2));
+            border-radius: 12px;
+            border: 1px solid rgba(96, 165, 250, 0.3);
+        }
+
+        .rec-event-date .month {
+            font-size: 10px;
+            color: #60a5fa;
+            text-transform: uppercase;
+        }
+
+        .rec-event-date .day {
+            font-size: 18px;
+            font-weight: 700;
+            color: #60a5fa;
+        }
+
+        .rec-event-info {
+            flex: 1;
+        }
+
+        .rec-event-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: #f3f4f6;
+            margin-bottom: 2px;
+        }
+
+        .rec-event-time {
+            font-size: 12px;
+            color: #6b7280;
+        }
+
+        .rec-event-category {
+            width: 4px;
+            height: 100%;
+            min-height: 40px;
+            border-radius: 2px;
+        }
+
+        .changes-list {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 16px;
+            padding: 20px;
+        }
+
+        .changes-list h3 {
+            color: #a78bfa;
+            margin-bottom: 16px;
+            font-size: 16px;
+        }
+
+        .change-item {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 16px;
+            align-items: flex-start;
+        }
+
+        .change-icon {
+            width: 28px;
+            height: 28px;
+            background: rgba(167, 139, 250, 0.2);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+
+        .change-text {
+            font-size: 14px;
+            color: #d1d5db;
+            line-height: 1.5;
+        }
+
+        .change-text strong {
+            color: #f3f4f6;
+        }
+
+        .sources {
+            margin-top: 60px;
+            padding: 30px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 16px;
+        }
+
+        .sources h3 {
+            color: #9ca3af;
+            margin-bottom: 16px;
+        }
+
+        .sources a {
+            color: #60a5fa;
+            text-decoration: none;
+            display: block;
+            padding: 8px 0;
+            transition: color 0.2s;
+        }
+
+        .sources a:hover {
+            color: #93c5fd;
+        }
+
+        @media (max-width: 768px) {
+            .designs-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .recommendation-content {
+                grid-template-columns: 1fr;
+            }
+
+            .current-widget {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Calendar Widget Design Inspiration</h1>
+            <p class="subtitle">DoDo Todo App - Android Calendar Widget Redesign</p>
+        </header>
+
+        <!-- Current Design Analysis -->
+        <section class="current-design">
+            <h2>📱 현재 디자인 분석</h2>
+            <div class="current-widget">
+                <div class="widget-preview">
+                    <div class="widget-header">
+                        <div class="nav-buttons">
+                            <span class="nav-btn">◀</span>
+                        </div>
+                        <span class="widget-title">2024년 12월</span>
+                        <div class="nav-buttons">
+                            <span class="nav-btn">▶</span>
+                        </div>
+                    </div>
+                    <div class="days-header">
+                        <span>일</span>
+                        <span>월</span>
+                        <span>화</span>
+                        <span>수</span>
+                        <span>목</span>
+                        <span>금</span>
+                        <span>토</span>
+                    </div>
+                    <div class="calendar-grid">
+                        <div class="day-cell sunday other-month">24</div>
+                        <div class="day-cell other-month">25</div>
+                        <div class="day-cell other-month">26</div>
+                        <div class="day-cell other-month">27</div>
+                        <div class="day-cell other-month">28</div>
+                        <div class="day-cell other-month">29</div>
+                        <div class="day-cell saturday other-month">30</div>
+                        <div class="day-cell sunday">1</div>
+                        <div class="day-cell">2</div>
+                        <div class="day-cell">3</div>
+                        <div class="day-cell">4</div>
+                        <div class="day-cell">5</div>
+                        <div class="day-cell">6</div>
+                        <div class="day-cell saturday">7</div>
+                        <div class="day-cell sunday">8</div>
+                        <div class="day-cell">9</div>
+                        <div class="day-cell">10</div>
+                        <div class="day-cell">11</div>
+                        <div class="day-cell">12</div>
+                        <div class="day-cell">13</div>
+                        <div class="day-cell saturday">14</div>
+                        <div class="day-cell sunday">15</div>
+                        <div class="day-cell">16</div>
+                        <div class="day-cell today">17</div>
+                        <div class="day-cell">18</div>
+                        <div class="day-cell">19</div>
+                        <div class="day-cell">20</div>
+                        <div class="day-cell saturday">21</div>
+                        <div class="day-cell sunday">22</div>
+                        <div class="day-cell">23</div>
+                        <div class="day-cell">24</div>
+                        <div class="day-cell">25</div>
+                        <div class="day-cell">26</div>
+                        <div class="day-cell">27</div>
+                        <div class="day-cell saturday">28</div>
+                        <div class="day-cell sunday">29</div>
+                        <div class="day-cell">30</div>
+                        <div class="day-cell">31</div>
+                    </div>
+                    <div class="events-section">
+                        <div class="events-header">Upcoming Events</div>
+                        <div class="event-item">
+                            <div class="event-date">
+                                <div class="month">DEC</div>
+                                <div class="day">25</div>
+                            </div>
+                            <div class="event-info">
+                                <div class="event-title">크리스마스</div>
+                                <div class="event-time">종일</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="issues-list">
+                    <h3>⚠️ 개선이 필요한 부분</h3>
+                    <div class="issue-item">
+                        <strong>배경 라운드:</strong> 12dp → 더 모던한 20-24dp 권장
+                    </div>
+                    <div class="issue-item">
+                        <strong>날짜 셀:</strong> 터치 영역이 작음 (26dp) → 최소 36dp 권장
+                    </div>
+                    <div class="issue-item">
+                        <strong>이벤트 카드:</strong> 단조로운 디자인 → 카테고리 색상 추가
+                    </div>
+                    <div class="issue-item">
+                        <strong>타이포그래피:</strong> 계층 구조 부족 → 더 명확한 폰트 웨이트 차이
+                    </div>
+                    <div class="issue-item">
+                        <strong>여백:</strong> 너무 빽빽함 → 더 여유로운 spacing 필요
+                    </div>
+                    <div class="issue-item">
+                        <strong>오늘 표시:</strong> 단순 배경색 → 그라데이션/그림자 추가
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Design Inspirations -->
+        <h2 style="color: #667eea; margin-bottom: 20px;">✨ 디자인 레퍼런스</h2>
+
+        <div class="designs-grid">
+            <!-- Design 1: Material You -->
+            <div class="design-card">
+                <div class="design-preview design-1" style="background: linear-gradient(135deg, #e8eaf6, #c5cae9);">
+                    <div class="widget-mock">
+                        <div class="mock-header">
+                            <span class="mock-title" style="color: #5c6bc0;">December</span>
+                            <span style="color: #7986cb;">2024</span>
+                        </div>
+                        <div class="mock-grid">
+                            <div class="mock-day" style="color: #9fa8da;">S</div>
+                            <div class="mock-day" style="color: #9fa8da;">M</div>
+                            <div class="mock-day" style="color: #9fa8da;">T</div>
+                            <div class="mock-day" style="color: #9fa8da;">W</div>
+                            <div class="mock-day" style="color: #9fa8da;">T</div>
+                            <div class="mock-day" style="color: #9fa8da;">F</div>
+                            <div class="mock-day" style="color: #9fa8da;">S</div>
+                            <div class="mock-day">15</div>
+                            <div class="mock-day">16</div>
+                            <div class="mock-day selected" style="background: #5c6bc0;">17</div>
+                            <div class="mock-day">18</div>
+                            <div class="mock-day">19</div>
+                            <div class="mock-day">20</div>
+                            <div class="mock-day">21</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="design-info">
+                    <h3>Material You Style</h3>
+                    <p>Google의 Material Design 3 기반. 다이나믹 컬러와 부드러운 곡선이 특징입니다.</p>
+                    <div class="design-features">
+                        <span class="feature-tag">Dynamic Color</span>
+                        <span class="feature-tag">28dp Radius</span>
+                        <span class="feature-tag">Soft Shadows</span>
+                    </div>
+                    <div class="color-palette">
+                        <div class="color-dot" style="background: #5c6bc0;"></div>
+                        <div class="color-dot" style="background: #7986cb;"></div>
+                        <div class="color-dot" style="background: #c5cae9;"></div>
+                        <div class="color-dot" style="background: #e8eaf6;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Design 2: Glassmorphism -->
+            <div class="design-card">
+                <div class="design-preview design-2" style="background: linear-gradient(135deg, #667eea, #764ba2);">
+                    <div class="widget-mock">
+                        <div class="mock-header">
+                            <span class="mock-title">December 2024</span>
+                        </div>
+                        <div class="mock-grid" style="color: rgba(255,255,255,0.9);">
+                            <div class="mock-day" style="opacity: 0.5;">S</div>
+                            <div class="mock-day" style="opacity: 0.5;">M</div>
+                            <div class="mock-day" style="opacity: 0.5;">T</div>
+                            <div class="mock-day" style="opacity: 0.5;">W</div>
+                            <div class="mock-day" style="opacity: 0.5;">T</div>
+                            <div class="mock-day" style="opacity: 0.5;">F</div>
+                            <div class="mock-day" style="opacity: 0.5;">S</div>
+                            <div class="mock-day">15</div>
+                            <div class="mock-day">16</div>
+                            <div class="mock-day selected" style="background: rgba(255,255,255,0.3);">17</div>
+                            <div class="mock-day">18</div>
+                            <div class="mock-day">19</div>
+                            <div class="mock-day">20</div>
+                            <div class="mock-day">21</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="design-info">
+                    <h3>Glassmorphism</h3>
+                    <p>투명한 유리 효과로 배경과 자연스럽게 어울립니다. iOS 스타일에서 영감을 받았습니다.</p>
+                    <div class="design-features">
+                        <span class="feature-tag">Blur Effect</span>
+                        <span class="feature-tag">Transparency</span>
+                        <span class="feature-tag">Subtle Border</span>
+                    </div>
+                    <div class="color-palette">
+                        <div class="color-dot" style="background: rgba(255,255,255,0.7);"></div>
+                        <div class="color-dot" style="background: rgba(255,255,255,0.3);"></div>
+                        <div class="color-dot" style="background: #667eea;"></div>
+                        <div class="color-dot" style="background: #764ba2;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Design 3: Gradient Card -->
+            <div class="design-card">
+                <div class="design-preview design-3" style="background: #1a1a2e;">
+                    <div class="widget-mock">
+                        <div class="mock-header">
+                            <span class="mock-title" style="color: #fff;">December</span>
+                        </div>
+                        <div class="mock-grid" style="color: rgba(255,255,255,0.9);">
+                            <div class="mock-day" style="opacity: 0.6;">S</div>
+                            <div class="mock-day" style="opacity: 0.6;">M</div>
+                            <div class="mock-day" style="opacity: 0.6;">T</div>
+                            <div class="mock-day" style="opacity: 0.6;">W</div>
+                            <div class="mock-day" style="opacity: 0.6;">T</div>
+                            <div class="mock-day" style="opacity: 0.6;">F</div>
+                            <div class="mock-day" style="opacity: 0.6;">S</div>
+                            <div class="mock-day">15</div>
+                            <div class="mock-day">16</div>
+                            <div class="mock-day selected" style="background: rgba(255,255,255,0.2); border-radius: 8px;">17</div>
+                            <div class="mock-day">18</div>
+                            <div class="mock-day">19</div>
+                            <div class="mock-day">20</div>
+                            <div class="mock-day">21</div>
+                        </div>
+                        <div class="mock-events" style="border-color: rgba(255,255,255,0.2);">
+                            <div class="mock-event" style="background: rgba(255,255,255,0.1);">
+                                <div class="mock-event-dot" style="background: #10b981;"></div>
+                                <span class="mock-event-text">Team Meeting</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="design-info">
+                    <h3>Gradient Card</h3>
+                    <p>선명한 그라데이션 배경으로 시선을 끄는 디자인. 다크모드에서 특히 돋보입니다.</p>
+                    <div class="design-features">
+                        <span class="feature-tag">Vivid Gradient</span>
+                        <span class="feature-tag">High Contrast</span>
+                        <span class="feature-tag">Shadow Glow</span>
+                    </div>
+                    <div class="color-palette">
+                        <div class="color-dot" style="background: #667eea;"></div>
+                        <div class="color-dot" style="background: #764ba2;"></div>
+                        <div class="color-dot" style="background: #f093fb;"></div>
+                        <div class="color-dot" style="background: #ffffff;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Design 4: Neumorphism -->
+            <div class="design-card">
+                <div class="design-preview design-4" style="background: #e0e5ec;">
+                    <div class="widget-mock">
+                        <div class="mock-header">
+                            <span class="mock-title">December 2024</span>
+                        </div>
+                        <div class="mock-grid">
+                            <div class="mock-day" style="opacity: 0.5;">S</div>
+                            <div class="mock-day" style="opacity: 0.5;">M</div>
+                            <div class="mock-day" style="opacity: 0.5;">T</div>
+                            <div class="mock-day" style="opacity: 0.5;">W</div>
+                            <div class="mock-day" style="opacity: 0.5;">T</div>
+                            <div class="mock-day" style="opacity: 0.5;">F</div>
+                            <div class="mock-day" style="opacity: 0.5;">S</div>
+                            <div class="mock-day">15</div>
+                            <div class="mock-day">16</div>
+                            <div class="mock-day selected" style="background: #667eea; color: #fff; box-shadow: inset 2px 2px 4px rgba(0,0,0,0.2);">17</div>
+                            <div class="mock-day">18</div>
+                            <div class="mock-day">19</div>
+                            <div class="mock-day">20</div>
+                            <div class="mock-day">21</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="design-info">
+                    <h3>Neumorphism</h3>
+                    <p>부드러운 음영으로 입체감을 주는 스타일. 터치 가능한 요소가 명확히 구분됩니다.</p>
+                    <div class="design-features">
+                        <span class="feature-tag">Soft UI</span>
+                        <span class="feature-tag">Embossed</span>
+                        <span class="feature-tag">Tactile</span>
+                    </div>
+                    <div class="color-palette">
+                        <div class="color-dot" style="background: #e0e5ec;"></div>
+                        <div class="color-dot" style="background: #a3b1c6;"></div>
+                        <div class="color-dot" style="background: #667eea;"></div>
+                        <div class="color-dot" style="background: #4a5568;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Design 5: Minimal Dark -->
+            <div class="design-card">
+                <div class="design-preview" style="background: #0f0f0f;">
+                    <div class="widget-mock" style="background: #1a1a1a; border-radius: 20px; padding: 20px; width: 280px; border: 1px solid #2a2a2a;">
+                        <div class="mock-header">
+                            <span class="mock-title" style="color: #fff; font-weight: 300;">December</span>
+                            <span style="color: #666; font-size: 14px;">2024</span>
+                        </div>
+                        <div class="mock-grid" style="color: #fff;">
+                            <div class="mock-day" style="color: #444;">S</div>
+                            <div class="mock-day" style="color: #444;">M</div>
+                            <div class="mock-day" style="color: #444;">T</div>
+                            <div class="mock-day" style="color: #444;">W</div>
+                            <div class="mock-day" style="color: #444;">T</div>
+                            <div class="mock-day" style="color: #444;">F</div>
+                            <div class="mock-day" style="color: #444;">S</div>
+                            <div class="mock-day" style="color: #888;">15</div>
+                            <div class="mock-day" style="color: #888;">16</div>
+                            <div class="mock-day selected" style="background: #fff; color: #000;">17</div>
+                            <div class="mock-day" style="color: #888;">18</div>
+                            <div class="mock-day" style="color: #888;">19</div>
+                            <div class="mock-day" style="color: #888;">20</div>
+                            <div class="mock-day" style="color: #888;">21</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="design-info">
+                    <h3>Minimal Dark</h3>
+                    <p>극도로 미니멀한 다크 디자인. 흑백 대비로 가독성을 극대화합니다.</p>
+                    <div class="design-features">
+                        <span class="feature-tag">Monochrome</span>
+                        <span class="feature-tag">High Contrast</span>
+                        <span class="feature-tag">Clean</span>
+                    </div>
+                    <div class="color-palette">
+                        <div class="color-dot" style="background: #000;"></div>
+                        <div class="color-dot" style="background: #1a1a1a;"></div>
+                        <div class="color-dot" style="background: #888;"></div>
+                        <div class="color-dot" style="background: #fff;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Design 6: Colorful Events -->
+            <div class="design-card">
+                <div class="design-preview design-6" style="background: #f0f4f8;">
+                    <div class="widget-mock">
+                        <div class="mock-header">
+                            <span class="mock-title">Dec 2024</span>
+                        </div>
+                        <div class="mock-events" style="border: none; padding-top: 0;">
+                            <div class="mock-event" style="background: #fff; border-left: 4px solid #3b82f6;">
+                                <span class="mock-event-text" style="color: #1e293b;">Team Standup</span>
+                            </div>
+                            <div class="mock-event" style="background: #fff; border-left: 4px solid #10b981;">
+                                <span class="mock-event-text" style="color: #1e293b;">Lunch Meeting</span>
+                            </div>
+                            <div class="mock-event" style="background: #fff; border-left: 4px solid #f59e0b;">
+                                <span class="mock-event-text" style="color: #1e293b;">Code Review</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="design-info">
+                    <h3>Colorful Events</h3>
+                    <p>이벤트 중심의 디자인. 카테고리별 색상 구분으로 한눈에 일정 파악이 가능합니다.</p>
+                    <div class="design-features">
+                        <span class="feature-tag">Category Colors</span>
+                        <span class="feature-tag">Event Focused</span>
+                        <span class="feature-tag">Card Stack</span>
+                    </div>
+                    <div class="color-palette">
+                        <div class="color-dot" style="background: #3b82f6;"></div>
+                        <div class="color-dot" style="background: #10b981;"></div>
+                        <div class="color-dot" style="background: #f59e0b;"></div>
+                        <div class="color-dot" style="background: #ef4444;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recommendation -->
+        <section class="recommendation">
+            <h2>🎯 추천 디자인</h2>
+            <div class="recommendation-content">
+                <div class="rec-widget">
+                    <div class="rec-header">
+                        <span class="rec-title">December 2024</span>
+                        <div class="rec-nav">
+                            <span class="rec-nav-btn">◀</span>
+                            <span class="rec-nav-btn">▶</span>
+                        </div>
+                    </div>
+                    <div class="rec-days-header">
+                        <span>일</span>
+                        <span>월</span>
+                        <span>화</span>
+                        <span>수</span>
+                        <span>목</span>
+                        <span>금</span>
+                        <span>토</span>
+                    </div>
+                    <div class="rec-calendar-grid">
+                        <div class="rec-day holiday other-month">24</div>
+                        <div class="rec-day other-month">25</div>
+                        <div class="rec-day other-month">26</div>
+                        <div class="rec-day other-month">27</div>
+                        <div class="rec-day other-month">28</div>
+                        <div class="rec-day other-month">29</div>
+                        <div class="rec-day saturday other-month">30</div>
+                        <div class="rec-day holiday">1</div>
+                        <div class="rec-day">2</div>
+                        <div class="rec-day">3</div>
+                        <div class="rec-day">4</div>
+                        <div class="rec-day">5</div>
+                        <div class="rec-day">6</div>
+                        <div class="rec-day saturday">7</div>
+                        <div class="rec-day holiday">8</div>
+                        <div class="rec-day">9</div>
+                        <div class="rec-day">10</div>
+                        <div class="rec-day">11</div>
+                        <div class="rec-day">12</div>
+                        <div class="rec-day">13</div>
+                        <div class="rec-day saturday">14</div>
+                        <div class="rec-day holiday">15</div>
+                        <div class="rec-day">16</div>
+                        <div class="rec-day today">17</div>
+                        <div class="rec-day">18</div>
+                        <div class="rec-day has-event">19</div>
+                        <div class="rec-day">20</div>
+                        <div class="rec-day saturday">21</div>
+                        <div class="rec-day holiday">22</div>
+                        <div class="rec-day">23</div>
+                        <div class="rec-day">24</div>
+                        <div class="rec-day holiday has-event">25</div>
+                        <div class="rec-day">26</div>
+                        <div class="rec-day">27</div>
+                        <div class="rec-day saturday">28</div>
+                        <div class="rec-day holiday">29</div>
+                        <div class="rec-day">30</div>
+                        <div class="rec-day">31</div>
+                    </div>
+                    <div class="rec-events">
+                        <div class="rec-events-header">
+                            <span class="rec-events-title">다가오는 일정</span>
+                            <span class="rec-events-count">3개</span>
+                        </div>
+                        <div class="rec-event-item">
+                            <div class="rec-event-category" style="background: #3b82f6;"></div>
+                            <div class="rec-event-date">
+                                <div class="month">DEC</div>
+                                <div class="day">19</div>
+                            </div>
+                            <div class="rec-event-info">
+                                <div class="rec-event-name">프로젝트 미팅</div>
+                                <div class="rec-event-time">14:00 - 15:30</div>
+                            </div>
+                        </div>
+                        <div class="rec-event-item">
+                            <div class="rec-event-category" style="background: #ef4444;"></div>
+                            <div class="rec-event-date">
+                                <div class="month">DEC</div>
+                                <div class="day">25</div>
+                            </div>
+                            <div class="rec-event-info">
+                                <div class="rec-event-name">크리스마스</div>
+                                <div class="rec-event-time">종일</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="changes-list">
+                    <h3>주요 변경 사항</h3>
+                    <div class="change-item">
+                        <div class="change-icon">🎨</div>
+                        <div class="change-text">
+                            <strong>그라데이션 배경:</strong> 단색 대신 미묘한 그라데이션으로 깊이감 추가
+                        </div>
+                    </div>
+                    <div class="change-item">
+                        <div class="change-icon">📐</div>
+                        <div class="change-text">
+                            <strong>라운드 코너:</strong> 12dp → 28dp로 더 부드러운 느낌
+                        </div>
+                    </div>
+                    <div class="change-item">
+                        <div class="change-icon">📅</div>
+                        <div class="change-text">
+                            <strong>오늘 표시:</strong> 그라데이션 + 글로우 효과로 시선 집중
+                        </div>
+                    </div>
+                    <div class="change-item">
+                        <div class="change-icon">🏷️</div>
+                        <div class="change-text">
+                            <strong>이벤트 카테고리:</strong> 왼쪽 컬러 바로 카테고리 구분
+                        </div>
+                    </div>
+                    <div class="change-item">
+                        <div class="change-icon">📏</div>
+                        <div class="change-text">
+                            <strong>날짜 셀 크기:</strong> 터치 영역 확대 (aspect-ratio 1:1)
+                        </div>
+                    </div>
+                    <div class="change-item">
+                        <div class="change-icon">✨</div>
+                        <div class="change-text">
+                            <strong>호버 효과:</strong> 날짜 및 이벤트에 미묘한 하이라이트
+                        </div>
+                    </div>
+                    <div class="change-item">
+                        <div class="change-icon">🔤</div>
+                        <div class="change-text">
+                            <strong>타이포그래피:</strong> 월 제목에 그라데이션 텍스트 적용
+                        </div>
+                    </div>
+                    <div class="change-item">
+                        <div class="change-icon">📍</div>
+                        <div class="change-text">
+                            <strong>이벤트 표시:</strong> 날짜 아래 작은 점으로 이벤트 있음 표시
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Sources -->
+        <div class="sources">
+            <h3>📚 디자인 참고 자료</h3>
+            <a href="https://dribbble.com/tags/calendar_widget" target="_blank">Dribbble - Calendar Widget Designs</a>
+            <a href="https://dribbble.com/tags/calendar-ui" target="_blank">Dribbble - Calendar UI</a>
+            <a href="https://www.pinterest.com/ericauxdesign/ui-calendar-widgets/" target="_blank">Pinterest - UI Calendar Widgets</a>
+            <a href="https://m3.material.io/components/date-pickers/overview" target="_blank">Material Design 3 - Date Pickers</a>
+            <a href="https://www.figma.com/community/file/1350915038188053877" target="_blank">Figma - 2024 Calendar Widget (Light & Dark Mode)</a>
+            <a href="https://www.eleken.co/blog-posts/calendar-ui" target="_blank">Eleken - Calendar UI Examples: 33 Inspiring Designs</a>
+            <a href="https://dribbble.com/tags/dark-mode-calendar" target="_blank">Dribbble - Dark Mode Calendar Designs</a>
+        </div>
+    </div>
+</body>
+</html>

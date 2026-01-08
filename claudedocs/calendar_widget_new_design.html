@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>캘린더 위젯 - 새로운 디자인</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+            color: #fff;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 2rem;
+            background: linear-gradient(135deg, #7B61FF, #64B5F6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #888;
+            margin-bottom: 40px;
+            font-size: 1rem;
+        }
+
+        .demo-section {
+            display: flex;
+            gap: 30px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 60px;
+        }
+
+        .widget-demo {
+            background: rgba(255,255,255,0.05);
+            border-radius: 20px;
+            padding: 24px;
+            backdrop-filter: blur(10px);
+        }
+
+        .widget-title {
+            text-align: center;
+            margin-bottom: 16px;
+            color: #64B5F6;
+            font-size: 1rem;
+        }
+
+        /* Calendar Widget Styles */
+        .calendar-widget {
+            width: 340px;
+            background: linear-gradient(145deg, #2D2D2D 0%, #1E1E1E 100%);
+            border-radius: 24px;
+            padding: 16px;
+            font-family: 'Roboto', sans-serif;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+        }
+
+        .calendar-widget.large {
+            width: 380px;
+        }
+
+        .calendar-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .nav-btn {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 12px;
+            cursor: pointer;
+            border-radius: 10px;
+            background: rgba(123, 97, 255, 0.2);
+            transition: all 0.2s;
+        }
+
+        .nav-btn:hover {
+            background: rgba(123, 97, 255, 0.4);
+            transform: scale(1.05);
+        }
+
+        .month-title {
+            color: #fff;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .day-headers {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 2px;
+            margin-bottom: 6px;
+        }
+
+        .day-header {
+            text-align: center;
+            font-size: 11px;
+            font-weight: bold;
+            padding: 6px 0;
+        }
+
+        .day-header.sun { color: #EF5350; }
+        .day-header.sat { color: #64B5F6; }
+        .day-header.weekday { color: #888; }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 2px;
+        }
+
+        /* New Day Cell with Todo Text */
+        .day-cell {
+            min-height: 52px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 4px 2px;
+            font-size: 12px;
+            color: #E0E0E0;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .day-cell:hover {
+            background: rgba(123, 97, 255, 0.15);
+        }
+
+        .day-cell.sun { color: #EF5350; }
+        .day-cell.sat { color: #64B5F6; }
+        .day-cell.holiday { color: #EF5350 !important; }
+
+        .day-cell.selected {
+            background: linear-gradient(135deg, #7B61FF, #9575CD);
+            box-shadow: 0 4px 12px rgba(123, 97, 255, 0.4);
+        }
+
+        .day-cell.selected .day-number {
+            color: #fff !important;
+            font-weight: bold;
+        }
+
+        .day-cell.selected .day-todo {
+            color: rgba(255,255,255,0.9) !important;
+        }
+
+        .day-cell.today .day-number {
+            background: #7B61FF;
+            color: #fff !important;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .day-cell.empty {
+            cursor: default;
+            min-height: 52px;
+        }
+
+        .day-cell.empty:hover {
+            background: none;
+        }
+
+        .day-number {
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: 2px;
+        }
+
+        .day-todo {
+            font-size: 8px;
+            color: #888;
+            text-align: center;
+            line-height: 1.2;
+            max-width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            padding: 0 1px;
+        }
+
+        .day-todo.has-task {
+            color: #7B61FF;
+            font-weight: 500;
+        }
+
+        .day-todo-count {
+            font-size: 7px;
+            color: #64B5F6;
+            margin-top: 1px;
+        }
+
+        /* Events Section */
+        .events-section {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .events-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .events-title-area {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .events-title {
+            color: #BBBBBB;
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+        .selected-date-badge {
+            background: rgba(123, 97, 255, 0.2);
+            color: #7B61FF;
+            font-size: 11px;
+            font-weight: bold;
+            padding: 3px 8px;
+            border-radius: 12px;
+        }
+
+        .events-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .events-count {
+            color: #64B5F6;
+            font-size: 12px;
+        }
+
+        .add-todo-btn {
+            width: 28px;
+            height: 28px;
+            background: linear-gradient(135deg, #7B61FF, #9575CD);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 2px 8px rgba(123, 97, 255, 0.4);
+        }
+
+        .add-todo-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(123, 97, 255, 0.6);
+        }
+
+        .add-todo-btn svg {
+            width: 16px;
+            height: 16px;
+            fill: #fff;
+        }
+
+        .event-item {
+            display: flex;
+            align-items: center;
+            padding: 10px 0;
+            gap: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .event-item:last-child {
+            border-bottom: none;
+        }
+
+        .event-time-box {
+            min-width: 50px;
+            padding: 6px 8px;
+            background: rgba(100, 181, 246, 0.1);
+            border-radius: 8px;
+            text-align: center;
+            border-left: 3px solid #64B5F6;
+        }
+
+        .event-time-text {
+            color: #64B5F6;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        .event-content {
+            flex: 1;
+        }
+
+        .event-title {
+            color: #fff;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .event-category {
+            display: inline-block;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-top: 3px;
+        }
+
+        .event-category.work {
+            background: rgba(239, 83, 80, 0.2);
+            color: #EF5350;
+        }
+
+        .event-category.personal {
+            background: rgba(76, 175, 80, 0.2);
+            color: #4CAF50;
+        }
+
+        .event-category.meeting {
+            background: rgba(33, 150, 243, 0.2);
+            color: #2196F3;
+        }
+
+        .events-empty {
+            text-align: center;
+            color: #666;
+            font-size: 13px;
+            padding: 20px 0;
+        }
+
+        .events-empty-icon {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+
+        /* Compact Version */
+        .calendar-widget.compact .day-cell {
+            min-height: 44px;
+        }
+
+        .calendar-widget.compact .day-todo {
+            font-size: 7px;
+        }
+
+        /* Feature Highlights */
+        .features-section {
+            margin-top: 50px;
+        }
+
+        .features-title {
+            text-align: center;
+            color: #fff;
+            font-size: 1.5rem;
+            margin-bottom: 30px;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 20px;
+        }
+
+        .feature-card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 16px;
+            padding: 24px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.05);
+            transition: all 0.3s;
+        }
+
+        .feature-card:hover {
+            border-color: rgba(123, 97, 255, 0.3);
+            transform: translateY(-4px);
+        }
+
+        .feature-icon {
+            font-size: 2rem;
+            margin-bottom: 12px;
+        }
+
+        .feature-name {
+            color: #fff;
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .feature-desc {
+            color: #888;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        /* Comparison Section */
+        .comparison-section {
+            margin-top: 50px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 20px;
+            padding: 30px;
+        }
+
+        .comparison-title {
+            text-align: center;
+            color: #fff;
+            font-size: 1.3rem;
+            margin-bottom: 30px;
+        }
+
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .comparison-table th,
+        .comparison-table td {
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .comparison-table th {
+            color: #64B5F6;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .comparison-table td {
+            color: #ccc;
+            font-size: 13px;
+        }
+
+        .comparison-table td:first-child {
+            color: #fff;
+            font-weight: 500;
+        }
+
+        .check-icon {
+            color: #4CAF50;
+        }
+
+        .new-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #7B61FF, #9575CD);
+            color: #fff;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-left: 6px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📅 캘린더 위젯 새 디자인</h1>
+        <p class="subtitle">날짜 아래 할 일 텍스트 표시 + 할 일 추가 버튼</p>
+
+        <div class="demo-section">
+            <!-- Design 1: Standard with Todo Text -->
+            <div class="widget-demo">
+                <h3 class="widget-title">기본 보기 (할 일 텍스트 표시)</h3>
+                <div class="calendar-widget" id="widget-standard">
+                    <div class="calendar-header">
+                        <div class="nav-btn">◀</div>
+                        <div class="month-title">2025년 12월</div>
+                        <div class="nav-btn">▶</div>
+                    </div>
+
+                    <div class="day-headers">
+                        <div class="day-header sun">일</div>
+                        <div class="day-header weekday">월</div>
+                        <div class="day-header weekday">화</div>
+                        <div class="day-header weekday">수</div>
+                        <div class="day-header weekday">목</div>
+                        <div class="day-header weekday">금</div>
+                        <div class="day-header sat">토</div>
+                    </div>
+
+                    <div class="calendar-grid" id="grid-standard">
+                        <!-- Generated by JS -->
+                    </div>
+
+                    <div class="events-section">
+                        <div class="events-header">
+                            <div class="events-title-area">
+                                <span class="events-title">다가오는 이벤트</span>
+                            </div>
+                            <div class="events-actions">
+                                <span class="events-count">3개</span>
+                                <div class="add-todo-btn" title="할 일 추가">
+                                    <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="event-item">
+                            <div class="event-time-box">
+                                <div class="event-time-text">오후 6:00</div>
+                            </div>
+                            <div class="event-content">
+                                <div class="event-title">프로젝트 마감</div>
+                                <span class="event-category work">업무</span>
+                            </div>
+                        </div>
+                        <div class="event-item">
+                            <div class="event-time-box">
+                                <div class="event-time-text">오전 10:00</div>
+                            </div>
+                            <div class="event-content">
+                                <div class="event-title">팀 미팅</div>
+                                <span class="event-category meeting">미팅</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Design 2: Day Selected with Add Button -->
+            <div class="widget-demo">
+                <h3 class="widget-title">날짜 선택 시 (17일)</h3>
+                <div class="calendar-widget" id="widget-selected">
+                    <div class="calendar-header">
+                        <div class="nav-btn">◀</div>
+                        <div class="month-title">2025년 12월</div>
+                        <div class="nav-btn">▶</div>
+                    </div>
+
+                    <div class="day-headers">
+                        <div class="day-header sun">일</div>
+                        <div class="day-header weekday">월</div>
+                        <div class="day-header weekday">화</div>
+                        <div class="day-header weekday">수</div>
+                        <div class="day-header weekday">목</div>
+                        <div class="day-header weekday">금</div>
+                        <div class="day-header sat">토</div>
+                    </div>
+
+                    <div class="calendar-grid" id="grid-selected">
+                        <!-- Generated by JS -->
+                    </div>
+
+                    <div class="events-section">
+                        <div class="events-header">
+                            <div class="events-title-area">
+                                <span class="events-title">17일 할 일</span>
+                                <span class="selected-date-badge">12월 17일</span>
+                            </div>
+                            <div class="events-actions">
+                                <span class="events-count">2개</span>
+                                <div class="add-todo-btn" title="할 일 추가">
+                                    <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="event-item">
+                            <div class="event-time-box">
+                                <div class="event-time-text">오전 9:00</div>
+                            </div>
+                            <div class="event-content">
+                                <div class="event-title">위젯 기능 테스트</div>
+                                <span class="event-category work">업무</span>
+                            </div>
+                        </div>
+                        <div class="event-item">
+                            <div class="event-time-box">
+                                <div class="event-time-text">오후 2:30</div>
+                            </div>
+                            <div class="event-content">
+                                <div class="event-title">코드 리뷰 미팅</div>
+                                <span class="event-category meeting">미팅</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Design 3: Large Size with More Info -->
+            <div class="widget-demo">
+                <h3 class="widget-title">대형 위젯 (4x4)</h3>
+                <div class="calendar-widget large" id="widget-large">
+                    <div class="calendar-header">
+                        <div class="nav-btn">◀</div>
+                        <div class="month-title">2025년 12월</div>
+                        <div class="nav-btn">▶</div>
+                    </div>
+
+                    <div class="day-headers">
+                        <div class="day-header sun">일</div>
+                        <div class="day-header weekday">월</div>
+                        <div class="day-header weekday">화</div>
+                        <div class="day-header weekday">수</div>
+                        <div class="day-header weekday">목</div>
+                        <div class="day-header weekday">금</div>
+                        <div class="day-header sat">토</div>
+                    </div>
+
+                    <div class="calendar-grid" id="grid-large">
+                        <!-- Generated by JS -->
+                    </div>
+
+                    <div class="events-section">
+                        <div class="events-header">
+                            <div class="events-title-area">
+                                <span class="events-title">다가오는 이벤트</span>
+                            </div>
+                            <div class="events-actions">
+                                <span class="events-count">3개</span>
+                                <div class="add-todo-btn" title="할 일 추가">
+                                    <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="event-item">
+                            <div class="event-time-box">
+                                <div class="event-time-text">오후 6:00</div>
+                            </div>
+                            <div class="event-content">
+                                <div class="event-title">프로젝트 마감</div>
+                                <span class="event-category work">업무</span>
+                            </div>
+                        </div>
+                        <div class="event-item">
+                            <div class="event-time-box">
+                                <div class="event-time-text">오전 10:00</div>
+                            </div>
+                            <div class="event-content">
+                                <div class="event-title">팀 미팅</div>
+                                <span class="event-category meeting">미팅</span>
+                            </div>
+                        </div>
+                        <div class="event-item">
+                            <div class="event-time-box">
+                                <div class="event-time-text">하루종일</div>
+                            </div>
+                            <div class="event-content">
+                                <div class="event-title">크리스마스</div>
+                                <span class="event-category personal">개인</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- New Features -->
+        <div class="features-section">
+            <h2 class="features-title">✨ 새로운 디자인 특징</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">📝</div>
+                    <div class="feature-name">날짜 아래 할 일 표시 <span class="new-badge">NEW</span></div>
+                    <div class="feature-desc">각 날짜 셀 아래에 첫 번째 할 일 제목이 작은 텍스트로 표시됩니다. 할 일이 여러 개면 "+2" 같은 카운트도 표시됩니다.</div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">➕</div>
+                    <div class="feature-name">할 일 추가 버튼 <span class="new-badge">NEW</span></div>
+                    <div class="feature-desc">이벤트 섹션 우측 상단에 보라색 + 버튼을 추가했습니다. 클릭하면 앱이 열리며 새 할 일 추가 화면으로 이동합니다.</div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🏷️</div>
+                    <div class="feature-name">카테고리 뱃지</div>
+                    <div class="feature-desc">각 이벤트에 업무/미팅/개인 등 카테고리를 색상 뱃지로 표시하여 한눈에 일정 종류를 구분할 수 있습니다.</div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🎨</div>
+                    <div class="feature-name">개선된 시간 박스</div>
+                    <div class="feature-desc">왼쪽 컬러 바가 있는 시간 박스로 시각적 구분을 강화했습니다. 시간이 더 잘 보이도록 레이아웃을 개선했습니다.</div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📅</div>
+                    <div class="feature-name">선택 날짜 뱃지</div>
+                    <div class="feature-desc">날짜 선택 시 헤더에 "12월 17일" 형태의 뱃지가 표시되어 현재 어떤 날짜를 보고 있는지 명확히 알 수 있습니다.</div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📱</div>
+                    <div class="feature-name">반응형 셀 높이</div>
+                    <div class="feature-desc">할 일 텍스트를 포함할 수 있도록 셀 높이를 52px로 늘렸습니다. 대형 위젯에서는 더 많은 정보를 표시합니다.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Comparison Table -->
+        <div class="comparison-section">
+            <h2 class="comparison-title">📊 기존 vs 새 디자인 비교</h2>
+            <table class="comparison-table">
+                <thead>
+                    <tr>
+                        <th>기능</th>
+                        <th>기존 디자인</th>
+                        <th>새 디자인</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>날짜 셀 높이</td>
+                        <td>26dp</td>
+                        <td>52dp (할 일 텍스트 포함)</td>
+                    </tr>
+                    <tr>
+                        <td>할 일 표시 방식</td>
+                        <td>● 점 표시만</td>
+                        <td>● 점 + 할 일 제목 텍스트</td>
+                    </tr>
+                    <tr>
+                        <td>할 일 추가 버튼</td>
+                        <td>❌ 없음</td>
+                        <td><span class="check-icon">✓</span> + 버튼 추가</td>
+                    </tr>
+                    <tr>
+                        <td>카테고리 표시</td>
+                        <td>❌ 없음</td>
+                        <td><span class="check-icon">✓</span> 색상 뱃지</td>
+                    </tr>
+                    <tr>
+                        <td>시간 표시 스타일</td>
+                        <td>날짜 박스 (월/일)</td>
+                        <td>시간 박스 + 컬러 바</td>
+                    </tr>
+                    <tr>
+                        <td>선택 날짜 표시</td>
+                        <td>대괄호 [17]</td>
+                        <td>배경 그라디언트 + 뱃지</td>
+                    </tr>
+                    <tr>
+                        <td>여러 할 일 표시</td>
+                        <td>● 만 표시</td>
+                        <td>첫 할일 + "+N" 카운트</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // Todo data for each day
+        const todoData = {
+            17: ['위젯 테스트', '코드 리뷰'],
+            18: ['프로젝트 마감'],
+            20: ['팀 미팅', '보고서 작성', '이메일 확인'],
+            22: ['연말 정산'],
+            25: ['크리스마스']
+        };
+
+        function generateCalendar(containerId, selectedDay, showTodoText = true) {
+            const container = document.getElementById(containerId);
+            const today = 17;
+            const holidays = [25];
+
+            // December 2025 starts on Monday (1st weekday index = 1)
+            const firstWeekday = 1;
+            const daysInMonth = 31;
+
+            let html = '';
+
+            // Empty cells before first day
+            for (let i = 0; i < firstWeekday; i++) {
+                html += '<div class="day-cell empty"></div>';
+            }
+
+            // Day cells
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dayOfWeek = (firstWeekday + day - 1) % 7;
+                let classes = ['day-cell'];
+
+                if (dayOfWeek === 0) classes.push('sun');
+                if (dayOfWeek === 6) classes.push('sat');
+                if (holidays.includes(day)) classes.push('holiday');
+                if (day === selectedDay) classes.push('selected');
+                if (day === today && !selectedDay) classes.push('today');
+
+                const todos = todoData[day] || [];
+                const hasTodo = todos.length > 0;
+
+                let todoTextHtml = '';
+                if (showTodoText && hasTodo) {
+                    const firstTodo = todos[0];
+                    const displayText = firstTodo.length > 5 ? firstTodo.substring(0, 5) + '..' : firstTodo;
+                    todoTextHtml = `<div class="day-todo has-task">${displayText}</div>`;
+                    if (todos.length > 1) {
+                        todoTextHtml += `<div class="day-todo-count">+${todos.length - 1}</div>`;
+                    }
+                } else if (showTodoText) {
+                    todoTextHtml = '<div class="day-todo">&nbsp;</div>';
+                }
+
+                html += `
+                    <div class="${classes.join(' ')}">
+                        <div class="day-number">${day}</div>
+                        ${todoTextHtml}
+                    </div>
+                `;
+            }
+
+            container.innerHTML = html;
+        }
+
+        generateCalendar('grid-standard', null, true);
+        generateCalendar('grid-selected', 17, true);
+        generateCalendar('grid-large', null, true);
+    </script>
+</body>
+</html>

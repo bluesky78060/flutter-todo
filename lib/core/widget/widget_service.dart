@@ -16,6 +16,10 @@ class WidgetService {
   static const String _enabledKey = 'widget_enabled';
   static const String _lastUpdateKey = 'widget_last_update';
 
+  // Widget appearance keys (for iOS native widget)
+  static const String _cardOpacityDarkKey = 'widget_card_opacity_dark';
+  static const String _cardOpacityLightKey = 'widget_card_opacity_light';
+
   // MethodChannel for native widget updates
   static const MethodChannel _widgetChannel = MethodChannel('kr.bluesky.dodo/widget');
 
@@ -55,6 +59,84 @@ class WidgetService {
   Future<void> setWidgetEnabled(bool enabled) async {
     await preferences.setBool(_enabledKey, enabled);
     await _updateLastModified();
+  }
+
+  // ===============================================
+  // Widget Appearance Settings (Card Opacity)
+  // ===============================================
+
+  /// Get card opacity for dark mode (0.0 ~ 1.0)
+  /// Default: 0.15
+  double getCardOpacityDark() {
+    return preferences.getDouble(_cardOpacityDarkKey) ?? 0.15;
+  }
+
+  /// Get card opacity for light mode (0.0 ~ 1.0)
+  /// Default: 0.7
+  double getCardOpacityLight() {
+    return preferences.getDouble(_cardOpacityLightKey) ?? 0.7;
+  }
+
+  /// Set card opacity for dark mode
+  Future<void> setCardOpacityDark(double opacity) async {
+    final clampedOpacity = opacity.clamp(0.0, 1.0);
+    await preferences.setDouble(_cardOpacityDarkKey, clampedOpacity);
+
+    // Save to App Group for iOS native widget
+    await HomeWidget.setAppGroupId('group.kr.bluesky.dodo');
+    await HomeWidget.saveWidgetData<double>(_cardOpacityDarkKey, clampedOpacity);
+    print('📱 [WidgetService] Saved cardOpacityDark: $clampedOpacity');
+  }
+
+  /// Set card opacity for light mode
+  Future<void> setCardOpacityLight(double opacity) async {
+    final clampedOpacity = opacity.clamp(0.0, 1.0);
+    await preferences.setDouble(_cardOpacityLightKey, clampedOpacity);
+
+    // Save to App Group for iOS native widget
+    await HomeWidget.setAppGroupId('group.kr.bluesky.dodo');
+    await HomeWidget.saveWidgetData<double>(_cardOpacityLightKey, clampedOpacity);
+    print('📱 [WidgetService] Saved cardOpacityLight: $clampedOpacity');
+  }
+
+  /// Set both card opacities at once
+  Future<void> setCardOpacity({
+    required double darkMode,
+    required double lightMode,
+  }) async {
+    await setCardOpacityDark(darkMode);
+    await setCardOpacityLight(lightMode);
+
+    // Update all widget types to apply new opacity
+    await _updateAllWidgetsForOpacity();
+  }
+
+  /// Update all widgets after opacity change
+  Future<void> _updateAllWidgetsForOpacity() async {
+    try {
+      await HomeWidget.setAppGroupId('group.kr.bluesky.dodo');
+
+      // Update all three widget types
+      await HomeWidget.updateWidget(
+        qualifiedAndroidName: 'kr.bluesky.dodo.widgets.TodoListWidget',
+        iOSName: 'TodoListWidget',
+      );
+      await HomeWidget.updateWidget(
+        qualifiedAndroidName: 'kr.bluesky.dodo.widgets.TodoDetailWidget',
+        iOSName: 'TodoDetailWidget',
+      );
+      await HomeWidget.updateWidget(
+        qualifiedAndroidName: 'kr.bluesky.dodo.widgets.TodoCalendarWidget',
+        iOSName: 'TodoCalendarWidget',
+      );
+
+      print('📱 [WidgetService] All widgets updated for opacity change');
+
+      // Also trigger native update
+      await _forceNativeWidgetUpdate();
+    } catch (e) {
+      print('❌ [WidgetService] Error updating widgets for opacity: $e');
+    }
   }
 
   /// Update last modification timestamp
@@ -114,7 +196,7 @@ class WidgetService {
 
       if (!config.isEnabled) {
         print('   Widget disabled, clearing data');
-        await HomeWidget.setAppGroupId('group.dodo.widget');
+        await HomeWidget.setAppGroupId('group.kr.bluesky.dodo');
         await HomeWidget.saveWidgetData<String>('view_type', 'none');
         return;
       }
@@ -173,7 +255,7 @@ class WidgetService {
   /// Update calendar widget with pre-fetched data (optimized)
   Future<void> _updateCalendarWidgetWithData(List<Todo> todos) async {
     try {
-      await HomeWidget.setAppGroupId('group.dodo.widget');
+      await HomeWidget.setAppGroupId('group.kr.bluesky.dodo');
 
       final now = DateTime.now();
       final calendarData = CalendarData.fromTodos(todos, now);
@@ -339,7 +421,7 @@ class WidgetService {
   /// Update todo list widget with pre-fetched data (optimized)
   Future<void> _updateTodoListWidgetWithData(List<Todo> todos) async {
     try {
-      await HomeWidget.setAppGroupId('group.dodo.widget');
+      await HomeWidget.setAppGroupId('group.kr.bluesky.dodo');
 
       final todoData = TodoListData.fromTodos(todos);
       print('📱 WidgetService: Updating todo list widget (with shared data)');
@@ -504,7 +586,7 @@ class WidgetService {
   /// Disable all widgets
   Future<void> disableAllWidgets() async {
     try {
-      await HomeWidget.setAppGroupId('group.dodo.widget');
+      await HomeWidget.setAppGroupId('group.kr.bluesky.dodo');
       await HomeWidget.saveWidgetData<String>('view_type', 'none');
       await setWidgetEnabled(false);
     } catch (e) {
@@ -515,7 +597,7 @@ class WidgetService {
   /// Clear widget data on logout
   Future<void> clearWidgetData() async {
     try {
-      await HomeWidget.setAppGroupId('group.dodo.widget');
+      await HomeWidget.setAppGroupId('group.kr.bluesky.dodo');
       await HomeWidget.saveWidgetData<String>('view_type', 'none');
       await HomeWidget.saveWidgetData<String>('calendar_data', '');
       await HomeWidget.saveWidgetData<String>('todo_data', '');

@@ -261,6 +261,10 @@ class _WidgetThemeConfigScreenState
   String _selectedTheme = 'light';
   bool _isLoading = false;
 
+  // Card opacity settings (iOS Glass effect)
+  double _cardOpacityDark = 0.15;
+  double _cardOpacityLight = 0.7;
+
   // Theme name keys for localization
   static const Map<String, String> _themeKeys = {
     'light': 'theme_light',
@@ -282,11 +286,12 @@ class _WidgetThemeConfigScreenState
   void initState() {
     super.initState();
     _loadCurrentTheme();
+    _loadCardOpacity();
   }
 
   Future<void> _loadCurrentTheme() async {
     try {
-      await HomeWidget.setAppGroupId('group.dodo.widget');
+      await HomeWidget.setAppGroupId('group.kr.bluesky.dodo');
       final themeKey = widget.widgetType == WidgetViewType.today
           ? 'widget_theme'
           : 'calendar_theme';
@@ -301,6 +306,40 @@ class _WidgetThemeConfigScreenState
     }
   }
 
+  Future<void> _loadCardOpacity() async {
+    try {
+      final widgetService = ref.read(widgetServiceProvider);
+      if (mounted) {
+        setState(() {
+          _cardOpacityDark = widgetService.getCardOpacityDark();
+          _cardOpacityLight = widgetService.getCardOpacityLight();
+        });
+      }
+    } catch (e) {
+      debugPrint('Error loading card opacity: $e');
+    }
+  }
+
+  Future<void> _saveCardOpacity() async {
+    try {
+      final widgetService = ref.read(widgetServiceProvider);
+      await widgetService.setCardOpacity(
+        darkMode: _cardOpacityDark,
+        lightMode: _cardOpacityLight,
+      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(tr('opacity_applied')),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint('Error saving card opacity: $e');
+    }
+  }
+
   Future<void> _saveTheme(String theme) async {
     setState(() {
       _isLoading = true;
@@ -308,7 +347,7 @@ class _WidgetThemeConfigScreenState
     });
 
     try {
-      await HomeWidget.setAppGroupId('group.dodo.widget');
+      await HomeWidget.setAppGroupId('group.kr.bluesky.dodo');
 
       final themeKey = widget.widgetType == WidgetViewType.today
           ? 'widget_theme'
@@ -385,6 +424,11 @@ class _WidgetThemeConfigScreenState
 
                   const SizedBox(height: 24),
 
+                  // Card Opacity Section (iOS Glass Effect)
+                  _buildCardOpacitySection(context),
+
+                  const SizedBox(height: 24),
+
                   // Preview section
                   Padding(
                     padding: const EdgeInsets.all(16),
@@ -406,6 +450,136 @@ class _WidgetThemeConfigScreenState
                 ],
               ),
             ),
+    );
+  }
+
+  /// Build card opacity section for iOS Glass effect
+  Widget _buildCardOpacitySection(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        border: Border(
+          top: BorderSide(color: Colors.grey[300]!, width: 1),
+          bottom: BorderSide(color: Colors.grey[300]!, width: 1),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.opacity, size: 20, color: AppColors.primary),
+              const SizedBox(width: 8),
+              Text(
+                tr('card_opacity'),
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            tr('card_opacity_desc'),
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: Colors.grey[600],
+                ),
+          ),
+          const SizedBox(height: 20),
+
+          // Dark mode opacity slider
+          Row(
+            children: [
+              Icon(Icons.dark_mode, size: 18, color: Colors.grey[700]),
+              const SizedBox(width: 8),
+              Text(
+                tr('dark_mode'),
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+              const Spacer(),
+              Text(
+                '${(_cardOpacityDark * 100).round()}%',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.primary,
+                    ),
+              ),
+            ],
+          ),
+          Slider(
+            value: _cardOpacityDark,
+            min: 0.0,
+            max: 1.0,
+            divisions: 20,
+            activeColor: AppColors.primary,
+            onChanged: (value) {
+              setState(() {
+                _cardOpacityDark = value;
+              });
+            },
+            onChangeEnd: (value) {
+              _saveCardOpacity();
+            },
+          ),
+
+          const SizedBox(height: 12),
+
+          // Light mode opacity slider
+          Row(
+            children: [
+              Icon(Icons.light_mode, size: 18, color: Colors.orange[600]),
+              const SizedBox(width: 8),
+              Text(
+                tr('light_mode'),
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+              const Spacer(),
+              Text(
+                '${(_cardOpacityLight * 100).round()}%',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.primary,
+                    ),
+              ),
+            ],
+          ),
+          Slider(
+            value: _cardOpacityLight,
+            min: 0.0,
+            max: 1.0,
+            divisions: 20,
+            activeColor: AppColors.primary,
+            onChanged: (value) {
+              setState(() {
+                _cardOpacityLight = value;
+              });
+            },
+            onChangeEnd: (value) {
+              _saveCardOpacity();
+            },
+          ),
+
+          const SizedBox(height: 8),
+
+          // Reset button
+          Center(
+            child: TextButton.icon(
+              onPressed: () async {
+                setState(() {
+                  _cardOpacityDark = 0.15;
+                  _cardOpacityLight = 0.7;
+                });
+                await _saveCardOpacity();
+              },
+              icon: Icon(Icons.refresh, size: 18),
+              label: Text(tr('reset_to_default')),
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.grey[600],
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 

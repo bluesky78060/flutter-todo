@@ -568,6 +568,12 @@
   "day_fri": "Fri",
   "day_sat": "Sat",
 
+  "card_opacity": "Card Opacity",
+  "card_opacity_desc": "Adjust the widget card background opacity (iOS Glass effect)",
+  "light_mode": "Light Mode",
+  "opacity_applied": "Opacity applied",
+  "reset_to_default": "Reset to Default",
+
   "max_attachments_reached": "Maximum number of attachments ({count}) reached",
   "attachment_size_too_large": "File size exceeds the maximum limit (10 MB)",
   "delete_attachment": "Delete Attachment",

@@ -34,16 +34,24 @@ String? oauthRedirectUrl({OAuthProvider? provider}) {
     return desktopRedirectUrl;
   }
 
-  // For mobile - Special handling for Kakao which doesn't work well with custom schemes
+  // For iOS - Use custom URL scheme that matches Supabase Dashboard settings
+  // The deep link will be handled by DeepLinkService
+  if (Platform.isIOS) {
+    const iosRedirectUrl = 'kr.bluesky.dodo://login-callback';
+    logger.d('🔗 OAuth Redirect URL (iOS): $iosRedirectUrl');
+    return iosRedirectUrl;
+  }
+
+  // For Android - Special handling for Kakao which doesn't work well with custom schemes
   if (provider == OAuthProvider.kakao) {
     // Use Supabase's built-in OAuth callback URL for Kakao
     // This avoids the custom scheme conversion issues
     const kakaoRedirectUrl = 'https://bulwfcsyqgsvmbadhlye.supabase.co/auth/v1/callback';
-    logger.d('🔗 OAuth Redirect URL (Mobile/Kakao): $kakaoRedirectUrl');
+    logger.d('🔗 OAuth Redirect URL (Android/Kakao): $kakaoRedirectUrl');
     return kakaoRedirectUrl;
   }
 
-  // For other providers (Google), let Supabase SDK handle deep linking automatically
-  logger.d('🔗 OAuth Redirect URL (Mobile): null (SDK handles automatically)');
+  // For Android with other providers (Google), let Supabase SDK handle deep linking automatically
+  logger.d('🔗 OAuth Redirect URL (Android): null (SDK handles automatically)');
   return null;
 }

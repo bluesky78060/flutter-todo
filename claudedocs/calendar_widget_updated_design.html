@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>캘린더 위젯 - 날짜 클릭 기능 업데이트</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+            color: #fff;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 2rem;
+            background: linear-gradient(135deg, #7B61FF, #64B5F6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #888;
+            margin-bottom: 40px;
+            font-size: 1rem;
+        }
+
+        .demo-section {
+            display: flex;
+            gap: 40px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 60px;
+        }
+
+        .widget-demo {
+            background: rgba(255,255,255,0.05);
+            border-radius: 20px;
+            padding: 30px;
+            backdrop-filter: blur(10px);
+        }
+
+        .widget-title {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #64B5F6;
+            font-size: 1.1rem;
+        }
+
+        /* Calendar Widget Styles */
+        .calendar-widget {
+            width: 320px;
+            background: #2D2D2D;
+            border-radius: 24px;
+            padding: 16px;
+            font-family: 'Roboto', sans-serif;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+        }
+
+        .calendar-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #444;
+        }
+
+        .nav-btn {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 14px;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: background 0.2s;
+        }
+
+        .nav-btn:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .month-title {
+            color: #fff;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .day-headers {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+            margin-bottom: 8px;
+        }
+
+        .day-header {
+            text-align: center;
+            font-size: 12px;
+            font-weight: bold;
+            padding: 8px 0;
+        }
+
+        .day-header.sun { color: #EF5350; }
+        .day-header.sat { color: #64B5F6; }
+        .day-header.weekday { color: #BDBDBD; }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 2px;
+        }
+
+        .day-cell {
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: #E0E0E0;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .day-cell:hover {
+            background: rgba(123, 97, 255, 0.2);
+        }
+
+        .day-cell.sun { color: #EF5350; }
+        .day-cell.sat { color: #64B5F6; }
+        .day-cell.holiday { color: #EF5350 !important; }
+
+        .day-cell.has-task::after {
+            content: '●';
+            position: absolute;
+            font-size: 6px;
+            color: #7B61FF;
+            top: 2px;
+            right: 4px;
+        }
+
+        .day-cell.selected {
+            background: linear-gradient(135deg, #7B61FF, #9575CD);
+            color: #fff !important;
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(123, 97, 255, 0.4);
+        }
+
+        .day-cell.selected::after {
+            color: #fff;
+        }
+
+        .day-cell.today {
+            border: 2px solid #7B61FF;
+        }
+
+        .day-cell.empty {
+            cursor: default;
+        }
+
+        .day-cell.empty:hover {
+            background: none;
+        }
+
+        /* Events Section */
+        .events-section {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .events-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .events-title {
+            color: #BBBBBB;
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+        .selected-date-label {
+            color: #7B61FF;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .events-count {
+            color: #64B5F6;
+            font-size: 12px;
+        }
+
+        .event-item {
+            display: flex;
+            align-items: center;
+            padding: 10px 0;
+            gap: 12px;
+        }
+
+        .event-date-box {
+            min-width: 46px;
+            padding: 6px 8px;
+            background: rgba(100, 181, 246, 0.15);
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .event-date-month {
+            color: #64B5F6;
+            font-size: 10px;
+            font-weight: bold;
+        }
+
+        .event-date-day {
+            color: #64B5F6;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .event-time-bullet {
+            color: #64B5F6;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        .event-content {
+            flex: 1;
+        }
+
+        .event-title {
+            color: #fff;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .event-time {
+            color: #888;
+            font-size: 11px;
+            margin-top: 2px;
+        }
+
+        .events-empty {
+            text-align: center;
+            color: #666;
+            font-size: 13px;
+            padding: 16px 0;
+        }
+
+        /* Feature List */
+        .features-section {
+            margin-top: 40px;
+        }
+
+        .features-title {
+            text-align: center;
+            color: #fff;
+            font-size: 1.5rem;
+            margin-bottom: 30px;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .feature-card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 16px;
+            padding: 24px;
+            backdrop-filter: blur(10px);
+        }
+
+        .feature-icon {
+            font-size: 2rem;
+            margin-bottom: 12px;
+        }
+
+        .feature-name {
+            color: #fff;
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .feature-desc {
+            color: #888;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        /* Interaction Guide */
+        .interaction-guide {
+            margin-top: 40px;
+            background: rgba(123, 97, 255, 0.1);
+            border-radius: 16px;
+            padding: 30px;
+        }
+
+        .guide-title {
+            color: #7B61FF;
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .guide-steps {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+        }
+
+        .guide-step {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: rgba(0,0,0,0.2);
+            padding: 16px 20px;
+            border-radius: 12px;
+        }
+
+        .step-number {
+            width: 32px;
+            height: 32px;
+            background: #7B61FF;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .step-text {
+            color: #E0E0E0;
+            font-size: 14px;
+        }
+
+        /* Code Changes */
+        .code-section {
+            margin-top: 40px;
+        }
+
+        .code-title {
+            text-align: center;
+            color: #fff;
+            font-size: 1.3rem;
+            margin-bottom: 20px;
+        }
+
+        .code-files {
+            display: grid;
+            gap: 16px;
+        }
+
+        .code-file {
+            background: rgba(0,0,0,0.3);
+            border-radius: 12px;
+            padding: 16px;
+            border-left: 4px solid #7B61FF;
+        }
+
+        .code-filename {
+            color: #64B5F6;
+            font-family: 'Fira Code', monospace;
+            font-size: 13px;
+            margin-bottom: 8px;
+        }
+
+        .code-changes {
+            color: #888;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .code-changes li {
+            margin: 4px 0;
+            padding-left: 20px;
+            position: relative;
+        }
+
+        .code-changes li::before {
+            content: '+';
+            position: absolute;
+            left: 0;
+            color: #4CAF50;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📅 캘린더 위젯 업데이트</h1>
+        <p class="subtitle">날짜 클릭 시 해당 날짜의 할 일을 표시하는 새로운 기능</p>
+
+        <div class="demo-section">
+            <!-- Before: Upcoming Events Mode -->
+            <div class="widget-demo">
+                <h3 class="widget-title">기본 상태 (다가오는 이벤트)</h3>
+                <div class="calendar-widget" id="widget-before">
+                    <div class="calendar-header">
+                        <div class="nav-btn">◀</div>
+                        <div class="month-title">2025년 12월</div>
+                        <div class="nav-btn">▶</div>
+                    </div>
+
+                    <div class="day-headers">
+                        <div class="day-header sun">일</div>
+                        <div class="day-header weekday">월</div>
+                        <div class="day-header weekday">화</div>
+                        <div class="day-header weekday">수</div>
+                        <div class="day-header weekday">목</div>
+                        <div class="day-header weekday">금</div>
+                        <div class="day-header sat">토</div>
+                    </div>
+
+                    <div class="calendar-grid" id="grid-before">
+                        <!-- Generated by JS -->
+                    </div>
+
+                    <div class="events-section">
+                        <div class="events-header">
+                            <span class="events-title">다가오는 이벤트</span>
+                            <span class="events-count">3개</span>
+                        </div>
+                        <div class="event-item">
+                            <div class="event-date-box">
+                                <div class="event-date-month">12월</div>
+                                <div class="event-date-day">18</div>
+                            </div>
+                            <div class="event-content">
+                                <div class="event-title">프로젝트 마감</div>
+                                <div class="event-time">오후 6:00</div>
+                            </div>
+                        </div>
+                        <div class="event-item">
+                            <div class="event-date-box">
+                                <div class="event-date-month">12월</div>
+                                <div class="event-date-day">20</div>
+                            </div>
+                            <div class="event-content">
+                                <div class="event-title">팀 미팅</div>
+                                <div class="event-time">오전 10:00</div>
+                            </div>
+                        </div>
+                        <div class="event-item">
+                            <div class="event-date-box">
+                                <div class="event-date-month">12월</div>
+                                <div class="event-date-day">25</div>
+                            </div>
+                            <div class="event-content">
+                                <div class="event-title">크리스마스</div>
+                                <div class="event-time">하루 종일</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- After: Selected Day Mode -->
+            <div class="widget-demo">
+                <h3 class="widget-title">날짜 선택 시 (17일 클릭)</h3>
+                <div class="calendar-widget" id="widget-after">
+                    <div class="calendar-header">
+                        <div class="nav-btn">◀</div>
+                        <div class="month-title">2025년 12월</div>
+                        <div class="nav-btn">▶</div>
+                    </div>
+
+                    <div class="day-headers">
+                        <div class="day-header sun">일</div>
+                        <div class="day-header weekday">월</div>
+                        <div class="day-header weekday">화</div>
+                        <div class="day-header weekday">수</div>
+                        <div class="day-header weekday">목</div>
+                        <div class="day-header weekday">금</div>
+                        <div class="day-header sat">토</div>
+                    </div>
+
+                    <div class="calendar-grid" id="grid-after">
+                        <!-- Generated by JS -->
+                    </div>
+
+                    <div class="events-section">
+                        <div class="events-header">
+                            <span class="events-title">17일 할 일</span>
+                            <span class="selected-date-label">12월 17일</span>
+                            <span class="events-count">2개</span>
+                        </div>
+                        <div class="event-item">
+                            <div class="event-date-box">
+                                <div class="event-time-bullet">오전 9:00</div>
+                            </div>
+                            <div class="event-content">
+                                <div class="event-title">위젯 기능 테스트</div>
+                            </div>
+                        </div>
+                        <div class="event-item">
+                            <div class="event-date-box">
+                                <div class="event-time-bullet">오후 2:30</div>
+                            </div>
+                            <div class="event-content">
+                                <div class="event-title">코드 리뷰 미팅</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Interaction Guide -->
+        <div class="interaction-guide">
+            <h3 class="guide-title">🖱️ 사용 방법</h3>
+            <div class="guide-steps">
+                <div class="guide-step">
+                    <div class="step-number">1</div>
+                    <div class="step-text">할 일이 있는 날짜(●)를 클릭</div>
+                </div>
+                <div class="guide-step">
+                    <div class="step-number">2</div>
+                    <div class="step-text">선택된 날짜가 강조 표시됨</div>
+                </div>
+                <div class="guide-step">
+                    <div class="step-number">3</div>
+                    <div class="step-text">하단에 해당 날짜 할 일 목록 표시</div>
+                </div>
+                <div class="guide-step">
+                    <div class="step-number">4</div>
+                    <div class="step-text">다시 클릭하면 선택 해제</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- New Features -->
+        <div class="features-section">
+            <h2 class="features-title">✨ 새로운 기능</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">👆</div>
+                    <div class="feature-name">날짜 클릭 이벤트</div>
+                    <div class="feature-desc">각 날짜 셀에 클릭 이벤트를 추가하여 사용자가 특정 날짜를 선택할 수 있습니다.</div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📋</div>
+                    <div class="feature-name">날짜별 할 일 표시</div>
+                    <div class="feature-desc">선택한 날짜의 할 일 목록을 하단 이벤트 섹션에 표시합니다. 최대 3개까지 시간순으로 정렬됩니다.</div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔄</div>
+                    <div class="feature-name">토글 선택</div>
+                    <div class="feature-desc">같은 날짜를 다시 클릭하면 선택이 해제되고 "다가오는 이벤트" 모드로 돌아갑니다.</div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🎨</div>
+                    <div class="feature-name">선택 강조 표시</div>
+                    <div class="feature-desc">선택된 날짜는 대괄호와 보라색 강조로 시각적으로 구분됩니다.</div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📅</div>
+                    <div class="feature-name">월 이동 시 초기화</div>
+                    <div class="feature-desc">이전/다음 월로 이동하면 선택이 자동으로 해제되어 새로운 달의 이벤트를 표시합니다.</div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">⏰</div>
+                    <div class="feature-name">시간 표시 최적화</div>
+                    <div class="feature-desc">날짜 선택 모드에서는 날짜 박스 대신 시간만 표시하여 공간을 효율적으로 활용합니다.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Code Changes -->
+        <div class="code-section">
+            <h2 class="code-title">📝 수정된 파일</h2>
+            <div class="code-files">
+                <div class="code-file">
+                    <div class="code-filename">android/app/src/main/res/layout/widget_calendar.xml</div>
+                    <ul class="code-changes">
+                        <li>selected_date_label TextView 추가 (선택된 날짜 표시용)</li>
+                    </ul>
+                </div>
+                <div class="code-file">
+                    <div class="code-filename">android/app/src/main/kotlin/.../TodoCalendarWidget.kt</div>
+                    <ul class="code-changes">
+                        <li>ACTION_SELECT_DAY 액션 추가</li>
+                        <li>PREF_SELECTED_DAY, EXTRA_SELECTED_DAY 상수 추가</li>
+                        <li>날짜 클릭 시 토글 선택 로직 구현</li>
+                        <li>선택된 날짜 강조 표시 ([17●] 형식)</li>
+                        <li>updateEventsSection()에 selectedDay 파라미터 추가</li>
+                        <li>선택된 날짜의 할 일 데이터 로드 및 표시</li>
+                    </ul>
+                </div>
+                <div class="code-file">
+                    <div class="code-filename">lib/core/widget/widget_service.dart</div>
+                    <ul class="code-changes">
+                        <li>_addDayTodosFutures() 함수 추가</li>
+                        <li>날짜별 할 일 데이터 저장 (day_todos_12_17 형식)</li>
+                        <li>형식: "title1|time1;;title2|time2;;title3|time3"</li>
+                    </ul>
+                </div>
+                <div class="code-file">
+                    <div class="code-filename">android/gradle/wrapper/gradle-wrapper.properties</div>
+                    <ul class="code-changes">
+                        <li>Gradle 버전 8.9 → 8.11.1 업그레이드</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Generate calendar grids
+        function generateCalendar(containerId, selectedDay) {
+            const container = document.getElementById(containerId);
+            const today = 17;
+            const daysWithTasks = [17, 18, 20, 25];
+            const holidays = [25]; // Christmas
+
+            // December 2025 starts on Monday (1st weekday index = 1)
+            const firstWeekday = 1;
+            const daysInMonth = 31;
+
+            let html = '';
+
+            // Empty cells before first day
+            for (let i = 0; i < firstWeekday; i++) {
+                html += '<div class="day-cell empty"></div>';
+            }
+
+            // Day cells
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dayOfWeek = (firstWeekday + day - 1) % 7;
+                let classes = ['day-cell'];
+
+                if (dayOfWeek === 0) classes.push('sun');
+                if (dayOfWeek === 6) classes.push('sat');
+                if (holidays.includes(day)) classes.push('holiday');
+                if (daysWithTasks.includes(day)) classes.push('has-task');
+                if (day === selectedDay) classes.push('selected');
+                if (day === today && containerId === 'grid-before') classes.push('today');
+
+                let displayText = day;
+                if (day === selectedDay) {
+                    displayText = daysWithTasks.includes(day) ? `${day}●` : day;
+                }
+
+                html += `<div class="${classes.join(' ')}">${displayText}</div>`;
+            }
+
+            container.innerHTML = html;
+        }
+
+        generateCalendar('grid-before', null);
+        generateCalendar('grid-after', 17);
+    </script>
+</body>
+</html>

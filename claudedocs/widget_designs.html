@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Todo Widget Design Options</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+            color: #fff;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 28px;
+            background: linear-gradient(90deg, #7B61FF, #64B5F6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .subtitle {
+            text-align: center;
+            color: #888;
+            margin-bottom: 40px;
+            font-size: 14px;
+        }
+        .section-title {
+            font-size: 22px;
+            margin: 40px 0 20px;
+            padding-left: 20px;
+            border-left: 4px solid #7B61FF;
+        }
+        .design-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+            gap: 30px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        .design-card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 16px;
+            padding: 20px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .design-card h3 {
+            font-size: 16px;
+            margin-bottom: 15px;
+            color: #64B5F6;
+        }
+        .design-card .description {
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+
+        /* ===================== */
+        /* TODO LIST WIDGET DESIGNS */
+        /* ===================== */
+
+        /* Design A - Glass Morphism */
+        .todo-list-a {
+            background: linear-gradient(145deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02));
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 16px;
+            border: 1px solid rgba(255,255,255,0.1);
+            width: 320px;
+        }
+        .todo-list-a .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        .todo-list-a .title-section h2 {
+            font-size: 18px;
+            font-weight: 700;
+            color: #fff;
+        }
+        .todo-list-a .title-section .progress {
+            font-size: 12px;
+            color: rgba(255,255,255,0.5);
+            margin-top: 2px;
+        }
+        .todo-list-a .add-btn {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, #7B61FF, #9575CD);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: #fff;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(123,97,255,0.3);
+        }
+        .todo-list-a .divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            margin-bottom: 12px;
+        }
+        .todo-list-a .todo-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .todo-list-a .todo-item:last-child {
+            border-bottom: none;
+        }
+        .todo-list-a .checkbox {
+            width: 22px;
+            height: 22px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 6px;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+        .todo-list-a .checkbox.checked {
+            background: linear-gradient(135deg, #7B61FF, #64B5F6);
+            border-color: transparent;
+        }
+        .todo-list-a .checkbox.checked::after {
+            content: '✓';
+            color: #fff;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+        }
+        .todo-list-a .todo-content {
+            flex: 1;
+        }
+        .todo-list-a .todo-title {
+            font-size: 14px;
+            color: #fff;
+            font-weight: 500;
+        }
+        .todo-list-a .todo-time {
+            font-size: 11px;
+            color: rgba(255,255,255,0.4);
+            margin-top: 2px;
+        }
+        .todo-list-a .category-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-left: 8px;
+        }
+
+        /* Design B - Card Style with Color Bar */
+        .todo-list-b {
+            background: #1E1E2E;
+            border-radius: 16px;
+            padding: 16px;
+            width: 320px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+        .todo-list-b .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        .todo-list-b .title-section h2 {
+            font-size: 17px;
+            font-weight: 600;
+            color: #fff;
+        }
+        .todo-list-b .title-section .date {
+            font-size: 12px;
+            color: #64B5F6;
+            margin-top: 4px;
+        }
+        .todo-list-b .header-actions {
+            display: flex;
+            gap: 8px;
+        }
+        .todo-list-b .add-btn {
+            width: 32px;
+            height: 32px;
+            background: #7B61FF;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: #fff;
+        }
+        .todo-list-b .todo-item {
+            display: flex;
+            align-items: center;
+            background: rgba(255,255,255,0.03);
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 8px;
+            border-left: 3px solid #64B5F6;
+        }
+        .todo-list-b .todo-item.priority-high {
+            border-left-color: #FF6B6B;
+        }
+        .todo-list-b .todo-item.priority-medium {
+            border-left-color: #FFB74D;
+        }
+        .todo-list-b .checkbox {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #64B5F6;
+            border-radius: 50%;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+        .todo-list-b .todo-content {
+            flex: 1;
+        }
+        .todo-list-b .todo-title {
+            font-size: 14px;
+            color: #fff;
+            font-weight: 500;
+        }
+        .todo-list-b .todo-meta {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 4px;
+        }
+        .todo-list-b .todo-time {
+            font-size: 11px;
+            color: #888;
+        }
+        .todo-list-b .todo-category {
+            font-size: 10px;
+            color: #64B5F6;
+            background: rgba(100,181,246,0.1);
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        /* Design C - Minimal Flat */
+        .todo-list-c {
+            background: #2D2D3A;
+            border-radius: 24px;
+            padding: 20px;
+            width: 320px;
+        }
+        .todo-list-c .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 20px;
+        }
+        .todo-list-c .title-section h2 {
+            font-size: 22px;
+            font-weight: 700;
+            color: #fff;
+        }
+        .todo-list-c .title-section .stats {
+            display: flex;
+            gap: 16px;
+            margin-top: 8px;
+        }
+        .todo-list-c .stat {
+            font-size: 12px;
+            color: #888;
+        }
+        .todo-list-c .stat span {
+            color: #7B61FF;
+            font-weight: 600;
+        }
+        .todo-list-c .add-btn {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #7B61FF, #00C9FF);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: #fff;
+        }
+        .todo-list-c .todo-item {
+            display: flex;
+            align-items: center;
+            padding: 14px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .todo-list-c .checkbox {
+            width: 24px;
+            height: 24px;
+            border: 2px solid #555;
+            border-radius: 8px;
+            margin-right: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .todo-list-c .checkbox.checked {
+            background: #7B61FF;
+            border-color: #7B61FF;
+        }
+        .todo-list-c .todo-content {
+            flex: 1;
+        }
+        .todo-list-c .todo-title {
+            font-size: 15px;
+            color: #fff;
+            font-weight: 500;
+        }
+        .todo-list-c .todo-subtitle {
+            font-size: 12px;
+            color: #666;
+            margin-top: 2px;
+        }
+        .todo-list-c .time-badge {
+            background: rgba(123,97,255,0.15);
+            color: #7B61FF;
+            font-size: 11px;
+            padding: 4px 8px;
+            border-radius: 6px;
+        }
+
+        /* ===================== */
+        /* TODO DETAIL WIDGET DESIGNS */
+        /* ===================== */
+
+        /* Design D - Expandable Card */
+        .todo-detail-d {
+            background: linear-gradient(180deg, #252535, #1A1A25);
+            border-radius: 20px;
+            padding: 18px;
+            width: 320px;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        .todo-detail-d .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        .todo-detail-d .title-section h2 {
+            font-size: 16px;
+            font-weight: 600;
+            color: #fff;
+        }
+        .todo-detail-d .add-btn {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, #FF6B6B, #FFB74D);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: #fff;
+        }
+        .todo-detail-d .todo-card {
+            background: rgba(255,255,255,0.03);
+            border-radius: 14px;
+            padding: 14px;
+            margin-bottom: 10px;
+        }
+        .todo-detail-d .todo-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .todo-detail-d .checkbox {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #7B61FF;
+            border-radius: 6px;
+            margin-right: 10px;
+        }
+        .todo-detail-d .todo-title {
+            font-size: 14px;
+            color: #fff;
+            font-weight: 600;
+            flex: 1;
+        }
+        .todo-detail-d .priority-tag {
+            font-size: 10px;
+            padding: 3px 8px;
+            border-radius: 4px;
+            background: rgba(255,107,107,0.2);
+            color: #FF6B6B;
+        }
+        .todo-detail-d .todo-description {
+            font-size: 12px;
+            color: #888;
+            line-height: 1.5;
+            margin-left: 30px;
+            padding: 10px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 8px;
+        }
+        .todo-detail-d .todo-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 10px;
+            margin-left: 30px;
+        }
+        .todo-detail-d .due-date {
+            font-size: 11px;
+            color: #64B5F6;
+        }
+        .todo-detail-d .category {
+            font-size: 10px;
+            color: #9575CD;
+            background: rgba(149,117,205,0.15);
+            padding: 3px 8px;
+            border-radius: 4px;
+        }
+
+        /* Design E - Timeline Style */
+        .todo-detail-e {
+            background: #1C1C28;
+            border-radius: 18px;
+            padding: 18px;
+            width: 320px;
+        }
+        .todo-detail-e .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        .todo-detail-e .title-section h2 {
+            font-size: 17px;
+            font-weight: 600;
+            color: #fff;
+        }
+        .todo-detail-e .add-btn {
+            width: 34px;
+            height: 34px;
+            background: #00C9A7;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            color: #fff;
+        }
+        .todo-detail-e .timeline {
+            position: relative;
+            padding-left: 24px;
+        }
+        .todo-detail-e .timeline::before {
+            content: '';
+            position: absolute;
+            left: 8px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: linear-gradient(180deg, #7B61FF, #00C9A7);
+            border-radius: 2px;
+        }
+        .todo-detail-e .todo-item {
+            position: relative;
+            padding: 14px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 12px;
+            margin-bottom: 12px;
+        }
+        .todo-detail-e .todo-item::before {
+            content: '';
+            position: absolute;
+            left: -20px;
+            top: 18px;
+            width: 12px;
+            height: 12px;
+            background: #7B61FF;
+            border-radius: 50%;
+            border: 2px solid #1C1C28;
+        }
+        .todo-detail-e .todo-item.completed::before {
+            background: #00C9A7;
+        }
+        .todo-detail-e .todo-time {
+            font-size: 11px;
+            color: #7B61FF;
+            margin-bottom: 6px;
+        }
+        .todo-detail-e .todo-title {
+            font-size: 14px;
+            color: #fff;
+            font-weight: 500;
+            margin-bottom: 6px;
+        }
+        .todo-detail-e .todo-description {
+            font-size: 12px;
+            color: #666;
+            line-height: 1.4;
+        }
+        .todo-detail-e .todo-tags {
+            display: flex;
+            gap: 6px;
+            margin-top: 8px;
+        }
+        .todo-detail-e .tag {
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            background: rgba(123,97,255,0.15);
+            color: #7B61FF;
+        }
+
+        /* Design F - Modern Neumorphism */
+        .todo-detail-f {
+            background: #2A2A3C;
+            border-radius: 24px;
+            padding: 20px;
+            width: 320px;
+            box-shadow:
+                8px 8px 16px rgba(0,0,0,0.3),
+                -8px -8px 16px rgba(255,255,255,0.03);
+        }
+        .todo-detail-f .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .todo-detail-f .title-section h2 {
+            font-size: 18px;
+            font-weight: 700;
+            color: #fff;
+        }
+        .todo-detail-f .title-section .subtitle {
+            font-size: 12px;
+            color: #888;
+            margin-top: 4px;
+        }
+        .todo-detail-f .add-btn {
+            width: 44px;
+            height: 44px;
+            background: linear-gradient(145deg, #3a3a4c, #242432);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 26px;
+            color: #7B61FF;
+            box-shadow:
+                4px 4px 8px rgba(0,0,0,0.3),
+                -4px -4px 8px rgba(255,255,255,0.02);
+        }
+        .todo-detail-f .todo-card {
+            background: linear-gradient(145deg, #2e2e42, #262634);
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 12px;
+            box-shadow:
+                inset 2px 2px 4px rgba(0,0,0,0.2),
+                inset -2px -2px 4px rgba(255,255,255,0.02);
+        }
+        .todo-detail-f .todo-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .todo-detail-f .checkbox {
+            width: 24px;
+            height: 24px;
+            background: linear-gradient(145deg, #3a3a4c, #242432);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow:
+                2px 2px 4px rgba(0,0,0,0.3),
+                -2px -2px 4px rgba(255,255,255,0.02);
+        }
+        .todo-detail-f .checkbox.checked {
+            background: linear-gradient(135deg, #7B61FF, #64B5F6);
+        }
+        .todo-detail-f .todo-info {
+            flex: 1;
+        }
+        .todo-detail-f .todo-title {
+            font-size: 15px;
+            color: #fff;
+            font-weight: 600;
+        }
+        .todo-detail-f .todo-time {
+            font-size: 11px;
+            color: #64B5F6;
+            margin-top: 2px;
+        }
+        .todo-detail-f .todo-description {
+            font-size: 12px;
+            color: #888;
+            line-height: 1.5;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+        }
+        .todo-detail-f .progress-bar {
+            height: 4px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 2px;
+            margin-top: 16px;
+            overflow: hidden;
+        }
+        .todo-detail-f .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #7B61FF, #00C9A7);
+            border-radius: 2px;
+            width: 65%;
+        }
+
+        .vote-section {
+            text-align: center;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px dashed rgba(255,255,255,0.1);
+        }
+        .vote-btn {
+            background: linear-gradient(135deg, #7B61FF, #9575CD);
+            border: none;
+            color: #fff;
+            padding: 8px 20px;
+            border-radius: 8px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .vote-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(123,97,255,0.4);
+        }
+    </style>
+</head>
+<body>
+    <h1>🎨 Todo Widget Design Options</h1>
+    <p class="subtitle">Todo List Widget와 Todo Detail Widget의 디자인 시안입니다. 마음에 드는 디자인을 선택해주세요.</p>
+
+    <h2 class="section-title">📋 Todo List Widget (할 일 목록)</h2>
+    <div class="design-grid">
+        <!-- Design A -->
+        <div class="design-card">
+            <h3>Design A - Glass Morphism</h3>
+            <p class="description">반투명 유리 효과의 모던한 디자인. 그라데이션 체크박스와 부드러운 그림자가 특징입니다.</p>
+            <div class="todo-list-a">
+                <div class="header">
+                    <div class="title-section">
+                        <h2>오늘 할 일</h2>
+                        <div class="progress">2/5 완료</div>
+                    </div>
+                    <div class="add-btn">+</div>
+                </div>
+                <div class="divider"></div>
+                <div class="todo-item">
+                    <div class="checkbox checked"></div>
+                    <div class="todo-content">
+                        <div class="todo-title">프로젝트 기획서 작성</div>
+                        <div class="todo-time">오전 10:00</div>
+                    </div>
+                    <div class="category-dot" style="background: #FF6B6B;"></div>
+                </div>
+                <div class="todo-item">
+                    <div class="checkbox"></div>
+                    <div class="todo-content">
+                        <div class="todo-title">팀 회의 참석</div>
+                        <div class="todo-time">오후 2:00</div>
+                    </div>
+                    <div class="category-dot" style="background: #64B5F6;"></div>
+                </div>
+                <div class="todo-item">
+                    <div class="checkbox"></div>
+                    <div class="todo-content">
+                        <div class="todo-title">코드 리뷰</div>
+                        <div class="todo-time">오후 4:30</div>
+                    </div>
+                    <div class="category-dot" style="background: #00C9A7;"></div>
+                </div>
+            </div>
+            <div class="vote-section">
+                <button class="vote-btn" onclick="alert('Design A 선택!')">이 디자인 선택</button>
+            </div>
+        </div>
+
+        <!-- Design B -->
+        <div class="design-card">
+            <h3>Design B - Card with Color Bar</h3>
+            <p class="description">왼쪽 컬러 바로 우선순위를 표시. 카테고리 태그와 시간이 함께 보이는 정보 밀도 높은 디자인.</p>
+            <div class="todo-list-b">
+                <div class="header">
+                    <div class="title-section">
+                        <h2>오늘 할 일</h2>
+                        <div class="date">12월 17일 화요일</div>
+                    </div>
+                    <div class="header-actions">
+                        <div class="add-btn">+</div>
+                    </div>
+                </div>
+                <div class="todo-item priority-high">
+                    <div class="checkbox"></div>
+                    <div class="todo-content">
+                        <div class="todo-title">긴급 버그 수정</div>
+                        <div class="todo-meta">
+                            <span class="todo-time">🕐 오전 9:00</span>
+                            <span class="todo-category">업무</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="todo-item priority-medium">
+                    <div class="checkbox"></div>
+                    <div class="todo-content">
+                        <div class="todo-title">문서 업데이트</div>
+                        <div class="todo-meta">
+                            <span class="todo-time">🕐 오후 1:00</span>
+                            <span class="todo-category">문서</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="todo-item">
+                    <div class="checkbox"></div>
+                    <div class="todo-content">
+                        <div class="todo-title">저녁 약속</div>
+                        <div class="todo-meta">
+                            <span class="todo-time">🕐 오후 7:00</span>
+                            <span class="todo-category">개인</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="vote-section">
+                <button class="vote-btn" onclick="alert('Design B 선택!')">이 디자인 선택</button>
+            </div>
+        </div>
+
+        <!-- Design C -->
+        <div class="design-card">
+            <h3>Design C - Minimal Flat</h3>
+            <p class="description">깔끔하고 미니멀한 플랫 디자인. 통계 정보와 시간 뱃지로 한눈에 정보 파악 가능.</p>
+            <div class="todo-list-c">
+                <div class="header">
+                    <div class="title-section">
+                        <h2>Tasks</h2>
+                        <div class="stats">
+                            <div class="stat"><span>3</span> 남음</div>
+                            <div class="stat"><span>2</span> 완료</div>
+                        </div>
+                    </div>
+                    <div class="add-btn">+</div>
+                </div>
+                <div class="todo-item">
+                    <div class="checkbox checked">✓</div>
+                    <div class="todo-content">
+                        <div class="todo-title">아침 운동</div>
+                        <div class="todo-subtitle">30분 조깅</div>
+                    </div>
+                    <div class="time-badge">완료</div>
+                </div>
+                <div class="todo-item">
+                    <div class="checkbox"></div>
+                    <div class="todo-content">
+                        <div class="todo-title">이메일 확인</div>
+                        <div class="todo-subtitle">미팅 관련 메일 답장</div>
+                    </div>
+                    <div class="time-badge">10:00</div>
+                </div>
+                <div class="todo-item">
+                    <div class="checkbox"></div>
+                    <div class="todo-content">
+                        <div class="todo-title">보고서 작성</div>
+                        <div class="todo-subtitle">주간 보고서</div>
+                    </div>
+                    <div class="time-badge">14:00</div>
+                </div>
+            </div>
+            <div class="vote-section">
+                <button class="vote-btn" onclick="alert('Design C 선택!')">이 디자인 선택</button>
+            </div>
+        </div>
+    </div>
+
+    <h2 class="section-title">📝 Todo Detail Widget (상세 정보)</h2>
+    <div class="design-grid">
+        <!-- Design D -->
+        <div class="design-card">
+            <h3>Design D - Expandable Card</h3>
+            <p class="description">카드 내에 설명이 접혀있는 스타일. 우선순위 태그와 마감일이 잘 보이는 구조.</p>
+            <div class="todo-detail-d">
+                <div class="header">
+                    <div class="title-section">
+                        <h2>상세 할 일</h2>
+                    </div>
+                    <div class="add-btn">+</div>
+                </div>
+                <div class="todo-card">
+                    <div class="todo-header">
+                        <div class="checkbox"></div>
+                        <div class="todo-title">앱 릴리즈 준비</div>
+                        <span class="priority-tag">긴급</span>
+                    </div>
+                    <div class="todo-description">
+                        Play Store 릴리즈 노트 작성 및 스크린샷 업데이트. QA 팀 최종 확인 후 배포 진행.
+                    </div>
+                    <div class="todo-footer">
+                        <span class="due-date">📅 오늘 마감</span>
+                        <span class="category">개발</span>
+                    </div>
+                </div>
+                <div class="todo-card">
+                    <div class="todo-header">
+                        <div class="checkbox"></div>
+                        <div class="todo-title">디자인 리뷰</div>
+                        <span class="priority-tag" style="background: rgba(255,183,77,0.2); color: #FFB74D;">중간</span>
+                    </div>
+                    <div class="todo-description">
+                        새로운 위젯 디자인 피드백 정리 및 수정사항 반영.
+                    </div>
+                    <div class="todo-footer">
+                        <span class="due-date">📅 내일</span>
+                        <span class="category">디자인</span>
+                    </div>
+                </div>
+            </div>
+            <div class="vote-section">
+                <button class="vote-btn" onclick="alert('Design D 선택!')">이 디자인 선택</button>
+            </div>
+        </div>
+
+        <!-- Design E -->
+        <div class="design-card">
+            <h3>Design E - Timeline Style</h3>
+            <p class="description">시간순으로 타임라인 형태로 표시. 완료 여부가 점 색상으로 구분되는 직관적인 디자인.</p>
+            <div class="todo-detail-e">
+                <div class="header">
+                    <div class="title-section">
+                        <h2>오늘 일정</h2>
+                    </div>
+                    <div class="add-btn">+</div>
+                </div>
+                <div class="timeline">
+                    <div class="todo-item completed">
+                        <div class="todo-time">오전 9:00</div>
+                        <div class="todo-title">스탠드업 미팅</div>
+                        <div class="todo-description">팀원들과 오늘 할 일 공유</div>
+                        <div class="todo-tags">
+                            <span class="tag">회의</span>
+                            <span class="tag" style="background: rgba(0,201,167,0.15); color: #00C9A7;">완료</span>
+                        </div>
+                    </div>
+                    <div class="todo-item">
+                        <div class="todo-time">오후 2:00</div>
+                        <div class="todo-title">코드 리팩토링</div>
+                        <div class="todo-description">위젯 서비스 코드 정리 및 최적화 작업</div>
+                        <div class="todo-tags">
+                            <span class="tag">개발</span>
+                            <span class="tag" style="background: rgba(255,107,107,0.15); color: #FF6B6B;">진행중</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="vote-section">
+                <button class="vote-btn" onclick="alert('Design E 선택!')">이 디자인 선택</button>
+            </div>
+        </div>
+
+        <!-- Design F -->
+        <div class="design-card">
+            <h3>Design F - Modern Neumorphism</h3>
+            <p class="description">입체적인 뉴모피즘 디자인. 부드러운 그림자와 그라데이션으로 고급스러운 느낌.</p>
+            <div class="todo-detail-f">
+                <div class="header">
+                    <div class="title-section">
+                        <h2>My Tasks</h2>
+                        <div class="subtitle">오늘 마감 2개</div>
+                    </div>
+                    <div class="add-btn">+</div>
+                </div>
+                <div class="todo-card">
+                    <div class="todo-header">
+                        <div class="checkbox checked">✓</div>
+                        <div class="todo-info">
+                            <div class="todo-title">UI 컴포넌트 완성</div>
+                            <div class="todo-time">오전 11:00 완료</div>
+                        </div>
+                    </div>
+                    <div class="todo-description">
+                        버튼, 입력 필드, 카드 등 기본 UI 컴포넌트 스타일 가이드 작성 완료.
+                    </div>
+                </div>
+                <div class="todo-card">
+                    <div class="todo-header">
+                        <div class="checkbox"></div>
+                        <div class="todo-info">
+                            <div class="todo-title">API 연동 작업</div>
+                            <div class="todo-time">오후 5:00 마감</div>
+                        </div>
+                    </div>
+                    <div class="todo-description">
+                        사용자 인증 API 연동 및 에러 핸들링 구현. 토큰 갱신 로직 추가.
+                    </div>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill"></div>
+                </div>
+            </div>
+            <div class="vote-section">
+                <button class="vote-btn" onclick="alert('Design F 선택!')">이 디자인 선택</button>
+            </div>
+        </div>
+    </div>
+
+    <div style="text-align: center; margin-top: 60px; padding: 40px; background: rgba(123,97,255,0.1); border-radius: 16px; max-width: 800px; margin-left: auto; margin-right: auto;">
+        <h3 style="color: #7B61FF; margin-bottom: 16px;">💡 디자인 선택 가이드</h3>
+        <p style="color: #888; font-size: 14px; line-height: 1.8;">
+            <strong style="color: #fff;">Todo List Widget:</strong><br>
+            • Design A: 모던하고 세련된 느낌을 원할 때<br>
+            • Design B: 우선순위와 카테고리 정보가 중요할 때<br>
+            • Design C: 심플하고 깔끔한 것을 선호할 때<br><br>
+            <strong style="color: #fff;">Todo Detail Widget:</strong><br>
+            • Design D: 설명과 마감일을 함께 보고 싶을 때<br>
+            • Design E: 시간순 정리가 필요할 때<br>
+            • Design F: 고급스럽고 입체적인 디자인을 원할 때
+        </p>
+    </div>
+</body>
+</html>

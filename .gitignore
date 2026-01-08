@@ -73,3 +73,4 @@ web/index.html
 # Node.js dependencies
 node_modules/
 package-lock.json
+ios/build/

@@ -60,7 +60,8 @@ final goRouterProvider = Provider<GoRouter>((ref) {
 
       // While loading initial auth state, stay on login/register routes
       final isLoading = userAsync.isLoading;
-      final isAuthenticated = userAsync.value != null;
+      // Use hasValue to check if data is available, then check if user is not null
+      final isAuthenticated = userAsync.hasValue && userAsync.value != null;
 
       logger.d('🚦 Router redirect: location=${state.matchedLocation}, isLoading=$isLoading, isAuth=$isAuthenticated');
 

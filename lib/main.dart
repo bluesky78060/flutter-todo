@@ -41,6 +41,7 @@ import 'package:todo_app/presentation/providers/theme_customization_provider.dar
 import 'package:todo_app/core/utils/app_logger.dart';
 import 'package:todo_app/core/widget/widget_init.dart';
 import 'package:todo_app/core/services/widget_method_channel.dart';
+import 'package:todo_app/core/services/deep_link_service.dart';
 
 /// Background notification handler for when app is terminated or in background.
 ///
@@ -70,15 +71,14 @@ void main() async {
 
   // Initialize Naver Map SDK
   if (!kIsWeb) {
-    // Mobile platforms only - Web uses JavaScript SDK loaded in index.html
-    if (defaultTargetPlatform == TargetPlatform.android) {
-      // Android: 새로운 초기화 방법
+    // Mobile platforms (iOS & Android) - Use unified FlutterNaverMap().init()
+    // Note: NaverMapSdk.instance.initialize() is deprecated and causes crashes on iOS
+    try {
       await FlutterNaverMap().init(clientId: 'rzx12utf2x');
-      logger.d('✅ Naver Maps SDK initialized for Android with FlutterNaverMap().init()');
-    } else {
-      // iOS: 기존 방법 유지
-      await NaverMapSdk.instance.initialize(clientId: 'rzx12utf2x');
-      logger.d('✅ Naver Maps SDK initialized for iOS');
+      logger.d('✅ Naver Maps SDK initialized for ${defaultTargetPlatform.name} with FlutterNaverMap().init()');
+    } catch (e) {
+      logger.e('⚠️ Naver Maps SDK initialization failed: $e');
+      // Continue without Naver Maps - app should still work
     }
   } else {
     // Web: SDK는 index.html의 JavaScript에서 로드됨
@@ -190,6 +190,10 @@ Future<void> runAppWithErrorHandling() async {
   }
 
   logger.d('✅ Main: Supabase initialization complete, starting notification service');
+
+  // Initialize Deep Link Service for iOS OAuth callbacks
+  DeepLinkService.initialize();
+  logger.d('✅ Main: DeepLinkService initialized');
 
   // Initialize Notification Service (without requesting permissions yet)
   // Permissions will be requested in TodoListScreen after Activity context is ready
