@@ -369,7 +369,7 @@ class WidgetService {
             final cmp = timeA.compareTo(timeB);
             if (cmp != 0) return cmp;
           }
-          return (a.position ?? 999999).compareTo(b.position ?? 999999);
+          return (a.position).compareTo(b.position);
         });
 
         // Format: "title1|time1;;title2|time2"
@@ -494,7 +494,7 @@ class WidgetService {
 
           todoFutures.addAll([
             HomeWidget.saveWidgetData<String>('todo_${i + 1}_text', todo.title),
-            HomeWidget.saveWidgetData<String>('todo_${i + 1}_description', todo.description ?? ''),
+            HomeWidget.saveWidgetData<String>('todo_${i + 1}_description', todo.description),
             HomeWidget.saveWidgetData<String>('todo_${i + 1}_id', todo.id.toString()),
             HomeWidget.saveWidgetData<bool>('todo_${i + 1}_completed', todo.isCompleted),
             HomeWidget.saveWidgetData<String>('todo_${i + 1}_time', timeStr),
@@ -548,8 +548,8 @@ class WidgetService {
   List<Todo> _sortTodosByPosition(List<Todo> todos) {
     final sorted = List<Todo>.from(todos);
     sorted.sort((a, b) {
-      final posA = a.position ?? 999999;
-      final posB = b.position ?? 999999;
+      final posA = a.position;
+      final posB = b.position;
       return posA.compareTo(posB);
     });
     return sorted;

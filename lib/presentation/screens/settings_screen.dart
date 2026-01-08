@@ -45,8 +45,6 @@ import 'package:todo_app/presentation/screens/widget_config_screen.dart';
 import 'dart:io' show Platform;
 import 'package:todo_app/presentation/providers/profile_provider.dart';
 import 'package:todo_app/presentation/providers/view_mode_provider.dart';
-import 'package:fluentui_system_icons/fluentui_system_icons.dart';
-import 'package:todo_app/core/theme/app_colors.dart';
 
 /// Settings screen with app preferences and account management.
 class SettingsScreen extends ConsumerStatefulWidget {
@@ -60,7 +58,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   String _version = '';
   String _buildNumber = '';
   DeviceInfo? _deviceInfo;
-  bool _isBatteryOptimizationIgnored = false;
 
   @override
   void initState() {
@@ -80,12 +77,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   Future<void> _loadDeviceInfo() async {
     try {
       final deviceInfo = await DeviceUtils.getDeviceInfo();
-      final batteryOptimized = await DeviceUtils.isIgnoringBatteryOptimizations();
 
       if (mounted) {
         setState(() {
           _deviceInfo = deviceInfo;
-          _isBatteryOptimizationIgnored = batteryOptimized;
         });
       }
     } catch (e) {
@@ -98,7 +93,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final isDarkMode = ref.watch(isDarkModeProvider);
     final authState = ref.watch(currentUserProvider);
     final primaryColor = ref.watch(primaryColorProvider);
-    final fontScale = ref.watch(fontSizeScaleProvider);
     final pendingColor = ref.watch(pendingColorProvider);
     final pendingFontScale = ref.watch(pendingFontScaleProvider);
 
