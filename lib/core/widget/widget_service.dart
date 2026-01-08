@@ -150,6 +150,11 @@ class WidgetService {
   DateTime? _cacheTimestamp;
   static const _cacheValidityMs = 1000; // Cache valid for 1 second
 
+  // Cached holidays to avoid redundant API calls (holidays don't change frequently)
+  Set<int>? _cachedHolidays;
+  int? _cachedHolidayYear;
+  int? _cachedHolidayMonth;
+
   /// Get todos with caching to avoid redundant DB queries
   Future<List<Todo>> _getTodosWithCache() async {
     final now = DateTime.now();
@@ -169,10 +174,31 @@ class WidgetService {
     return _cachedTodos!;
   }
 
+  /// Get holidays with caching (holidays don't change during a session)
+  Future<Set<int>> _getHolidaysWithCache(int year, int month) async {
+    // Return cached holidays if same year/month
+    if (_cachedHolidays != null &&
+        _cachedHolidayYear == year &&
+        _cachedHolidayMonth == month) {
+      return _cachedHolidays!;
+    }
+
+    try {
+      _cachedHolidays = await KoreanHolidayService.getHolidaysForMonth(year, month);
+      _cachedHolidayYear = year;
+      _cachedHolidayMonth = month;
+      return _cachedHolidays!;
+    } catch (e) {
+      logger.w('   Failed to fetch holidays: $e');
+      return {};
+    }
+  }
+
   /// Clear the cache (call after data modifications)
   void invalidateCache() {
     _cachedTodos = null;
     _cacheTimestamp = null;
+    // Note: Holiday cache is NOT cleared as holidays don't change with todo modifications
   }
 
   /// Get calendar data for the current month (uses cache)
@@ -306,13 +332,8 @@ class WidgetService {
       final daysInMonth = lastDayOfMonth.day;
       final firstWeekday = firstDayOfMonth.weekday % 7;
 
-      // Fetch holidays in parallel with preparing calendar data
-      Set<int> holidays = {};
-      try {
-        holidays = await KoreanHolidayService.getHolidaysForMonth(now.year, now.month);
-      } catch (e) {
-        logger.w('   Failed to fetch holidays: $e');
-      }
+      // PERFORMANCE: Use cached holidays to avoid redundant API calls
+      final holidays = await _getHolidaysWithCache(now.year, now.month);
 
       // Prepare all calendar day data
       final Map<int, String> calendarDays = {};

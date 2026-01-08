@@ -703,6 +703,11 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> with WidgetsBin
                           controller: _scrollController,
                           padding: const EdgeInsets.fromLTRB(12, 8, 12, 16),
                           itemCount: groupedTodos.length,
+                          // PERFORMANCE: Disable automatic keep alives for memory efficiency
+                          // Items are simple and don't need to maintain state when scrolled off
+                          addAutomaticKeepAlives: false,
+                          // Pre-cache items for smoother scrolling
+                          cacheExtent: 300,
                           itemBuilder: (context, index) {
                             final group = groupedTodos[index];
                             final isSelected = group.length == 1

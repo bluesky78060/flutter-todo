@@ -62,29 +62,37 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   @override
   void initState() {
     super.initState();
-    _loadAppInfo();
-    _loadDeviceInfo();
+    // PERFORMANCE: Load app info and device info in parallel
+    _loadInitialData();
   }
 
-  Future<void> _loadAppInfo() async {
-    final info = await PackageInfo.fromPlatform();
+  /// Load app info and device info in parallel for faster initialization
+  Future<void> _loadInitialData() async {
+    // Run both async operations in parallel
+    final packageInfoFuture = PackageInfo.fromPlatform();
+    final deviceInfoFuture = _loadDeviceInfoSafe();
+
+    final results = await Future.wait([packageInfoFuture, deviceInfoFuture]);
+
+    if (!mounted) return;
+
+    final info = results[0] as PackageInfo;
+    final deviceInfo = results[1] as DeviceInfo?;
+
     setState(() {
       _version = info.version;
       _buildNumber = info.buildNumber;
+      _deviceInfo = deviceInfo;
     });
   }
 
-  Future<void> _loadDeviceInfo() async {
+  /// Safely load device info, returning null on error
+  Future<DeviceInfo?> _loadDeviceInfoSafe() async {
     try {
-      final deviceInfo = await DeviceUtils.getDeviceInfo();
-
-      if (mounted) {
-        setState(() {
-          _deviceInfo = deviceInfo;
-        });
-      }
+      return await DeviceUtils.getDeviceInfo();
     } catch (e) {
       debugPrint('Failed to load device info: $e');
+      return null;
     }
   }
 
