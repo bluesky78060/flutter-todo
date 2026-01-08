@@ -1,5 +1,3 @@
-import 'dart:async' show unawaited;
-
 import 'package:flutter/foundation.dart' show kIsWeb, kDebugMode;
 import 'package:flutter/services.dart';
 import 'package:home_widget/home_widget.dart';
@@ -147,14 +145,40 @@ class WidgetService {
     await preferences.setString(_lastUpdateKey, DateTime.now().toIso8601String());
   }
 
-  /// Get calendar data for the current month
+  // Cached todos to avoid redundant DB queries within same update cycle
+  List<Todo>? _cachedTodos;
+  DateTime? _cacheTimestamp;
+  static const _cacheValidityMs = 1000; // Cache valid for 1 second
+
+  /// Get todos with caching to avoid redundant DB queries
+  Future<List<Todo>> _getTodosWithCache() async {
+    final now = DateTime.now();
+    if (_cachedTodos != null &&
+        _cacheTimestamp != null &&
+        now.difference(_cacheTimestamp!).inMilliseconds < _cacheValidityMs) {
+      logger.d('   Using cached todos (${_cachedTodos!.length} items)');
+      return _cachedTodos!;
+    }
+
+    final result = await todoRepository.getTodos();
+    _cachedTodos = result.fold(
+      (failure) => <Todo>[],
+      (todos) => todos,
+    );
+    _cacheTimestamp = now;
+    return _cachedTodos!;
+  }
+
+  /// Clear the cache (call after data modifications)
+  void invalidateCache() {
+    _cachedTodos = null;
+    _cacheTimestamp = null;
+  }
+
+  /// Get calendar data for the current month (uses cache)
   Future<CalendarData> getCalendarData() async {
     try {
-      final result = await todoRepository.getTodos();
-      final todos = result.fold(
-        (failure) => <Todo>[],
-        (todos) => todos,
-      );
+      final todos = await _getTodosWithCache();
       return CalendarData.fromTodos(todos, DateTime.now());
     } catch (e) {
       // Return empty calendar data on error
@@ -168,14 +192,10 @@ class WidgetService {
     }
   }
 
-  /// Get today's todo data
+  /// Get today's todo data (uses cache)
   Future<TodoListData> getTodaysTodos() async {
     try {
-      final result = await todoRepository.getTodos();
-      final todos = result.fold(
-        (failure) => <Todo>[],
-        (todos) => todos,
-      );
+      final todos = await _getTodosWithCache();
       return TodoListData.fromTodos(todos);
     } catch (e) {
       // Return empty todo list data on error
@@ -187,6 +207,15 @@ class WidgetService {
         lastUpdated: DateTime.now(),
       );
     }
+  }
+
+  /// Get both calendar and todo data in one call (most efficient)
+  Future<(CalendarData, TodoListData)> getWidgetData() async {
+    final todos = await _getTodosWithCache();
+    return (
+      CalendarData.fromTodos(todos, DateTime.now()),
+      TodoListData.fromTodos(todos),
+    );
   }
 
   /// Update widget display based on current configuration (optimized)
@@ -220,24 +249,13 @@ class WidgetService {
       // Save last update time
       await _updateLastModified();
 
-      // Delay to ensure SharedPreferences are flushed to disk
-      // home_widget uses apply() which is async, so we need to wait for disk write
-      // 300ms is more reliable than 100ms based on testing
-      await Future.delayed(const Duration(milliseconds: 300));
-
       // Force native widget update for immediate sync (Android only)
+      // Note: Batched saves with _executeFuturesInBatches already ensure proper disk sync,
+      // so we only need a single update call without artificial delays
       await _forceNativeWidgetUpdate();
 
-      // Double-update mechanism: trigger a second update after a brief delay
-      // This catches any race conditions where the first read gets stale data
-      // Using unawaited() to explicitly mark this as intentional fire-and-forget
-      unawaited(Future.delayed(const Duration(milliseconds: 500), () async {
-        try {
-          await _forceNativeWidgetUpdate();
-        } catch (e) {
-          logger.w('⚠️ [WidgetService] Delayed widget update failed: $e');
-        }
-      }));
+      // Invalidate cache after successful update
+      invalidateCache();
 
       stopwatch.stop();
       logger.d('   Widget update completed in ${stopwatch.elapsedMilliseconds}ms');
@@ -325,8 +343,9 @@ class WidgetService {
       // Save day-specific todos for calendar day click feature
       _addDayTodosFutures(saveFutures, todos, now.year, now.month);
 
-      // Execute ALL saves in parallel (calendar + events + day todos)
-      await Future.wait(saveFutures);
+      // Execute saves in batches to avoid overwhelming SharedPreferences
+      // Batch size of 15 balances parallelism vs disk I/O contention
+      await _executeFuturesInBatches(saveFutures, batchSize: 15);
 
       // Notify native widget
       await HomeWidget.updateWidget(
@@ -512,8 +531,8 @@ class WidgetService {
         }
       }
 
-      // Execute all saves in parallel
-      await Future.wait(todoFutures);
+      // Execute saves in batches to avoid overwhelming SharedPreferences
+      await _executeFuturesInBatches(todoFutures, batchSize: 15);
 
       // Notify native widgets (both TodoListWidget and TodoDetailWidget)
       await HomeWidget.updateWidget(
@@ -630,5 +649,17 @@ class WidgetService {
     await preferences.remove(_enabledKey);
     await preferences.remove(_lastUpdateKey);
     await clearWidgetData();
+  }
+
+  /// Execute futures in batches to avoid overwhelming SharedPreferences
+  /// This prevents disk I/O contention and improves reliability
+  Future<void> _executeFuturesInBatches(
+    List<Future<void>> futures, {
+    int batchSize = 15,
+  }) async {
+    for (var i = 0; i < futures.length; i += batchSize) {
+      final batch = futures.skip(i).take(batchSize).toList();
+      await Future.wait(batch);
+    }
   }
 }
