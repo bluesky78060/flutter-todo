@@ -878,5 +878,17 @@
   "disabled": "Disabled",
   "due_time_optional": "Due Time (optional)",
   "edit": "Edit",
-  "enabled": "Enabled"
+  "enabled": "Enabled",
+
+  "not_connected": "Not connected",
+  "connect": "Connect",
+  "manage": "Manage",
+  "disconnect": "Disconnect",
+  "google_calendar_connected": "Google Calendar connected",
+  "google_calendar_connection_failed": "Failed to connect Google Calendar",
+  "google_calendar_disconnected": "Google Calendar disconnected",
+  "sync_todos_to_calendar": "Sync todos to calendar",
+  "fetch_calendar_events": "Fetch calendar events",
+  "syncing_to_calendar": "Syncing to calendar...",
+  "fetched_events": "Fetched {} events"
 }
