@@ -19,7 +19,7 @@ library;
 
 import 'dart:async';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:flutter/foundation.dart' show kIsWeb, defaultTargetPlatform;
+import 'package:flutter/foundation.dart' show kIsWeb, kDebugMode, defaultTargetPlatform;
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -377,9 +377,10 @@ class _MyAppState extends ConsumerState<MyApp> {
       themeCustomizationProvider.select((state) => state.applied.fontSizeScale),
     );
 
-    if (kDebugMode) {
+    assert(() {
       logger.d('🎨 MyApp.build() rebuilding with APPLIED theme: primaryColor=${primaryColor.value}, fontScale=$fontScale');
-    }
+      return true;
+    }());
 
     // Update AppColors dynamic primary color and font scale for widgets
     AppColors.setDynamicPrimary(primaryColor);
