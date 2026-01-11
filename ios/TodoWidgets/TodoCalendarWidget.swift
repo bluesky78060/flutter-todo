@@ -82,10 +82,9 @@ struct CalendarWidgetView: View {
     var entry: CalendarEntry
     @Environment(\.widgetFamily) var family
     @Environment(\.colorScheme) var colorScheme
-    @Environment(\.widgetRenderingMode) var renderingMode
 
     var backgroundColor: Color {
-        Color.clear  // Glass 효과를 위해 투명 배경
+        colorScheme == .dark ? Color.black.opacity(0.8) : Color.white.opacity(0.9)
     }
 
     var cardBackgroundColor: Color {
@@ -111,7 +110,7 @@ struct CalendarWidgetView: View {
             Spacer(minLength: 0)
         }
         .padding(.horizontal, 10)
-        .padding(.top, 56)
+        .padding(.top, 8)
         .padding(.bottom, 4)
         // Glass 효과: 배경 제거하여 containerBackground의 material이 보이도록 함
     }
@@ -210,18 +209,18 @@ struct CalendarWidgetView: View {
 
             // Todo titles (휴일 아래)
             if day.isCurrentMonth && !day.todoTitles.isEmpty {
-                VStack(spacing: 0) {
-                    // 첫 번째 할 일 제목 표시
-                    Text(truncateTitle(day.todoTitles.first ?? "", maxLength: 5))
-                        .font(.system(size: 7, weight: .medium))
-                        .foregroundColor(Color(hex: "#7B61FF"))
+                VStack(spacing: 1) {
+                    // 첫 번째 할 일 제목 표시 - 더 밝고 큰 폰트
+                    Text(truncateTitle(day.todoTitles.first ?? "", maxLength: 4))
+                        .font(.system(size: 8, weight: .semibold))
+                        .foregroundColor(Color(hex: "#4DD0E1"))  // 밝은 시안색 (다크모드 가독성)
                         .lineLimit(1)
 
                     // 추가 할 일이 있으면 +N 표시
                     if day.todoCount > 1 {
                         Text("+\(day.todoCount - 1)")
-                            .font(.system(size: 6))
-                            .foregroundColor(Color(hex: "#888888"))
+                            .font(.system(size: 7, weight: .medium))
+                            .foregroundColor(Color(hex: "#B0BEC5"))  // 밝은 회색
                     }
                 }
                 .frame(height: 18)
@@ -445,34 +444,35 @@ struct TodoCalendarWidget: Widget {
 
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: kind, provider: CalendarProvider()) { entry in
-            CalendarWidgetView(entry: entry)
-                .containerBackground(for: .widget) {
-                    // iOS 26 Glass Effect - 시스템 기본 glass 배경
-                    Rectangle()
-                        .fill(.clear)
-                        .glassEffect()
-                }
+            if #available(iOS 17.0, *) {
+                CalendarWidgetView(entry: entry)
+                    .containerBackground(.fill.tertiary, for: .widget)
+            } else {
+                CalendarWidgetView(entry: entry)
+                    .padding()
+                    .background(Color(.systemBackground))
+            }
         }
         .configurationDisplayName("할 일 캘린더")
         .description("월별 캘린더에서 할 일 확인")
         .supportedFamilies([.systemMedium, .systemLarge])
-        .contentMarginsDisabled()
     }
 }
 
-// MARK: - Preview
-#Preview(as: .systemMedium) {
-    TodoCalendarWidget()
-} timeline: {
-    CalendarEntry(
-        date: Date(),
-        displayMonth: Date(),
-        todosByDay: [
-            18: [TodoItem(id: "1", title: "Team meeting", description: nil, dueDate: Date(), reminderTime: nil, isCompleted: false, categoryId: 1, categoryName: "Work", categoryColor: "#7B61FF")],
-            20: [TodoItem(id: "2", title: "Project deadline", description: nil, dueDate: Date(), reminderTime: nil, isCompleted: false, categoryId: 2, categoryName: "Dev", categoryColor: "#42A5F5")],
-            25: [TodoItem(id: "3", title: "Christmas", description: nil, dueDate: Date(), reminderTime: nil, isCompleted: false, categoryId: nil, categoryName: nil, categoryColor: nil)]
-        ],
-        holidays: [25: "Christmas"],
-        selectedDay: nil
-    )
+// MARK: - Preview (iOS 15 compatible)
+struct TodoCalendarWidget_Previews: PreviewProvider {
+    static var previews: some View {
+        CalendarWidgetView(entry: CalendarEntry(
+            date: Date(),
+            displayMonth: Date(),
+            todosByDay: [
+                18: [TodoItem(id: "1", title: "Team meeting", description: nil, dueDate: Date(), reminderTime: nil, isCompleted: false, categoryId: 1, categoryName: "Work", categoryColor: "#7B61FF")],
+                20: [TodoItem(id: "2", title: "Project deadline", description: nil, dueDate: Date(), reminderTime: nil, isCompleted: false, categoryId: 2, categoryName: "Dev", categoryColor: "#42A5F5")],
+                25: [TodoItem(id: "3", title: "Christmas", description: nil, dueDate: Date(), reminderTime: nil, isCompleted: false, categoryId: nil, categoryName: nil, categoryColor: nil)]
+            ],
+            holidays: [25: "Christmas"],
+            selectedDay: nil
+        ))
+        .previewContext(WidgetPreviewContext(family: .systemMedium))
+    }
 }

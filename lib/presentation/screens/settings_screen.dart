@@ -45,6 +45,7 @@ import 'package:todo_app/presentation/screens/widget_config_screen.dart';
 import 'dart:io' show Platform;
 import 'package:todo_app/presentation/providers/profile_provider.dart';
 import 'package:todo_app/presentation/providers/view_mode_provider.dart';
+import 'package:todo_app/presentation/providers/google_calendar_provider.dart';
 
 /// Settings screen with app preferences and account management.
 class SettingsScreen extends ConsumerStatefulWidget {
@@ -180,6 +181,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     cardColor: cardColor,
                     child: Column(
                       children: [
+                        _buildGoogleCalendarRow(textColor, subTextColor, dividerColor),
+                        Divider(color: dividerColor, height: 1),
                         _buildSettingRow(
                           icon: Icons.cloud_upload,
                           title: 'backup_and_restore'.tr(),
@@ -709,6 +712,169 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         ),
       ],
     );
+  }
+
+  Widget _buildGoogleCalendarRow(Color textColor, Color subTextColor, Color dividerColor) {
+    final calendarState = ref.watch(googleCalendarProvider);
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: Colors.red.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Image.network(
+              'https://www.gstatic.com/calendar/images/dynamiclogo_2020q4/calendar_24_2x.png',
+              width: 22,
+              height: 22,
+              errorBuilder: (context, error, stackTrace) {
+                return Icon(Icons.calendar_today, color: Colors.red.shade400, size: 22);
+              },
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Google Calendar',
+                  style: TextStyle(
+                    color: textColor,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                if (calendarState.isConnected && calendarState.email != null)
+                  Text(
+                    calendarState.email!,
+                    style: TextStyle(
+                      color: subTextColor,
+                      fontSize: 13,
+                    ),
+                  )
+                else
+                  Text(
+                    'not_connected'.tr(),
+                    style: TextStyle(
+                      color: subTextColor,
+                      fontSize: 13,
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          if (calendarState.isLoading)
+            const SizedBox(
+              width: 24,
+              height: 24,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            )
+          else if (calendarState.isConnected)
+            TextButton(
+              onPressed: () => _showCalendarOptions(context),
+              child: Text('manage'.tr()),
+            )
+          else
+            TextButton(
+              onPressed: _connectGoogleCalendar,
+              child: Text('connect'.tr()),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _connectGoogleCalendar() async {
+    final success = await ref.read(googleCalendarProvider.notifier).connect();
+    if (mounted) {
+      if (success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('google_calendar_connected'.tr())),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('google_calendar_connection_failed'.tr())),
+        );
+      }
+    }
+  }
+
+  void _showCalendarOptions(BuildContext context) {
+    final isDarkMode = ref.watch(isDarkModeProvider);
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: isDarkMode ? const Color(0xFF2d2d2d) : Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: 20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: Icon(Icons.sync, color: isDarkMode ? Colors.white : Colors.black),
+                title: Text('sync_todos_to_calendar'.tr(), style: TextStyle(color: isDarkMode ? Colors.white : Colors.black)),
+                onTap: () {
+                  Navigator.pop(context);
+                  _syncTodosToCalendar();
+                },
+              ),
+              ListTile(
+                leading: Icon(Icons.download, color: isDarkMode ? Colors.white : Colors.black),
+                title: Text('fetch_calendar_events'.tr(), style: TextStyle(color: isDarkMode ? Colors.white : Colors.black)),
+                onTap: () {
+                  Navigator.pop(context);
+                  _fetchCalendarEvents();
+                },
+              ),
+              const Divider(),
+              ListTile(
+                leading: const Icon(Icons.link_off, color: Colors.red),
+                title: Text('disconnect'.tr(), style: const TextStyle(color: Colors.red)),
+                onTap: () {
+                  Navigator.pop(context);
+                  _disconnectGoogleCalendar();
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _syncTodosToCalendar() async {
+    // TODO: Get todos with due dates and sync them
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('syncing_to_calendar'.tr())),
+    );
+  }
+
+  Future<void> _fetchCalendarEvents() async {
+    await ref.read(googleCalendarProvider.notifier).fetchEvents();
+    if (mounted) {
+      final state = ref.read(googleCalendarProvider);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('fetched_events'.tr(args: ['${state.events.length}']))),
+      );
+    }
+  }
+
+  Future<void> _disconnectGoogleCalendar() async {
+    await ref.read(googleCalendarProvider.notifier).disconnect();
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('google_calendar_disconnected'.tr())),
+      );
+    }
   }
 
   Widget _buildVersionInfo(Color textColor, Color subTextColor) {

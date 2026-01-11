@@ -61,6 +61,14 @@
 				<string>kr.bluesky.dodo</string>
 			</array>
 		</dict>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.googleusercontent.apps.621785374771-2a4meibhjq1lmq4ccon9c5imt0ds9eks</string>
+			</array>
+		</dict>
 	</array>
 	<!-- Permissions -->
 	<key>NSUserNotificationsUsageDescription</key>
