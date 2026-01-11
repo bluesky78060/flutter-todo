@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DoDo - 스마트 할 일 관리 앱</title>
+    <meta name="description" content="DoDo는 할 일 관리, 캘린더 동기화, 위치 기반 알림을 제공하는 스마트 할 일 관리 앱입니다.">
+    <link rel="canonical" href="https://bluesky78060.github.io/flutter-todo/">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        header {
+            text-align: center;
+            color: white;
+            padding: 60px 0;
+        }
+
+        .logo {
+            font-size: 72px;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            font-size: 48px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .tagline {
+            font-size: 20px;
+            opacity: 0.9;
+            margin-bottom: 30px;
+        }
+
+        .badges {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255,255,255,0.2);
+            padding: 10px 20px;
+            border-radius: 25px;
+            color: white;
+            text-decoration: none;
+            transition: background 0.3s;
+        }
+
+        .badge:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+
+        .card h2 {
+            font-size: 28px;
+            margin-bottom: 20px;
+            color: #667eea;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 25px;
+            margin-top: 20px;
+        }
+
+        .feature {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .feature-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        .feature h3 {
+            font-size: 18px;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .feature p {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .links {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 30px;
+        }
+
+        .links a {
+            color: #667eea;
+            text-decoration: none;
+            padding: 10px 20px;
+            border: 2px solid #667eea;
+            border-radius: 10px;
+            transition: all 0.3s;
+        }
+
+        .links a:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        footer {
+            text-align: center;
+            color: white;
+            padding: 40px 0;
+            opacity: 0.8;
+        }
+
+        footer a {
+            color: white;
+        }
+
+        .contact {
+            margin-top: 20px;
+        }
+
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 36px;
+            }
+
+            .logo {
+                font-size: 56px;
+            }
+
+            .card {
+                padding: 25px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">📝</div>
+            <h1>DoDo</h1>
+            <p class="tagline">스마트 할 일 관리 앱</p>
+            <div class="badges">
+                <a href="https://play.google.com/store/apps/details?id=kr.bluesky.dodo" class="badge">
+                    <span>📱</span> Google Play
+                </a>
+                <a href="https://apps.apple.com/app/dodo" class="badge">
+                    <span>🍎</span> App Store
+                </a>
+            </div>
+        </header>
+
+        <div class="card">
+            <h2>앱 소개</h2>
+            <p>
+                DoDo는 일상의 할 일을 효율적으로 관리할 수 있는 스마트 할 일 관리 앱입니다.
+                간편한 할 일 추가, 카테고리 분류, 알림 설정부터 Google Calendar 연동,
+                위치 기반 알림까지 다양한 기능을 제공합니다.
+            </p>
+
+            <div class="features">
+                <div class="feature">
+                    <div class="feature-icon">✅</div>
+                    <h3>할 일 관리</h3>
+                    <p>간편하게 할 일을 추가하고 완료 상태를 관리하세요</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">📁</div>
+                    <h3>카테고리 분류</h3>
+                    <p>색상별 카테고리로 할 일을 체계적으로 정리하세요</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">🔔</div>
+                    <h3>알림 서비스</h3>
+                    <p>예정된 시간에 알림을 받아 할 일을 놓치지 마세요</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">📍</div>
+                    <h3>위치 기반 알림</h3>
+                    <p>특정 장소 도착 시 자동으로 알림을 받으세요</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">📅</div>
+                    <h3>Google Calendar</h3>
+                    <p>Google Calendar와 연동하여 일정을 동기화하세요</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">☁️</div>
+                    <h3>클라우드 동기화</h3>
+                    <p>여러 기기에서 데이터를 안전하게 동기화하세요</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>법적 문서</h2>
+            <p>DoDo 앱 이용에 관한 법적 문서를 확인하세요.</p>
+            <div class="links">
+                <a href="privacy-policy.html">개인정보처리방침</a>
+                <a href="terms-of-service.html">서비스 이용약관</a>
+            </div>
+        </div>
+
+        <footer>
+            <p><strong>DoDo</strong> - 스마트 할 일 관리 앱</p>
+            <p class="contact">
+                개발자: 이찬희<br>
+                문의: <a href="mailto:bluesky78060@gmail.com">bluesky78060@gmail.com</a>
+            </p>
+            <p style="margin-top: 20px;">© 2025 DoDo. All rights reserved.</p>
+        </footer>
+    </div>
+</body>
+</html>
