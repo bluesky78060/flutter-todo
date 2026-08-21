@@ -41,12 +41,10 @@ jobs:
       continue-on-error: true
 
     - name: Run tests with coverage
-      # Exclude reschedule_dialog_test.dart due to EasyLocalization issues in CI
-      run: |
-        flutter test --coverage \
-          test/unit/ \
-          test/widget/progress_card_test.dart \
-          test/widget/custom_todo_item_test.dart
+      # 범위는 coverage_threshold.yml 과 반드시 동일하게 유지할 것.
+      # 과거 reschedule_dialog_test.dart 를 제외했었으나(EasyLocalization 로딩 실패),
+      # DTA-2-1 에서 원인을 고쳐 제외가 불필요해졌다.
+      run: flutter test --coverage test/unit/ test/widget/
 
     - name: Generate coverage report
       run: |
