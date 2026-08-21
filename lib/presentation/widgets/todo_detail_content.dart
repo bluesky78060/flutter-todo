@@ -147,8 +147,15 @@ class TodoDetailContent extends ConsumerWidget {
               if (todo.dueDate != null) ...[
                 _InfoRow(
                   icon: FluentIcons.calendar_clock_24_regular,
-                  label: 'due_date'.tr(),
-                  value: _formatDateTime(todo.dueDate!),
+                  // 탭할 수 없는 정적 라벨이므로 명령형("기간 선택")이 아니라
+                  // 명사형("기간")을 쓴다.
+                  label: todo.isRanged ? 'date_range'.tr() : 'due_date'.tr(),
+                  value: todo.isRanged
+                      ? 'date_range_format'.tr(args: [
+                          _formatDateTime(todo.startDate!),
+                          _formatDateTime(todo.dueDate!),
+                        ])
+                      : _formatDateTime(todo.dueDate!),
                   color: AppColors.primary,
                   isDarkMode: isDarkMode,
                 ),

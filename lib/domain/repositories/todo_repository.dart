@@ -56,10 +56,12 @@ abstract class TodoRepository {
   /// - [locationLatitude], [locationLongitude]: Geofence coordinates
   /// - [locationName]: Human-readable location name
   /// - [locationRadius]: Geofence radius in meters
+  /// - [startDate]: 범위 일정의 시작일. null 이면 하루짜리
   Future<Either<Failure, int>> createTodo(
     String title,
     String description,
     DateTime? dueDate, {
+    DateTime? startDate,
     int? categoryId,
     DateTime? notificationTime,
     String? recurrenceRule,
@@ -74,7 +76,10 @@ abstract class TodoRepository {
   /// Updates an existing todo with new values.
   ///
   /// [todo] contains the updated todo entity with modified fields.
-  Future<Either<Failure, Unit>> updateTodo(Todo todo);
+  ///
+  /// [clearStartDate] 는 "범위를 해제한다" 는 **의도**를 전달한다.
+  /// `todo.startDate == null` 만으로는 "원래 범위가 아니었다" 와 구분되지 않는다.
+  Future<Either<Failure, Unit>> updateTodo(Todo todo, {bool clearStartDate = false});
 
   /// Updates the position ordering of multiple todos.
   ///

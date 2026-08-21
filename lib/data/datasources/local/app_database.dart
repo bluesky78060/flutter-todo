@@ -27,6 +27,8 @@ class Todos extends Table {
   DateTimeColumn get createdAt => dateTime()();
   DateTimeColumn get completedAt => dateTime().nullable()();
   DateTimeColumn get dueDate => dateTime().nullable()();
+  /// 범위 일정의 시작일. null 이면 하루짜리 (dueDate 가 그 날).
+  DateTimeColumn get startDate => dateTime().nullable()();
   DateTimeColumn get notificationTime => dateTime().nullable()();
   TextColumn get recurrenceRule => text().nullable()(); // RRULE format
   IntColumn get parentRecurringTodoId => integer().nullable()(); // Reference to parent recurring todo
@@ -80,7 +82,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 12;
+  int get schemaVersion => 13;
 
   @override
   MigrationStrategy get migration {
@@ -137,6 +139,10 @@ class AppDatabase extends _$AppDatabase {
         if (from < 12) {
           // Add priority column for notification priority levels
           await migrator.addColumn(todos, todos.priority);
+        }
+        if (from < 13) {
+          // Add startDate for ranged todos (DTA-3-4)
+          await migrator.addColumn(todos, todos.startDate);
         }
       },
     );

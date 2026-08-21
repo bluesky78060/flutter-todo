@@ -297,6 +297,7 @@ class TodoActions {
   Future<void> updateTodo(
     Todo todo, {
     RecurringEditMode? recurringEditMode,
+    bool clearStartDate = false,
   }) async {
     final repository = ref.read(todoRepositoryProvider);
     final syncNotifier = ref.read(syncStateProvider.notifier);
@@ -325,6 +326,18 @@ class TodoActions {
             notificationTime: todo.notificationTime,
             recurrenceRule: null, // Remove recurrence rule
             parentRecurringTodoId: null, // Detach from series
+            // 아래는 직접 생성자를 쓰기 때문에 명시하지 않으면 조용히 기본값이 된다.
+            // 가드가 미래에 다시 뚫려도 사용자가 입력한 값이 사라지지 않도록 넘긴다.
+            startDate: todo.startDate,
+            priority: todo.priority,
+            position: todo.position,
+            snoozeCount: todo.snoozeCount,
+            lastSnoozeTime: todo.lastSnoozeTime,
+            locationLatitude: todo.locationLatitude,
+            locationLongitude: todo.locationLongitude,
+            locationName: todo.locationName,
+            locationRadius: todo.locationRadius,
+            googleEventId: todo.googleEventId,
           );
           final result = await repository.updateTodo(detachedTodo);
           await result.fold(
@@ -415,7 +428,8 @@ class TodoActions {
     } else {
       // Regular todo update (non-recurring or master todo)
       logger.d('📝 TodoActions: Updating regular todo');
-      final result = await repository.updateTodo(todo);
+      final result =
+          await repository.updateTodo(todo, clearStartDate: clearStartDate);
       await result.fold(
         (failure) async {
           syncNotifier.syncFailed('$failure', shouldRetry: true);

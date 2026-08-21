@@ -44,6 +44,7 @@ class SupabaseTodoRepository implements TodoRepository {
     String title,
     String description,
     DateTime? dueDate, {
+    DateTime? startDate,
     int? categoryId,
     DateTime? notificationTime,
     String? recurrenceRule,
@@ -59,6 +60,7 @@ class SupabaseTodoRepository implements TodoRepository {
         title,
         description,
         dueDate,
+        startDate: startDate,
         categoryId: categoryId,
         notificationTime: notificationTime,
         recurrenceRule: recurrenceRule,
@@ -76,9 +78,10 @@ class SupabaseTodoRepository implements TodoRepository {
   }
 
   @override
-  Future<Either<Failure, Unit>> updateTodo(Todo todo) async {
+  Future<Either<Failure, Unit>> updateTodo(Todo todo,
+      {bool clearStartDate = false}) async {
     try {
-      await dataSource.updateTodo(todo);
+      await dataSource.updateTodo(todo, clearStartDate: clearStartDate);
       return right(unit);
     } catch (e) {
       return Left(DatabaseFailure(e.toString()));

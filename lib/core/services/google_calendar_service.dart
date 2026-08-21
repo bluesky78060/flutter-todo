@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:googleapis/calendar/v3.dart' as gcal;
 import 'package:extension_google_sign_in_as_googleapis_auth/extension_google_sign_in_as_googleapis_auth.dart';
+import 'package:todo_app/core/utils/date_range_utils.dart';
 import 'package:todo_app/domain/entities/todo.dart';
 
 /// Google Calendar 연동 서비스
@@ -135,28 +136,42 @@ class GoogleCalendarService {
       ..start = gcal.EventDateTime()
       ..end = gcal.EventDateTime();
 
-    if (todo.notificationTime != null) {
-      // 시간이 지정된 일정 — 1시간짜리로 만든다.
+    if (todo.isRanged) {
+      // 범위 일정은 알림 유무와 무관하게 **종일 이벤트**로 보낸다.
+      //
+      // 여러 날에 걸친 일정은 본질적으로 종일 사건이고, 알림은 앱 로컬 알림이
+      // 담당하므로 캘린더 이벤트의 시각과 무관하다.
+      //
+      // 이 분기가 없으면 알림이 있는 범위 일정(출장·여행 — 이 기능의 주 사용처)이
+      // 아래 dateTime 갈래로 빠져 **1시간짜리 이벤트 하나**가 되어 버린다.
+      event.start!.date = dateOnlyUtc(todo.startDate!);
+      event.end!.date =
+          _exclusiveEnd(dateOnlyUtc(todo.dueDate!));
+    } else if (todo.notificationTime != null) {
+      // 시간이 지정된 하루짜리 일정 — 1시간짜리로 만든다.
       event.start!.dateTime = todo.notificationTime;
       event.end!.dateTime = todo.notificationTime!.add(const Duration(hours: 1));
     } else {
-      // 종일 이벤트.
-      //
-      // Google Calendar API 에서 종일 이벤트의 `end.date` 는 **exclusive** 다.
-      // 8/21 하루짜리는 start=8/21, end=8/22 여야 한다.
-      // 예전에는 start 와 end 를 같은 날로 넣어 길이 0인 이벤트가 됐고,
-      // API 가 이를 거부해 등록이 조용히 실패했다.
-      final startDay = DateTime.utc(
-        todo.dueDate!.year,
-        todo.dueDate!.month,
-        todo.dueDate!.day,
-      );
+      // 하루짜리 종일 이벤트.
+      final startDay = dateOnlyUtc(todo.dueDate!);
       event.start!.date = startDay;
-      event.end!.date = startDay.add(const Duration(days: 1));
+      event.end!.date = _exclusiveEnd(startDay);
     }
 
     return event;
   }
+
+  /// 종일 이벤트의 `end.date` 를 만든다.
+  ///
+  /// Google Calendar API 에서 종일 이벤트의 `end.date` 는 **exclusive** 다.
+  /// 8/21 하루짜리는 start=8/21, end=8/22 여야 한다.
+  /// 예전에는 start 와 end 를 같은 날로 넣어 길이 0인 이벤트가 됐고,
+  /// API 가 이를 거부해 등록이 조용히 실패했다.
+  ///
+  /// 단일 날짜에 하루를 더하는 것이라 `Duration` 사용이 안전하다.
+  /// 기간 **열거**에 `Duration` 을 누적하면 DST 에서 깨진다 — [enumerateDays] 참조.
+  static DateTime _exclusiveEnd(DateTime lastDayUtc) =>
+      lastDayUtc.add(const Duration(days: 1));
 
   /// 이벤트를 어디로 보낼지(갱신 / 신규 생성) 결정하고 실제 호출을 수행한다.
   ///

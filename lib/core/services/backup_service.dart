@@ -197,6 +197,10 @@ class BackupService {
         todoJson['dueDate'] != null
             ? DateTime.parse(todoJson['dueDate'] as String)
             : null,
+        // 키가 없는 구 버전 백업은 null 이 되어 하루짜리로 복원된다.
+        startDate: todoJson['startDate'] != null
+            ? DateTime.parse(todoJson['startDate'] as String)
+            : null,
         categoryId: todoJson['categoryId'] as int?,
         notificationTime: todoJson['notificationTime'] != null
             ? DateTime.parse(todoJson['notificationTime'] as String)
@@ -233,6 +237,8 @@ class BackupService {
       'createdAt': todo.createdAt.toIso8601String(),
       'completedAt': todo.completedAt?.toIso8601String(),
       'dueDate': todo.dueDate?.toIso8601String(),
+      // 범위 일정의 시작일. 구 버전 백업 파일에는 이 키가 없다.
+      'startDate': todo.startDate?.toIso8601String(),
       'notificationTime': todo.notificationTime?.toIso8601String(),
       'recurrenceRule': todo.recurrenceRule,
       'parentRecurringTodoId': todo.parentRecurringTodoId,

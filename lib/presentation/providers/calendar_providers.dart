@@ -7,6 +7,7 @@
 library;
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:todo_app/core/utils/date_range_utils.dart';
 import 'package:todo_app/domain/entities/todo.dart';
 import 'package:todo_app/presentation/providers/todo_providers.dart';
 
@@ -60,8 +61,15 @@ final todosByDateProvider = Provider<Map<DateTime, List<Todo>>>((ref) {
       final Map<DateTime, List<Todo>> result = {};
 
       for (final todo in todos) {
-        if (todo.dueDate != null) {
-          final dateKey = _normalizeDate(todo.dueDate!);
+        if (todo.dueDate == null) continue;
+
+        // 범위 일정은 기간의 **모든 날짜**에 실린다.
+        // 하루짜리(startDate == null)는 dueDate 하루만 — 기존과 동일하다.
+        final days = todo.isRanged
+            ? enumerateDays(todo.startDate!, todo.dueDate!)
+            : [_normalizeDate(todo.dueDate!)];
+
+        for (final dateKey in days) {
           result.putIfAbsent(dateKey, () => []);
           result[dateKey]!.add(todo);
         }

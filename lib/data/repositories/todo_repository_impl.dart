@@ -25,7 +25,8 @@ class TodoRepositoryImpl implements TodoRepository {
 
   @override
   Future<Either<Failure, List<entity.Todo>>> getFilteredTodos(
-      String filter) async {
+    String filter,
+  ) async {
     try {
       final todos = await database.getFilteredTodos(filter);
       return Right(_mapTodosToEntities(todos));
@@ -52,6 +53,7 @@ class TodoRepositoryImpl implements TodoRepository {
     String title,
     String description,
     DateTime? dueDate, {
+    DateTime? startDate,
     int? categoryId,
     DateTime? notificationTime,
     String? recurrenceRule,
@@ -75,6 +77,7 @@ class TodoRepositoryImpl implements TodoRepository {
           categoryId: drift.Value(categoryId),
           createdAt: drift.Value(DateTime.now()),
           dueDate: drift.Value(dueDate),
+          startDate: drift.Value(startDate),
           notificationTime: drift.Value(notificationTime),
           recurrenceRule: drift.Value(recurrenceRule),
           parentRecurringTodoId: drift.Value(parentRecurringTodoId),
@@ -93,7 +96,12 @@ class TodoRepositoryImpl implements TodoRepository {
   }
 
   @override
-  Future<Either<Failure, Unit>> updateTodo(entity.Todo todo) async {
+  Future<Either<Failure, Unit>> updateTodo(
+    entity.Todo todo, {
+    bool clearStartDate = false,
+  }) async {
+    // Drift 는 행 전체를 교체하므로 clearStartDate 를 따로 볼 필요가 없다.
+    // todo.startDate 가 null 이면 그대로 null 이 저장된다.
     try {
       final dbTodo = Todo(
         id: todo.id,
@@ -104,6 +112,7 @@ class TodoRepositoryImpl implements TodoRepository {
         createdAt: todo.createdAt,
         completedAt: todo.completedAt,
         dueDate: todo.dueDate,
+        startDate: todo.startDate,
         notificationTime: todo.notificationTime,
         recurrenceRule: todo.recurrenceRule,
         parentRecurringTodoId: todo.parentRecurringTodoId,
@@ -124,30 +133,37 @@ class TodoRepositoryImpl implements TodoRepository {
   }
 
   @override
-  Future<Either<Failure, Unit>> updateTodoPositions(List<entity.Todo> todos) async {
+  Future<Either<Failure, Unit>> updateTodoPositions(
+    List<entity.Todo> todos,
+  ) async {
     try {
       // Use batch operation for better performance (single transaction instead of N queries)
-      final dbTodos = todos.map((todo) => Todo(
-        id: todo.id,
-        title: todo.title,
-        description: todo.description,
-        isCompleted: todo.isCompleted,
-        categoryId: todo.categoryId,
-        createdAt: todo.createdAt,
-        completedAt: todo.completedAt,
-        dueDate: todo.dueDate,
-        notificationTime: todo.notificationTime,
-        recurrenceRule: todo.recurrenceRule,
-        parentRecurringTodoId: todo.parentRecurringTodoId,
-        snoozeCount: todo.snoozeCount,
-        lastSnoozeTime: todo.lastSnoozeTime,
-        locationLatitude: todo.locationLatitude,
-        locationLongitude: todo.locationLongitude,
-        locationName: todo.locationName,
-        locationRadius: todo.locationRadius,
-        position: todo.position,
-        priority: todo.priority,
-      )).toList();
+      final dbTodos = todos
+          .map(
+            (todo) => Todo(
+              id: todo.id,
+              title: todo.title,
+              description: todo.description,
+              isCompleted: todo.isCompleted,
+              categoryId: todo.categoryId,
+              createdAt: todo.createdAt,
+              completedAt: todo.completedAt,
+              dueDate: todo.dueDate,
+              startDate: todo.startDate,
+              notificationTime: todo.notificationTime,
+              recurrenceRule: todo.recurrenceRule,
+              parentRecurringTodoId: todo.parentRecurringTodoId,
+              snoozeCount: todo.snoozeCount,
+              lastSnoozeTime: todo.lastSnoozeTime,
+              locationLatitude: todo.locationLatitude,
+              locationLongitude: todo.locationLongitude,
+              locationName: todo.locationName,
+              locationRadius: todo.locationRadius,
+              position: todo.position,
+              priority: todo.priority,
+            ),
+          )
+          .toList();
 
       await database.batchUpdateTodoPositions(dbTodos);
       return const Right(unit);
@@ -213,6 +229,7 @@ class TodoRepositoryImpl implements TodoRepository {
       createdAt: todo.createdAt,
       completedAt: todo.completedAt,
       dueDate: todo.dueDate,
+      startDate: todo.startDate,
       notificationTime: todo.notificationTime,
       recurrenceRule: todo.recurrenceRule,
       parentRecurringTodoId: todo.parentRecurringTodoId,

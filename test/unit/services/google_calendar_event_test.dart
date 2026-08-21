@@ -104,6 +104,8 @@ void main() {
     });
   });
 
+  group('GoogleCalendarService.buildEvent — 범위 일정 (DTA-3-4)', _rangedEventTests);
+
   group('GoogleCalendarService.routeEventWrite — 중복 방지 라우팅', _routingTests);
 
   group('GoogleCalendarService.buildEvent — 공통', () {
@@ -277,5 +279,101 @@ void _routingTests() {
     );
 
     expect(id, isNull);
+  });
+}
+
+/// DTA-3-4 — 범위 일정의 캘린더 이벤트.
+///
+/// 핵심은 **알림이 있어도 종일 분기로 가야 한다**는 것이다.
+/// 출장·여행은 이 기능의 주 사용처이고 거의 항상 알림을 갖는데,
+/// 알림 분기로 빠지면 5일짜리 일정이 1시간 이벤트 하나가 되어 버린다.
+void _rangedEventTests() {
+  Todo makeRanged({
+    required DateTime startDate,
+    required DateTime dueDate,
+    DateTime? notificationTime,
+  }) =>
+      Todo(
+        id: 1,
+        title: '출장',
+        description: '',
+        isCompleted: false,
+        createdAt: DateTime(2025, 1, 1),
+        startDate: startDate,
+        dueDate: dueDate,
+        notificationTime: notificationTime,
+      );
+
+  test('범위는 종일 이벤트이고 end.date 는 종료일 + 1일이다', () {
+    final event = GoogleCalendarService.buildEvent(makeRanged(
+      startDate: DateTime(2025, 8, 21),
+      dueDate: DateTime(2025, 8, 25),
+    ));
+
+    expect(event.start!.date, DateTime.utc(2025, 8, 21));
+    expect(event.end!.date, DateTime.utc(2025, 8, 26),
+        reason: 'end.date 는 exclusive 이므로 8/25 까지 걸치려면 8/26 이어야 한다');
+  });
+
+  test('알림이 있어도 종일 분기로 간다 — 이 기능의 대표 시나리오', () {
+    final event = GoogleCalendarService.buildEvent(makeRanged(
+      startDate: DateTime(2025, 8, 21),
+      dueDate: DateTime(2025, 8, 25),
+      notificationTime: DateTime(2025, 8, 20, 21, 0),
+    ));
+
+    expect(event.start!.date, DateTime.utc(2025, 8, 21));
+    expect(event.end!.date, DateTime.utc(2025, 8, 26));
+    expect(
+      event.start!.dateTime,
+      isNull,
+      reason: '알림 분기로 빠지면 5일짜리가 1시간 이벤트 하나가 된다',
+    );
+    expect(event.end!.dateTime, isNull);
+  });
+
+  test('하루짜리 범위도 exclusive 규칙을 지킨다', () {
+    final event = GoogleCalendarService.buildEvent(makeRanged(
+      startDate: DateTime(2025, 8, 21),
+      dueDate: DateTime(2025, 8, 21),
+    ));
+
+    expect(event.start!.date, DateTime.utc(2025, 8, 21));
+    expect(event.end!.date, DateTime.utc(2025, 8, 22));
+  });
+
+  test('월말을 넘는 범위', () {
+    final event = GoogleCalendarService.buildEvent(makeRanged(
+      startDate: DateTime(2025, 2, 26),
+      dueDate: DateTime(2025, 2, 28),
+    ));
+
+    expect(event.end!.date, DateTime.utc(2025, 3, 1));
+  });
+
+  test('연말을 넘는 범위', () {
+    final event = GoogleCalendarService.buildEvent(makeRanged(
+      startDate: DateTime(2025, 12, 30),
+      dueDate: DateTime(2025, 12, 31),
+    ));
+
+    expect(event.end!.date, DateTime.utc(2026, 1, 1));
+  });
+
+  test('startDate 만 있고 dueDate 가 없으면 범위로 보지 않는다', () {
+    // isRanged 가 false 이므로 종일 분기의 dueDate! 로 죽지 않아야 한다.
+    final todo = Todo(
+      id: 1,
+      title: 'T',
+      description: '',
+      isCompleted: false,
+      createdAt: DateTime(2025, 1, 1),
+      startDate: DateTime(2025, 8, 21),
+      dueDate: null,
+      notificationTime: DateTime(2025, 8, 21, 9, 0),
+    );
+
+    final event = GoogleCalendarService.buildEvent(todo);
+    expect(event.start!.dateTime, isNotNull, reason: '알림 분기로 가야 한다');
   });
 }

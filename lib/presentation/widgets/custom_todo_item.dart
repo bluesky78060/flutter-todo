@@ -201,7 +201,23 @@ class _CustomTodoItemState extends ConsumerState<CustomTodoItem>
                                 const SizedBox(width: 6),
                                 Flexible(
                                   child: Text(
-                                    _formatDueDate(widget.todo.dueDate!, checkAllDay: true),
+                                    widget.todo.isRanged
+                                        // 기간을 목록에서 바로 보여 준다.
+                                        // 종료일만 보이면 "등록이 됐나?" 하고
+                                        // 다시 폼을 여는 행동을 유발한다.
+                                        // checkAllDay 를 끈다. showDateRangePicker 가
+                                        // 양끝을 자정으로 주므로 켜 두면
+                                        // "8/21 (하루 종일) ~ 8/25 (하루 종일)" 이 된다.
+                                        ? 'date_range_format'.tr(args: [
+                                            _formatDueDate(
+                                                widget.todo.startDate!,
+                                                checkAllDay: false),
+                                            _formatDueDate(
+                                                widget.todo.dueDate!,
+                                                checkAllDay: false),
+                                          ])
+                                        : _formatDueDate(widget.todo.dueDate!,
+                                            checkAllDay: true),
                                     style: TextStyle(
                                       color: AppColors.primary,
                                       fontSize: AppColors.scaledFontSize(12),
