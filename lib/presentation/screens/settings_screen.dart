@@ -33,6 +33,7 @@ import 'package:go_router/go_router.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:todo_app/core/services/backup_service.dart';
+import 'package:todo_app/core/services/google_calendar_service.dart';
 import 'package:todo_app/core/theme/app_colors.dart';
 import 'package:todo_app/core/utils/device_utils.dart';
 import 'package:todo_app/presentation/providers/auth_providers.dart';
@@ -851,11 +852,87 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     );
   }
 
+  /// 동기화 중복 실행 가드.
+  ///
+  /// 호출부가 `await` 없이 부르므로, 진행 중에 다시 탭하면 두 개가 동시에 돈다.
+  /// 둘 다 같은 시점의 목록을 보게 되어 중복 등록으로 이어진다.
+  bool _isSyncingCalendar = false;
+
   Future<void> _syncTodosToCalendar() async {
-    // TODO: Get todos with due dates and sync them
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('syncing_to_calendar'.tr())),
-    );
+    if (_isSyncingCalendar) {
+      // 조용히 return 하면 사용자는 버튼이 죽은 줄 안다.
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('calendar_sync_in_progress'.tr())),
+      );
+      return;
+    }
+    _isSyncingCalendar = true;
+
+    // messenger 획득과 첫 스낵바까지 try 안에 둔다.
+    // 밖에 두면 여기서 던졌을 때 finally 가 없어 플래그가 true 로 고정되고,
+    // 그 화면에서는 동기화가 영구히 막힌다.
+    ScaffoldMessengerState? messenger;
+    try {
+      messenger = ScaffoldMessenger.of(context);
+      messenger.showSnackBar(
+        SnackBar(content: Text('syncing_to_calendar'.tr())),
+      );
+
+      // 대상 선별(마감일 있는 미완료)과 목록 조회는 provider 가 맡는다.
+      // 화면 필터가 동기화 범위를 좌우하면 안 되므로 todosProvider 는 쓰지 않는다.
+      final result =
+          await ref.read(googleCalendarProvider.notifier).syncAllTodos();
+
+      if (!mounted) return;
+      messenger.hideCurrentSnackBar();
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(_syncResultMessage(result)),
+          backgroundColor: result.hasFailures ? Colors.redAccent : null,
+        ),
+      );
+    } catch (e) {
+      // 목록 조회 실패 등. 잡지 않으면 처리되지 않은 async 오류로 사라져
+      // 사용자는 결과를 영영 보지 못한다. 이번 수정이 없애려던 상황 그대로다.
+      if (!mounted) return;
+      // messenger 가 null 인 상황은 곧 `ScaffoldMessenger.of` 가 던지는 상황이다.
+      // 여기서 `of` 를 다시 부르면 catch 블록 자체가 예외로 탈출한다. maybeOf 를 쓴다.
+      messenger ??= ScaffoldMessenger.maybeOf(context);
+      messenger?.hideCurrentSnackBar();
+      messenger?.showSnackBar(
+        SnackBar(
+          content: Text('calendar_sync_error'.tr(args: ['$e'])),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+    } finally {
+      _isSyncingCalendar = false;
+    }
+  }
+
+  /// 동기화 결과를 사용자에게 보여 줄 문구로 만든다.
+  ///
+  /// 예전에는 실패해도 "동기화 중" 만 뜨고 끝나서, 아무것도 등록되지 않아도
+  /// 사용자가 알 방법이 없었다.
+  String _syncResultMessage(CalendarSyncResult result) {
+    if (result.notConnected) {
+      return 'calendar_not_connected'.tr();
+    }
+    if (result.hasFailures) {
+      return 'calendar_sync_partial'.tr(
+        args: ['${result.succeeded}', '${result.failed}'],
+      );
+    }
+    if (result.succeeded == 0) {
+      return 'calendar_sync_nothing'.tr();
+    }
+    if (result.skipped > 0) {
+      // skipped 를 계산만 하고 버리면 사용자는 "왜 일부만 등록됐지" 를 알 수 없다.
+      return 'calendar_sync_done_with_skipped'.tr(
+        args: ['${result.succeeded}', '${result.skipped}'],
+      );
+    }
+    return 'calendar_sync_done'.tr(args: ['${result.succeeded}']);
   }
 
   Future<void> _fetchCalendarEvents() async {

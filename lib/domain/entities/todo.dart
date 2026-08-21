@@ -80,6 +80,13 @@ class Todo {
   /// Notification priority level: low, medium, high.
   final String priority;
 
+  /// Google Calendar 이벤트 ID.
+  ///
+  /// 이 할 일을 Google Calendar에 등록하면 그 이벤트 ID를 여기에 보관한다.
+  /// 다음 동기화 때 값이 있으면 새로 만들지 않고 기존 이벤트를 갱신하므로
+  /// 같은 일정이 중복 등록되지 않는다.
+  final String? googleEventId;
+
   /// Creates a new [Todo] instance.
   const Todo({
     required this.id,
@@ -101,6 +108,7 @@ class Todo {
     this.locationRadius,
     this.position = 0,
     this.priority = 'medium',
+    this.googleEventId,
   });
 
   /// Creates a copy of this todo with the given fields replaced.
@@ -124,6 +132,7 @@ class Todo {
     double? locationRadius,
     int? position,
     String? priority,
+    String? googleEventId,
   }) {
     return Todo(
       id: id ?? this.id,
@@ -145,6 +154,7 @@ class Todo {
       locationRadius: locationRadius ?? this.locationRadius,
       position: position ?? this.position,
       priority: priority ?? this.priority,
+      googleEventId: googleEventId ?? this.googleEventId,
     );
   }
 }

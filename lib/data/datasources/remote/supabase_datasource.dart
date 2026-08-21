@@ -230,6 +230,23 @@ class SupabaseTodoDataSource {
     }).eq('id', todo.id);
   }
 
+  /// Google Calendar 이벤트 ID만 갱신한다.
+  ///
+  /// 일부러 [updateTodo] 의 일반 payload 에 넣지 않았다. `google_event_id` 컬럼은
+  /// 나중에 추가된 것이라 아직 마이그레이션하지 않은 프로젝트가 있을 수 있는데,
+  /// 일반 payload 에 넣으면 컬럼이 없을 때 **모든 할 일 수정이 실패한다.**
+  /// 여기서만 쓰면 실패해도 캘린더 동기화만 영향을 받는다.
+  ///
+  /// 필요한 마이그레이션:
+  /// ```sql
+  /// ALTER TABLE todos ADD COLUMN IF NOT EXISTS google_event_id TEXT;
+  /// ```
+  Future<void> updateGoogleEventId(int todoId, String? eventId) async {
+    await client
+        .from('todos')
+        .update({'google_event_id': eventId}).eq('id', todoId);
+  }
+
   // Delete todo
   Future<void> deleteTodo(int id) async {
     try {
@@ -366,6 +383,8 @@ class SupabaseTodoDataSource {
       locationName: json['location_name'] as String?,
       locationRadius: (json['location_radius'] as num?)?.toDouble(),
       position: json['position'] as int? ?? 0,
+      // google_event_id 컬럼이 아직 없는 프로젝트에서는 키가 없어 null 이 된다.
+      googleEventId: json['google_event_id'] as String?,
     );
   }
 }

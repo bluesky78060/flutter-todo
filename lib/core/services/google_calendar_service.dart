@@ -123,59 +123,173 @@ class GoogleCalendarService {
   }
 
   /// Todo를 Google Calendar에 추가
-  Future<bool> addTodoToCalendar(Todo todo) async {
+  /// Todo 하나를 Google Calendar 이벤트로 만든다.
+  ///
+  /// 순수 함수로 분리해 둔 이유는 실제 Google API 호출 없이 단위 테스트로
+  /// 이벤트 구성을 검증하기 위해서다.
+  @visibleForTesting
+  static gcal.Event buildEvent(Todo todo) {
+    final event = gcal.Event()
+      ..summary = todo.title
+      ..description = todo.description
+      ..start = gcal.EventDateTime()
+      ..end = gcal.EventDateTime();
+
+    if (todo.notificationTime != null) {
+      // 시간이 지정된 일정 — 1시간짜리로 만든다.
+      event.start!.dateTime = todo.notificationTime;
+      event.end!.dateTime = todo.notificationTime!.add(const Duration(hours: 1));
+    } else {
+      // 종일 이벤트.
+      //
+      // Google Calendar API 에서 종일 이벤트의 `end.date` 는 **exclusive** 다.
+      // 8/21 하루짜리는 start=8/21, end=8/22 여야 한다.
+      // 예전에는 start 와 end 를 같은 날로 넣어 길이 0인 이벤트가 됐고,
+      // API 가 이를 거부해 등록이 조용히 실패했다.
+      final startDay = DateTime.utc(
+        todo.dueDate!.year,
+        todo.dueDate!.month,
+        todo.dueDate!.day,
+      );
+      event.start!.date = startDay;
+      event.end!.date = startDay.add(const Duration(days: 1));
+    }
+
+    return event;
+  }
+
+  /// 이벤트를 어디로 보낼지(갱신 / 신규 생성) 결정하고 실제 호출을 수행한다.
+  ///
+  /// Google API 호출을 [update] / [insert] 콜백으로 받아 두었기 때문에
+  /// 실제 네트워크 없이 **라우팅 규칙만** 단위 테스트로 검증할 수 있다.
+  /// 이 라우팅이 이 기능의 중복 방지 전체를 떠받친다.
+  ///
+  /// 반환값은 이벤트 ID. 실패하면 `null`.
+  @visibleForTesting
+  static Future<String?> routeEventWrite({
+    required gcal.Event event,
+    required String? existingEventId,
+    required Future<String?> Function(gcal.Event event, String eventId) update,
+    required Future<String?> Function(gcal.Event event) insert,
+  }) async {
+    if (existingEventId != null && existingEventId.isNotEmpty) {
+      try {
+        final updatedId = await update(event, existingEventId);
+        return updatedId ?? existingEventId;
+      } on gcal.DetailedApiRequestError catch (e) {
+        // 폴백은 **이벤트가 실제로 사라진 경우에만** 해야 한다.
+        //
+        // 404(없음)/410(삭제됨)이 아닌데도 insert 로 넘어가면,
+        // 일시적 오류(429 quota, 500/503, 인증 만료)에서 같은 일정이 하나 더 생긴다.
+        // 게다가 새로 만든 ID 가 기존 ID 를 덮어써서 원래 이벤트는 다시는
+        // 참조할 수 없는 고아가 된다. 이후 동기화로도 정리되지 않는다.
+        if (e.status != 404 && e.status != 410) {
+          debugPrint(
+              '📅 GoogleCalendar: 갱신 실패(일시적, status=${e.status}) - $e');
+          return null;
+        }
+        debugPrint(
+            '📅 GoogleCalendar: 캘린더에 이벤트가 없음(status=${e.status}), 재생성');
+      } catch (e) {
+        // 네트워크 타임아웃 등. 이벤트가 사라졌다는 근거가 없으므로 폴백하지 않는다.
+        debugPrint('📅 GoogleCalendar: 갱신 실패(네트워크) - $e');
+        return null;
+      }
+    }
+
+    try {
+      return await insert(event);
+    } catch (e) {
+      debugPrint('📅 GoogleCalendar: 이벤트 추가 실패 - $e');
+      return null;
+    }
+  }
+
+  /// Todo 를 캘린더에 등록하거나, 이미 등록돼 있으면 갱신한다.
+  ///
+  /// 반환값은 Google Calendar 이벤트 ID 다. 실패하면 `null`.
+  /// 호출부는 이 ID 를 Todo 에 저장해 두었다가 다음 동기화 때 넘겨야
+  /// 같은 일정이 중복 등록되지 않는다.
+  Future<String?> addTodoToCalendar(Todo todo) async {
     if (!_isConnected || _calendarApi == null) {
       debugPrint('📅 GoogleCalendar: 연결되지 않음');
-      return false;
+      return null;
     }
 
     if (todo.dueDate == null) {
       debugPrint('📅 GoogleCalendar: 마감일이 없는 할 일은 추가할 수 없음');
-      return false;
+      return null;
     }
 
-    try {
-      final event = gcal.Event()
-        ..summary = todo.title
-        ..description = todo.description
-        ..start = gcal.EventDateTime()
-        ..end = gcal.EventDateTime();
-
-      // 알림 시간이 있으면 특정 시간, 없으면 종일 이벤트
-      if (todo.notificationTime != null) {
-        event.start!.dateTime = todo.notificationTime;
-        event.end!.dateTime = todo.notificationTime!.add(const Duration(hours: 1));
-      } else {
-        // 종일 이벤트
-        final dateStr = todo.dueDate!.toIso8601String().split('T')[0];
-        event.start!.date = DateTime.parse(dateStr);
-        event.end!.date = DateTime.parse(dateStr);
-      }
-
-      await _calendarApi!.events.insert(event, 'primary');
-      debugPrint('📅 GoogleCalendar: 이벤트 추가됨 - ${todo.title}');
-      return true;
-    } catch (e) {
-      debugPrint('📅 GoogleCalendar: 이벤트 추가 실패 - $e');
-      return false;
-    }
+    return routeEventWrite(
+      event: buildEvent(todo),
+      existingEventId: todo.googleEventId,
+      update: (event, eventId) async {
+        final updated =
+            await _calendarApi!.events.update(event, 'primary', eventId);
+        debugPrint('📅 GoogleCalendar: 이벤트 갱신됨 - ${todo.title}');
+        return updated.id;
+      },
+      insert: (event) async {
+        final created = await _calendarApi!.events.insert(event, 'primary');
+        debugPrint('📅 GoogleCalendar: 이벤트 추가됨 - ${todo.title}');
+        return created.id;
+      },
+    );
   }
 
-  /// 여러 Todo를 Google Calendar에 동기화
-  Future<int> syncTodosToCalendar(List<Todo> todos) async {
+  /// 여러 Todo를 Google Calendar에 동기화한다.
+  ///
+  /// [onEventId] 는 등록/갱신에 성공한 Todo 의 이벤트 ID 를 돌려준다.
+  /// 호출부가 이를 저장해야 다음 동기화에서 중복 등록이 일어나지 않는다.
+  Future<CalendarSyncResult> syncTodosToCalendar(
+    List<Todo> todos, {
+    Future<void> Function(int todoId, String eventId)? onEventId,
+  }) async {
     if (!_isConnected || _calendarApi == null) {
-      return 0;
+      return CalendarSyncResult(
+        succeeded: 0,
+        failed: 0,
+        skipped: todos.length,
+        notConnected: true,
+      );
     }
 
-    int successCount = 0;
+    var succeeded = 0;
+    var failed = 0;
+    var skipped = 0;
+
     for (final todo in todos) {
-      if (todo.dueDate != null && await addTodoToCalendar(todo)) {
-        successCount++;
+      if (todo.dueDate == null) {
+        skipped++;
+        continue;
+      }
+
+      final eventId = await addTodoToCalendar(todo);
+      if (eventId == null) {
+        failed++;
+        continue;
+      }
+
+      succeeded++;
+      if (onEventId != null && eventId != todo.googleEventId) {
+        try {
+          await onEventId(todo.id, eventId);
+        } catch (e) {
+          // 이벤트는 등록됐지만 ID 저장에 실패한 경우다. 등록 자체는 성공이므로
+          // succeeded 를 되돌리지 않는다. 다만 다음 동기화에서 중복이 생길 수 있다.
+          debugPrint('📅 GoogleCalendar: 이벤트 ID 저장 실패 (todo=${todo.id}) - $e');
+        }
       }
     }
 
-    debugPrint('📅 GoogleCalendar: $successCount/${todos.length} 할 일 동기화됨');
-    return successCount;
+    debugPrint(
+        '📅 GoogleCalendar: 성공 $succeeded / 실패 $failed / 건너뜀 $skipped');
+    return CalendarSyncResult(
+      succeeded: succeeded,
+      failed: failed,
+      skipped: skipped,
+    );
   }
 
   DateTime? _parseEventTime(gcal.EventDateTime? eventDateTime) {
@@ -210,4 +324,30 @@ class GoogleCalendarEvent {
 
   @override
   String toString() => 'GoogleCalendarEvent($title, $startTime)';
+}
+
+/// [GoogleCalendarService.syncTodosToCalendar] 의 결과.
+///
+/// 예전에는 성공 건수(int)만 돌려줘서 실패가 사용자에게 보이지 않았다.
+class CalendarSyncResult {
+  const CalendarSyncResult({
+    required this.succeeded,
+    required this.failed,
+    required this.skipped,
+    this.notConnected = false,
+  });
+
+  /// 등록 또는 갱신에 성공한 건수.
+  final int succeeded;
+
+  /// Google API 호출이 실패한 건수.
+  final int failed;
+
+  /// 마감일이 없어 대상에서 제외된 건수.
+  final int skipped;
+
+  /// 캘린더가 연결되어 있지 않아 아무것도 시도하지 못한 경우.
+  final bool notConnected;
+
+  bool get hasFailures => failed > 0;
 }
