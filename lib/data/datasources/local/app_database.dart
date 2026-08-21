@@ -2,7 +2,7 @@ import 'package:drift/drift.dart';
 
 // Import conditional connection helpers
 import 'connection/connection.dart'
-    if (dart.library.html) 'connection/web.dart'
+    if (dart.library.js_interop) 'connection/web.dart'
     if (dart.library.io) 'connection/native.dart';
 
 part 'app_database.g.dart';

@@ -6,11 +6,11 @@ import 'package:geocoding/geocoding.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:http/http.dart' as http;
 
-// Conditional import for web platform detection
-import 'location_service_web_stub.dart'
-    if (dart.library.js_util) 'dart:js_util' as js_util;
-import 'location_service_web_stub.dart'
-    if (dart.library.html) 'dart:html' show window;
+// window.ENV 접근은 SupabaseConfig 쪽 구현을 그대로 재사용한다.
+// 이전에는 `dart:js_util`/`dart:html`을 직접 조건부 import 했으나,
+// 레거시 API인 데다 동일한 로직이 두 곳에 중복돼 있었다.
+import 'package:todo_app/core/config/supabase_config_stub.dart'
+    if (dart.library.js_interop) 'package:todo_app/core/config/supabase_config_web.dart';
 
 /// LocationService handles all location-related operations
 /// including permissions, location fetching, and geofencing
@@ -393,12 +393,8 @@ class LocationService {
         String supabaseUrl = '';
         String supabaseAnonKey = '';
         try {
-          // Access window.ENV using dart:js_util
-          final env = js_util.getProperty(window, 'ENV');
-          if (env != null) {
-            supabaseUrl = js_util.getProperty(env, 'SUPABASE_URL') ?? '';
-            supabaseAnonKey = js_util.getProperty(env, 'SUPABASE_ANON_KEY') ?? '';
-          }
+          supabaseUrl = getEnvFromWindow('SUPABASE_URL') ?? '';
+          supabaseAnonKey = getEnvFromWindow('SUPABASE_ANON_KEY') ?? '';
         } catch (e) {
           if (kDebugMode) {
             print('❌ Failed to get credentials from window.ENV: $e');
@@ -555,11 +551,8 @@ class LocationService {
       String supabaseUrl = '';
       String supabaseAnonKey = '';
       try {
-        final env = js_util.getProperty(window, 'ENV');
-        if (env != null) {
-          supabaseUrl = js_util.getProperty(env, 'SUPABASE_URL') ?? '';
-          supabaseAnonKey = js_util.getProperty(env, 'SUPABASE_ANON_KEY') ?? '';
-        }
+        supabaseUrl = getEnvFromWindow('SUPABASE_URL') ?? '';
+        supabaseAnonKey = getEnvFromWindow('SUPABASE_ANON_KEY') ?? '';
       } catch (e) {
         if (kDebugMode) {
           print('❌ Failed to get credentials from window.ENV: $e');
