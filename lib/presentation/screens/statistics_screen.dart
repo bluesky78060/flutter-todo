@@ -561,7 +561,6 @@ class _OverallProgressCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isDarkMode = ref.watch(isDarkModeProvider);
     final incomplete = stats.totalTodos - stats.completedTodos;
 
     return Container(
@@ -750,161 +749,9 @@ class _ProgressStatRow extends StatelessWidget {
   }
 }
 
-class _MiniStatRow extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final String value;
-  final Color color;
-
-  const _MiniStatRow({
-    required this.icon,
-    required this.label,
-    required this.value,
-    required this.color,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Icon(icon, color: color, size: 16),
-        const SizedBox(width: 8),
-        Text(
-          label,
-          style: TextStyle(
-            color: color.withValues(alpha: 0.8),
-            fontSize: AppColors.scaledFontSize(12),
-          ),
-        ),
-        const Spacer(),
-        Text(
-          value,
-          style: TextStyle(
-            color: color,
-            fontSize: AppColors.scaledFontSize(14),
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      ],
-    );
-  }
-}
 
 // Streak Card
-class _StreakCard extends ConsumerWidget {
-  final _StatisticsData stats;
 
-  const _StreakCard({required this.stats});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final isDarkMode = ref.watch(isDarkModeProvider);
-
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: AppColors.getCard(isDarkMode),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Row(
-        children: [
-          // Streak
-          Expanded(
-            child: _StreakItem(
-              icon: FluentIcons.fire_24_filled,
-              iconColor: const Color(0xFFFF5722),
-              title: 'current_streak'.tr(),
-              value: '${stats.streak}',
-              subtitle: 'days'.tr(),
-            ),
-          ),
-          Container(
-            width: 1,
-            height: 60,
-            color: AppColors.getBorder(isDarkMode),
-          ),
-          // Best Day
-          Expanded(
-            child: _StreakItem(
-              icon: FluentIcons.star_24_filled,
-              iconColor: const Color(0xFFFFD700),
-              title: 'best_day'.tr(),
-              value: '${stats.bestDayCount}',
-              subtitle: 'tasks'.tr(),
-            ),
-          ),
-          Container(
-            width: 1,
-            height: 60,
-            color: AppColors.getBorder(isDarkMode),
-          ),
-          // Week Total
-          Expanded(
-            child: _StreakItem(
-              icon: FluentIcons.calendar_week_start_24_filled,
-              iconColor: AppColors.primary,
-              title: 'this_week'.tr(),
-              value: '${stats.weekCompleted}',
-              subtitle: 'completed'.tr(),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _StreakItem extends ConsumerWidget {
-  final IconData icon;
-  final Color iconColor;
-  final String title;
-  final String value;
-  final String subtitle;
-
-  const _StreakItem({
-    required this.icon,
-    required this.iconColor,
-    required this.title,
-    required this.value,
-    required this.subtitle,
-  });
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final isDarkMode = ref.watch(isDarkModeProvider);
-
-    return Column(
-      children: [
-        Icon(icon, color: iconColor, size: 24),
-        const SizedBox(height: 8),
-        Text(
-          value,
-          style: TextStyle(
-            color: AppColors.getText(isDarkMode),
-            fontSize: AppColors.scaledFontSize(24),
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        Text(
-          subtitle,
-          style: TextStyle(
-            color: AppColors.getTextSecondary(isDarkMode),
-            fontSize: AppColors.scaledFontSize(11),
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          title,
-          style: TextStyle(
-            color: AppColors.getTextSecondary(isDarkMode),
-            fontSize: AppColors.scaledFontSize(10),
-          ),
-          textAlign: TextAlign.center,
-        ),
-      ],
-    );
-  }
-}
 
 // Weekly Bar Chart Card - Simple design with subtitle
 class _WeeklyBarChartCard extends ConsumerWidget {

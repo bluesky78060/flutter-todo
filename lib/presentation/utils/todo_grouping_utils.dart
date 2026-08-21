@@ -92,8 +92,8 @@ List<List<Todo>> groupTodosBySeries(List<Todo> todos) {
   // then by priority and due date as secondary sort
   result.sort((a, b) {
     // Position-based sorting (user's manual order) takes precedence
-    final posA = a.first.position ?? 999999;
-    final posB = b.first.position ?? 999999;
+    final posA = a.first.position;
+    final posB = b.first.position;
     if (posA != posB) {
       return posA.compareTo(posB);
     }

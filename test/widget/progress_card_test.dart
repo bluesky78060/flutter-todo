@@ -3,8 +3,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:todo_app/presentation/widgets/progress_card.dart';
 import 'package:todo_app/presentation/providers/theme_provider.dart';
-import 'package:easy_localization/easy_localization.dart';
-import 'package:easy_localization_loader/easy_localization_loader.dart';
 
 void main() {
   // Helper function to wrap widget in ProviderScope for testing

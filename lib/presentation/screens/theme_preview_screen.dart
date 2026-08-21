@@ -514,18 +514,18 @@ class _ThemePreviewScreenState extends ConsumerState<ThemePreviewScreen> {
                         : null,
                   ),
                 ),
-                if (todo.description != null) ...[
-                  const SizedBox(height: 4),
-                  Text(
-                    todo.description,
-                    style: TextStyle(
-                      fontSize: AppColors.scaledFontSize(14),
-                      color: AppColors.getTextSecondary(_isDarkMode),
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
+                // description은 non-nullable이라 기존 `!= null` 검사는 항상 참이었다.
+                // 렌더링 결과를 바꾸지 않기 위해 조건만 제거하고 본문은 그대로 둔다.
+                const SizedBox(height: 4),
+                Text(
+                  todo.description,
+                  style: TextStyle(
+                    fontSize: AppColors.scaledFontSize(14),
+                    color: AppColors.getTextSecondary(_isDarkMode),
                   ),
-                ],
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
                 if (todo.dueDate != null) ...[
                   const SizedBox(height: 8),
                   Row(

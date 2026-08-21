@@ -55,7 +55,6 @@ class NaverMapWeb extends StatefulWidget {
 class _NaverMapWebState extends State<NaverMapWeb> {
   final String _mapDivId = 'naver-map-${DateTime.now().millisecondsSinceEpoch}';
   bool _isMapReady = false;
-  static int _requestCounter = 0;
   static final Map<int, Completer<List<Map<String, dynamic>>>> _pendingSearches = {};
 
   @override
