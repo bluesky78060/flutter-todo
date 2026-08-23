@@ -466,9 +466,9 @@ struct TodoCalendarWidget_Previews: PreviewProvider {
             date: Date(),
             displayMonth: Date(),
             todosByDay: [
-                18: [TodoItem(id: "1", title: "Team meeting", description: nil, dueDate: Date(), reminderTime: nil, isCompleted: false, categoryId: 1, categoryName: "Work", categoryColor: "#7B61FF")],
-                20: [TodoItem(id: "2", title: "Project deadline", description: nil, dueDate: Date(), reminderTime: nil, isCompleted: false, categoryId: 2, categoryName: "Dev", categoryColor: "#42A5F5")],
-                25: [TodoItem(id: "3", title: "Christmas", description: nil, dueDate: Date(), reminderTime: nil, isCompleted: false, categoryId: nil, categoryName: nil, categoryColor: nil)]
+                18: [TodoItem(id: "1", title: "Team meeting", description: nil, dueDate: Date(), displayTime: nil, reminderTime: nil, isCompleted: false, categoryId: 1, categoryName: "Work", categoryColor: "#7B61FF")],
+                20: [TodoItem(id: "2", title: "Project deadline", description: nil, dueDate: Date(), displayTime: nil, reminderTime: nil, isCompleted: false, categoryId: 2, categoryName: "Dev", categoryColor: "#42A5F5")],
+                25: [TodoItem(id: "3", title: "Christmas", description: nil, dueDate: Date(), displayTime: nil, reminderTime: nil, isCompleted: false, categoryId: nil, categoryName: nil, categoryColor: nil)]
             ],
             holidays: [25: "Christmas"],
             selectedDay: nil

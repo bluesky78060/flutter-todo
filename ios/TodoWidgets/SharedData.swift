@@ -11,6 +11,13 @@ struct TodoItem: Codable, Identifiable {
     let title: String
     let description: String?
     let dueDate: Date?
+    /// Flutter 가 만들어 보낸 표시용 문자열. "HH:mm" 또는 "M/d".
+    ///
+    /// `dueDate` 만으로는 **이게 시각인지 날짜인지 구분할 수 없다.**
+    /// "11/15" 를 파싱하면 시·분이 없는 자정 Date 가 되는데, 그걸 시간 형식으로
+    /// 그리면 "12:00 AM" 이 되어 날짜 정보가 통째로 사라진다.
+    /// 그래서 원본 문자열을 그대로 들고 다닌다.
+    let displayTime: String?
     let reminderTime: Date?
     let isCompleted: Bool
     let categoryId: Int?
@@ -63,6 +70,7 @@ class SharedDataManager {
                 title: title,
                 description: description?.isEmpty == true ? nil : description,
                 dueDate: dueDate,
+                displayTime: timeStr.isEmpty ? nil : timeStr,
                 reminderTime: nil,
                 isCompleted: isCompleted,
                 categoryId: nil,
@@ -109,24 +117,20 @@ class SharedDataManager {
         return nil
     }
 
-    func getTodayTodos() -> [TodoItem] {
-        let todos = getTodos()
-        let calendar = Calendar.current
-        let today = calendar.startOfDay(for: Date())
-
-        // 안전한 옵셔널 처리: tomorrow 계산 실패 시 빈 배열 반환
-        guard let tomorrow = calendar.date(byAdding: .day, value: 1, to: today) else {
-            return []
-        }
-
-        return todos.filter { todo in
-            guard let dueDate = todo.dueDate else { return false }
-            return dueDate >= today && dueDate < tomorrow && !todo.isCompleted
-        }
-    }
-
     func getIncompleteTodos() -> [TodoItem] {
         return getTodos().filter { !$0.isCompleted }
+    }
+
+    /// 진행률(완료/전체). Flutter 가 **오늘 기준**으로 세어 저장해 둔 값을 그대로 쓴다.
+    ///
+    /// 위젯이 직접 세면 안 된다. 목록은 "다가오는 순서"라 미래 일정까지 들어 있어서
+    /// 기준이 서로 어긋난다.
+    func getProgressCounts() -> (completed: Int, total: Int) {
+        guard let defaults = sharedDefaults else { return (0, 0) }
+        return (
+            defaults.integer(forKey: "todo_completed_count"),
+            defaults.integer(forKey: "todo_total_count")
+        )
     }
 
     // MARK: - Calendar Data
@@ -204,6 +208,7 @@ class SharedDataManager {
                     title: title,
                     description: nil,
                     dueDate: dueDate,
+                    displayTime: nil,
                     reminderTime: nil,
                     isCompleted: false,
                     categoryId: nil,

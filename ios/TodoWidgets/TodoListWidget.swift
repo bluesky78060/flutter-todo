@@ -15,42 +15,39 @@ struct TodoListProvider: TimelineProvider {
         TodoListEntry(
             date: Date(),
             todos: [
-                TodoItem(id: "1", title: "Sample Task 1", description: nil, dueDate: Date(), reminderTime: nil, isCompleted: false, categoryId: 1, categoryName: "Work", categoryColor: "#7B61FF"),
-                TodoItem(id: "2", title: "Sample Task 2", description: nil, dueDate: Date(), reminderTime: nil, isCompleted: false, categoryId: 2, categoryName: "Personal", categoryColor: "#42A5F5")
+                TodoItem(id: "1", title: "Sample Task 1", description: nil, dueDate: Date(), displayTime: nil, reminderTime: nil, isCompleted: false, categoryId: 1, categoryName: "Work", categoryColor: "#7B61FF"),
+                TodoItem(id: "2", title: "Sample Task 2", description: nil, dueDate: Date(), displayTime: nil, reminderTime: nil, isCompleted: false, categoryId: 2, categoryName: "Personal", categoryColor: "#42A5F5")
             ],
             completedCount: 0,
             totalCount: 2
         )
     }
 
-    func getSnapshot(in context: Context, completion: @escaping (TodoListEntry) -> Void) {
-        let todos = SharedDataManager.shared.getTodayTodos()
-        let entry = TodoListEntry(
+    /// 목록은 Flutter 가 "다가오는 순서"로 정렬해 저장해 둔 미완료 할 일이다.
+    ///
+    /// 예전에는 `getTodayTodos()` 로 오늘만 걸렀다. 그 필터는 **표시용 문자열을
+    /// 되파싱해서** 날짜를 복원하는 방식이라, 라벨 형식이 "8/25 09:00" 처럼
+    /// 바뀌면 파싱에 실패해 항목이 통째로 사라진다. 필터를 없애는 쪽이 맞다 —
+    /// 무엇을 보여줄지는 Flutter 가 이미 정해서 보냈다.
+    private func makeEntry() -> TodoListEntry {
+        let todos = SharedDataManager.shared.getIncompleteTodos()
+        let counts = SharedDataManager.shared.getProgressCounts()
+        return TodoListEntry(
             date: Date(),
             todos: Array(todos.prefix(3)),
-            completedCount: todos.filter { $0.isCompleted }.count,
-            totalCount: todos.count
+            completedCount: counts.completed,
+            totalCount: counts.total
         )
-        completion(entry)
+    }
+
+    func getSnapshot(in context: Context, completion: @escaping (TodoListEntry) -> Void) {
+        completion(makeEntry())
     }
 
     func getTimeline(in context: Context, completion: @escaping (Timeline<TodoListEntry>) -> Void) {
-        // Debug: Log opacity values on timeline refresh
-        print("📱 [TodoListWidget] getTimeline called")
-        print("📱 [TodoListWidget] cardOpacityDark = \(WidgetAppearance.cardOpacityDark)")
-        print("📱 [TodoListWidget] cardOpacityLight = \(WidgetAppearance.cardOpacityLight)")
-
-        let todos = SharedDataManager.shared.getTodayTodos()
-        let entry = TodoListEntry(
-            date: Date(),
-            todos: Array(todos.prefix(3)),
-            completedCount: todos.filter { $0.isCompleted }.count,
-            totalCount: todos.count
-        )
-
         // Update more frequently for testing (5 minutes)
         let nextUpdate = Calendar.current.date(byAdding: .minute, value: 5, to: Date())!
-        let timeline = Timeline(entries: [entry], policy: .after(nextUpdate))
+        let timeline = Timeline(entries: [makeEntry()], policy: .after(nextUpdate))
         completion(timeline)
     }
 }
@@ -91,7 +88,8 @@ struct TodoListWidgetView: View {
     // MARK: - Header View
     private var headerView: some View {
         HStack {
-            Text("할 일")
+            // 마감이 가까운 순으로 보여 준다. "오늘 할 일"이 아니다.
+            Text("다가오는 일정")
                 .font(.system(size: 16, weight: .bold))
                 .foregroundColor(.primary)
 
@@ -167,8 +165,11 @@ struct TodoListWidgetView: View {
                         .strikethrough(todo.isCompleted)
                         .lineLimit(1)
 
-                    if let dueDate = todo.dueDate {
-                        Text(formatTime(dueDate))
+                    if let label = todo.displayTime ?? todo.dueDate.map(formatTime) {
+                        // Flutter 가 만든 문자열을 그대로 쓴다.
+                        // formatTime 은 무조건 "h:mm a" 로 그리기 때문에,
+                        // "11/15" 같은 날짜가 "12:00 AM" 으로 바뀌어 버린다.
+                        Text(label)
                             .font(.system(size: 10))
                             .foregroundColor(.secondary)
                     }
@@ -244,7 +245,7 @@ struct TodoListWidget: Widget {
                 }
         }
         .configurationDisplayName("할 일 목록")
-        .description("오늘의 할 일을 한눈에 확인하세요")
+        .description("마감이 가까운 할 일을 한눈에 확인하세요")
         .supportedFamilies([.systemSmall, .systemMedium])
         .contentMarginsDisabled()
     }
@@ -257,9 +258,9 @@ struct TodoListWidget: Widget {
     TodoListEntry(
         date: Date(),
         todos: [
-            TodoItem(id: "1", title: "Team meeting", description: nil, dueDate: Date(), reminderTime: nil, isCompleted: false, categoryId: 1, categoryName: "Work", categoryColor: "#7B61FF"),
-            TodoItem(id: "2", title: "Review PR", description: nil, dueDate: Date(), reminderTime: nil, isCompleted: true, categoryId: 1, categoryName: "Work", categoryColor: "#42A5F5"),
-            TodoItem(id: "3", title: "Grocery shopping", description: nil, dueDate: Date(), reminderTime: nil, isCompleted: false, categoryId: 2, categoryName: "Personal", categoryColor: "#66BB6A")
+            TodoItem(id: "1", title: "Team meeting", description: nil, dueDate: Date(), displayTime: nil, reminderTime: nil, isCompleted: false, categoryId: 1, categoryName: "Work", categoryColor: "#7B61FF"),
+            TodoItem(id: "2", title: "Review PR", description: nil, dueDate: Date(), displayTime: nil, reminderTime: nil, isCompleted: true, categoryId: 1, categoryName: "Work", categoryColor: "#42A5F5"),
+            TodoItem(id: "3", title: "Grocery shopping", description: nil, dueDate: Date(), displayTime: nil, reminderTime: nil, isCompleted: false, categoryId: 2, categoryName: "Personal", categoryColor: "#66BB6A")
         ],
         completedCount: 1,
         totalCount: 3
