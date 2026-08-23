@@ -14,5 +14,6 @@ struct TodoWidgetsBundle: WidgetBundle {
         TodoListWidget()
         TodoDetailWidget()
         TodoCalendarWidget()
+        TodoComboWidget()
     }
 }
