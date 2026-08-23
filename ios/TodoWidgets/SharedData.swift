@@ -57,7 +57,12 @@ class SharedDataManager {
                 continue
             }
 
-            let id = defaults.string(forKey: "todo_\(i)_id") ?? "\(i)"
+            // id 는 폴백을 두면 안 된다. 완료 버튼이 이 값으로 쓰기 대상을
+            // 정하므로, 슬롯 번호를 id 인 척 넣으면 **엉뚱한 할 일이 완료된다.**
+            // (예: todo_3_id 가 없어 "3" 으로 채우면 진짜 id 3번을 지운다)
+            guard let id = defaults.string(forKey: "todo_\(i)_id"), !id.isEmpty else {
+                continue
+            }
             let description = defaults.string(forKey: "todo_\(i)_description")
             let isCompleted = defaults.bool(forKey: "todo_\(i)_completed")
             let timeStr = defaults.string(forKey: "todo_\(i)_time") ?? ""
@@ -131,6 +136,18 @@ class SharedDataManager {
             defaults.integer(forKey: "todo_completed_count"),
             defaults.integer(forKey: "todo_total_count")
         )
+    }
+
+    /// 저장된 슬롯(1...10) 중 이 id 를 가진 칸의 번호. 없으면 nil.
+    ///
+    /// 배열 인덱스를 쓰면 안 된다. `getTodos()` 는 빈 슬롯을 건너뛰고,
+    /// 위젯은 거기서 다시 미완료만 걸러 내므로 **배열 위치와 저장 슬롯 번호가 다르다.**
+    func storageSlot(forTodoId id: String) -> Int? {
+        guard !id.isEmpty, let defaults = sharedDefaults else { return nil }
+        for slot in 1...10 where defaults.string(forKey: "todo_\(slot)_id") == id {
+            return slot
+        }
+        return nil
     }
 
     // MARK: - Calendar Data

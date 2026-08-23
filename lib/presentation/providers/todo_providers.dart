@@ -603,7 +603,19 @@ class TodoActions {
     );
   }
 
-  Future<void> toggleCompletion(int id) async {
+  Future<void> toggleCompletion(int id) =>
+      _applyCompletion(id, targetIsCompleted: null);
+
+  /// 완료 상태를 [isCompleted] 로 **그대로** 맞춘다. 뒤집기가 아니다.
+  ///
+  /// 홈 위젯처럼 **목표 상태를 뒤늦게 반영**하는 경로용이다. 위젯에서 누른
+  /// 시점과 앱이 반영하는 시점 사이에 값이 바뀔 수 있는데, 뒤집기를 쓰면
+  /// 그사이 완료된 할 일이 미완료로 되돌아간다.
+  Future<void> setCompletion(int id, bool isCompleted) =>
+      _applyCompletion(id, targetIsCompleted: isCompleted);
+
+  /// [targetIsCompleted] 가 null 이면 뒤집기, 아니면 그 값으로 맞춘다.
+  Future<void> _applyCompletion(int id, {required bool? targetIsCompleted}) async {
     final repository = ref.read(todoRepositoryProvider);
     final syncNotifier = ref.read(syncStateProvider.notifier);
 
@@ -619,8 +631,10 @@ class TodoActions {
         throw Exception('${'todo_fetch_failed'.tr()}: $failure');
       },
       (todo) async {
-        // Toggle the completion status
-        final result = await repository.toggleCompletion(id);
+        final becomesCompleted = targetIsCompleted ?? !todo.isCompleted;
+        final result = targetIsCompleted == null
+            ? await repository.toggleCompletion(id)
+            : await repository.setCompletion(id, targetIsCompleted);
         await result.fold(
           (failure) async {
             logger.e('❌ TodoActions: Failed to toggle completion');
@@ -631,7 +645,9 @@ class TodoActions {
             logger.d('✅ TodoActions: Todo completion toggled: $id');
 
             // If this is a recurring instance being completed, generate next instances
-            if (!todo.isCompleted && todo.parentRecurringTodoId != null) {
+            if (becomesCompleted &&
+                !todo.isCompleted &&
+                todo.parentRecurringTodoId != null) {
               logger.d('🔄 TodoActions: Recurring instance completed, regenerating instances');
 
               try {

@@ -90,10 +90,12 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> with WidgetsBin
       Future.delayed(const Duration(milliseconds: 500), () {
         if (mounted) {
           _checkAndRequestPermissions();
-          // 초기 위젯 업데이트 (앱 시작 시)
-          _updateHomeWidget();
-          // Process any pending syncs from widget
-          _processPendingSyncs();
+          // 위젯 갱신과 대기 중인 완료 반영은 **순서대로** 해야 한다.
+          //
+          // 동시에 돌리면 갱신 쪽이 아직 반영 전 데이터로 슬롯 60개를 덮어써서,
+          // 위젯에서 이미 사라진 항목이 되살아난다. 어느 쪽이 나중에 끝나느냐에
+          // 결과가 좌우된다.
+          _syncWidgetOnStartup();
         }
       });
     });
@@ -106,6 +108,14 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> with WidgetsBin
       // Process pending syncs when app resumes from background
       _processPendingSyncs();
     }
+  }
+
+  /// 앱 시작 시: 대기 중인 완료를 먼저 반영하고 그다음 위젯을 갱신한다.
+  ///
+  /// 순서가 중요하다. 갱신이 먼저 끝나면 아직 반영 안 된 상태가 위젯에 실린다.
+  Future<void> _syncWidgetOnStartup() async {
+    await _processPendingSyncs();
+    await _updateHomeWidget();
   }
 
   /// Process pending syncs from widget actions

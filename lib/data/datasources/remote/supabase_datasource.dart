@@ -372,11 +372,18 @@ class SupabaseTodoDataSource {
   // Toggle completion
   Future<void> toggleCompletion(int id) async {
     final todo = await getTodoById(id);
-    final newCompleted = !todo.isCompleted;
+    await setCompletion(id, !todo.isCompleted);
+  }
 
+  /// 완료 상태를 [isCompleted] 로 **그대로 쓴다.** 현재 값을 읽지 않는다.
+  ///
+  /// 읽고 뒤집어 쓰는 방식은 그사이 값이 바뀌면 의도와 반대로 쓴다.
+  /// 이쪽은 몇 번을 불러도 같은 결과가 되므로 재시도에도 안전하다.
+  Future<void> setCompletion(int id, bool isCompleted) async {
     await client.from('todos').update({
-      'is_completed': newCompleted,
-      'completed_at': newCompleted ? DateTime.now().toUtc().toIso8601String() : null,
+      'is_completed': isCompleted,
+      'completed_at':
+          isCompleted ? DateTime.now().toUtc().toIso8601String() : null,
     }).eq('id', id);
   }
 

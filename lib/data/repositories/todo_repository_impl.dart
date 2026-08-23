@@ -193,6 +193,16 @@ class TodoRepositoryImpl implements TodoRepository {
   }
 
   @override
+  Future<Either<Failure, Unit>> setCompletion(int id, bool isCompleted) async {
+    try {
+      await database.setTodoCompletion(id, isCompleted);
+      return const Right(unit);
+    } catch (e) {
+      return Left(DatabaseFailure(e.toString()));
+    }
+  }
+
+  @override
   Future<Either<Failure, List<entity.Todo>>> searchTodos(String query) async {
     try {
       // Local database search not implemented yet

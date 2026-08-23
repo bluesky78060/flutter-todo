@@ -1,3 +1,4 @@
+import AppIntents
 import WidgetKit
 import SwiftUI
 
@@ -168,10 +169,20 @@ struct TodoDetailWidgetView: View {
     // MARK: - Todo Card View
     private func todoCardView(todo: TodoItem, accentColor: String) -> some View {
         HStack(spacing: 10) {
-            // Checkbox
-            Image(systemName: todo.isCompleted ? "checkmark.circle.fill" : "circle")
-                .font(.system(size: 16))
-                .foregroundColor(todo.isCompleted ? .green : .gray)
+            // Checkbox — 눌러서 바로 완료 처리한다 (앱을 열지 않는다)
+            //
+            // 탭 영역 44pt. 이유는 TodoListWidget 쪽 주석 참고.
+            Button(intent: CompleteTodoIntent(todoId: todo.id)) {
+                Image(systemName: todo.isCompleted ? "checkmark.circle.fill" : "circle")
+                    .font(.system(size: 16))
+                    .foregroundColor(todo.isCompleted ? .green : .gray)
+                    .frame(width: 44, height: 44)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .padding(.vertical, -14)
+            .padding(.leading, -14)
+            .padding(.trailing, -14)
 
             // Text content
             VStack(alignment: .leading, spacing: 2) {

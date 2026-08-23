@@ -125,6 +125,16 @@ class SupabaseTodoRepository implements TodoRepository {
   }
 
   @override
+  Future<Either<Failure, Unit>> setCompletion(int id, bool isCompleted) async {
+    try {
+      await dataSource.setCompletion(id, isCompleted);
+      return right(unit);
+    } catch (e) {
+      return Left(DatabaseFailure(e.toString()));
+    }
+  }
+
+  @override
   Future<Either<Failure, int>> deleteCompletedTodos() async {
     try {
       final deletedCount = await dataSource.deleteCompletedTodos();

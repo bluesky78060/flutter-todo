@@ -1,3 +1,4 @@
+import AppIntents
 import WidgetKit
 import SwiftUI
 
@@ -152,10 +153,23 @@ struct TodoListWidgetView: View {
 
             // Content
             HStack(spacing: 10) {
-                // Checkbox
-                Image(systemName: todo.isCompleted ? "checkmark.circle.fill" : "circle")
-                    .font(.system(size: 18))
-                    .foregroundColor(todo.isCompleted ? .green : .gray)
+                // Checkbox — 눌러서 바로 완료 처리한다 (앱을 열지 않는다)
+                //
+                // 탭 영역을 44pt 로 넓힌다. 글리프 크기(18pt)만으로는 HIG 최소치에
+                // 한참 못 미쳐서, 살짝 빗나간 탭이 버튼을 지나쳐 **위젯 전체의
+                // 앱 열기**로 떨어진다. 앱을 열지 않는 것이 이 기능의 목적이다.
+                // 음수 여백으로 겉보기 배치는 그대로 둔다.
+                Button(intent: CompleteTodoIntent(todoId: todo.id)) {
+                    Image(systemName: todo.isCompleted ? "checkmark.circle.fill" : "circle")
+                        .font(.system(size: 18))
+                        .foregroundColor(todo.isCompleted ? .green : .gray)
+                        .frame(width: 44, height: 44)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .padding(.vertical, -13)
+                .padding(.leading, -13)
+                .padding(.trailing, -13)
 
                 // Text
                 VStack(alignment: .leading, spacing: 2) {

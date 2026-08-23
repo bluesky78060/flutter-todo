@@ -98,6 +98,15 @@ abstract class TodoRepository {
   /// clears it when uncompleting.
   Future<Either<Failure, Unit>> toggleCompletion(int id);
 
+  /// Sets the completion status to [isCompleted] regardless of the current value.
+  ///
+  /// [toggleCompletion] 과 달리 **현재 값을 읽지 않는다.** 그래서 멱등이고,
+  /// 읽은 뒤 쓰기 전에 값이 바뀌어도 결과가 뒤집히지 않는다.
+  ///
+  /// 홈 위젯처럼 **목표 상태**를 뒤늦게 반영하는 경로는 반드시 이쪽을 써야 한다.
+  /// 뒤집기를 쓰면 그사이 앱이나 다른 기기에서 완료된 할 일이 미완료로 되돌아간다.
+  Future<Either<Failure, Unit>> setCompletion(int id, bool isCompleted);
+
   /// Deletes all completed todos for the current user.
   ///
   /// Returns [Right] with the count of deleted todos.

@@ -247,11 +247,18 @@ class AppDatabase extends _$AppDatabase {
   Future<bool> toggleTodoCompletion(int id) async {
     final todo = await getTodoById(id);
     if (todo == null) return false;
+    return setTodoCompletion(id, !todo.isCompleted);
+  }
+
+  /// 완료 상태를 [isCompleted] 로 그대로 쓴다. 현재 값을 읽어 뒤집지 않는다.
+  Future<bool> setTodoCompletion(int id, bool isCompleted) async {
+    final todo = await getTodoById(id);
+    if (todo == null) return false;
 
     return update(todos).replace(
       todo.copyWith(
-        isCompleted: !todo.isCompleted,
-        completedAt: Value(!todo.isCompleted ? DateTime.now() : null),
+        isCompleted: isCompleted,
+        completedAt: Value(isCompleted ? DateTime.now() : null),
       ),
     );
   }
