@@ -105,6 +105,10 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> with WidgetsBin
     if (state == AppLifecycleState.resumed) {
       // Process pending syncs when app resumes from background
       _processPendingSyncs();
+    } else if (state == AppLifecycleState.paused && mounted) {
+      // Update widget when app goes to background (user going to home screen)
+      // Best-effort: async work may not complete before app suspension
+      _updateHomeWidget();
     }
   }
 

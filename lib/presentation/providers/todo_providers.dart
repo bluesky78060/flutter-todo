@@ -25,6 +25,7 @@ import 'package:todo_app/core/utils/app_logger.dart';
 import 'package:todo_app/presentation/widgets/recurring_edit_dialog.dart';
 import 'package:todo_app/presentation/widgets/recurring_delete_dialog.dart';
 import 'package:todo_app/presentation/providers/attachment_providers.dart';
+import 'package:todo_app/core/widget/widget_service.dart';
 import 'package:todo_app/presentation/providers/widget_provider.dart';
 
 /// Todo filter options for displaying todos.
@@ -275,20 +276,32 @@ class TodoActions {
   }
 
   /// Helper method to update home screen widget
-  /// Now returns Future and must be awaited for immediate sync
+  /// Retries the update call, but not provider resolution: a provider that
+  /// fails to build will fail identically on retry, so waiting only delays
+  /// the caller and leaves a pending timer behind.
   Future<void> _updateWidget() async {
-    print('📱 [WIDGET] TodoActions._updateWidget() CALLED');
     logger.d('📱 TodoActions: _updateWidget() called');
+
+    final WidgetService widgetService;
     try {
-      final widgetService = ref.read(widgetServiceProvider);
-      print('📱 [WIDGET] widgetServiceProvider read SUCCESS, calling updateWidget()...');
-      logger.d('📱 TodoActions: widgetServiceProvider read success');
-      await widgetService.updateWidget();
-      print('📱 [WIDGET] Widget update COMPLETED successfully');
-      logger.d('📱 TodoActions: Home screen widget updated successfully');
+      widgetService = ref.read(widgetServiceProvider);
     } catch (e) {
-      print('📱 [WIDGET] Widget update ERROR: $e');
-      logger.e('⚠️ TodoActions: Failed to update widget: $e');
+      logger.e('⚠️ TodoActions: Widget service unavailable, skipping update: $e');
+      return;
+    }
+
+    for (int attempt = 1; attempt <= 2; attempt++) {
+      try {
+        await widgetService.updateWidget();
+        logger.d('📱 TodoActions: Home screen widget updated successfully (attempt $attempt)');
+        return;
+      } catch (e) {
+        logger.e('⚠️ TodoActions: Widget update attempt $attempt failed: $e');
+        if (attempt == 1) {
+          // Transient failure (disk I/O contention) - short wait before retry
+          await Future.delayed(const Duration(milliseconds: 200));
+        }
+      }
     }
   }
 
@@ -779,9 +792,10 @@ class TodoActions {
         logger.e('   Error: $failure');
         throw Exception('${'position_update_failed'.tr()}: $failure');
       },
-      (_) {
+      (_) async {
         logger.d('✅ TodoActions: Todo positions updated successfully');
         ref.invalidate(todosProvider);
+        await _updateWidget();
       },
     );
   }

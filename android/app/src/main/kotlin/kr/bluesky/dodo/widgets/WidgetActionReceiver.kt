@@ -308,7 +308,19 @@ class WidgetActionReceiver : BroadcastReceiver() {
             }
             context.sendBroadcast(detailUpdateIntent)
 
-            android.util.Log.d(TAG, "Widget refresh broadcast sent for both widgets")
+            // Refresh TodoCalendarWidget
+            val calendarComponentName = ComponentName(context, TodoCalendarWidget::class.java)
+            val calendarWidgetIds = appWidgetManager.getAppWidgetIds(calendarComponentName)
+            if (calendarWidgetIds.isNotEmpty()) {
+                android.util.Log.d(TAG, "Refreshing ${calendarWidgetIds.size} TodoCalendarWidgets")
+                val calendarUpdateIntent = Intent(context, TodoCalendarWidget::class.java).apply {
+                    action = AppWidgetManager.ACTION_APPWIDGET_UPDATE
+                    putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, calendarWidgetIds)
+                }
+                context.sendBroadcast(calendarUpdateIntent)
+            }
+
+            android.util.Log.d(TAG, "Widget refresh broadcast sent for all widgets")
         } catch (e: Exception) {
             android.util.Log.e(TAG, "Error refreshing widgets", e)
         }
