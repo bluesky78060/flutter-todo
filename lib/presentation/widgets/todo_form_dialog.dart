@@ -26,6 +26,7 @@ import 'dart:typed_data';
 import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
+import 'package:todo_app/core/utils/date_range_utils.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
@@ -68,6 +69,9 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
   late final TextEditingController _titleController;
   late final TextEditingController _descriptionController;
   DateTime? _selectedDueDate;
+
+  /// 범위 일정의 시작일. null 이면 하루짜리.
+  DateTime? _selectedStartDate;
   DateTime? _selectedNotificationTime;
   int? _selectedCategoryId;
   String? _recurrenceRule;
@@ -97,6 +101,7 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
       _titleController.text = todo.title;
       _descriptionController.text = todo.description;
       _selectedDueDate = todo.dueDate;
+      _selectedStartDate = todo.startDate;
       _selectedNotificationTime = todo.notificationTime;
       _selectedCategoryId = todo.categoryId;
       _recurrenceRule = todo.recurrenceRule;
@@ -125,6 +130,75 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
     _titleController.dispose();
     _descriptionController.dispose();
     super.dispose();
+  }
+
+  /// 기간(시작일~종료일)을 고른다.
+  ///
+  /// `showDateRangePicker` 는 양끝을 자정으로 준다. 따라서 범위 일정은
+  /// 자동으로 "종일" 로 취급된다 — 의도된 동작이다.
+  Future<void> _selectDateRange() async {
+    if (!mounted) return;
+
+    final isDarkMode = ref.read(isDarkModeProvider);
+    final now = DateTime.now();
+
+    final picked = await showDateRangePicker(
+      context: context,
+      firstDate: DateTime(now.year - 1),
+      lastDate: DateTime(now.year + 5),
+      initialDateRange: (_selectedStartDate != null && _selectedDueDate != null)
+          ? DateTimeRange(start: _selectedStartDate!, end: _selectedDueDate!)
+          : null,
+      helpText: 'select_date_range'.tr(),
+      builder: (context, child) => Theme(
+        data: Theme.of(context).copyWith(
+          colorScheme: ColorScheme.dark(
+            primary: AppColors.primary,
+            onPrimary: AppColors.getText(isDarkMode),
+            surface: AppColors.getCard(isDarkMode),
+            onSurface: AppColors.getText(isDarkMode),
+          ),
+        ),
+        child: child!,
+      ),
+    );
+
+    if (picked == null || !mounted) return;
+
+    // showDateRangePicker 가 start <= end 를 보장하지만, 상한은 직접 막아야 한다.
+    final span = enumerateDays(picked.start, picked.end).length;
+    if (span > kMaxRangeDays) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('date_range_too_long'.tr(args: ['$kMaxRangeDays'])),
+        ),
+      );
+      return;
+    }
+
+    setState(() {
+      _selectedStartDate = picked.start;
+      _selectedDueDate = picked.end;
+    });
+  }
+
+  /// 기간 모드를 켜고 끈다.
+  void _toggleDateRange(bool enabled) {
+    if (enabled) {
+      if (!canSetDateRange(
+        recurrenceRule: _recurrenceRule,
+        parentRecurringTodoId: widget.existingTodo?.parentRecurringTodoId,
+      )) {
+        // 반복 인스턴스는 recurrenceRule 이 null 이라 규칙만 검사하면 뚫린다.
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('recurrence_date_range_blocked'.tr())),
+        );
+        return;
+      }
+      _selectDateRange();
+      return;
+    }
+    setState(() => _selectedStartDate = null);
   }
 
   Future<void> _selectDate() async {
@@ -271,6 +345,15 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
 
   Future<void> _selectRecurrence() async {
     if (!mounted) return;
+
+    // 반복과 기간은 함께 쓸 수 없다. RRULE 인스턴스 생성이 기간까지 복제해야 해서
+    // 복잡도가 크게 오른다 (DTA-3-4 Discovery 합의).
+    if (_selectedStartDate != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('date_range_recurrence_blocked'.tr())),
+      );
+      return;
+    }
 
     await showDialog(
       context: context,
@@ -788,6 +871,9 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
             locationName: _locationName,
             locationRadius: _locationRadius,
             position: existingTodo.position, // Preserve position when editing
+            // startDate 는 sentinel copyWith 다. 조건부로 생략하면 옛 값이
+            // 그대로 살아남아 범위 해제가 동작하지 않는다. 항상 명시 전달한다.
+            startDate: _selectedStartDate,
           );
 
           await ref.read(todoActionsProvider).updateTodo(
@@ -809,8 +895,15 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
             locationName: _locationName,
             locationRadius: _locationRadius,
             position: existingTodo.position, // Preserve position when editing
+            // 항상 명시 전달. 위 주석 참조.
+            startDate: _selectedStartDate,
           );
-          await ref.read(todoActionsProvider).updateTodo(updatedTodo);
+          await ref.read(todoActionsProvider).updateTodo(
+            updatedTodo,
+            // 원래 범위였는데 해제한 경우에만 DB 에 null 을 쓴다.
+            clearStartDate:
+                existingTodo.startDate != null && _selectedStartDate == null,
+          );
         }
       } else {
         // Create mode: create new todo
@@ -820,6 +913,7 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
           _titleController.text,
           _descriptionController.text,
           _selectedDueDate,
+          startDate: _selectedStartDate,
           categoryId: _selectedCategoryId,
           notificationTime: _selectedNotificationTime,
           recurrenceRule: _recurrenceRule,
@@ -1106,16 +1200,54 @@ class _TodoFormDialogState extends ConsumerState<TodoFormDialog> {
                       showDivider: true,
                     ),
                   ),
-                  // Due Date Row
+                  // Due Date / Date Range Row
                   _buildListTile(
                     isDarkMode: isDarkMode,
                     icon: FluentIcons.calendar_24_regular,
-                    title: 'due_date'.tr(),
-                    value: _selectedDueDate != null
-                        ? _formatShortDate(_selectedDueDate!)
-                        : 'none'.tr(),
-                    onTap: _selectDate,
+                    title: _selectedStartDate != null
+                        ? 'select_date_range'.tr()
+                        : 'due_date'.tr(),
+                    value: _selectedDueDate == null
+                        ? 'none'.tr()
+                        : _selectedStartDate != null
+                            ? 'date_range_format'.tr(args: [
+                                _formatShortDate(_selectedStartDate!),
+                                _formatShortDate(_selectedDueDate!),
+                              ])
+                            : _formatShortDate(_selectedDueDate!),
+                    onTap: _selectedStartDate != null
+                        ? _selectDateRange
+                        : _selectDate,
                     showDivider: true,
+                  ),
+                  // Date Range Toggle Row
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 12),
+                    child: Row(
+                      children: [
+                        Icon(
+                          FluentIcons.calendar_multiple_24_regular,
+                          size: 20,
+                          color: AppColors.getTextSecondary(isDarkMode),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            'use_date_range'.tr(),
+                            style: TextStyle(
+                              color: AppColors.getText(isDarkMode),
+                              fontSize: AppColors.scaledFontSize(15),
+                            ),
+                          ),
+                        ),
+                        Switch(
+                          value: _selectedStartDate != null,
+                          activeThumbColor: AppColors.primary,
+                          onChanged: _toggleDateRange,
+                        ),
+                      ],
+                    ),
                   ),
                   // All Day Toggle Row
                   Padding(

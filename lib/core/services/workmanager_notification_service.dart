@@ -16,7 +16,23 @@ void callbackDispatcher() {
       // Route to appropriate handler based on task name
       if (task == 'showNotification') {
         return await _handleNotificationTask(inputData);
-      } else if (task == 'geofence_check_task') {
+      } else if (task == 'geofence_check_task' ||
+          task == 'geofence_check_unique_id') {
+        // DTA-4-5: 두 문자열을 모두 받아야 한다. 플랫폼마다 넘어오는 값이 다르다.
+        //   Android — registerPeriodicTask(uniqueName, taskName)의 **taskName**
+        //              ('geofence_check_task')
+        //   iOS     — BGTaskScheduler **identifier** ('geofence_check_unique_id').
+        //              workmanager_apple의 BackgroundWorker.onResultSendArguments가
+        //              .backgroundPeriodicTask(identifier)를 그대로 DART_TASK에 담는다.
+        // iOS 값을 빠뜨리면 여기서 'Unknown task type'으로 빠져 지오펜스 핸들러가
+        // **아예 호출되지 않는다.** 그것이 이 분기의 이유 전부다.
+        //
+        // (초안 주석은 "false를 반환하면 플러그인이 setTaskCompleted(success: false)로
+        //  보고해 iOS가 백그라운드 예산을 깎는다"고 적었으나 사실이 아니다. 플러그인은
+        //  setTaskCompleted(success: !operation.isCancelled)로 **취소 여부만** 보고하고
+        //  (WorkmanagerPlugin.swift:30,55), Dart 반환값은 performBackgroundRequest { _ in }
+        //  에서 버려진다(BackgroundTaskOperation.swift:41). 반환값을 OS에 전달하는 경로는
+        //  iOS 12의 performFetchWithCompletionHandler뿐이고 이 앱은 그 경로를 쓰지 않는다.)
         return await _handleGeofenceTask(inputData);
       } else {
         if (kDebugMode) {
@@ -148,10 +164,22 @@ class WorkManagerNotificationService {
 
   bool _initialized = false;
 
-  /// Initialize WorkManager for notification scheduling
-  Future<void> initialize() async {
-    if (_initialized) return;
+  /// DTA-4-5: 진행 중인 초기화를 캐싱한다.
+  ///
+  /// `_initialized` 플래그만으로는 **순차 호출만** 막힌다. main.dart 는
+  /// _initNotificationService() 와 _initGeofenceService() 를 Future.wait 로 **동시** 실행하고,
+  /// 후자가 DTA-4-5 에서 이 initialize() 를 호출하게 됐다. 삼성 Android 에서는 두 경로가
+  /// 모두 여기 도달하므로, 플래그가 세워지기 전에 둘 다 통과해 Workmanager().initialize() 가
+  /// 두 번 불릴 수 있다. 진행 중인 Future 를 공유해 그것을 막는다.
+  Future<void>? _initFuture;
 
+  /// Initialize WorkManager for notification scheduling
+  Future<void> initialize() {
+    if (_initialized) return Future<void>.value();
+    return _initFuture ??= _doInitialize();
+  }
+
+  Future<void> _doInitialize() async {
     try {
       await Workmanager().initialize(
         callbackDispatcher,
@@ -164,6 +192,9 @@ class WorkManagerNotificationService {
         print('✅ WorkManager initialized for notifications');
       }
     } catch (e) {
+      // 실패한 Future 를 캐시에 남기면 이후 호출이 영구히 같은 실패를 돌려받는다.
+      // 비워서 재시도가 가능하게 한다.
+      _initFuture = null;
       if (kDebugMode) {
         print('❌ Failed to initialize WorkManager: $e');
       }

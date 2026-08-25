@@ -119,19 +119,10 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
 
   /// 특정 날짜에 해당하는 todos를 필터링
   List<Todo> _getTodosForDay(DateTime day, List<Todo> allTodos) {
-    return allTodos.where((todo) {
-      if (todo.dueDate == null) return false;
-
-      // 날짜만 비교 (시간 무시)
-      final todoDate = DateTime(
-        todo.dueDate!.year,
-        todo.dueDate!.month,
-        todo.dueDate!.day,
-      );
-      final targetDate = DateTime(day.year, day.month, day.day);
-
-      return todoDate.isAtSameMomentAs(targetDate);
-    }).toList();
+    // 날짜 매칭은 Todo.occursOn 한 곳에 있다.
+    // 예전에는 이 함수와 todosByDateProvider 에 같은 로직이 따로 있어
+    // 한쪽만 고쳐질 위험이 있었다.
+    return allTodos.where((todo) => todo.occursOn(day)).toList();
   }
 
   /// 캘린더 마커 표시 (각 날짜에 몇 개의 todo가 있는지)

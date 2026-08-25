@@ -35,7 +35,7 @@ import 'package:todo_app/core/theme/app_colors.dart';
 import 'package:todo_app/presentation/providers/theme_provider.dart';
 // Conditional import for web vs mobile
 import 'package:todo_app/presentation/widgets/naver_map_platform.dart'
-    if (dart.library.html) 'package:todo_app/presentation/widgets/naver_map_platform.web.dart';
+    if (dart.library.js_interop) 'package:todo_app/presentation/widgets/naver_map_platform.web.dart';
 
 /// Result returned when location is selected from the picker.
 class LocationPickerResult {

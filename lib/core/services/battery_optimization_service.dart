@@ -108,12 +108,21 @@ class BatteryOptimizationService {
         );
       } else {
         // Update monitoring interval
-        await GeofenceWorkManagerService.startMonitoring(
+        // DTA-4-5: 반환값을 버리면 재등록 실패도 'updated'로 찍힌다.
+        // 참고: iOS는 frequency를 무시하고 submit 실패도 삼키므로, 이 간격 조정도
+        // 실패 감지도 Android에서만 실효가 있다.
+        final started = await GeofenceWorkManagerService.startMonitoring(
           intervalMinutes: newInterval,
         );
-        AppLogger.info(
-          '🔄 Geofence interval updated: ${_currentBatteryState.name} → ${newInterval}min',
-        );
+        if (started) {
+          AppLogger.info(
+            '🔄 Geofence interval updated: ${_currentBatteryState.name} → ${newInterval}min',
+          );
+        } else {
+          AppLogger.warning(
+            '⚠️ Geofence interval update failed: ${_currentBatteryState.name} → ${newInterval}min',
+          );
+        }
       }
     } catch (e) {
       AppLogger.error('❌ Failed to update geofence interval', error: e);

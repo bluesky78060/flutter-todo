@@ -56,10 +56,12 @@ abstract class TodoRepository {
   /// - [locationLatitude], [locationLongitude]: Geofence coordinates
   /// - [locationName]: Human-readable location name
   /// - [locationRadius]: Geofence radius in meters
+  /// - [startDate]: 범위 일정의 시작일. null 이면 하루짜리
   Future<Either<Failure, int>> createTodo(
     String title,
     String description,
     DateTime? dueDate, {
+    DateTime? startDate,
     int? categoryId,
     DateTime? notificationTime,
     String? recurrenceRule,
@@ -74,7 +76,10 @@ abstract class TodoRepository {
   /// Updates an existing todo with new values.
   ///
   /// [todo] contains the updated todo entity with modified fields.
-  Future<Either<Failure, Unit>> updateTodo(Todo todo);
+  ///
+  /// [clearStartDate] 는 "범위를 해제한다" 는 **의도**를 전달한다.
+  /// `todo.startDate == null` 만으로는 "원래 범위가 아니었다" 와 구분되지 않는다.
+  Future<Either<Failure, Unit>> updateTodo(Todo todo, {bool clearStartDate = false});
 
   /// Updates the position ordering of multiple todos.
   ///
@@ -92,6 +97,15 @@ abstract class TodoRepository {
   /// Sets [completedAt] timestamp when completing,
   /// clears it when uncompleting.
   Future<Either<Failure, Unit>> toggleCompletion(int id);
+
+  /// Sets the completion status to [isCompleted] regardless of the current value.
+  ///
+  /// [toggleCompletion] 과 달리 **현재 값을 읽지 않는다.** 그래서 멱등이고,
+  /// 읽은 뒤 쓰기 전에 값이 바뀌어도 결과가 뒤집히지 않는다.
+  ///
+  /// 홈 위젯처럼 **목표 상태**를 뒤늦게 반영하는 경로는 반드시 이쪽을 써야 한다.
+  /// 뒤집기를 쓰면 그사이 앱이나 다른 기기에서 완료된 할 일이 미완료로 되돌아간다.
+  Future<Either<Failure, Unit>> setCompletion(int id, bool isCompleted);
 
   /// Deletes all completed todos for the current user.
   ///

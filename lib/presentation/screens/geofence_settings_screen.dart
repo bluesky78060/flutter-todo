@@ -126,9 +126,38 @@ class _GeofenceSettingsScreenState extends ConsumerState<GeofenceSettingsScreen>
 
       if (value) {
         // Start geofence monitoring
-        await GeofenceWorkManagerService.startMonitoring(
+        // DTA-4-5: startMonitoring()은 예외를 삼키고 false를 돌려준다. 반환값을
+        // 버리면 아래 catch가 절대 실행되지 않아, 등록이 실패해도 사용자에게는
+        // 초록색 '활성화됨'과 켜진 토글만 보인다. 반드시 결과를 보고 분기한다.
+        //
+        // 유효 범위는 **Android까지**다. iOS는 workmanager_apple이 BGTaskScheduler.submit
+        // 실패를 삼키고(WorkmanagerPlugin.swift:94-102) 무조건 .success(())로 완료하므로,
+        // submit이 throw해도 여기 started는 true다.
+        //
+        // iOS에서 등록 여부를 Dart로 확인할 방법은 **현재 없다.**
+        // isScheduledByUniqueName()은 workmanager_apple의 Dart shim이
+        // UnsupportedError를 던진다(workmanager_apple.dart:129-131). Swift 쪽
+        // WorkmanagerPlugin.isScheduledByUniqueName은 구현돼 있지만
+        // (WorkmanagerPlugin.swift:246-255) 거기까지 도달하지 못한다.
+        // 통과하는 것은 printScheduledTasks()뿐이다(workmanager_apple.dart:135-137).
+        // 확인이 필요하면 그것이나 자체 MethodChannel을 검토한다 — DTA-4-6.
+        final started = await GeofenceWorkManagerService.startMonitoring(
           intervalMinutes: _monitoringInterval,
         );
+        if (!started) {
+          if (mounted) {
+            setState(() {
+              _isGeofencingEnabled = false;
+            });
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('geofencing_toggle_failed'.tr()),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+          return;
+        }
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(

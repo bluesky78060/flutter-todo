@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:todo_app/core/services/korean_holiday_service.dart';
 import 'package:todo_app/core/utils/app_logger.dart';
 import 'package:todo_app/core/widget/widget_models.dart';
+import 'package:todo_app/core/widget/widget_sort.dart';
 import 'package:todo_app/domain/entities/todo.dart';
 import 'package:todo_app/domain/repositories/todo_repository.dart';
 
@@ -262,9 +263,16 @@ class WidgetService {
       // Fetch todos ONCE and share between both widgets
       final result = await todoRepository.getTodos();
       final todos = result.fold(
-        (failure) => <Todo>[],
+        // 실패를 빈 목록으로 바꾸면 안 된다. 그 빈 목록이 그대로 위젯에 실려
+        // **홈 화면의 할 일이 통째로 지워진다.** 이 저장소는 Supabase 라
+        // 오프라인이면 매번 실패한다. 보지 못한 것을 발표하지 않는다.
+        (failure) => null,
         (todos) => todos,
       );
+      if (todos == null) {
+        logger.w('   Skipping widget update: failed to fetch todos');
+        return;
+      }
       logger.d('   Fetched ${todos.length} todos in ${stopwatch.elapsedMilliseconds}ms');
 
       // Update widgets SEQUENTIALLY to avoid SharedPreferences conflicts
@@ -508,12 +516,18 @@ class WidgetService {
     try {
       await HomeWidget.setAppGroupId('group.kr.bluesky.dodo');
 
-      final todoData = TodoListData.fromTodos(todos);
       logger.d('📱 WidgetService: Updating todo list widget (with shared data)');
-      logger.d('   Today\'s todos count: ${todoData.todos.length}');
+
+      // 한 번의 갱신 안에서는 **같은 시각**을 써야 한다.
+      // 정렬·라벨·그룹핑·오늘 판정이 각자 DateTime.now() 를 부르면, 자정 경계에서
+      // "내일"로 정렬된 항목이 "today" 로 그룹핑되는 어긋남이 생긴다.
+      final now = DateTime.now();
 
       // Calculate progress (completed / total for today)
-      final todayTodos = _getTodayTodos(todos);
+      //
+      // 진행률은 **오늘 기준**이 맞다. 아래 목록(sortedTodos)은 "다가오는 순서"라
+      // 기준이 다르다. 의도된 차이다 — 진행률이 미래 일정까지 세면 의미가 없다.
+      final todayTodos = _getTodayTodos(todos, now);
       final completedCount = todayTodos.where((t) => t.isCompleted).length;
       final totalCount = todayTodos.length;
 
@@ -524,8 +538,12 @@ class WidgetService {
         logger.d('   Incomplete todos: ${incompleteTodos.length}, No due date: $noDueDateCount');
       }
 
-      // Sort by user's position (drag-and-drop order) instead of date groups
-      final sortedTodos = _sortTodosByPosition(incompleteTodos);
+      // 마감이 가까운 순으로 정렬한다.
+      //
+      // 예전에는 position(드래그 순서)으로 정렬했는데, position 은 생성 시
+      // 증가하므로 결과적으로 **등록 순**이 됐다. 그래서 11월 일정이
+      // 8월 일정보다 위에 뜨는 일이 생겼다.
+      final sortedTodos = sortTodosByUpcoming(incompleteTodos, now: now);
       if (kDebugMode) {
         logger.d('   Sorted todos count: ${sortedTodos.length}');
       }
@@ -548,22 +566,10 @@ class WidgetService {
       for (int i = 0; i < 10; i++) {
         if (i < displayTodos.length) {
           final todo = displayTodos[i];
-          String timeStr = '';
-          if (todo.notificationTime != null) {
-            final time = todo.notificationTime!;
-            timeStr = '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
-          } else if (todo.dueDate != null) {
-            final date = todo.dueDate!;
-            final now = DateTime.now();
-            if (date.year != now.year || date.month != now.month || date.day != now.day) {
-              timeStr = '${date.month}/${date.day}';
-            } else if (date.hour != 0 || date.minute != 0) {
-              timeStr = '${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
-            }
-          }
+          final timeStr = buildWidgetTimeLabel(todo, now: now);
 
           // Get date group for this todo
-          final dateGroup = _getDateGroup(todo.dueDate);
+          final dateGroup = _getDateGroup(todo.dueDate, now);
 
           todoFutures.addAll([
             HomeWidget.saveWidgetData<String>('todo_${i + 1}_text', todo.title),
@@ -612,8 +618,7 @@ class WidgetService {
   }
 
   /// Get todos for today only
-  List<Todo> _getTodayTodos(List<Todo> todos) {
-    final now = DateTime.now();
+  List<Todo> _getTodayTodos(List<Todo> todos, DateTime now) {
     final today = DateTime(now.year, now.month, now.day);
     final tomorrow = today.add(const Duration(days: 1));
 
@@ -624,23 +629,11 @@ class WidgetService {
     }).toList();
   }
 
-  /// Sort todos by user's position (drag-and-drop order)
-  /// Position takes precedence - user's manual ordering is respected
-  List<Todo> _sortTodosByPosition(List<Todo> todos) {
-    final sorted = List<Todo>.from(todos);
-    sorted.sort((a, b) {
-      final posA = a.position;
-      final posB = b.position;
-      return posA.compareTo(posB);
-    });
-    return sorted;
-  }
 
   /// Get date group string for a todo
-  String _getDateGroup(DateTime? dueDate) {
+  String _getDateGroup(DateTime? dueDate, DateTime now) {
     if (dueDate == null) return 'no_due_date';
 
-    final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final dueDateOnly = DateTime(dueDate.year, dueDate.month, dueDate.day);
     final tomorrow = today.add(const Duration(days: 1));

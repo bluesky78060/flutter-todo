@@ -24,7 +24,6 @@ import 'package:todo_app/presentation/providers/category_providers.dart';
 import 'package:todo_app/presentation/widgets/filter_chip.dart' as todo_widgets;
 import 'package:todo_app/presentation/widgets/category_chip.dart';
 import 'package:todo_app/presentation/widgets/todo_form_dialog.dart';
-import 'package:todo_app/presentation/widgets/nav_item.dart';
 import 'package:todo_app/presentation/widgets/offline_banner.dart';
 
 /// Builds the header section with title, subtitle, and action buttons.

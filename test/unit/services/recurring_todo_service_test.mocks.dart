@@ -98,6 +98,7 @@ class MockTodoRepository extends _i1.Mock implements _i2.TodoRepository {
     String? title,
     String? description,
     DateTime? dueDate, {
+    DateTime? startDate,
     int? categoryId,
     DateTime? notificationTime,
     String? recurrenceRule,
@@ -113,6 +114,7 @@ class MockTodoRepository extends _i1.Mock implements _i2.TodoRepository {
               #createTodo,
               [title, description, dueDate],
               {
+                #startDate: startDate,
                 #categoryId: categoryId,
                 #notificationTime: notificationTime,
                 #recurrenceRule: recurrenceRule,
@@ -131,6 +133,7 @@ class MockTodoRepository extends _i1.Mock implements _i2.TodoRepository {
                   #createTodo,
                   [title, description, dueDate],
                   {
+                    #startDate: startDate,
                     #categoryId: categoryId,
                     #notificationTime: notificationTime,
                     #recurrenceRule: recurrenceRule,
@@ -148,13 +151,24 @@ class MockTodoRepository extends _i1.Mock implements _i2.TodoRepository {
           as _i3.Future<_i4.Either<_i5.Failure, int>>);
 
   @override
-  _i3.Future<_i4.Either<_i5.Failure, _i4.Unit>> updateTodo(_i6.Todo? todo) =>
+  _i3.Future<_i4.Either<_i5.Failure, _i4.Unit>> updateTodo(
+    _i6.Todo? todo, {
+    bool? clearStartDate = false,
+  }) =>
       (super.noSuchMethod(
-            Invocation.method(#updateTodo, [todo]),
+            Invocation.method(
+              #updateTodo,
+              [todo],
+              {#clearStartDate: clearStartDate},
+            ),
             returnValue: _i3.Future<_i4.Either<_i5.Failure, _i4.Unit>>.value(
               _i7.dummyValue<_i4.Either<_i5.Failure, _i4.Unit>>(
                 this,
-                Invocation.method(#updateTodo, [todo]),
+                Invocation.method(
+                  #updateTodo,
+                  [todo],
+                  {#clearStartDate: clearStartDate},
+                ),
               ),
             ),
           )

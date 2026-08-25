@@ -118,6 +118,7 @@ void main() {
           title: anyNamed('title'),
           body: anyNamed('body'),
           scheduledDate: anyNamed('scheduledDate'),
+          priority: anyNamed('priority'),
         )).thenAnswer((_) async => Future.value());
 
         when(mockNotificationService.getPendingNotifications())
@@ -141,11 +142,15 @@ void main() {
           recurrenceRule: null,
         )).called(1);
 
+        // 이 테스트 파일은 EasyLocalization을 초기화하지 않으므로
+        // production의 `'todo_reminder'.tr()`는 번역되지 않고 키를 그대로 돌려준다.
+        // priority는 production이 명시적으로 넘기므로 verify에도 있어야 매칭된다.
         verify(mockNotificationService.scheduleNotification(
           id: 42,
-          title: '할일 알림',
+          title: 'todo_reminder',
           body: 'Test Todo',
           scheduledDate: notificationTime,
+          priority: 'medium',
         )).called(1);
       });
 
@@ -396,6 +401,7 @@ void main() {
           title: anyNamed('title'),
           body: anyNamed('body'),
           scheduledDate: anyNamed('scheduledDate'),
+          priority: anyNamed('priority'),
         )).thenAnswer((_) async => Future.value());
 
         // Act
@@ -405,9 +411,10 @@ void main() {
         verify(mockNotificationService.cancelNotification(1)).called(1);
         verify(mockNotificationService.scheduleNotification(
           id: 1,
-          title: '할일 알림',
+          title: 'todo_reminder',
           body: 'Test',
           scheduledDate: expectedNewNotification,
+          priority: 'medium',
         )).called(1);
       });
     });

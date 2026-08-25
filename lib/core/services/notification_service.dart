@@ -6,7 +6,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 import 'package:todo_app/core/services/web_notification_service_stub.dart'
-    if (dart.library.html) 'package:todo_app/core/services/web_notification_service.dart';
+    if (dart.library.js_interop) 'package:todo_app/core/services/web_notification_service.dart';
 import 'package:todo_app/core/services/workmanager_notification_service.dart';
 import 'package:todo_app/core/utils/samsung_device_utils.dart';
 import 'package:todo_app/main.dart' show notificationTapBackground;

@@ -1,6 +1,8 @@
 import 'dart:async';
-import 'dart:html' as html;
-import 'dart:js' as js;
+import 'dart:js_interop';
+import 'dart:js_interop_unsafe';
+
+import 'package:web/web.dart' as web;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
 import 'package:todo_app/core/utils/app_logger.dart';
@@ -31,7 +33,7 @@ class WebNotificationService {
       }
 
       // Check current permission status
-      final permission = html.Notification.permission;
+      final permission = web.Notification.permission;
       _permissionGranted = permission == 'granted';
 
       if (kDebugMode) {
@@ -47,8 +49,10 @@ class WebNotificationService {
 
   /// Check if Notification API is supported
   bool _isNotificationSupported() {
-    return html.window.navigator.userAgent.isNotEmpty &&
-           html.Notification.supported;
+    // `package:web`에는 레거시 `Notification.supported`에 해당하는 API가 없다.
+    // 브라우저가 Notification 생성자를 노출하는지로 직접 판단한다.
+    return web.window.navigator.userAgent.isNotEmpty &&
+        web.window.has('Notification');
   }
 
   /// Request notification permission
@@ -58,7 +62,8 @@ class WebNotificationService {
     }
 
     try {
-      final permission = await html.Notification.requestPermission();
+      // requestPermission()은 JSPromise<JSString>을 돌려주므로 두 번 변환해야 한다.
+      final permission = (await web.Notification.requestPermission().toDart).toDart;
       _permissionGranted = permission == 'granted';
 
       if (kDebugMode) {
@@ -80,7 +85,7 @@ class WebNotificationService {
     if (!kIsWeb || !_isNotificationSupported()) {
       return false;
     }
-    return _permissionGranted && html.Notification.permission == 'granted';
+    return _permissionGranted && web.Notification.permission == 'granted';
   }
 
   /// Schedule a notification
@@ -160,35 +165,49 @@ class WebNotificationService {
         return;
       }
 
-      // Use JS interop to create notification with options
-      final notificationConstructor = js.context['Notification'];
-      final options = js.JsObject.jsify({
-        'body': body,
-        'icon': '/icons/Icon-192.png',
-        'tag': 'todo-$id',
-        'requireInteraction': false,
-        'silent': false,
-      });
-
-      final jsNotification = js.JsObject(notificationConstructor, [title, options]);
+      // `package:web`의 정적 타입으로 생성한다.
+      // 레거시 `js.JsObject(constructor, [...])` 방식의 동적 생성자 호출은
+      // `dart:js_interop`에 대응물이 없어 1:1 치환이 불가능하다.
+      final notification = web.Notification(
+        title,
+        web.NotificationOptions(
+          body: body,
+          icon: '/icons/Icon-192.png',
+          tag: 'todo-$id',
+          requireInteraction: false,
+          silent: false,
+        ),
+      );
 
       // Auto close after 10 seconds
+      // `notification.close` 를 tear-off 로 넘기면 dart2js 가 거부한다
+      // (Tear-offs of external extension type interop member are disallowed).
       Timer(const Duration(seconds: 10), () {
-        jsNotification.callMethod('close', []);
+        try {
+          notification.close();
+        } catch (e) {
+          if (kDebugMode) {
+            logger.d('⚠️ Notification auto-close failed: $e');
+          }
+        }
       });
 
       // Handle notification click
-      jsNotification['onclick'] = js.allowInterop((_) {
-        // Focus window
+      // 레거시 `dart:html`의 이벤트 콜백은 Zone이 자동 연결됐지만
+      // `package:web` + `.toJS`에서는 보장되지 않는다. 콜백 안에서 예외가
+      // 새어 나가지 않도록 try/catch로 감싼다.
+      notification.onclick = (web.Event _) {
+        // 콜백 본문 전체를 감싼다. 여기서 던지면 JS 경계를 넘어
+        // 처리되지 않은 예외가 된다.
         try {
-          js.context.callMethod('focus', []);
+          web.window.focus();
+          notification.close();
         } catch (e) {
           if (kDebugMode) {
-            logger.d('⚠️ Could not focus window: $e');
+            logger.d('⚠️ Notification click handling failed: $e');
           }
         }
-        jsNotification.callMethod('close', []);
-      });
+      }.toJS;
 
       // Remove from scheduled list
       _scheduledNotifications.remove(id);

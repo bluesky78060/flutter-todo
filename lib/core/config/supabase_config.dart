@@ -1,9 +1,11 @@
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-// Conditional import for web/non-web platforms
+// Conditional import for web/non-web platforms.
+// 분기 기준은 레거시 `dart.library.html`이 아니라 `dart.library.js_interop`이다.
+// 웹 구현이 `package:web` + `dart:js_interop`으로 이관됐기 때문이다.
 import 'supabase_config_stub.dart'
-    if (dart.library.html) 'supabase_config_web.dart';
+    if (dart.library.js_interop) 'supabase_config_web.dart';
 
 /// Supabase configuration loaded from environment variables
 ///

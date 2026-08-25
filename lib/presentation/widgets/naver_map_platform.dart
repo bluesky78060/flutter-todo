@@ -4,7 +4,7 @@
 /// (iOS and Android) where the actual Naver Map Flutter SDK is used
 /// instead of the JavaScript SDK.
 ///
-/// This stub is imported conditionally via dart.library.html:
+/// This stub is imported conditionally via dart.library.js_interop:
 /// - On web: Uses naver_map_platform.web.dart (JavaScript SDK)
 /// - On mobile: Uses this file (stub that returns error message)
 ///

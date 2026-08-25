@@ -28,8 +28,10 @@
 library;
 
 import 'dart:async';
-import 'dart:html' as html;
+import 'dart:js_interop';
 import 'dart:ui_web' as ui_web;
+
+import 'package:web/web.dart' as web;
 import 'package:flutter/material.dart';
 import 'package:flutter_naver_map/flutter_naver_map.dart';
 
@@ -55,7 +57,10 @@ class NaverMapWeb extends StatefulWidget {
 class _NaverMapWebState extends State<NaverMapWeb> {
   final String _mapDivId = 'naver-map-${DateTime.now().millisecondsSinceEpoch}';
   bool _isMapReady = false;
-  static int _requestCounter = 0;
+
+  /// `removeEventListener` 에 같은 JS 객체를 넘겨야 하므로 보관한다.
+  /// `.toJS` 는 호출할 때마다 새 JS 함수를 만들기 때문에 인라인으로 쓰면 해제할 수 없다.
+  JSFunction? _messageListener;
   static final Map<int, Completer<List<Map<String, dynamic>>>> _pendingSearches = {};
 
   @override
@@ -65,47 +70,87 @@ class _NaverMapWebState extends State<NaverMapWeb> {
     _setupMessageListener();
   }
 
+  @override
+  void dispose() {
+    // 해제하지 않으면 window 가 이 State 를 계속 붙잡아 누수가 생기고,
+    // 폐기된 위젯의 onMapReady/onMapTap 이 계속 호출된다.
+    final listener = _messageListener;
+    if (listener != null) {
+      web.window.removeEventListener('message', listener);
+      _messageListener = null;
+    }
+    super.dispose();
+  }
+
   void _setupMessageListener() {
-    // Listen for messages from JavaScript bridge
-    html.window.onMessage.listen((event) {
-      final data = event.data;
-      if (data is Map) {
-        // Filter channel to avoid intercepting unrelated messages
-        final channel = data['channel'];
-        if (channel != null && channel != 'naver_map_bridge') {
-          return;
-        }
+    // Listen for messages from JavaScript bridge.
+    //
+    // `window.onmessage` 대입이 아니라 addEventListener 를 쓴다. 대입 방식은
+    // 지도 인스턴스가 둘 이상일 때 서로의 핸들러를 덮어쓴다.
+    final listener = _onBridgeMessage.toJS;
+    _messageListener = listener;
+    web.window.addEventListener('message', listener);
+  }
 
-        final type = data['type'];
-        final divId = data['divId'];
+  /// JS 브리지 메시지 처리.
+  ///
+  /// 레거시 `dart:html` 의 `onMessage.listen` 은 Stream/Zone 경로를 타서 콜백
+  /// 예외가 JS 경계 밖으로 새지 않았지만, `package:web` + `.toJS` 콜백은 그렇지
+  /// 않다. 그래서 본문 전체를 try/catch 로 감싼다.
+  void _onBridgeMessage(web.MessageEvent event) {
+    // dispose 이후 큐에 남아 있던 메시지가 도착할 수 있다.
+    if (!mounted) return;
 
-        // Only process messages for this map instance
-        if (divId != _mapDivId) return;
+    try {
+      // JS 값을 Dart 자료구조로 변환한다. 레거시 dart:html 은 이 변환을
+      // 자동으로 해줬지만 package:web 은 JSAny 를 그대로 넘긴다.
+      final data = event.data.dartify();
+      if (data is! Map) return;
 
-        if (type == 'naver_map_ready') {
-          debugPrint('✅ Naver Map ready: $_mapDivId');
-          _isMapReady = true;
-          widget.onMapReady?.call(this);
-        } else if (type == 'naver_map_tap') {
-          final lat = data['lat'] as double;
-          final lng = data['lng'] as double;
-          debugPrint('🗺️ Map tapped: $lat, $lng');
-          widget.onMapTap?.call(NLatLng(lat, lng));
-        } else if (type == 'naver_map_error') {
-          final error = data['error'];
-          debugPrint('❌ Map error: $error');
-        } else if (type == 'naver_search_result') {
-          final int requestId = data['requestId'] as int;
-          final results = (data['results'] as List?) ?? const [];
-          final completer = _pendingSearches.remove(requestId);
-          if (completer != null && !completer.isCompleted) {
-            // Ensure items are maps
-            final normalized = results.map<Map<String, dynamic>>((e) => Map<String, dynamic>.from(e as Map)).toList();
-            completer.complete(normalized);
-          }
+      // Filter channel to avoid intercepting unrelated messages
+      final channel = data['channel'];
+      if (channel != null && channel != 'naver_map_bridge') {
+        return;
+      }
+
+      final type = data['type'];
+      final divId = data['divId'];
+
+      // Only process messages for this map instance
+      if (divId != _mapDivId) return;
+
+      if (type == 'naver_map_ready') {
+        debugPrint('✅ Naver Map ready: $_mapDivId');
+        _isMapReady = true;
+        widget.onMapReady?.call(this);
+      } else if (type == 'naver_map_tap') {
+        // JS number 는 dartify() 후 JS 컴파일에서는 int/double, Wasm 에서는
+        // double 로 온다. num 으로 받아 명시적으로 정규화해야 안전하다.
+        final lat = (data['lat'] as num).toDouble();
+        final lng = (data['lng'] as num).toDouble();
+        debugPrint('🗺️ Map tapped: $lat, $lng');
+        widget.onMapTap?.call(NLatLng(lat, lng));
+      } else if (type == 'naver_map_error') {
+        final error = data['error'];
+        debugPrint('❌ Map error: $error');
+      } else if (type == 'naver_search_result') {
+        final requestId = (data['requestId'] as num).toInt();
+        final results = (data['results'] as List?) ?? const [];
+        final completer = _pendingSearches.remove(requestId);
+        if (completer != null && !completer.isCompleted) {
+          // Ensure items are maps
+          final normalized = results
+              .map<Map<String, dynamic>>(
+                  (e) => Map<String, dynamic>.from(e as Map))
+              .toList();
+          completer.complete(normalized);
         }
       }
-    });
+    } catch (e, stackTrace) {
+      // 여기서 던지면 JS 경계를 넘어 처리되지 않은 예외가 된다.
+      debugPrint('❌ Naver Map bridge message handling failed: $e');
+      debugPrint('Stack trace: $stackTrace');
+    }
   }
 
   void _registerViewFactory() {
@@ -116,7 +161,7 @@ class _NaverMapWebState extends State<NaverMapWeb> {
         _mapDivId,
         (int viewId) {
           debugPrint('🗺️ Creating map div: $_mapDivId');
-          final mapDiv = html.DivElement()
+          final mapDiv = web.document.createElement('div') as web.HTMLDivElement
             ..id = _mapDivId
             ..style.width = '100%'
             ..style.height = '100%'
@@ -124,6 +169,9 @@ class _NaverMapWebState extends State<NaverMapWeb> {
 
           // Initialize map after a delay to ensure div is mounted and SDK is loaded
           Future.delayed(const Duration(milliseconds: 1000), () {
+            // 이 지연 중에 위젯이 폐기될 수 있다. 그대로 두면 폐기된 State 가
+            // postMessage 를 보낸다.
+            if (!mounted) return;
             debugPrint('🗺️ Attempting to initialize map in div: $_mapDivId');
             _initializeMap(mapDiv);
           });
@@ -137,12 +185,12 @@ class _NaverMapWebState extends State<NaverMapWeb> {
     }
   }
 
-  void _initializeMap(html.DivElement mapDiv) {
+  void _initializeMap(web.HTMLDivElement mapDiv) {
     try {
       debugPrint('🗺️ Sending postMessage: naver_map_init($_mapDivId)');
 
       // Send command to JS via postMessage
-      html.window.postMessage({
+      web.window.postMessage({
         'channel': 'naver_map_bridge',
         'type': 'naver_map_init',
         'payload': {
@@ -151,7 +199,7 @@ class _NaverMapWebState extends State<NaverMapWeb> {
           'centerLng': widget.initialCenter.longitude,
           'zoom': widget.initialZoom.toInt(),
         }
-      }, '*');
+      }.jsify(), '*'.toJS);
 
       debugPrint('✅ JavaScript bridge called successfully');
     } catch (e, stackTrace) {
@@ -171,7 +219,7 @@ class _NaverMapWebState extends State<NaverMapWeb> {
       debugPrint('🗺️ Sending postMessage: naver_map_update_overlays($_mapDivId)');
 
       // Send command to JS via postMessage
-      html.window.postMessage({
+      web.window.postMessage({
         'channel': 'naver_map_bridge',
         'type': 'naver_map_update_overlays',
         'payload': {
@@ -180,7 +228,7 @@ class _NaverMapWebState extends State<NaverMapWeb> {
           'lng': position.longitude,
           'radiusMeters': radiusMeters,
         }
-      }, '*');
+      }.jsify(), '*'.toJS);
 
       debugPrint('✅ Updated map overlays: $position, radius: $radiusMeters m');
     } catch (e) {
@@ -196,7 +244,7 @@ class _NaverMapWebState extends State<NaverMapWeb> {
       debugPrint('🗺️ Sending postMessage: naver_map_move_camera($_mapDivId)');
 
       // Send command to JS via postMessage
-      html.window.postMessage({
+      web.window.postMessage({
         'channel': 'naver_map_bridge',
         'type': 'naver_map_move_camera',
         'payload': {
@@ -204,7 +252,7 @@ class _NaverMapWebState extends State<NaverMapWeb> {
           'lat': position.latitude,
           'lng': position.longitude,
         }
-      }, '*');
+      }.jsify(), '*'.toJS);
 
       debugPrint('✅ Camera moved to: $position');
     } catch (e) {

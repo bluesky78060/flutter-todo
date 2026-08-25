@@ -71,6 +71,18 @@ class SamsungDeviceUtils {
   /// Check if battery optimization is ignored (exempted)
   /// Returns true if the app is exempted from battery optimization
   static Future<bool> isIgnoringBatteryOptimizations() async {
+    // DTA-4-5: Android 배터리 최적화 API다. 지금은 applySamsungWorkarounds() 뒤라
+    // iOS에서 도달하지 않지만, 직접 호출되면 원래 버그와 같은 부류가 재발한다.
+    // 반환값이 true인 이유: 이 술어는 "배터리 최적화에서 자유로운가"를 묻는다.
+    // Android 외 플랫폼에는 그 제약 자체가 없으므로 답은 참이다. 저장소의 형제 구현
+    // 둘(DeviceUtils, BatteryOptimizationService)도 같은 이유로 true를 돌려준다 —
+    // 여기서만 false를 주면 호출자가 iOS 사용자에게 존재하지도 않는 Android 설정
+    // 안내를 띄우게 된다. (shouldUseWorkManager()의 false는 "이 우회책을 쓰지 말라"는
+    // 다른 질문에 대한 답이라 그대로 둔다.)
+    if (kIsWeb || defaultTargetPlatform != TargetPlatform.android) {
+      return true;
+    }
+
     try {
       final batteryStatus = await Permission.ignoreBatteryOptimizations.status;
 
@@ -89,6 +101,20 @@ class SamsungDeviceUtils {
 
   /// Request battery optimization exemption for Samsung devices
   static Future<bool> requestBatteryOptimizationExemption() async {
+    // DTA-4-5: Android 배터리 최적화 API다. 지금은 applySamsungWorkarounds() 뒤라
+    // iOS에서 도달하지 않지만, 직접 호출되면 원래 버그와 같은 부류가 재발한다.
+    // 반환값이 true인 이유: 이 술어는 "배터리 최적화에서 자유로운가"를 묻는다.
+    // Android 외 플랫폼에는 그 제약 자체가 없으므로 답은 참이다. 저장소의 형제 구현
+    // DeviceUtils.requestBatteryOptimizationExemption()도 같은 이유로 true를 돌려준다
+    // (BatteryOptimizationService의 대응 함수는 requestIgnoreBatteryOptimizations()이고
+    //  반환형이 void라 비교 대상이 아니다) —
+    // 여기서만 false를 주면 호출자가 iOS 사용자에게 존재하지도 않는 Android 설정
+    // 안내를 띄우게 된다. (shouldUseWorkManager()의 false는 "이 우회책을 쓰지 말라"는
+    // 다른 질문에 대한 답이라 그대로 둔다.)
+    if (kIsWeb || defaultTargetPlatform != TargetPlatform.android) {
+      return true;
+    }
+
     try {
       // Request ignore battery optimization permission
       final batteryStatus = await Permission.ignoreBatteryOptimizations.status;
@@ -200,6 +226,20 @@ class SamsungDeviceUtils {
 
   /// Check if we should use WorkManager instead of AlarmManager
   static Future<bool> shouldUseWorkManager() async {
+    // DTA-4-5: 이 함수 전체가 **Android 배터리 최적화 우회책**이다.
+    // 가드가 없어서 iOS에서 다음이 벌어졌다:
+    //   - isSamsungDevice()는 non-Android에서 false (그 함수엔 가드가 있다)
+    //   - 그래서 아래 ignoreBatteryOptimizations 검사로 떨어지는데,
+    //     그것은 **Android 전용 권한**이라 iOS에서는 절대 granted가 되지 않는다
+    //   - 결국 `!isGranted`가 항상 참이 되어 **true를 반환**했다
+    //   → iOS 알림이 표준 로컬 알림 대신 WorkManager 경로로 갔고,
+    //     Workmanager가 초기화되지 않은 상태에서 registerOneOffTask가 던진
+    //     PlatformException이 할일 저장 화면의 빨간 SnackBar로 노출됐다.
+    // isSamsungDevice()와 같은 가드를 둔다.
+    if (kIsWeb || defaultTargetPlatform != TargetPlatform.android) {
+      return false;
+    }
+
     // Use WorkManager for all Samsung devices
     final isSamsung = await isSamsungDevice();
 

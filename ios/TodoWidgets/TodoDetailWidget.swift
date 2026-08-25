@@ -1,3 +1,4 @@
+import AppIntents
 import WidgetKit
 import SwiftUI
 
@@ -13,8 +14,8 @@ struct TodoDetailProvider: TimelineProvider {
         TodoDetailEntry(
             date: Date(),
             todos: [
-                TodoItem(id: "1", title: "Meeting with team", description: "Discuss Q1 goals", dueDate: Date(), reminderTime: nil, isCompleted: false, categoryId: 1, categoryName: "Work", categoryColor: "#7B61FF"),
-                TodoItem(id: "2", title: "Project deadline", description: "Submit final report", dueDate: Date(), reminderTime: nil, isCompleted: false, categoryId: 2, categoryName: "Project", categoryColor: "#42A5F5")
+                TodoItem(id: "1", title: "Meeting with team", description: "Discuss Q1 goals", dueDate: Date(), displayTime: nil, reminderTime: nil, isCompleted: false, categoryId: 1, categoryName: "Work", categoryColor: "#7B61FF"),
+                TodoItem(id: "2", title: "Project deadline", description: "Submit final report", dueDate: Date(), displayTime: nil, reminderTime: nil, isCompleted: false, categoryId: 2, categoryName: "Project", categoryColor: "#42A5F5")
             ]
         )
     }
@@ -86,7 +87,8 @@ struct TodoDetailWidgetView: View {
     // MARK: - Header View
     private var headerView: some View {
         HStack {
-            Text("오늘 할 일")
+            // 마감이 가까운 순으로 보여 준다. "오늘 할 일"이 아니다.
+            Text("다가오는 일정")
                 .font(.system(size: 16, weight: .bold))
                 .foregroundColor(.primary)
 
@@ -166,10 +168,20 @@ struct TodoDetailWidgetView: View {
     // MARK: - Todo Card View
     private func todoCardView(todo: TodoItem, accentColor: String) -> some View {
         HStack(spacing: 10) {
-            // Checkbox
-            Image(systemName: todo.isCompleted ? "checkmark.circle.fill" : "circle")
-                .font(.system(size: 16))
-                .foregroundColor(todo.isCompleted ? .green : .gray)
+            // Checkbox — 눌러서 바로 완료 처리한다 (앱을 열지 않는다)
+            //
+            // 탭 영역 44pt. 이유는 TodoListWidget 쪽 주석 참고.
+            Button(intent: CompleteTodoIntent(todoId: todo.id)) {
+                Image(systemName: todo.isCompleted ? "checkmark.circle.fill" : "circle")
+                    .font(.system(size: 16))
+                    .foregroundColor(todo.isCompleted ? .green : .gray)
+                    .frame(width: 44, height: 44)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .padding(.vertical, -14)
+            .padding(.leading, -14)
+            .padding(.trailing, -14)
 
             // Text content
             VStack(alignment: .leading, spacing: 2) {
@@ -190,8 +202,11 @@ struct TodoDetailWidgetView: View {
             Spacer()
 
             // Time badge
-            if let dueDate = todo.dueDate {
-                Text(formatTime(dueDate))
+            //
+            // Flutter 가 만든 문자열을 그대로 쓴다. formatTime 은 무조건 "h:mm a" 로
+            // 그리기 때문에, "11/15" 같은 날짜가 "12:00 AM" 으로 바뀌어 버린다.
+            if let label = todo.displayTime ?? todo.dueDate.map(formatTime) {
+                Text(label)
                     .font(.system(size: 9, weight: .medium))
                     .foregroundColor(accentColor.toColor())
                     .padding(.horizontal, 6)
@@ -240,8 +255,8 @@ struct TodoDetailWidget_Previews: PreviewProvider {
         TodoDetailWidgetView(entry: TodoDetailEntry(
             date: Date(),
             todos: [
-                TodoItem(id: "1", title: "Team meeting", description: "Discuss Q1 roadmap", dueDate: Date(), reminderTime: nil, isCompleted: false, categoryId: 1, categoryName: "Work", categoryColor: "#7B61FF"),
-                TodoItem(id: "2", title: "Review code", description: "Check PR #123", dueDate: Date(), reminderTime: nil, isCompleted: false, categoryId: 2, categoryName: "Dev", categoryColor: "#42A5F5")
+                TodoItem(id: "1", title: "Team meeting", description: "Discuss Q1 roadmap", dueDate: Date(), displayTime: nil, reminderTime: nil, isCompleted: false, categoryId: 1, categoryName: "Work", categoryColor: "#7B61FF"),
+                TodoItem(id: "2", title: "Review code", description: "Check PR #123", dueDate: Date(), displayTime: nil, reminderTime: nil, isCompleted: false, categoryId: 2, categoryName: "Dev", categoryColor: "#42A5F5")
             ]
         ))
         .previewContext(WidgetPreviewContext(family: .systemMedium))

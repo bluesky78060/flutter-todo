@@ -1,4 +1,4 @@
-import 'package:flutter/foundation.dart' show kDebugMode;
+import 'package:flutter/foundation.dart' show kDebugMode, visibleForTesting;
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:todo_app/core/utils/app_logger.dart';
 import 'package:todo_app/domain/entities/todo.dart';
@@ -132,6 +132,7 @@ class SupabaseTodoDataSource {
     String title,
     String description,
     DateTime? dueDate, {
+    DateTime? startDate,
     int? categoryId,
     DateTime? notificationTime,
     String? recurrenceRule,
@@ -172,22 +173,27 @@ class SupabaseTodoDataSource {
             'location=$locationLatitude,$locationLongitude, position=$newPosition');
       }
 
-      final response = await client.from('todos').insert({
-        'title': title,
-        'description': description,
-        'user_id': userId,
-        'category_id': categoryId,
-        'due_date': dueDate?.toUtc().toIso8601String(),
-        'notification_time': notificationTime?.toUtc().toIso8601String(),
-        'recurrence_rule': recurrenceRule,
-        'priority': priority ?? 'medium',
-        'parent_recurring_todo_id': parentRecurringTodoId,
-        'location_latitude': locationLatitude,
-        'location_longitude': locationLongitude,
-        'location_name': locationName,
-        'location_radius': locationRadius,
-        'position': newPosition,
-      }).select('id').single();
+      final response = await client
+          .from('todos')
+          .insert(buildCreatePayload(
+            userId: userId,
+            title: title,
+            description: description,
+            dueDate: dueDate,
+            startDate: startDate,
+            categoryId: categoryId,
+            notificationTime: notificationTime,
+            recurrenceRule: recurrenceRule,
+            priority: priority,
+            parentRecurringTodoId: parentRecurringTodoId,
+            locationLatitude: locationLatitude,
+            locationLongitude: locationLongitude,
+            locationName: locationName,
+            locationRadius: locationRadius,
+            position: newPosition,
+          ))
+          .select('id')
+          .single();
 
       if (kDebugMode) {
         logger.d('Todo created successfully with id: ${response['id']}, position: $newPosition');
@@ -208,8 +214,65 @@ class SupabaseTodoDataSource {
   }
 
   // Update todo
-  Future<void> updateTodo(Todo todo) async {
-    await client.from('todos').update({
+  Future<void> updateTodo(Todo todo, {bool clearStartDate = false}) async {
+    await client
+        .from('todos')
+        .update(buildUpdatePayload(todo, clearStartDate: clearStartDate))
+        .eq('id', todo.id);
+  }
+
+  /// 생성 payload 를 만든다.
+  ///
+  /// 맵 리터럴을 인라인으로 두면 어떤 키가 나가는지 테스트할 수 없다.
+  /// `start_date` 를 넣을지 말지가 이 기능의 핵심 판단이라 순수 함수로 분리한다.
+  @visibleForTesting
+  static Map<String, dynamic> buildCreatePayload({
+    required String userId,
+    required String title,
+    required String description,
+    required int position,
+    DateTime? dueDate,
+    DateTime? startDate,
+    int? categoryId,
+    DateTime? notificationTime,
+    String? recurrenceRule,
+    String? priority,
+    int? parentRecurringTodoId,
+    double? locationLatitude,
+    double? locationLongitude,
+    String? locationName,
+    double? locationRadius,
+  }) {
+    final payload = <String, dynamic>{
+      'title': title,
+      'description': description,
+      'user_id': userId,
+      'category_id': categoryId,
+      'due_date': dueDate?.toUtc().toIso8601String(),
+      'notification_time': notificationTime?.toUtc().toIso8601String(),
+      'recurrence_rule': recurrenceRule,
+      'priority': priority ?? 'medium',
+      'parent_recurring_todo_id': parentRecurringTodoId,
+      'location_latitude': locationLatitude,
+      'location_longitude': locationLongitude,
+      'location_name': locationName,
+      'location_radius': locationRadius,
+      'position': position,
+    };
+    _putStartDate(payload, startDate: startDate, clearStartDate: false);
+    return payload;
+  }
+
+  /// 수정 payload 를 만든다.
+  ///
+  /// [clearStartDate] 는 "범위를 해제한다" 는 **의도**를 전달한다.
+  /// 값이 null 인 것만으로는 "원래 범위가 아니었다" 와 구분되지 않는다.
+  @visibleForTesting
+  static Map<String, dynamic> buildUpdatePayload(
+    Todo todo, {
+    bool clearStartDate = false,
+  }) {
+    final payload = <String, dynamic>{
       'title': todo.title,
       'description': todo.description,
       'is_completed': todo.isCompleted,
@@ -227,7 +290,50 @@ class SupabaseTodoDataSource {
       'location_name': todo.locationName,
       'location_radius': todo.locationRadius,
       'position': todo.position,
-    }).eq('id', todo.id);
+    };
+    _putStartDate(payload,
+        startDate: todo.startDate, clearStartDate: clearStartDate);
+    return payload;
+  }
+
+  /// `start_date` 키를 넣을지 결정한다.
+  ///
+  /// 값이 없고 해제 의도도 없으면 **키 자체를 넣지 않는다.**
+  /// `start_date` 컬럼이 아직 없는 프로젝트에서 PostgREST 가 payload 전체를
+  /// 거부하기 때문이다. 키를 빼면 기존 할 일 생성·수정이 그대로 동작하고,
+  /// 실패는 범위 일정을 실제로 쓸 때로 한정된다.
+  ///
+  /// 필요한 마이그레이션:
+  /// ```sql
+  /// ALTER TABLE todos ADD COLUMN IF NOT EXISTS start_date TIMESTAMPTZ;
+  /// ```
+  static void _putStartDate(
+    Map<String, dynamic> payload, {
+    required DateTime? startDate,
+    required bool clearStartDate,
+  }) {
+    if (startDate != null) {
+      payload['start_date'] = startDate.toUtc().toIso8601String();
+    } else if (clearStartDate) {
+      payload['start_date'] = null;
+    }
+  }
+
+  /// Google Calendar 이벤트 ID만 갱신한다.
+  ///
+  /// 일부러 [updateTodo] 의 일반 payload 에 넣지 않았다. `google_event_id` 컬럼은
+  /// 나중에 추가된 것이라 아직 마이그레이션하지 않은 프로젝트가 있을 수 있는데,
+  /// 일반 payload 에 넣으면 컬럼이 없을 때 **모든 할 일 수정이 실패한다.**
+  /// 여기서만 쓰면 실패해도 캘린더 동기화만 영향을 받는다.
+  ///
+  /// 필요한 마이그레이션:
+  /// ```sql
+  /// ALTER TABLE todos ADD COLUMN IF NOT EXISTS google_event_id TEXT;
+  /// ```
+  Future<void> updateGoogleEventId(int todoId, String? eventId) async {
+    await client
+        .from('todos')
+        .update({'google_event_id': eventId}).eq('id', todoId);
   }
 
   // Delete todo
@@ -266,11 +372,18 @@ class SupabaseTodoDataSource {
   // Toggle completion
   Future<void> toggleCompletion(int id) async {
     final todo = await getTodoById(id);
-    final newCompleted = !todo.isCompleted;
+    await setCompletion(id, !todo.isCompleted);
+  }
 
+  /// 완료 상태를 [isCompleted] 로 **그대로 쓴다.** 현재 값을 읽지 않는다.
+  ///
+  /// 읽고 뒤집어 쓰는 방식은 그사이 값이 바뀌면 의도와 반대로 쓴다.
+  /// 이쪽은 몇 번을 불러도 같은 결과가 되므로 재시도에도 안전하다.
+  Future<void> setCompletion(int id, bool isCompleted) async {
     await client.from('todos').update({
-      'is_completed': newCompleted,
-      'completed_at': newCompleted ? DateTime.now().toUtc().toIso8601String() : null,
+      'is_completed': isCompleted,
+      'completed_at':
+          isCompleted ? DateTime.now().toUtc().toIso8601String() : null,
     }).eq('id', id);
   }
 
@@ -366,6 +479,10 @@ class SupabaseTodoDataSource {
       locationName: json['location_name'] as String?,
       locationRadius: (json['location_radius'] as num?)?.toDouble(),
       position: json['position'] as int? ?? 0,
+      // google_event_id 컬럼이 아직 없는 프로젝트에서는 키가 없어 null 이 된다.
+      googleEventId: json['google_event_id'] as String?,
+      // start_date 컬럼이 아직 없으면 키가 없어 null 이 된다.
+      startDate: _parseUtcDateTime(json['start_date'] as String?),
     );
   }
 }

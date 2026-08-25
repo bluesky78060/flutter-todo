@@ -7,8 +7,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 Flutter Todo app with Supabase backend, featuring OAuth authentication (Google/Kakao), local/cloud sync, notifications, and multi-platform support (Web, Android, iOS).
 
 **Package**: `kr.bluesky.dodo`
-**Current Version**: 1.0.17+56 (see pubspec.yaml)
-**Latest Uploaded to Play Store**: 1.0.17+53
+**Current Version**: 1.0.17+66 (pubspec.yaml 기준)
+**Last Known Play Store Upload**: 1.0.17+53 — *문서에 적혀 있던 마지막으로 알려진 값이며 검증되지 않았다.*
+실제 최신 업로드 번호는 저장소에서 확인할 수 없다. **빌드 전 Play Console에서 직접 확인할 것.**
 
 ## Development Commands
 
@@ -89,19 +90,27 @@ flutter build ios --release --build-name=1.0.6 --build-number=16 --no-codesign
 **버전 관리 전략**:
 - Android와 iOS는 독립적인 버전 번호 사용 가능
 - 각 스토어별로 빌드 번호는 항상 증가해야 함
-- **현재 빌드**: Android: **1.0.17+56** (AAB 준비), iOS: 1.0.5+15
-- **마지막 업로드**: Android: **1.0.17+53** (Google Play), iOS: 1.0.5+15
+- **pubspec.yaml 현재 값**: **1.0.17+66**
+  → 이것은 `flutter build`에 인자를 주지 않았을 때 쓰이는 값이다.
+  **빌드 스크립트의 기본값은 이와 다르다** — `build_android.sh`는 1.0.10+34,
+  `build_ios.sh`는 1.0.5+15가 기본이므로 인자 없이 실행하면 +66이 빌드되지 않는다.
+- **마지막으로 알려진 업로드 (전부 미검증)**:
+  - Android 1.0.17+53 → **Google Play Console**에서 확인
+  - iOS 1.0.5+15 → **App Store Connect**에서 확인 (Play Console 아님)
+- **과거 문서상 기록**: "Android 1.0.17+56 AAB 빌드 완료" (이전 CLAUDE.md에 기재되어 있던 내용)
+  → 2026-08-18 기준 `build/app/` 디렉터리 자체가 존재하지 않아 이 산출물을 확인할 수 없다.
+  기록이 틀렸다는 뜻은 아니며, `flutter clean` 등으로 로컬 산출물이 사라졌을 수 있다.
 
 **CRITICAL: 빌드 전 최신 업로드 버전 확인 필수**
 ```bash
 # Google Play Console에서 최신 업로드된 빌드 번호 확인
 # Settings > App integrity > App bundles > 최신 버전 번호 확인
 #
-# 현재 상황: Google Play Console에 1.0.17+53이 업로드되어 있음
-# 새 빌드는 반드시 54 이상이어야 함
+# 규칙: 새 빌드 번호 > Play Console의 최신 업로드 번호
 #
-# WRONG: ./scripts/build_android.sh 1.0.18 52  # 52 < 53 (거부됨)
-# RIGHT: ./scripts/build_android.sh 1.0.18 54  # 54 > 53 (승인됨)
+# 예) Play Console 최신이 53이라면
+#   WRONG: ./scripts/build_android.sh 1.0.18 52  # 52 < 53 (거부됨)
+#   RIGHT: ./scripts/build_android.sh 1.0.18 54  # 54 > 53 (승인됨)
 ```
 
 **빌드 번호 규칙**:
@@ -109,14 +118,15 @@ flutter build ios --release --build-name=1.0.6 --build-number=16 --no-codesign
 - 빌드 전 항상 Google Play Console에서 최신 버전 확인
 - 빌드 번호가 작으면 업로드 시 "Version code X has already been used" 오류 발생
 
-**현재 상황**:
-- Google Play Console: **1.0.17+53** (업로드됨)
-- 다음 빌드: **1.0.17+56** 이상이어야 함 (AAB 빌드 완료)
-
 **IMPORTANT**: 빌드 스크립트 사용 시 버전 번호가 포함된 파일이 자동 생성되므로 수동 복사 불필요. 수동으로 AAB 빌드할 때는 다음 명령어로:
 ```bash
-flutter build appbundle --release --build-name=1.0.17 --build-number=56
-cp build/app/outputs/bundle/release/app-release.aab build/app/outputs/bundle/release/app-release-1.0.17+56.aab
+# BUILD_NUMBER는 Play Console에서 확인한 최신 업로드 번호보다 커야 한다.
+# 아래 67은 예시일 뿐이다. 반드시 확인한 값으로 바꿔서 실행할 것.
+BUILD_NAME=1.0.17
+BUILD_NUMBER=67
+flutter build appbundle --release --build-name=$BUILD_NAME --build-number=$BUILD_NUMBER
+cp build/app/outputs/bundle/release/app-release.aab \
+   build/app/outputs/bundle/release/app-release-$BUILD_NAME+$BUILD_NUMBER.aab
 ```
 
 ### Code Generation

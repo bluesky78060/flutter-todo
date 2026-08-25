@@ -37,16 +37,20 @@ jobs:
       run: dart run build_runner build --delete-conflicting-outputs
 
     - name: Analyze code
-      run: flutter analyze || true
-      continue-on-error: true
+      # DTA-1-1 이전에는 `|| true` + `continue-on-error: true` 로 이중 무력화되어 있어
+      # analyze 결과가 CI를 전혀 막지 못했다. warning 을 0으로 만든 뒤 실제 게이트로 되돌린다.
+      run: flutter analyze
+
+    # DTA-1-2: window.ENV 읽기 경로는 브라우저에서만 검증할 수 있다.
+    # 실패해도 앱은 하드코딩 fallback으로 조용히 동작하므로 CI에서 못박아 둔다.
+    - name: Run web-only tests (Chrome)
+      run: flutter test --platform chrome test/web/
 
     - name: Run tests with coverage
-      # Exclude reschedule_dialog_test.dart due to EasyLocalization issues in CI
-      run: |
-        flutter test --coverage \
-          test/unit/ \
-          test/widget/progress_card_test.dart \
-          test/widget/custom_todo_item_test.dart
+      # 범위는 coverage_threshold.yml 과 반드시 동일하게 유지할 것.
+      # 과거 reschedule_dialog_test.dart 를 제외했었으나(EasyLocalization 로딩 실패),
+      # DTA-2-1 에서 원인을 고쳐 제외가 불필요해졌다.
+      run: flutter test --coverage test/unit/ test/widget/
 
     - name: Generate coverage report
       run: |
