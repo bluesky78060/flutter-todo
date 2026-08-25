@@ -148,10 +148,22 @@ class WorkManagerNotificationService {
 
   bool _initialized = false;
 
-  /// Initialize WorkManager for notification scheduling
-  Future<void> initialize() async {
-    if (_initialized) return;
+  /// DTA-4-5: 진행 중인 초기화를 캐싱한다.
+  ///
+  /// `_initialized` 플래그만으로는 **순차 호출만** 막힌다. main.dart 는
+  /// _initNotificationService() 와 _initGeofenceService() 를 Future.wait 로 **동시** 실행하고,
+  /// 후자가 DTA-4-5 에서 이 initialize() 를 호출하게 됐다. 삼성 Android 에서는 두 경로가
+  /// 모두 여기 도달하므로, 플래그가 세워지기 전에 둘 다 통과해 Workmanager().initialize() 가
+  /// 두 번 불릴 수 있다. 진행 중인 Future 를 공유해 그것을 막는다.
+  Future<void>? _initFuture;
 
+  /// Initialize WorkManager for notification scheduling
+  Future<void> initialize() {
+    if (_initialized) return Future<void>.value();
+    return _initFuture ??= _doInitialize();
+  }
+
+  Future<void> _doInitialize() async {
     try {
       await Workmanager().initialize(
         callbackDispatcher,
@@ -164,6 +176,9 @@ class WorkManagerNotificationService {
         print('✅ WorkManager initialized for notifications');
       }
     } catch (e) {
+      // 실패한 Future 를 캐시에 남기면 이후 호출이 영구히 같은 실패를 돌려받는다.
+      // 비워서 재시도가 가능하게 한다.
+      _initFuture = null;
       if (kDebugMode) {
         print('❌ Failed to initialize WorkManager: $e');
       }

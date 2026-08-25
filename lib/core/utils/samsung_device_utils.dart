@@ -71,6 +71,13 @@ class SamsungDeviceUtils {
   /// Check if battery optimization is ignored (exempted)
   /// Returns true if the app is exempted from battery optimization
   static Future<bool> isIgnoringBatteryOptimizations() async {
+    // DTA-4-5: Android 배터리 최적화 API다. isSamsungDevice()·shouldUseWorkManager()와
+    // 같은 가드를 둔다. 지금은 applySamsungWorkarounds() 뒤에 있어 iOS에서 도달하지
+    // 않지만, 직접 호출되면 같은 부류의 버그가 재발한다.
+    if (kIsWeb || defaultTargetPlatform != TargetPlatform.android) {
+      return false;
+    }
+
     try {
       final batteryStatus = await Permission.ignoreBatteryOptimizations.status;
 
@@ -89,6 +96,13 @@ class SamsungDeviceUtils {
 
   /// Request battery optimization exemption for Samsung devices
   static Future<bool> requestBatteryOptimizationExemption() async {
+    // DTA-4-5: Android 배터리 최적화 API다. isSamsungDevice()·shouldUseWorkManager()와
+    // 같은 가드를 둔다. 지금은 applySamsungWorkarounds() 뒤에 있어 iOS에서 도달하지
+    // 않지만, 직접 호출되면 같은 부류의 버그가 재발한다.
+    if (kIsWeb || defaultTargetPlatform != TargetPlatform.android) {
+      return false;
+    }
+
     try {
       // Request ignore battery optimization permission
       final batteryStatus = await Permission.ignoreBatteryOptimizations.status;
@@ -200,6 +214,20 @@ class SamsungDeviceUtils {
 
   /// Check if we should use WorkManager instead of AlarmManager
   static Future<bool> shouldUseWorkManager() async {
+    // DTA-4-5: 이 함수 전체가 **Android 배터리 최적화 우회책**이다.
+    // 가드가 없어서 iOS에서 다음이 벌어졌다:
+    //   - isSamsungDevice()는 non-Android에서 false (그 함수엔 가드가 있다)
+    //   - 그래서 아래 ignoreBatteryOptimizations 검사로 떨어지는데,
+    //     그것은 **Android 전용 권한**이라 iOS에서는 절대 granted가 되지 않는다
+    //   - 결국 `!isGranted`가 항상 참이 되어 **true를 반환**했다
+    //   → iOS 알림이 표준 로컬 알림 대신 WorkManager 경로로 갔고,
+    //     Workmanager가 초기화되지 않은 상태에서 registerOneOffTask가 던진
+    //     PlatformException이 할일 저장 화면의 빨간 SnackBar로 노출됐다.
+    // isSamsungDevice()와 같은 가드를 둔다.
+    if (kIsWeb || defaultTargetPlatform != TargetPlatform.android) {
+      return false;
+    }
+
     // Use WorkManager for all Samsung devices
     final isSamsung = await isSamsungDevice();
 

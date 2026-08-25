@@ -271,8 +271,15 @@ Future<void> _initGeofenceService() async {
     logger.d('✅ Main: Geofence WorkManager service initialized successfully');
 
     // Start monitoring with 15-minute intervals (Android minimum)
-    await GeofenceWorkManagerService.startMonitoring(intervalMinutes: 15);
-    logger.d('✅ Main: Geofence monitoring started');
+    // DTA-4-5: startMonitoring이 실패를 삼키므로 반환값으로 실제 결과를 확인한다.
+    // 이전에는 실패 직후에도 "monitoring started"를 찍어 로그가 거짓말을 했다.
+    final started =
+        await GeofenceWorkManagerService.startMonitoring(intervalMinutes: 15);
+    if (started) {
+      logger.d('✅ Main: Geofence monitoring started');
+    } else {
+      logger.w('⚠️ Main: Geofence monitoring did not start');
+    }
   } catch (e, stackTrace) {
     logger.e('❌ Main: Failed to initialize geofence service',
         error: e, stackTrace: stackTrace);

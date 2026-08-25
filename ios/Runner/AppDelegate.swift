@@ -1,6 +1,7 @@
 import Flutter
 import UIKit
 import WidgetKit
+import workmanager_apple
 
 @main
 @objc class AppDelegate: FlutterAppDelegate {
@@ -12,6 +13,16 @@ import WidgetKit
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
     GeneratedPluginRegistrant.register(with: self)
+
+    // DTA-4-5: BGTaskScheduler는 앱이 실행을 마치기 **전에** 식별자를 등록해야 한다.
+    // 이 호출이 없으면 Dart의 Workmanager().registerPeriodicTask()가 스케줄을 제출해도
+    // 실행할 핸들러가 없어 주기 작업이 조용히 돌지 않는다.
+    // 식별자는 Info.plist의 BGTaskSchedulerPermittedIdentifiers 및
+    // GeofenceWorkManagerService._geofenceTaskId와 정확히 일치해야 한다.
+    WorkmanagerPlugin.registerPeriodicTask(
+      withIdentifier: "geofence_check_unique_id",
+      frequency: NSNumber(value: 15 * 60)
+    )
 
     if let controller = window?.rootViewController as? FlutterViewController {
       // Setup deep link channel for OAuth callbacks

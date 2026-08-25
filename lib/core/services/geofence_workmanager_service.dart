@@ -4,6 +4,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:todo_app/core/services/geofence_calculator.dart';
 import 'package:todo_app/core/services/location_service.dart';
 import 'package:todo_app/core/services/notification_service.dart';
+import 'package:todo_app/core/services/workmanager_notification_service.dart';
 import 'package:todo_app/core/utils/app_logger.dart';
 import 'package:todo_app/data/datasources/local/app_database.dart';
 import 'package:todo_app/data/datasources/remote/supabase_location_datasource.dart';
@@ -18,12 +19,22 @@ class GeofenceWorkManagerService {
   static const String _geofenceTaskName = 'geofence_check_task';
   static const String _geofenceTaskId = 'geofence_check_unique_id';
 
-  /// Initialize the geofence monitoring service
-  /// NOTE: WorkManager is initialized in WorkManagerNotificationService with unified dispatcher
-  /// This method is kept for compatibility but does nothing
+  /// Initialize the geofence monitoring service.
+  ///
+  /// DTA-4-5: 이 메서드는 원래 no-op이었고 "WorkManager는 WorkManagerNotificationService에서
+  /// 초기화된다"는 주석만 있었다. 그런데 그 초기화는 **Android + 삼성 기기일 때만** 실행된다
+  /// (notification_service.dart의 `if (_isAndroid)` → `if (_isSamsungDevice)`).
+  ///
+  /// 결과적으로 iOS와 비-삼성 Android에서는 `Workmanager().initialize()`가 한 번도 불리지
+  /// 않은 채 startMonitoring()이 태스크 등록을 시도해 다음으로 실패했다:
+  ///   PlatformException(1, You have not properly initialized the Flutter WorkManager Package...)
+  ///
+  /// callbackDispatcher는 알림과 지오펜스를 모두 처리하는 통합 디스패처다.
+  /// 이 호출로 initialize() 의 호출자가 둘이 되고 main.dart 가 그 둘을 Future.wait 로
+  /// 동시에 돌리므로, WorkManagerNotificationService 쪽에 진행 중인 Future 캐싱을 함께 넣었다.
+  /// (플래그만으로는 순차 호출만 막힌다 — 자세한 근거는 그쪽 주석 참조.)
   static Future<void> initialize() async {
-    // No-op: WorkManager is initialized in WorkManagerNotificationService
-    // with the unified callbackDispatcher that handles both notifications and geofence
+    await WorkManagerNotificationService().initialize();
     AppLogger.info('ℹ️ Geofence service uses unified WorkManager dispatcher');
   }
 
@@ -31,7 +42,10 @@ class GeofenceWorkManagerService {
   /// Checks location every 15 minutes by default
   ///
   /// [intervalMinutes]: How often to check (minimum 15 minutes)
-  static Future<void> startMonitoring({int intervalMinutes = 15}) async {
+  /// DTA-4-5: 실패를 삼키지 않고 결과를 돌려준다. 이전에는 예외를 잡아 로그만 남겨
+  /// 호출자(main.dart의 _initGeofenceService)가 실패 후에도 "monitoring started"를
+  /// 찍었다 — 로그가 거짓말을 했다.
+  static Future<bool> startMonitoring({int intervalMinutes = 15}) async {
     try {
       // Cancel any existing task first
       await stopMonitoring();
@@ -47,8 +61,10 @@ class GeofenceWorkManagerService {
       );
 
       AppLogger.info('✅ Geofence monitoring started (interval: ${intervalMinutes}min)');
+      return true;
     } catch (e) {
       AppLogger.error('❌ Failed to start geofence monitoring', error: e);
+      return false;
     }
   }
 
