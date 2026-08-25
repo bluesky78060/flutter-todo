@@ -9,13 +9,19 @@ import 'package:todo_app/core/utils/samsung_device_utils.dart';
 /// 반환했고, 그 결과 Android 전용 WorkManager 경로를 타서 앱 실행 시
 /// `PlatformException(channel-error, ...WorkmanagerHostApi.initialize)` 배너가 떴다.
 ///
-/// 이 버그는 실기기 실행으로만 발견됐다. 아래 테스트들은 순수 Dart로 같은 것을
-/// 잡는다 — 플랫폼 채널을 타기 전에 조기 반환하므로 모킹이 필요 없다.
+/// 이 버그는 실기기 실행으로만 발견됐다. 아래 테스트들은 순수 Dart로 같은 것을 잡는다.
+///
+/// ⚠️ setUp의 채널 모킹은 **장식이 아니라 하중을 받는 부분이다.** 모킹 없이 테스트를
+/// 추가하면 가드가 아니라 MissingPluginException 때문에 통과하는 무의미한 테스트가 된다.
+/// 새 테스트를 넣을 때는 반드시 변이 검증(가드를 지우고 죽는지 확인)까지 하십시오.
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   // permission_handler의 플랫폼 채널.
   const permissionChannel = MethodChannel('flutter.baseflow.com/permissions/methods');
+  // isSamsungDevice()가 가드를 지나면 도달하는 채널 둘.
+  const deviceInfoChannel = MethodChannel('kr.bluesky.dodo/device_info');
+  const systemPropsChannel = MethodChannel('kr.bluesky.dodo/system_properties');
 
   // ⚠️ 이 모킹이 없으면 이 파일의 테스트는 **버그를 잡지 못한다.**
   //
@@ -32,20 +38,40 @@ void main() {
         .setMockMethodCallHandler(permissionChannel, (call) async {
       switch (call.method) {
         case 'checkPermissionStatus':
-        case 'requestPermissions':
           // 0 = PermissionStatus.denied — 실기기 iOS가 Android 전용 권한에 주는 값
-          return call.method == 'requestPermissions'
-              ? <int, int>{0: 0}
-              : 0;
+          return 0;
+        case 'requestPermissions':
+          // 키는 Permission.value 다. ignoreBatteryOptimizations 는 Permission._(16).
+          // 0을 쓰면 Permission.calendar 를 가리켜 엉뚱한 mock이 된다.
+          return <int, int>{16: 0};
         default:
           return null;
       }
     });
+
+    // ⚠️ HIGH-B: 이 두 모킹이 없으면 isSamsungDevice() 테스트가 **무의미해진다.**
+    // 가드를 지워도 MissingPluginException → catch → false 로 빠져 테스트가 통과한다.
+    // 즉 "가드가 있어서 false"가 아니라 "예외가 나서 false"다 — 이 파일이 처음
+    // 저질렀던 것과 똑같은 결함이다. samsung을 돌려주게 해서, false를 만들 수 있는
+    // 것이 **플랫폼 가드뿐이도록** 만든다.
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(deviceInfoChannel, (call) async {
+      if (call.method == 'getManufacturer') return 'samsung';
+      return null;
+    });
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(systemPropsChannel, (call) async {
+      if (call.method == 'getBrand') return 'samsung';
+      return null;
+    });
   });
 
   tearDown(() {
-    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-        .setMockMethodCallHandler(permissionChannel, null);
+    final messenger =
+        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
+    messenger.setMockMethodCallHandler(permissionChannel, null);
+    messenger.setMockMethodCallHandler(deviceInfoChannel, null);
+    messenger.setMockMethodCallHandler(systemPropsChannel, null);
     debugDefaultTargetPlatformOverride = null;
   });
 

@@ -105,7 +105,9 @@ class SamsungDeviceUtils {
     // iOS에서 도달하지 않지만, 직접 호출되면 원래 버그와 같은 부류가 재발한다.
     // 반환값이 true인 이유: 이 술어는 "배터리 최적화에서 자유로운가"를 묻는다.
     // Android 외 플랫폼에는 그 제약 자체가 없으므로 답은 참이다. 저장소의 형제 구현
-    // 둘(DeviceUtils, BatteryOptimizationService)도 같은 이유로 true를 돌려준다 —
+    // DeviceUtils.requestBatteryOptimizationExemption()도 같은 이유로 true를 돌려준다
+    // (BatteryOptimizationService의 대응 함수는 requestIgnoreBatteryOptimizations()이고
+    //  반환형이 void라 비교 대상이 아니다) —
     // 여기서만 false를 주면 호출자가 iOS 사용자에게 존재하지도 않는 Android 설정
     // 안내를 띄우게 된다. (shouldUseWorkManager()의 false는 "이 우회책을 쓰지 말라"는
     // 다른 질문에 대한 답이라 그대로 둔다.)

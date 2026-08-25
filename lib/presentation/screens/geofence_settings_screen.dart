@@ -129,6 +129,11 @@ class _GeofenceSettingsScreenState extends ConsumerState<GeofenceSettingsScreen>
         // DTA-4-5: startMonitoring()은 예외를 삼키고 false를 돌려준다. 반환값을
         // 버리면 아래 catch가 절대 실행되지 않아, 등록이 실패해도 사용자에게는
         // 초록색 '활성화됨'과 켜진 토글만 보인다. 반드시 결과를 보고 분기한다.
+        //
+        // 유효 범위는 **Android까지**다. iOS는 workmanager_apple이 BGTaskScheduler.submit
+        // 실패를 삼키고(WorkmanagerPlugin.swift:94-102) 무조건 .success(())로 완료하므로,
+        // submit이 throw해도 여기 started는 true다. iOS에서도 실제 등록을 확인하려면
+        // Workmanager().isScheduledByUniqueName()을 별도로 물어야 한다 — DTA-4-6에서 다룬다.
         final started = await GeofenceWorkManagerService.startMonitoring(
           intervalMinutes: _monitoringInterval,
         );

@@ -109,7 +109,8 @@ class BatteryOptimizationService {
       } else {
         // Update monitoring interval
         // DTA-4-5: 반환값을 버리면 재등록 실패도 'updated'로 찍힌다.
-        // 참고: iOS는 frequency를 무시하므로 이 간격 조정은 Android에서만 실효가 있다.
+        // 참고: iOS는 frequency를 무시하고 submit 실패도 삼키므로, 이 간격 조정도
+        // 실패 감지도 Android에서만 실효가 있다.
         final started = await GeofenceWorkManagerService.startMonitoring(
           intervalMinutes: newInterval,
         );

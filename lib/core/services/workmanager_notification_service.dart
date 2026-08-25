@@ -24,9 +24,15 @@ void callbackDispatcher() {
         //   iOS     — BGTaskScheduler **identifier** ('geofence_check_unique_id').
         //              workmanager_apple의 BackgroundWorker.onResultSendArguments가
         //              .backgroundPeriodicTask(identifier)를 그대로 DART_TASK에 담는다.
-        // iOS 값을 빠뜨리면 여기서 'Unknown task type'으로 빠져 false를 반환하고,
-        // 플러그인이 setTaskCompleted(success: false)로 보고한다. iOS는 실패를
-        // 반복하는 앱의 백그라운드 실행 예산을 깎으므로 조용히 더 안 깨어나게 된다.
+        // iOS 값을 빠뜨리면 여기서 'Unknown task type'으로 빠져 지오펜스 핸들러가
+        // **아예 호출되지 않는다.** 그것이 이 분기의 이유 전부다.
+        //
+        // (초안 주석은 "false를 반환하면 플러그인이 setTaskCompleted(success: false)로
+        //  보고해 iOS가 백그라운드 예산을 깎는다"고 적었으나 사실이 아니다. 플러그인은
+        //  setTaskCompleted(success: !operation.isCancelled)로 **취소 여부만** 보고하고
+        //  (WorkmanagerPlugin.swift:30,55), Dart 반환값은 performBackgroundRequest { _ in }
+        //  에서 버려진다(BackgroundTaskOperation.swift:41). 반환값을 OS에 전달하는 경로는
+        //  iOS 12의 performFetchWithCompletionHandler뿐이고 이 앱은 그 경로를 쓰지 않는다.)
         return await _handleGeofenceTask(inputData);
       } else {
         if (kDebugMode) {
