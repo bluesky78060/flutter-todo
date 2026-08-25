@@ -1,8 +1,15 @@
 #!/bin/bash
 
 # iOS 빌드 스크립트
-# 사용법: ./scripts/build_ios.sh [version] [build-number]
-# 예: ./scripts/build_ios.sh 1.0.5 15
+# 사용법: ./scripts/build_ios.sh <build-number> [version]
+# 예: ./scripts/build_ios.sh 16 1.0.6
+#
+# build-number 는 필수다. 기본값(1.0.5+15)을 두었더니 낡아서, 인자 없이 실행하면
+# App Store Connect 가 거부할 빌드가 만들어졌다. 어떤 숫자를 넣어 두어도 같은 일이
+# 반복되므로 부를 때마다 받는다.
+#
+# 넣을 값: App Store Connect 에서 최신 빌드 번호를 확인하고 그보다 큰 수.
+# (Play Console 이 아니다 — iOS 는 별도 번호 체계를 쓴다.)
 
 set -e  # 오류 발생 시 스크립트 중단
 
@@ -13,13 +20,24 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-# 기본값 설정
-DEFAULT_VERSION="1.0.5"
-DEFAULT_BUILD_NUMBER="15"
-
 # 인자 처리
-VERSION=${1:-$DEFAULT_VERSION}
-BUILD_NUMBER=${2:-$DEFAULT_BUILD_NUMBER}
+# build-number: 필수. 위 주석 참고.
+BUILD_NUMBER=$1
+if [ -z "$BUILD_NUMBER" ]; then
+    echo -e "${RED}❌ build-number 가 필요합니다.${NC}"
+    echo -e "${YELLOW}사용법:${NC} ./scripts/build_ios.sh <build-number> [version]"
+    echo -e "${YELLOW}예:${NC}     ./scripts/build_ios.sh 16 1.0.6"
+    echo
+    echo -e "App Store Connect 에서 최신 빌드 번호를 확인하고 그보다 큰 수를 넣으십시오."
+    exit 1
+fi
+if ! [[ "$BUILD_NUMBER" =~ ^[0-9]+$ ]]; then
+    echo -e "${RED}❌ build-number 는 숫자여야 합니다: '${BUILD_NUMBER}'${NC}"
+    exit 1
+fi
+
+# version: 생략하면 pubspec.yaml 의 현재 값을 쓴다. 하드코딩하면 낡는다.
+VERSION=${2:-$(grep -m1 '^version:' pubspec.yaml | sed 's/^version: *//; s/+.*//')}
 
 echo -e "${BLUE}========================================${NC}"
 echo -e "${BLUE}   iOS Build Script${NC}"

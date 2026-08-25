@@ -46,19 +46,19 @@ Android와 iOS의 버전을 독립적으로 관리하는 방법을 설명합니�
 
 #### 기본 사용법
 ```bash
-# 기본값으로 빌드 (1.0.10+34)
-./scripts/build_android.sh
-
+# build-number 는 필수 인자다 (생략하면 사용법을 출력하고 중단한다)
 # 버전 지정
-./scripts/build_android.sh 1.0.11 35
+./scripts/build_android.sh 35 1.0.11
 
 # 버전, 빌드 번호, 타입 모두 지정
-./scripts/build_android.sh 1.0.11 35 release
+./scripts/build_android.sh 35 1.0.11 release
 ```
 
 #### 파라미터
-1. **버전** (선택, 기본값: 1.0.10)
-2. **빌드 번호** (선택, 기본값: 34)
+1. **빌드 번호** (**필수**) — Play Console 의 최신 versionCode 보다 큰 정수.
+   기본값을 두지 않는다. 저장소는 스토어에 무엇이 올라가 있는지 알 수 없고,
+   어떤 숫자를 적어 두어도 시간이 지나면 거부될 빌드를 만들게 된다.
+2. **버전** (선택) — 생략하면 `pubspec.yaml` 의 값을 읽는다
 3. **빌드 타입** (선택, 기본값: release)
    - `release`: AAB + APK 생성
    - `debug`: Debug APK 생성
@@ -78,29 +78,28 @@ build/app/outputs/flutter-apk/
 #### 예시
 ```bash
 # Android 버전 1.0.11, 빌드 35로 릴리즈 빌드
-./scripts/build_android.sh 1.0.11 35 release
+./scripts/build_android.sh 35 1.0.11 release
 
 # Android 버전 1.0.12, 빌드 36으로 디버그 빌드
-./scripts/build_android.sh 1.0.12 36 debug
+./scripts/build_android.sh 36 1.0.12 debug
 ```
 
 ### iOS 빌드
 
 #### 기본 사용법
 ```bash
-# 기본값으로 빌드 (1.0.5+15)
-./scripts/build_ios.sh
-
+# build-number 는 필수 인자다 (생략하면 사용법을 출력하고 중단한다)
 # 버전 지정
-./scripts/build_ios.sh 1.0.6 16
+./scripts/build_ios.sh 16 1.0.6
 
 # 최신 버전으로 빌드
-./scripts/build_ios.sh 1.0.7 17
+./scripts/build_ios.sh 17 1.0.7
 ```
 
 #### 파라미터
-1. **버전** (선택, 기본값: 1.0.5)
-2. **빌드 번호** (선택, 기본값: 15)
+1. **빌드 번호** (**필수**) — App Store Connect 의 최신 빌드 번호보다 큰 정수.
+   (Play Console 이 아니다 — iOS 는 별도 번호 체계를 쓴다.)
+2. **버전** (선택) — 생략하면 `pubspec.yaml` 의 값을 읽는다
 
 #### 다음 단계
 스크립트 완료 후:
@@ -112,10 +111,10 @@ build/app/outputs/flutter-apk/
 #### 예시
 ```bash
 # iOS 버전 1.0.6, 빌드 16으로 빌드
-./scripts/build_ios.sh 1.0.6 16
+./scripts/build_ios.sh 16 1.0.6
 
 # iOS 버전 1.0.7, 빌드 17로 빌드
-./scripts/build_ios.sh 1.0.7 17
+./scripts/build_ios.sh 17 1.0.7
 ```
 
 ---
@@ -201,46 +200,46 @@ open ios/Runner.xcworkspace
 #### 시나리오 1: 버그 수정 (Patch)
 ```bash
 # Android: 1.0.10+34 → 1.0.10+35
-./scripts/build_android.sh 1.0.10 35
+./scripts/build_android.sh 35 1.0.10
 
 # iOS: 1.0.5+15 → 1.0.5+16
-./scripts/build_ios.sh 1.0.5 16
+./scripts/build_ios.sh 16 1.0.5
 ```
 
 #### 시나리오 2: 기능 추가 (Minor)
 ```bash
 # Android: 1.0.10+34 → 1.0.11+35
-./scripts/build_android.sh 1.0.11 35
+./scripts/build_android.sh 35 1.0.11
 
 # iOS: 1.0.5+15 → 1.0.6+16
-./scripts/build_ios.sh 1.0.6 16
+./scripts/build_ios.sh 16 1.0.6
 ```
 
 #### 시나리오 3: 메이저 업데이트 (Major)
 ```bash
 # Android: 1.0.10+34 → 2.0.0+35
-./scripts/build_android.sh 2.0.0 35
+./scripts/build_android.sh 35 2.0.0
 
 # iOS: 1.0.5+15 → 2.0.0+16
-./scripts/build_ios.sh 2.0.0 16
+./scripts/build_ios.sh 16 2.0.0
 ```
 
 #### 시나리오 4: Android만 업데이트
 ```bash
 # Android만 버전업
-./scripts/build_android.sh 1.0.11 35
+./scripts/build_android.sh 35 1.0.11
 
 # iOS는 그대로 유지
-./scripts/build_ios.sh 1.0.5 15
+./scripts/build_ios.sh 15 1.0.5
 ```
 
 #### 시나리오 5: iOS만 업데이트
 ```bash
 # Android는 그대로 유지
-./scripts/build_android.sh 1.0.10 34
+./scripts/build_android.sh 34 1.0.10
 
 # iOS만 버전업
-./scripts/build_ios.sh 1.0.6 16
+./scripts/build_ios.sh 16 1.0.6
 ```
 
 ### 버전 추적 템플릿
@@ -286,7 +285,7 @@ Error: The version code of the new build (34) must be greater than the version c
 **해결**:
 ```bash
 # 빌드 번호를 1 증가시켜서 다시 빌드
-./scripts/build_android.sh 1.0.10 35
+./scripts/build_android.sh 35 1.0.10
 ```
 
 ### 2. pubspec.yaml이 변경되었다는 경고
@@ -371,13 +370,13 @@ chmod +x scripts/*.sh
 
 ```bash
 # Android 다음 버전 빌드
-./scripts/build_android.sh 1.0.11 35
+./scripts/build_android.sh 35 1.0.11
 
 # iOS 다음 버전 빌드
-./scripts/build_ios.sh 1.0.6 16
+./scripts/build_ios.sh 16 1.0.6
 
 # 두 플랫폼 동시 빌드 (순차 실행)
-./scripts/build_android.sh 1.0.11 35 && ./scripts/build_ios.sh 1.0.6 16
+./scripts/build_android.sh 35 1.0.11 && ./scripts/build_ios.sh 16 1.0.6
 ```
 
 ### 버전 번호 규칙

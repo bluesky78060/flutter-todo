@@ -46,17 +46,20 @@ kill -SIGUSR2 <pid>
 **빌드 스크립트 사용** (플랫폼별 버전 자동 관리):
 
 ```bash
-# Android 빌드 (기본값: 1.0.10+34)
-./scripts/build_android.sh
+# build-number 는 필수다. 인자 순서: <build-number> [version] [build-type]
+# version 을 생략하면 pubspec.yaml 의 값을 쓴다.
 
-# Android 커스텀 버전 빌드
-./scripts/build_android.sh 1.0.11 35
+# Android — Play Console 최신 versionCode 보다 큰 수를 넣는다
+./scripts/build_android.sh 69
 
-# iOS 빌드 (기본값: 1.0.5+15)
-./scripts/build_ios.sh
+# Android — 버전 이름까지 지정
+./scripts/build_android.sh 69 1.0.18
 
-# iOS 커스텀 버전 빌드
-./scripts/build_ios.sh 1.0.6 16
+# iOS — App Store Connect 최신 빌드 번호보다 큰 수를 넣는다 (Play Console 아님)
+./scripts/build_ios.sh 16
+
+# iOS — 버전 이름까지 지정
+./scripts/build_ios.sh 16 1.0.6
 ```
 
 **자동 기능**:
@@ -93,8 +96,8 @@ flutter build ios --release --build-name=1.0.6 --build-number=16 --no-codesign
 - 각 스토어별로 빌드 번호는 항상 증가해야 함
 - **pubspec.yaml 현재 값**: **1.0.17+68**
   → 이것은 `flutter build`에 인자를 주지 않았을 때 쓰이는 값이다.
-  **빌드 스크립트의 기본값은 이와 다르다** — `build_android.sh`는 1.0.10+34,
-  `build_ios.sh`는 1.0.5+15가 기본이므로 인자 없이 실행하면 +68이 빌드되지 않는다.
+  빌드 스크립트는 build-number 를 **필수 인자**로 받는다. 예전에는 1.0.10+34 /
+  1.0.5+15 를 기본값으로 들고 있어서 인자 없이 실행하면 거부될 빌드가 나왔다.
 - **Android 업로드 현황**:
   - Play Store 활성 빌드 **1.0.17+67** (2026-08-25 사용자 확인)
   - 로컬 산출물 **1.0.17+68** — `build/app/outputs/bundle/release/app-release-1.0.17+68.aab`
@@ -108,9 +111,9 @@ flutter build ios --release --build-name=1.0.6 --build-number=16 --no-codesign
 #
 # 규칙: 새 빌드 번호 > Play Console의 최신 업로드 번호
 #
-# 예) Play Console 최신이 53이라면
-#   WRONG: ./scripts/build_android.sh 1.0.18 52  # 52 < 53 (거부됨)
-#   RIGHT: ./scripts/build_android.sh 1.0.18 54  # 54 > 53 (승인됨)
+# 예) Play Console 최신이 67이라면 (인자 순서: build-number 가 먼저다)
+#   WRONG: ./scripts/build_android.sh 66 1.0.18  # 66 < 67 (거부됨)
+#   RIGHT: ./scripts/build_android.sh 68 1.0.18  # 68 > 67 (승인됨)
 ```
 
 **빌드 번호 규칙**:
