@@ -55,13 +55,18 @@ subprojects {
     }
 }
 
-// (2) glance 고정. home_widget 에만 걸면 안 된다 — AGP 호환성 검사는 :app 이
+// (2) glance / work 고정. home_widget 에만 걸면 안 된다 — AGP 호환성 검사는 :app 이
 //     의존성 그래프 전체를 해석할 때 돌기 때문에 :app 의 설정에도 들어가야 한다.
+//
+//     work 를 고정하는 이유: "2.+" 가 2.12.0-rc01 을 물어와 릴리스 후보가 그대로
+//     프로덕션 AAB(1.0.17+68)에 실려 있었다. 최신 안정판인 2.11.2 로 내린다.
 allprojects {
     configurations.configureEach {
         resolutionStrategy {
             force("androidx.glance:glance-appwidget:1.1.1")
             force("androidx.glance:glance:1.1.1")
+            force("androidx.work:work-runtime:2.11.2")
+            force("androidx.work:work-runtime-ktx:2.11.2")
         }
     }
 }
