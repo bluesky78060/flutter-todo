@@ -767,8 +767,15 @@ class TodoActions {
           (_) async {
             logger.d('✅ TodoActions: Todo rescheduled successfully');
 
-            // Update notification if it exists
-            if (newNotificationTime != null) {
+            // Update notification if it exists.
+            //
+            // newNotificationTime 을 여기서 직접 쓰면 안 된다. 그 변수는 대입이 있는
+            // 지역 변수인데 이 클로저가 캡처하고 있어서, Dart 는 위의 null 검사로
+            // DateTime? 를 DateTime 으로 승격시켜 주지 않는다. scheduledDate 는
+            // DateTime 을 받으므로 컴파일 오류가 난다. 로컬 stable 은 통과시키지만
+            // master 채널을 쓰는 Windows 빌드가 이 오류로 멈췄다.
+            final scheduledDate = newNotificationTime;
+            if (scheduledDate != null) {
               try {
                 // Cancel old notification
                 await notificationService.cancelNotification(id);
@@ -777,7 +784,7 @@ class TodoActions {
                   id: id,
                   title: 'todo_reminder'.tr(),
                   body: todo.title,
-                  scheduledDate: newNotificationTime,
+                  scheduledDate: scheduledDate,
                   priority: todo.priority,
                 );
                 logger.d('✅ TodoActions: Notification rescheduled');
