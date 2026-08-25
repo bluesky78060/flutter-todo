@@ -54,7 +54,7 @@ class RescheduleDialog extends ConsumerWidget {
                   color: AppColors.primary,
                   size: 24,
                 ),
-                SizedBox(width: 12),
+                const SizedBox(width: 12),
                 Text(
                   'reschedule_title'.tr(),
                   style: TextStyle(
@@ -91,7 +91,7 @@ class RescheduleDialog extends ConsumerWidget {
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
               style: TextButton.styleFrom(
-                padding: EdgeInsets.symmetric(vertical: 12),
+                padding: const EdgeInsets.symmetric(vertical: 12),
               ),
               child: Text(
                 'cancel'.tr(),
@@ -127,7 +127,7 @@ class _RescheduleOption extends ConsumerWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(12),
       child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         decoration: BoxDecoration(
           color: AppColors.getBackground(isDarkMode),
           borderRadius: BorderRadius.circular(12),
@@ -143,7 +143,7 @@ class _RescheduleOption extends ConsumerWidget {
               color: AppColors.primary,
               size: 24,
             ),
-            SizedBox(width: 12),
+            const SizedBox(width: 12),
             Text(
               label,
               style: TextStyle(
@@ -152,7 +152,7 @@ class _RescheduleOption extends ConsumerWidget {
                 fontWeight: FontWeight.w500,
               ),
             ),
-            Spacer(),
+            const Spacer(),
             Icon(
               FluentIcons.chevron_right_24_regular,
               color: AppColors.getTextSecondary(isDarkMode),

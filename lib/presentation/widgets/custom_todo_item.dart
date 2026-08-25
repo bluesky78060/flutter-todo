@@ -145,7 +145,7 @@ class _CustomTodoItemState extends ConsumerState<CustomTodoItem>
                           borderRadius: _checkboxBorderRadius,
                         ),
                         child: widget.todo.isCompleted
-                            ? Icon(
+                            ? const Icon(
                                 Icons.check,
                                 size: 16,
                                 color: Colors.white,
@@ -234,7 +234,7 @@ class _CustomTodoItemState extends ConsumerState<CustomTodoItem>
                             const SizedBox(height: 6),
                             Row(
                               children: [
-                                Icon(
+                                const Icon(
                                   FluentIcons.alert_24_regular,
                                   color: AppColors.accentOrange,
                                   size: 14,

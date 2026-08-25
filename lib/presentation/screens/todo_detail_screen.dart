@@ -222,7 +222,7 @@ class TodoDetailScreen extends ConsumerWidget {
                               }
                             }
                           },
-                          icon: Icon(
+                          icon: const Icon(
                             FluentIcons.snooze_24_regular,
                             size: 18,
                           ),
@@ -356,7 +356,7 @@ class TodoDetailScreen extends ConsumerWidget {
                     children: [
                       Row(
                         children: [
-                          Icon(
+                          const Icon(
                             FluentIcons.warning_24_filled,
                             color: AppColors.accentOrange,
                             size: 20,
@@ -453,7 +453,7 @@ class TodoDetailScreen extends ConsumerWidget {
                               }
                             }
                           },
-                          icon: Icon(
+                          icon: const Icon(
                             FluentIcons.calendar_arrow_right_24_regular,
                             size: 18,
                           ),
@@ -498,7 +498,7 @@ class TodoDetailScreen extends ConsumerWidget {
         error: (error, _) => Center(
           child: Text(
             'error_prefix'.tr(namedArgs: {'error': error.toString()}),
-            style: TextStyle(color: Colors.red),
+            style: const TextStyle(color: Colors.red),
           ),
         ),
       ),
@@ -717,7 +717,7 @@ class _SubtasksSectionState extends ConsumerState<_SubtasksSection> {
             },
             loading: () => Center(
               child: Padding(
-                padding: EdgeInsets.all(12.0),
+                padding: const EdgeInsets.all(12.0),
                 child: CircularProgressIndicator(
                   color: AppColors.primary,
                 ),
@@ -726,8 +726,8 @@ class _SubtasksSectionState extends ConsumerState<_SubtasksSection> {
             error: (error, _) => Padding(
               padding: const EdgeInsets.all(12.0),
               child: Text(
-                'error'.tr() + ': $error',
-                style: TextStyle(color: Colors.red),
+                '${'error'.tr()}: $error',
+                style: const TextStyle(color: Colors.red),
               ),
             ),
           ),
@@ -816,7 +816,7 @@ class _SubtaskItem extends StatelessWidget {
           ),
         ),
         trailing: IconButton(
-          icon: Icon(
+          icon: const Icon(
             FluentIcons.delete_24_regular,
             color: Colors.red,
             size: 20,
@@ -846,7 +846,7 @@ class _SubtaskItem extends StatelessWidget {
                     onPressed: () => Navigator.of(context).pop(true),
                     child: Text(
                       'delete'.tr(),
-                      style: TextStyle(color: Colors.red),
+                      style: const TextStyle(color: Colors.red),
                     ),
                   ),
                 ],
@@ -991,7 +991,7 @@ class _AttachmentsSection extends ConsumerWidget {
             },
             loading: () => Center(
               child: Padding(
-                padding: EdgeInsets.all(12.0),
+                padding: const EdgeInsets.all(12.0),
                 child: CircularProgressIndicator(
                   color: AppColors.primary,
                 ),
@@ -1000,8 +1000,8 @@ class _AttachmentsSection extends ConsumerWidget {
             error: (error, _) => Padding(
               padding: const EdgeInsets.all(12.0),
               child: Text(
-                'error'.tr() + ': $error',
-                style: TextStyle(color: Colors.red),
+                '${'error'.tr()}: $error',
+                style: const TextStyle(color: Colors.red),
               ),
             ),
           ),
@@ -1132,7 +1132,7 @@ class _AttachmentItem extends ConsumerWidget {
                 shape: BoxShape.circle,
               ),
               padding: const EdgeInsets.all(4),
-              child: Icon(
+              child: const Icon(
                 FluentIcons.dismiss_24_filled,
                 color: Colors.white,
                 size: 16,
@@ -1162,7 +1162,7 @@ class _AttachmentItem extends ConsumerWidget {
             },
             child: Text(
               'delete'.tr(),
-              style: TextStyle(color: Colors.red),
+              style: const TextStyle(color: Colors.red),
             ),
           ),
         ],

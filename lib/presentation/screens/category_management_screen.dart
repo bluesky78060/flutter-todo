@@ -76,7 +76,7 @@ class CategoryManagementScreen extends ConsumerWidget {
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: IconButton(
-                      icon: Icon(
+                      icon: const Icon(
                         FluentIcons.add_24_regular,
                         color: Colors.white,
                       ),
@@ -216,7 +216,7 @@ class CategoryManagementScreen extends ConsumerWidget {
               ),
             ),
             IconButton(
-              icon: Icon(
+              icon: const Icon(
                 FluentIcons.delete_24_regular,
                 color: Colors.red,
               ),
@@ -311,7 +311,7 @@ class CategoryManagementScreen extends ConsumerWidget {
                           color: AppColors.getBorder(isDarkMode),
                           width: 1.5,
                         ),
-                        padding: EdgeInsets.symmetric(vertical: 12),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
@@ -557,7 +557,7 @@ class _CategoryDialogState extends ConsumerState<CategoryDialog> {
                         ),
                       ),
                       child: isSelected
-                          ? Icon(
+                          ? const Icon(
                               FluentIcons.checkmark_24_filled,
                               color: Colors.white,
                             )

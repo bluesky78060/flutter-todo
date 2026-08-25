@@ -349,12 +349,12 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                         padding: const EdgeInsets.only(top: 8),
                         child: Row(
                           children: [
-                            Icon(
+                            const Icon(
                               FluentIcons.gift_24_filled,
                               color: AppColors.accentOrange,
                               size: 16,
                             ),
-                            SizedBox(width: 6),
+                            const SizedBox(width: 6),
                             Text(
                               _holidayInfoForSelectedDay!.nameKo,
                               style: TextStyle(

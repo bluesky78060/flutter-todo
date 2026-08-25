@@ -15,7 +15,6 @@ library;
 
 import 'package:easy_localization/easy_localization.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:todo_app/core/services/battery_optimization_service.dart';
@@ -240,25 +239,25 @@ class PermissionRequestService {
                   Expanded(
                     child: Text(
                       title,
-                      style: TextStyle(color: AppColors.textWhite),
+                      style: const TextStyle(color: AppColors.textWhite),
                     ),
                   ),
                 ],
               )
             : Text(
                 title,
-                style: TextStyle(color: AppColors.textWhite),
+                style: const TextStyle(color: AppColors.textWhite),
               ),
         content: Text(
           message,
-          style: TextStyle(color: AppColors.textGray, height: 1.5),
+          style: const TextStyle(color: AppColors.textGray, height: 1.5),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
             child: Text(
               'deny'.tr(),
-              style: TextStyle(color: AppColors.textGray),
+              style: const TextStyle(color: AppColors.textGray),
             ),
           ),
           ElevatedButton(
@@ -268,7 +267,7 @@ class PermissionRequestService {
             ),
             child: Text(
               'allow'.tr(),
-              style: TextStyle(color: Colors.white),
+              style: const TextStyle(color: Colors.white),
             ),
           ),
         ],
@@ -298,20 +297,20 @@ class PermissionRequestService {
             const SizedBox(width: 12),
             Text(
               'notification_settings'.tr(),
-              style: TextStyle(color: AppColors.textWhite),
+              style: const TextStyle(color: AppColors.textWhite),
             ),
           ],
         ),
         content: Text(
           'permission_notification_rationale'.tr(),
-          style: TextStyle(color: AppColors.textGray, height: 1.5),
+          style: const TextStyle(color: AppColors.textGray, height: 1.5),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
             child: Text(
               'deny'.tr(),
-              style: TextStyle(color: AppColors.textGray),
+              style: const TextStyle(color: AppColors.textGray),
             ),
           ),
           ElevatedButton(
@@ -321,7 +320,7 @@ class PermissionRequestService {
             ),
             child: Text(
               'settings_open'.tr(),
-              style: TextStyle(color: Colors.white),
+              style: const TextStyle(color: Colors.white),
             ),
           ),
         ],

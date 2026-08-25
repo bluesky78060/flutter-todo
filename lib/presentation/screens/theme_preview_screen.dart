@@ -490,7 +490,7 @@ class _ThemePreviewScreenState extends ConsumerState<ThemePreviewScreen> {
                     ),
             ),
             child: todo.isCompleted
-                ? Icon(
+                ? const Icon(
                     FluentIcons.checkmark_24_filled,
                     size: 16,
                     color: Colors.white,

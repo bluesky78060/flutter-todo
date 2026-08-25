@@ -58,7 +58,7 @@ class RecurringDeleteDialog extends ConsumerWidget {
                 fontWeight: FontWeight.bold,
               ),
             ),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
 
             // Description
             Text(
@@ -78,7 +78,7 @@ class RecurringDeleteDialog extends ConsumerWidget {
               description: 'delete_only_this_desc'.tr(),
               onTap: () => Navigator.of(context).pop(RecurringDeleteMode.thisOnly),
             ),
-            SizedBox(height: 12),
+            const SizedBox(height: 12),
 
             // Option 2: Delete this and future instances
             _buildOption(
@@ -88,7 +88,7 @@ class RecurringDeleteDialog extends ConsumerWidget {
               description: 'delete_this_and_future_desc'.tr(),
               onTap: () => Navigator.of(context).pop(RecurringDeleteMode.thisAndFuture),
             ),
-            SizedBox(height: 12),
+            const SizedBox(height: 12),
 
             // Option 3: Delete entire series
             _buildOption(
@@ -112,7 +112,7 @@ class RecurringDeleteDialog extends ConsumerWidget {
                     color: AppColors.getBorder(isDarkMode),
                     width: 1.5,
                   ),
-                  padding: EdgeInsets.symmetric(vertical: 14),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -144,7 +144,7 @@ class RecurringDeleteDialog extends ConsumerWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(12),
       child: Container(
-        padding: EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: isDestructive
               ? AppColors.dangerRed.withOpacity(0.1)
@@ -168,7 +168,7 @@ class RecurringDeleteDialog extends ConsumerWidget {
                 fontWeight: FontWeight.w600,
               ),
             ),
-            SizedBox(height: 4),
+            const SizedBox(height: 4),
             Text(
               description,
               style: TextStyle(

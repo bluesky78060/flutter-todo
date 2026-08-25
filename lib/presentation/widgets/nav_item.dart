@@ -33,7 +33,7 @@ class NavItem extends ConsumerWidget {
   /// Callback when the item is tapped
   final VoidCallback onTap;
 
-  const NavItem({
+  const NavItem({super.key, 
     required this.icon,
     required this.label,
     required this.isActive,
@@ -61,9 +61,9 @@ class NavItem extends ConsumerWidget {
                   width: 32,
                   height: 3,
                   margin: const EdgeInsets.only(bottom: 2),
-                  decoration: BoxDecoration(
+                  decoration: const BoxDecoration(
                     gradient: AppColors.primaryGradient,
-                    borderRadius: const BorderRadius.vertical(
+                    borderRadius: BorderRadius.vertical(
                       bottom: Radius.circular(3),
                     ),
                   ),

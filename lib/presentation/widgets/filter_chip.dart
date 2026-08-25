@@ -33,7 +33,7 @@ class TodoFilterChip extends ConsumerWidget {
   /// Callback when the chip is tapped
   final VoidCallback onTap;
 
-  const TodoFilterChip({
+  const TodoFilterChip({super.key, 
     required this.label,
     required this.count,
     required this.isSelected,

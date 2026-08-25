@@ -31,9 +31,7 @@ class GoogleCalendarService {
       GoogleSignInAccount? account = await _googleSignIn.signInSilently();
 
       // 로그인되어 있지 않으면 로그인 시도
-      if (account == null) {
-        account = await _googleSignIn.signIn();
-      }
+      account ??= await _googleSignIn.signIn();
 
       if (account == null) {
         debugPrint('📅 GoogleCalendar: 로그인 취소됨');

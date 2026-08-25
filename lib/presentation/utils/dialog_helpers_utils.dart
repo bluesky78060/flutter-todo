@@ -50,13 +50,13 @@ Future<bool> showClearCompletedDialog({
           const SizedBox(width: 12),
           Text(
             'clear_completed_title'.tr(),
-            style: TextStyle(color: AppColors.textWhite),
+            style: const TextStyle(color: AppColors.textWhite),
           ),
         ],
       ),
       content: Text(
         'clear_completed_message'.tr(),
-        style: TextStyle(
+        style: const TextStyle(
           color: AppColors.textGray,
           height: 1.5,
         ),
@@ -66,7 +66,7 @@ Future<bool> showClearCompletedDialog({
           onPressed: () => Navigator.of(context).pop(false),
           child: Text(
             'cancel'.tr(),
-            style: TextStyle(color: AppColors.textGray),
+            style: const TextStyle(color: AppColors.textGray),
           ),
         ),
         ElevatedButton(
@@ -76,7 +76,7 @@ Future<bool> showClearCompletedDialog({
           ),
           child: Text(
             'delete'.tr(),
-            style: TextStyle(color: Colors.white),
+            style: const TextStyle(color: Colors.white),
           ),
         ),
       ],
@@ -140,11 +140,11 @@ Future<bool> showConfirmationDialog({
       backgroundColor: AppColors.getCard(isDarkMode),
       title: Text(
         title,
-        style: TextStyle(color: AppColors.textWhite),
+        style: const TextStyle(color: AppColors.textWhite),
       ),
       content: Text(
         message,
-        style: TextStyle(
+        style: const TextStyle(
           color: AppColors.textGray,
           height: 1.5,
         ),
@@ -154,7 +154,7 @@ Future<bool> showConfirmationDialog({
           onPressed: () => Navigator.of(context).pop(false),
           child: Text(
             cancelText ?? 'cancel'.tr(),
-            style: TextStyle(color: AppColors.textGray),
+            style: const TextStyle(color: AppColors.textGray),
           ),
         ),
         ElevatedButton(
@@ -166,7 +166,7 @@ Future<bool> showConfirmationDialog({
           ),
           child: Text(
             confirmText ?? 'delete'.tr(),
-            style: TextStyle(color: Colors.white),
+            style: const TextStyle(color: Colors.white),
           ),
         ),
       ],

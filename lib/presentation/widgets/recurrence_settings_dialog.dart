@@ -328,7 +328,7 @@ class _RecurrenceSettingsDialogState extends ConsumerState<RecurrenceSettingsDia
         Row(
           children: [
             IconButton(
-              icon: Icon(FluentIcons.subtract_circle_24_regular),
+              icon: const Icon(FluentIcons.subtract_circle_24_regular),
               color: AppColors.primary,
               onPressed: _interval > 1
                   ? () => setState(() => _interval--)
@@ -352,7 +352,7 @@ class _RecurrenceSettingsDialogState extends ConsumerState<RecurrenceSettingsDia
               ),
             ),
             IconButton(
-              icon: Icon(FluentIcons.add_circle_24_regular),
+              icon: const Icon(FluentIcons.add_circle_24_regular),
               color: AppColors.primary,
               onPressed: _interval < 99
                   ? () => setState(() => _interval++)
@@ -486,7 +486,7 @@ class _RecurrenceSettingsDialogState extends ConsumerState<RecurrenceSettingsDia
               _useCount = true;
               _hasEndDate = false;
               _untilDate = null;
-              if (_count == null) _count = 10;
+              _count ??= 10;
             });
           },
           activeColor: AppColors.primary,
@@ -533,9 +533,7 @@ class _RecurrenceSettingsDialogState extends ConsumerState<RecurrenceSettingsDia
               _hasEndDate = true;
               _useCount = false;
               _count = null;
-              if (_untilDate == null) {
-                _untilDate = DateTime.now().add(const Duration(days: 30));
-              }
+              _untilDate ??= DateTime.now().add(const Duration(days: 30));
             });
           },
           activeColor: AppColors.primary,

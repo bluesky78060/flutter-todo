@@ -26,7 +26,7 @@ import 'package:todo_app/presentation/providers/widget_provider.dart';
 
 /// Screen for configuring Android home screen widget settings.
 class WidgetConfigScreen extends ConsumerWidget {
-  const WidgetConfigScreen({Key? key}) : super(key: key);
+  const WidgetConfigScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -230,7 +230,7 @@ class WidgetConfigScreen extends ConsumerWidget {
                   ],
                 ),
               ),
-              Icon(
+              const Icon(
                 Icons.chevron_right,
                 color: Colors.grey,
               ),
@@ -247,9 +247,9 @@ class WidgetThemeConfigScreen extends ConsumerStatefulWidget {
   final WidgetViewType widgetType;
 
   const WidgetThemeConfigScreen({
-    Key? key,
+    super.key,
     required this.widgetType,
-  }) : super(key: key);
+  });
 
   @override
   ConsumerState<WidgetThemeConfigScreen> createState() =>
@@ -398,7 +398,7 @@ class _WidgetThemeConfigScreenState
         elevation: 0,
       ),
       body: _isLoading
-          ? Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator())
           : SingleChildScrollView(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -420,7 +420,7 @@ class _WidgetThemeConfigScreenState
                       tr(entry.value),
                       _themeColors[entry.key]!,
                     );
-                  }).toList(),
+                  }),
 
                   const SizedBox(height: 24),
 
@@ -571,7 +571,7 @@ class _WidgetThemeConfigScreenState
                 });
                 await _saveCardOpacity();
               },
-              icon: Icon(Icons.refresh, size: 18),
+              icon: const Icon(Icons.refresh, size: 18),
               label: Text(tr('reset_to_default')),
               style: TextButton.styleFrom(
                 foregroundColor: Colors.grey[600],
