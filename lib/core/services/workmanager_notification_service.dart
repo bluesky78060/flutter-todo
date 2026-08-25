@@ -16,7 +16,17 @@ void callbackDispatcher() {
       // Route to appropriate handler based on task name
       if (task == 'showNotification') {
         return await _handleNotificationTask(inputData);
-      } else if (task == 'geofence_check_task') {
+      } else if (task == 'geofence_check_task' ||
+          task == 'geofence_check_unique_id') {
+        // DTA-4-5: 두 문자열을 모두 받아야 한다. 플랫폼마다 넘어오는 값이 다르다.
+        //   Android — registerPeriodicTask(uniqueName, taskName)의 **taskName**
+        //              ('geofence_check_task')
+        //   iOS     — BGTaskScheduler **identifier** ('geofence_check_unique_id').
+        //              workmanager_apple의 BackgroundWorker.onResultSendArguments가
+        //              .backgroundPeriodicTask(identifier)를 그대로 DART_TASK에 담는다.
+        // iOS 값을 빠뜨리면 여기서 'Unknown task type'으로 빠져 false를 반환하고,
+        // 플러그인이 setTaskCompleted(success: false)로 보고한다. iOS는 실패를
+        // 반복하는 앱의 백그라운드 실행 예산을 깎으므로 조용히 더 안 깨어나게 된다.
         return await _handleGeofenceTask(inputData);
       } else {
         if (kDebugMode) {

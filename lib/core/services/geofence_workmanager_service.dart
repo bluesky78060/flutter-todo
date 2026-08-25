@@ -29,7 +29,11 @@ class GeofenceWorkManagerService {
   /// 않은 채 startMonitoring()이 태스크 등록을 시도해 다음으로 실패했다:
   ///   PlatformException(1, You have not properly initialized the Flutter WorkManager Package...)
   ///
-  /// callbackDispatcher는 알림과 지오펜스를 모두 처리하는 통합 디스패처다.
+  /// callbackDispatcher는 두 태스크를 **라우팅**한다. 다만 지오펜스 핸들러
+  /// (_handleGeofenceTask)는 현재 로그만 찍고 true를 돌려주는 **스텁**이라,
+  /// 주기 실행이 실제 위치 판정·알림으로 이어지지는 않는다 — 어느 플랫폼에서도
+  /// 아직 동작한 적이 없다. 구현은 후속 티켓 DTA-4-6에서 다룬다.
+  /// 이 티켓(DTA-4-5)의 범위는 채널 오류 배너 제거와 iOS 등록 경로 정상화까지다.
   /// 이 호출로 initialize() 의 호출자가 둘이 되고 main.dart 가 그 둘을 Future.wait 로
   /// 동시에 돌리므로, WorkManagerNotificationService 쪽에 진행 중인 Future 캐싱을 함께 넣었다.
   /// (플래그만으로는 순차 호출만 막힌다 — 자세한 근거는 그쪽 주석 참조.)

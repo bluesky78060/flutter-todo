@@ -126,9 +126,26 @@ class _GeofenceSettingsScreenState extends ConsumerState<GeofenceSettingsScreen>
 
       if (value) {
         // Start geofence monitoring
-        await GeofenceWorkManagerService.startMonitoring(
+        // DTA-4-5: startMonitoring()은 예외를 삼키고 false를 돌려준다. 반환값을
+        // 버리면 아래 catch가 절대 실행되지 않아, 등록이 실패해도 사용자에게는
+        // 초록색 '활성화됨'과 켜진 토글만 보인다. 반드시 결과를 보고 분기한다.
+        final started = await GeofenceWorkManagerService.startMonitoring(
           intervalMinutes: _monitoringInterval,
         );
+        if (!started) {
+          if (mounted) {
+            setState(() {
+              _isGeofencingEnabled = false;
+            });
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('geofencing_toggle_failed'.tr()),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+          return;
+        }
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
