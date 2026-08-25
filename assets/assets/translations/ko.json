@@ -882,5 +882,21 @@
   "sync_todos_to_calendar": "할 일을 캘린더에 동기화",
   "fetch_calendar_events": "캘린더 이벤트 가져오기",
   "syncing_to_calendar": "캘린더에 동기화 중...",
-  "fetched_events": "{}개의 이벤트를 가져왔습니다"
+  "fetched_events": "{}개의 이벤트를 가져왔습니다",
+
+  "calendar_not_connected": "Google Calendar에 연결되어 있지 않습니다",
+  "calendar_sync_in_progress": "이미 동기화 중입니다",
+  "calendar_sync_done": "할 일 {}개를 캘린더에 등록했습니다",
+  "calendar_sync_done_with_skipped": "{}개 등록했습니다 ({}개는 대상이 아님)",
+  "calendar_sync_partial": "{}개 등록, {}개 실패했습니다",
+  "calendar_sync_nothing": "등록할 할 일이 없습니다 (마감일이 있는 미완료 할 일만 대상입니다)",
+  "calendar_sync_error": "동기화 중 오류가 발생했습니다: {}",
+
+  "use_date_range": "기간으로 설정",
+  "date_range_format": "{} ~ {}",
+  "select_date_range": "기간 선택",
+  "date_range_too_long": "기간은 최대 {}일까지 설정할 수 있습니다",
+  "date_range_recurrence_blocked": "기간 일정에는 반복을 설정할 수 없습니다",
+  "recurrence_date_range_blocked": "반복 일정에는 기간을 설정할 수 없습니다",
+  "date_range": "기간"
 }

@@ -890,5 +890,21 @@
   "sync_todos_to_calendar": "Sync todos to calendar",
   "fetch_calendar_events": "Fetch calendar events",
   "syncing_to_calendar": "Syncing to calendar...",
-  "fetched_events": "Fetched {} events"
+  "fetched_events": "Fetched {} events",
+
+  "calendar_not_connected": "Not connected to Google Calendar",
+  "calendar_sync_in_progress": "Sync already in progress",
+  "calendar_sync_done": "Added {} todos to your calendar",
+  "calendar_sync_done_with_skipped": "Added {} ({} not eligible)",
+  "calendar_sync_partial": "{} added, {} failed",
+  "calendar_sync_nothing": "Nothing to sync (only incomplete todos with a due date are included)",
+  "calendar_sync_error": "Sync failed: {}",
+
+  "use_date_range": "Set as a date range",
+  "date_range_format": "{} ~ {}",
+  "select_date_range": "Select date range",
+  "date_range_too_long": "A range can span at most {} days",
+  "date_range_recurrence_blocked": "Recurrence is not available for ranged todos",
+  "recurrence_date_range_blocked": "A date range is not available for recurring todos",
+  "date_range": "Date range"
 }
