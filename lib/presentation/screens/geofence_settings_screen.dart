@@ -132,8 +132,15 @@ class _GeofenceSettingsScreenState extends ConsumerState<GeofenceSettingsScreen>
         //
         // 유효 범위는 **Android까지**다. iOS는 workmanager_apple이 BGTaskScheduler.submit
         // 실패를 삼키고(WorkmanagerPlugin.swift:94-102) 무조건 .success(())로 완료하므로,
-        // submit이 throw해도 여기 started는 true다. iOS에서도 실제 등록을 확인하려면
-        // Workmanager().isScheduledByUniqueName()을 별도로 물어야 한다 — DTA-4-6에서 다룬다.
+        // submit이 throw해도 여기 started는 true다.
+        //
+        // iOS에서 등록 여부를 Dart로 확인할 방법은 **현재 없다.**
+        // isScheduledByUniqueName()은 workmanager_apple의 Dart shim이
+        // UnsupportedError를 던진다(workmanager_apple.dart:129-131). Swift 쪽
+        // WorkmanagerPlugin.isScheduledByUniqueName은 구현돼 있지만
+        // (WorkmanagerPlugin.swift:246-255) 거기까지 도달하지 못한다.
+        // 통과하는 것은 printScheduledTasks()뿐이다(workmanager_apple.dart:135-137).
+        // 확인이 필요하면 그것이나 자체 MethodChannel을 검토한다 — DTA-4-6.
         final started = await GeofenceWorkManagerService.startMonitoring(
           intervalMinutes: _monitoringInterval,
         );

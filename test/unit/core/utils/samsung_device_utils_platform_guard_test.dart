@@ -96,7 +96,10 @@ void main() {
 
   group('배터리 최적화 술어는 non-Android에서 true', () {
     // "배터리 최적화에서 자유로운가?" — Android 외에는 그 제약 자체가 없으므로 참.
-    // DeviceUtils·BatteryOptimizationService의 형제 구현과 같은 값이어야 한다.
+    // DeviceUtils의 형제 구현과 같은 값이어야 한다.
+    // (BatteryOptimizationService는 isIgnoringBatteryOptimizations만 대응 함수가 있고
+    //  true를 돌려준다. requestBatteryOptimizationExemption의 대응 함수는
+    //  requestIgnoreBatteryOptimizations()이고 반환형이 void라 비교 대상이 아니다.)
     // 여기서만 false를 주면 호출자가 iOS 사용자에게 존재하지 않는 Android
     // 설정 안내를 띄우게 된다.
     test('isIgnoringBatteryOptimizations()는 iOS에서 true', () async {
