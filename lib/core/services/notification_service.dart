@@ -174,7 +174,7 @@ class NotificationService {
       playSound: true,
       enableVibration: true,
       enableLights: true,
-      ledColor: const Color.fromARGB(255, 0, 150, 255),
+      ledColor: Color.fromARGB(255, 0, 150, 255),
     );
 
     // High priority channel (긴급 알림 - 최대 우선순위)
@@ -186,7 +186,7 @@ class NotificationService {
       playSound: true,
       enableVibration: true,
       enableLights: true,
-      ledColor: const Color.fromARGB(255, 255, 0, 0),
+      ledColor: Color.fromARGB(255, 255, 0, 0),
     );
 
     await androidPlugin?.createNotificationChannel(lowPriorityChannel);

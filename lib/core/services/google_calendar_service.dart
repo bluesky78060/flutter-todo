@@ -14,7 +14,8 @@ class GoogleCalendarService {
   final GoogleSignIn _googleSignIn = GoogleSignIn(
     scopes: [
       'email',
-      gcal.CalendarApi.calendarScope,  // 전체 캘린더 접근
+      'https://www.googleapis.com/auth/calendar',  // 전체 캘린더 접근
+      'https://www.googleapis.com/auth/calendar.events',  // 이벤트 접근
     ],
   );
 
@@ -30,24 +31,15 @@ class GoogleCalendarService {
       GoogleSignInAccount? account = await _googleSignIn.signInSilently();
 
       // 로그인되어 있지 않으면 로그인 시도
-      if (account == null) {
-        account = await _googleSignIn.signIn();
-      }
+      account ??= await _googleSignIn.signIn();
 
       if (account == null) {
         debugPrint('📅 GoogleCalendar: 로그인 취소됨');
         return false;
       }
 
-      // Calendar scope가 없으면 추가 권한 요청
-      final bool hasCalendarScope = await _googleSignIn.requestScopes([
-        gcal.CalendarApi.calendarScope,
-      ]);
-
-      if (!hasCalendarScope) {
-        debugPrint('📅 GoogleCalendar: Calendar 권한 거부됨');
-        return false;
-      }
+      // Calendar scope 확인 (이미 초기화 시 요청했으므로 스킵 가능)
+      debugPrint('📅 GoogleCalendar: 로그인 성공 - ${account.email}');
 
       // API 클라이언트 생성
       final httpClient = await _googleSignIn.authenticatedClient();

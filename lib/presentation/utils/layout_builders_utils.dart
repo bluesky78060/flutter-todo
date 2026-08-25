@@ -93,7 +93,7 @@ Widget buildHeaderSection({
             Row(
               children: [
                 // Refresh Button
-                _buildHeaderActionButton(
+                _HeaderActionButton(
                   isDarkMode: isDarkMode,
                   icon: FluentIcons.arrow_clockwise_24_regular,
                   onTap: () {
@@ -102,14 +102,14 @@ Widget buildHeaderSection({
                 ),
                 const SizedBox(width: 8),
                 // Clear Completed Button
-                _buildHeaderActionButton(
+                _HeaderActionButton(
                   isDarkMode: isDarkMode,
                   icon: FluentIcons.delete_24_regular,
                   onTap: handleClearCompleted,
                 ),
                 const SizedBox(width: 8),
                 // Calendar Button
-                _buildHeaderActionButton(
+                _HeaderActionButton(
                   isDarkMode: isDarkMode,
                   icon: FluentIcons.calendar_24_regular,
                   onTap: () {
@@ -163,12 +163,12 @@ Widget buildHeaderSection({
 }
 
 /// Helper widget for building standard header action buttons.
-class _buildHeaderActionButton extends StatelessWidget {
+class _HeaderActionButton extends StatelessWidget {
   final bool isDarkMode;
   final IconData icon;
   final VoidCallback onTap;
 
-  const _buildHeaderActionButton({
+  const _HeaderActionButton({
     required this.isDarkMode,
     required this.icon,
     required this.onTap,

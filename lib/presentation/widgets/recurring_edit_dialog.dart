@@ -54,7 +54,7 @@ class RecurringEditDialog extends ConsumerWidget {
                 fontWeight: FontWeight.bold,
               ),
             ),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
 
             // Description
             Text(
@@ -74,7 +74,7 @@ class RecurringEditDialog extends ConsumerWidget {
               description: 'edit_only_this_desc'.tr(),
               onTap: () => Navigator.of(context).pop(RecurringEditMode.thisOnly),
             ),
-            SizedBox(height: 12),
+            const SizedBox(height: 12),
 
             // Option 2: Edit this and future instances
             _buildOption(
@@ -97,7 +97,7 @@ class RecurringEditDialog extends ConsumerWidget {
                     color: AppColors.getBorder(isDarkMode),
                     width: 1.5,
                   ),
-                  padding: EdgeInsets.symmetric(vertical: 14),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -128,7 +128,7 @@ class RecurringEditDialog extends ConsumerWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(12),
       child: Container(
-        padding: EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: AppColors.getInput(isDarkMode),
           borderRadius: BorderRadius.circular(12),
@@ -148,7 +148,7 @@ class RecurringEditDialog extends ConsumerWidget {
                 fontWeight: FontWeight.w600,
               ),
             ),
-            SizedBox(height: 4),
+            const SizedBox(height: 4),
             Text(
               description,
               style: TextStyle(

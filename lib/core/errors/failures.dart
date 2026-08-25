@@ -2,7 +2,7 @@
 ///
 /// Failures represent expected error conditions that can occur during
 /// normal operation (e.g., network errors, validation errors).
-/// This follows the functional programming approach of using Either<Failure, T>
+/// This follows the functional programming approach of using `Either<Failure, T>`
 /// instead of throwing exceptions for expected errors.
 abstract class Failure {
   /// Creates a new failure instance.

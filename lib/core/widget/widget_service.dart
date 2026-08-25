@@ -284,9 +284,12 @@ class WidgetService {
       await _updateLastModified();
 
       // Force native widget update for immediate sync (Android only)
-      // Note: Batched saves with _executeFuturesInBatches already ensure proper disk sync,
-      // so we only need a single update call without artificial delays
       await _forceNativeWidgetUpdate();
+
+      // Fallback: send update broadcasts again after a short delay
+      // to handle cases where the first update was too early
+      await Future.delayed(const Duration(milliseconds: 200));
+      await _sendWidgetUpdateBroadcasts();
 
       // Invalidate cache after successful update
       invalidateCache();
@@ -309,6 +312,33 @@ class WidgetService {
     } catch (e) {
       // Silently ignore if channel not available (e.g., app in background)
       logger.d('   Native force update skipped: $e');
+    }
+  }
+
+  /// Send widget update broadcasts as fallback
+  /// Ensures widgets refresh even if MethodChannel update failed
+  Future<void> _sendWidgetUpdateBroadcasts() async {
+    if (kIsWeb) return;
+    try {
+      await HomeWidget.updateWidget(
+        qualifiedAndroidName: 'kr.bluesky.dodo.widgets.TodoListWidget',
+        iOSName: 'TodoListWidget',
+      );
+      await HomeWidget.updateWidget(
+        qualifiedAndroidName: 'kr.bluesky.dodo.widgets.TodoDetailWidget',
+        iOSName: 'TodoDetailWidget',
+      );
+      await HomeWidget.updateWidget(
+        qualifiedAndroidName: 'kr.bluesky.dodo.widgets.TodoCalendarWidget',
+        iOSName: 'TodoCalendarWidget',
+      );
+      await HomeWidget.updateWidget(
+        qualifiedAndroidName: 'kr.bluesky.dodo.widgets.TodoComboWidget',
+        iOSName: 'TodoComboWidget',
+      );
+      logger.d('   Fallback widget update broadcasts sent');
+    } catch (e) {
+      logger.d('   Fallback widget update skipped: $e');
     }
   }
 
@@ -375,6 +405,9 @@ class WidgetService {
       // Execute saves in batches to avoid overwhelming SharedPreferences
       // Batch size of 15 balances parallelism vs disk I/O contention
       await _executeFuturesInBatches(saveFutures, batchSize: 15);
+
+      // Small delay to ensure SharedPreferences are committed to disk
+      await Future.delayed(const Duration(milliseconds: 100));
 
       // Notify native widget
       await HomeWidget.updateWidget(
@@ -561,6 +594,10 @@ class WidgetService {
       // Execute saves in batches to avoid overwhelming SharedPreferences
       await _executeFuturesInBatches(todoFutures, batchSize: 15);
 
+      // Small delay to ensure SharedPreferences are committed to disk
+      // before triggering native widget refresh
+      await Future.delayed(const Duration(milliseconds: 100));
+
       // Notify native widgets (both TodoListWidget and TodoDetailWidget)
       await HomeWidget.updateWidget(
         qualifiedAndroidName: 'kr.bluesky.dodo.widgets.TodoListWidget',
@@ -570,7 +607,11 @@ class WidgetService {
         qualifiedAndroidName: 'kr.bluesky.dodo.widgets.TodoDetailWidget',
         iOSName: 'TodoDetailWidget',
       );
-      logger.d('✅ Todo list widgets updated (list + detail)');
+      await HomeWidget.updateWidget(
+        qualifiedAndroidName: 'kr.bluesky.dodo.widgets.TodoComboWidget',
+        iOSName: 'TodoComboWidget',
+      );
+      logger.d('✅ Todo list widgets updated (list + detail + combo)');
     } catch (e) {
       logger.e('❌ Error updating todo list widget: $e');
     }

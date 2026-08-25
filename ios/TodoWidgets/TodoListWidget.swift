@@ -58,10 +58,9 @@ struct TodoListWidgetView: View {
     var entry: TodoListEntry
     @Environment(\.widgetFamily) var family
     @Environment(\.colorScheme) var colorScheme
-    @Environment(\.widgetRenderingMode) var renderingMode
 
     var backgroundColor: Color {
-        Color.clear  // Glass 효과를 위해 투명 배경
+        colorScheme == .dark ? Color.black.opacity(0.8) : Color.white.opacity(0.9)
     }
 
     var cardBackgroundColor: Color {
@@ -250,33 +249,34 @@ struct TodoListWidget: Widget {
 
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: kind, provider: TodoListProvider()) { entry in
-            TodoListWidgetView(entry: entry)
-                .containerBackground(for: .widget) {
-                    // iOS 26 Glass Effect - 시스템 기본 glass 배경
-                    Rectangle()
-                        .fill(.clear)
-                        .glassEffect()
-                }
+            if #available(iOS 17.0, *) {
+                TodoListWidgetView(entry: entry)
+                    .containerBackground(.fill.tertiary, for: .widget)
+            } else {
+                TodoListWidgetView(entry: entry)
+                    .padding()
+                    .background(Color(.systemBackground))
+            }
         }
         .configurationDisplayName("할 일 목록")
         .description("마감이 가까운 할 일을 한눈에 확인하세요")
         .supportedFamilies([.systemSmall, .systemMedium])
-        .contentMarginsDisabled()
     }
 }
 
-// MARK: - Preview
-#Preview(as: .systemMedium) {
-    TodoListWidget()
-} timeline: {
-    TodoListEntry(
-        date: Date(),
-        todos: [
-            TodoItem(id: "1", title: "Team meeting", description: nil, dueDate: Date(), displayTime: nil, reminderTime: nil, isCompleted: false, categoryId: 1, categoryName: "Work", categoryColor: "#7B61FF"),
-            TodoItem(id: "2", title: "Review PR", description: nil, dueDate: Date(), displayTime: nil, reminderTime: nil, isCompleted: true, categoryId: 1, categoryName: "Work", categoryColor: "#42A5F5"),
-            TodoItem(id: "3", title: "Grocery shopping", description: nil, dueDate: Date(), displayTime: nil, reminderTime: nil, isCompleted: false, categoryId: 2, categoryName: "Personal", categoryColor: "#66BB6A")
-        ],
-        completedCount: 1,
-        totalCount: 3
-    )
+// MARK: - Preview (iOS 15 compatible)
+struct TodoListWidget_Previews: PreviewProvider {
+    static var previews: some View {
+        TodoListWidgetView(entry: TodoListEntry(
+            date: Date(),
+            todos: [
+                TodoItem(id: "1", title: "Team meeting", description: nil, dueDate: Date(), displayTime: nil, reminderTime: nil, isCompleted: false, categoryId: 1, categoryName: "Work", categoryColor: "#7B61FF"),
+                TodoItem(id: "2", title: "Review PR", description: nil, dueDate: Date(), displayTime: nil, reminderTime: nil, isCompleted: true, categoryId: 1, categoryName: "Work", categoryColor: "#42A5F5"),
+                TodoItem(id: "3", title: "Grocery shopping", description: nil, dueDate: Date(), displayTime: nil, reminderTime: nil, isCompleted: false, categoryId: 2, categoryName: "Personal", categoryColor: "#66BB6A")
+            ],
+            completedCount: 1,
+            totalCount: 3
+        ))
+        .previewContext(WidgetPreviewContext(family: .systemMedium))
+    }
 }

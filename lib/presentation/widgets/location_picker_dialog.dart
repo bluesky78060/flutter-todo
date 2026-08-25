@@ -381,7 +381,7 @@ class _LocationPickerDialogState extends ConsumerState<LocationPickerDialog> {
                   const Spacer(),
                   IconButton(
                     onPressed: () => Navigator.of(context).pop(),
-                    icon: Icon(Icons.close),
+                    icon: const Icon(Icons.close),
                   ),
                 ],
               ),
@@ -395,7 +395,7 @@ class _LocationPickerDialogState extends ConsumerState<LocationPickerDialog> {
                 decoration: InputDecoration(
                   hintText: 'search_location'.tr(),
                   prefixIcon: IconButton(
-                    icon: Icon(Icons.search),
+                    icon: const Icon(Icons.search),
                     onPressed: () {
                       if (_searchController.text.isNotEmpty) {
                         _searchPlaces(_searchController.text);
@@ -413,7 +413,7 @@ class _LocationPickerDialogState extends ConsumerState<LocationPickerDialog> {
                         )
                       : _searchController.text.isNotEmpty
                           ? IconButton(
-                              icon: Icon(Icons.clear),
+                              icon: const Icon(Icons.clear),
                             onPressed: () {
                               _searchController.clear();
                               setState(() {
@@ -445,7 +445,7 @@ class _LocationPickerDialogState extends ConsumerState<LocationPickerDialog> {
                       leading: Icon(Icons.place, color: AppColors.primary),
                       title: Text(
                         result.name,
-                        style: TextStyle(fontWeight: FontWeight.w500),
+                        style: const TextStyle(fontWeight: FontWeight.w500),
                       ),
                       subtitle: Text(
                         result.address,
@@ -519,7 +519,7 @@ class _LocationPickerDialogState extends ConsumerState<LocationPickerDialog> {
                               height: 20,
                               child: CircularProgressIndicator(strokeWidth: 2),
                             )
-                          : Icon(Icons.my_location),
+                          : const Icon(Icons.my_location),
                     ),
                   ),
                 ],
@@ -542,7 +542,7 @@ class _LocationPickerDialogState extends ConsumerState<LocationPickerDialog> {
                           color: AppColors.getTextSecondary(isDarkMode),
                         ),
                       ),
-                      SizedBox(height: 16),
+                      const SizedBox(height: 16),
                     ],
 
                     // Location name input
@@ -552,7 +552,7 @@ class _LocationPickerDialogState extends ConsumerState<LocationPickerDialog> {
                         labelText: 'location_name'.tr(),
                         hintText: 'location_name'.tr(),
                         border: const OutlineInputBorder(),
-                        prefixIcon: Icon(Icons.label),
+                        prefixIcon: const Icon(Icons.label),
                       ),
                     ),
                     const SizedBox(height: 16),

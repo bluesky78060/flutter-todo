@@ -397,7 +397,7 @@ class _GeofenceSettingsScreenState extends ConsumerState<GeofenceSettingsScreen>
         children: [
           Row(
             children: [
-              Icon(
+              const Icon(
                 FluentIcons.info_24_regular,
                 color: Colors.blue,
                 size: 20,

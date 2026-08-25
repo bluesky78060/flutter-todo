@@ -37,7 +37,7 @@ class CategoryChip extends ConsumerWidget {
   /// Callback when the chip is tapped
   final VoidCallback onTap;
 
-  const CategoryChip({
+  const CategoryChip({super.key, 
     required this.label,
     required this.icon,
     required this.color,

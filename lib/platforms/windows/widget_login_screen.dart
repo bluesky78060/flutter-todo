@@ -337,7 +337,7 @@ class _WidgetLoginScreenState extends ConsumerState<WidgetLoginScreen> {
                 ),
                 child: Row(
                   children: [
-                    Icon(
+                    const Icon(
                       FluentIcons.warning_24_regular,
                       size: 16,
                       color: AppColors.dangerRed,
@@ -346,7 +346,7 @@ class _WidgetLoginScreenState extends ConsumerState<WidgetLoginScreen> {
                     Expanded(
                       child: Text(
                         _errorMessage!,
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 11,
                           color: AppColors.dangerRed,
                         ),
@@ -372,7 +372,7 @@ class _WidgetLoginScreenState extends ConsumerState<WidgetLoginScreen> {
                   ),
                 ),
                 child: _isLoading
-                    ? SizedBox(
+                    ? const SizedBox(
                         height: 18,
                         width: 18,
                         child: CircularProgressIndicator(
@@ -476,12 +476,12 @@ class _WidgetLoginScreenState extends ConsumerState<WidgetLoginScreen> {
                         height: 18,
                       ),
                 label: _isOAuthLoading
-                    ? SizedBox(
+                    ? const SizedBox(
                         height: 16,
                         width: 16,
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
-                          valueColor: const AlwaysStoppedAnimation<Color>(
+                          valueColor: AlwaysStoppedAnimation<Color>(
                             Color(0xFF3C1E1E),
                           ),
                         ),

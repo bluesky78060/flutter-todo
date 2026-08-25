@@ -45,7 +45,7 @@ class ProgressCard extends ConsumerWidget {
     final isDarkMode = ref.watch(isDarkModeProvider);
 
     return Container(
-      padding: EdgeInsets.all(12),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: AppColors.getCard(isDarkMode),
         borderRadius: BorderRadius.circular(12),
@@ -53,7 +53,7 @@ class ProgressCard extends ConsumerWidget {
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.3),
             blurRadius: 6,
-            offset: Offset(0, 4),
+            offset: const Offset(0, 4),
           ),
         ],
       ),
@@ -72,7 +72,7 @@ class ProgressCard extends ConsumerWidget {
                 ),
               ),
               Container(
-                padding: EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
                 decoration: BoxDecoration(
                   gradient: AppColors.primaryGradient,
                   borderRadius: BorderRadius.circular(20),
@@ -80,7 +80,7 @@ class ProgressCard extends ConsumerWidget {
                     BoxShadow(
                       color: AppColors.primary.withValues(alpha: 0.3),
                       blurRadius: 8,
-                      offset: Offset(0, 2),
+                      offset: const Offset(0, 2),
                     ),
                   ],
                 ),
@@ -98,7 +98,7 @@ class ProgressCard extends ConsumerWidget {
               ),
             ],
           ),
-          SizedBox(height: 8),
+          const SizedBox(height: 8),
           ClipRRect(
             borderRadius: BorderRadius.circular(10),
             child: SizedBox(

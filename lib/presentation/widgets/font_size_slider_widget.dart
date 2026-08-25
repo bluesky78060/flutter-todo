@@ -84,11 +84,11 @@ class FontSizeSliderWidget extends ConsumerWidget {
         SliderTheme(
           data: SliderThemeData(
             trackHeight: 6,
-            thumbShape: RoundSliderThumbShape(
+            thumbShape: const RoundSliderThumbShape(
               enabledThumbRadius: 14,
               elevation: 4,
             ),
-            overlayShape: RoundSliderOverlayShape(overlayRadius: 20),
+            overlayShape: const RoundSliderOverlayShape(overlayRadius: 20),
             activeTrackColor: AppColors.primary,
             inactiveTrackColor: AppColors.getInput(isDarkMode),
             thumbColor: AppColors.primary,

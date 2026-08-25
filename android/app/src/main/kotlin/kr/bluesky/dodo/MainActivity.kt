@@ -14,6 +14,7 @@ import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 import kr.bluesky.dodo.widgets.TodoListWidget
+import kr.bluesky.dodo.widgets.TodoDetailWidget
 import kr.bluesky.dodo.widgets.TodoCalendarWidget
 
 class MainActivity: FlutterActivity() {
@@ -258,6 +259,16 @@ class MainActivity: FlutterActivity() {
             Log.d(TAG, "Updating ${todoListWidgetIds.size} TodoListWidget(s)")
             val todoListWidget = TodoListWidget()
             todoListWidget.onUpdate(applicationContext, appWidgetManager, todoListWidgetIds, widgetData)
+        }
+
+        // Update TodoDetailWidget directly
+        val detailWidgetIds = appWidgetManager.getAppWidgetIds(
+            ComponentName(applicationContext, TodoDetailWidget::class.java)
+        )
+        if (detailWidgetIds.isNotEmpty()) {
+            Log.d(TAG, "Updating ${detailWidgetIds.size} TodoDetailWidget(s)")
+            val detailWidget = TodoDetailWidget()
+            detailWidget.onUpdate(applicationContext, appWidgetManager, detailWidgetIds, widgetData)
         }
 
         // Update TodoCalendarWidget directly

@@ -47,6 +47,9 @@ class SharedDataManager {
             return []
         }
 
+        // Force synchronize to read latest data written by Flutter app
+        defaults.synchronize()
+
         var todos: [TodoItem] = []
         let calendar = Calendar.current
 
@@ -160,6 +163,9 @@ class SharedDataManager {
             #endif
             return [:]
         }
+
+        // Force synchronize to read latest data written by Flutter app
+        defaults.synchronize()
 
         #if DEBUG
         // Debug: Print all keys in UserDefaults

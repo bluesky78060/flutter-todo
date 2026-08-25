@@ -1,8 +1,16 @@
 #!/bin/bash
 
 # Android 빌드 스크립트
-# 사용법: ./scripts/build_android.sh [version] [build-number] [build-type]
-# 예: ./scripts/build_android.sh 1.0.10 34 release
+# 사용법: ./scripts/build_android.sh <build-number> [version] [build-type]
+# 예: ./scripts/build_android.sh 69 1.0.17 release
+#
+# build-number 는 필수다. 기본값을 두지 않는 이유:
+# 예전에는 1.0.10+34 가 기본값이었는데, Play Store 활성 빌드가 이미 +67 이라
+# 인자 없이 실행하면 스토어가 거부할 AAB 가 만들어졌다. 어떤 숫자를 넣어 두어도
+# 시간이 지나면 같은 상태가 된다. 빌드 번호는 저장소가 알 수 없는 값이므로
+# 부를 때마다 받는다.
+#
+# 넣을 값: Play Console > 앱 번들 탐색기에서 최신 versionCode 를 확인하고 그보다 큰 수.
 
 # set -e 제거: flutter build 경고가 스크립트를 중단시키는 문제 해결
 
@@ -16,15 +24,25 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-# 기본값 설정
-DEFAULT_VERSION="1.0.10"
-DEFAULT_BUILD_NUMBER="34"
-DEFAULT_BUILD_TYPE="release"
-
 # 인자 처리
-VERSION=${1:-$DEFAULT_VERSION}
-BUILD_NUMBER=${2:-$DEFAULT_BUILD_NUMBER}
-BUILD_TYPE=${3:-$DEFAULT_BUILD_TYPE}
+# build-number: 필수. 위 주석 참고.
+BUILD_NUMBER=$1
+if [ -z "$BUILD_NUMBER" ]; then
+    echo -e "${RED}❌ build-number 가 필요합니다.${NC}"
+    echo -e "${YELLOW}사용법:${NC} ./scripts/build_android.sh <build-number> [version] [build-type]"
+    echo -e "${YELLOW}예:${NC}     ./scripts/build_android.sh 69 1.0.17 release"
+    echo
+    echo -e "Play Console > 앱 번들 탐색기에서 최신 versionCode 를 확인하고 그보다 큰 수를 넣으십시오."
+    exit 1
+fi
+if ! [[ "$BUILD_NUMBER" =~ ^[0-9]+$ ]]; then
+    echo -e "${RED}❌ build-number 는 숫자여야 합니다: '${BUILD_NUMBER}'${NC}"
+    exit 1
+fi
+
+# version: 생략하면 pubspec.yaml 의 현재 값을 쓴다. 하드코딩하면 낡는다.
+VERSION=${2:-$(grep -m1 '^version:' pubspec.yaml | sed 's/^version: *//; s/+.*//')}
+BUILD_TYPE=${3:-release}
 
 echo -e "${BLUE}========================================${NC}"
 echo -e "${BLUE}   Android Build Script${NC}"

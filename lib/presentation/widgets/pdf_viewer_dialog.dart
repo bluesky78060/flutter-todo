@@ -163,7 +163,7 @@ class _PdfViewerDialogState extends ConsumerState<PdfViewerDialog> {
             child: IconButton(
               icon: Container(
                 padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                   color: Colors.black54,
                   shape: BoxShape.circle,
                 ),

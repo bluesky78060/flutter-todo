@@ -281,7 +281,7 @@ class TodoDetailContent extends ConsumerWidget {
         error: (error, _) => Center(
           child: Text(
             'error_prefix'.tr(namedArgs: {'error': error.toString()}),
-            style: TextStyle(color: Colors.red),
+            style: const TextStyle(color: Colors.red),
           ),
         ),
       ),
@@ -509,7 +509,7 @@ class _SnoozeButton extends ConsumerWidget {
                 }
               }
             },
-            icon: Icon(
+            icon: const Icon(
               FluentIcons.snooze_24_regular,
               size: 18,
             ),
@@ -551,7 +551,7 @@ class _OverdueWarning extends ConsumerWidget {
         children: [
           Row(
             children: [
-              Icon(
+              const Icon(
                 FluentIcons.warning_24_filled,
                 color: AppColors.accentOrange,
                 size: 20,
@@ -648,7 +648,7 @@ class _OverdueWarning extends ConsumerWidget {
                   }
                 }
               },
-              icon: Icon(
+              icon: const Icon(
                 FluentIcons.calendar_arrow_right_24_regular,
                 size: 18,
               ),
@@ -823,7 +823,7 @@ class _SubtasksSectionState extends ConsumerState<_SubtasksSection> {
               padding: const EdgeInsets.all(12.0),
               child: Text(
                 '${'error'.tr()}: $error',
-                style: TextStyle(color: Colors.red),
+                style: const TextStyle(color: Colors.red),
               ),
             ),
           ),
@@ -912,7 +912,7 @@ class _SubtaskItem extends StatelessWidget {
           ),
         ),
         trailing: IconButton(
-          icon: Icon(
+          icon: const Icon(
             FluentIcons.delete_24_regular,
             color: Colors.red,
             size: 20,
@@ -942,7 +942,7 @@ class _SubtaskItem extends StatelessWidget {
                     onPressed: () => Navigator.of(context).pop(true),
                     child: Text(
                       'delete'.tr(),
-                      style: TextStyle(color: Colors.red),
+                      style: const TextStyle(color: Colors.red),
                     ),
                   ),
                 ],
@@ -1092,7 +1092,7 @@ class _AttachmentsSection extends ConsumerWidget {
               padding: const EdgeInsets.all(12.0),
               child: Text(
                 '${'error'.tr()}: $error',
-                style: TextStyle(color: Colors.red),
+                style: const TextStyle(color: Colors.red),
               ),
             ),
           ),
@@ -1295,7 +1295,7 @@ class _AttachmentItemState extends State<_AttachmentItem> {
                   )
                 : IconButton(
                     onPressed: _downloadFile,
-                    icon: Icon(
+                    icon: const Icon(
                       FluentIcons.arrow_download_24_regular,
                       color: Colors.white,
                       size: 16,

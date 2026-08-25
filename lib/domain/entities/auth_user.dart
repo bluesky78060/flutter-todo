@@ -3,7 +3,7 @@
 /// Represents a user who has logged in to the application, containing
 /// their profile information and authentication identifiers.
 ///
-/// The primary identifier is [uuid] (Supabase UUID). The legacy [id] field
+/// The primary identifier is [uuid] (Supabase UUID). The legacy `id` field
 /// is deprecated and will be removed in future versions.
 ///
 /// Example:

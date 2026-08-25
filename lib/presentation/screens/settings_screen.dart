@@ -1232,13 +1232,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('data_exported_successfully'.tr() + ': $exportPath')),
+          SnackBar(content: Text('${'data_exported_successfully'.tr()}: $exportPath')),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('data_export_failed'.tr() + ': $e')),
+          SnackBar(content: Text('${'data_export_failed'.tr()}: $e')),
         );
       }
     }

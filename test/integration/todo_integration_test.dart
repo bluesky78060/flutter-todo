@@ -102,7 +102,7 @@ void main() {
       test('creates todo with notification and schedules it', () async {
         // Arrange
         final actions = container.read(todoActionsProvider);
-        final notificationTime = DateTime.now().add(Duration(hours: 1));
+        final notificationTime = DateTime.now().add(const Duration(hours: 1));
 
         when(mockRepository.createTodo(
           any,
