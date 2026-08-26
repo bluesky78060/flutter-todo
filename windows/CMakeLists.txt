@@ -57,6 +57,31 @@ add_subdirectory("runner")
 # them to the application.
 include(flutter/generated_plugins.cmake)
 
+# permission_handler_windows 는 C++20 을 켜 두고도 구식 실험용 코루틴 플래그
+# /await 를 함께 넘긴다(플러그인의 windows/CMakeLists.txt).
+#
+# 그 플러그인은 C++/WinRT 를 쓰는데, C++/WinRT 는 /await 가 있으면 표준
+# <coroutine> 대신 <experimental/coroutine> 을 고른다. MSVC 14.51(VS 18)이
+# 그 헤더에 하드 에러 static_assert 를 넣으면서 빌드가 멈춘다:
+#   error C2338: ... STL1011 ... /await ... will be REMOVED SOON
+#
+# C++20 이 이미 켜져 있으므로 /await 는 불필요하다. 빼면 C++/WinRT 가 표준
+# 헤더를 쓴다. 최신 permission_handler_windows(0.2.2)에도 /await 가 그대로라
+# 업그레이드로는 해결되지 않아 소비하는 쪽에서 걷어낸다.
+#
+# generated_plugins.cmake 는 자동 생성 파일이라 수정할 수 없으므로,
+# 그 파일이 타깃을 만든 직후에 여기서 옵션을 고친다.
+if(TARGET permission_handler_windows_plugin)
+  get_target_property(PHW_COMPILE_OPTIONS
+    permission_handler_windows_plugin COMPILE_OPTIONS)
+  if(PHW_COMPILE_OPTIONS)
+    list(REMOVE_ITEM PHW_COMPILE_OPTIONS "/await")
+    set_target_properties(permission_handler_windows_plugin PROPERTIES
+      COMPILE_OPTIONS "${PHW_COMPILE_OPTIONS}")
+    message(STATUS "permission_handler_windows_plugin: dropped /await")
+  endif()
+endif()
+
 
 # === Installation ===
 # Support files are copied into place next to the executable, so that it can
