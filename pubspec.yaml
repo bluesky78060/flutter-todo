@@ -151,6 +151,11 @@ dependencies:
   image: ^4.5.4
   web: ^1.1.1
 
+  # lib/core/utils/device_utils.dart 가 직접 import 한다. 지금까지는 다른
+  # 패키지를 통해 transitive 로 딸려 오는 것에 기대고 있었는데, 그러면 중간
+  # 패키지가 의존성을 바꾸는 순간 조용히 사라진다.
+  device_info_plus: ^11.3.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -165,6 +170,10 @@ dev_dependencies:
   # Testing
   mockito: ^5.4.4
   easy_localization_loader: ^2.0.1
+  # test/unit/providers/ 가 package:riverpod/riverpod.dart 를 직접 import 한다.
+  # flutter_riverpod 를 통해 딸려 오지만 명시하지 않으면 같은 문제가 생긴다.
+  # 테스트에서만 쓰므로 dev_dependencies 다.
+  riverpod: ^3.0.3
 
   # Linting
   flutter_lints: ^5.0.0
