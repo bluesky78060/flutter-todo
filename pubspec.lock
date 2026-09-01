@@ -386,7 +386,7 @@ packages:
     source: hosted
     version: "0.7.11"
   device_info_plus:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: device_info_plus
       sha256: "72d146c6d7098689ff5c5f66bcf593ac11efc530095385356e131070333e64da"
@@ -1478,7 +1478,7 @@ packages:
     source: hosted
     version: "3.1.2"
   riverpod:
-    dependency: transitive
+    dependency: "direct dev"
     description:
       name: riverpod
       sha256: c406de02bff19d920b832bddfb8283548bfa05ce41c59afba57ce643e116aa59

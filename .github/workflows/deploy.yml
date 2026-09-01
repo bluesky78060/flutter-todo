@@ -20,7 +20,8 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.35.7'
+          # .metadata 의 리비전(66dd93f9a2) = 3.38.4. 전 워크플로를 같은 값으로 맞춘다.
+          flutter-version: '3.38.4'
           channel: 'stable'
           cache: true
 
