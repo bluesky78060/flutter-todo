@@ -18,7 +18,8 @@ jobs:
     - name: Set up Flutter
       uses: subosito/flutter-action@v2
       with:
-        flutter-version: '3.35.7'
+        # .metadata 의 리비전(66dd93f9a2) = 3.38.4. 로컬 개발 환경과 맞춘다.
+        flutter-version: '3.38.4'
         channel: 'stable'
         cache: true
 

@@ -32,7 +32,13 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          channel: 'master'
+          # .metadata 가 기록한 이 프로젝트의 SDK 리비전(66dd93f9a2)이 3.38.4 다.
+          # 로컬 개발 환경도 같다. 여기만 channel: 'master' 였는데, 그러면
+          # 이 저장소가 아무것도 바꾸지 않아도 상류가 움직일 때마다 빌드가
+          # 흔들리고 로컬 검증이 CI 를 대변하지 못한다. 실제로 DTA-2-6 의
+          # 타입 승격 오류는 master 에서만 보였다.
+          flutter-version: '3.38.4'
+          channel: 'stable'
           cache: true
 
       - name: Create .env file
