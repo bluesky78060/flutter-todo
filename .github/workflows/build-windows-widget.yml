@@ -3,9 +3,21 @@ name: Build Windows Calendar Widget
 on:
   push:
     branches: [ main ]
+    # 이 빌드는 lib/main_widget.dart 진입점에서 도달 가능한 **전체 그래프**를
+    # 컴파일한다. 예전 필터는 lib/platforms/windows/** 와 main_widget.dart 만
+    # 보고 있어서, 그 밖의 코드가 깨져도 워크플로가 트리거되지 않았다.
+    #
+    # 실제로 그래서 두 개의 결함이 9개월간(2025-12-08 ~ 2026-08-25) 잠복했다:
+    # todo_providers.dart 의 타입 승격 오류(DTA-2-6)와 permission_handler_windows
+    # 의 /await 플래그(DTA-2-7). 앞의 것을 걷어내야 뒤의 것이 보였다.
+    #
+    # 필터를 컴파일 범위에 맞춘다. lib 전체, 네이티브 쪽(windows/), 의존성
+    # 해석에 영향을 주는 pubspec 을 포함한다.
     paths:
-      - 'lib/platforms/windows/**'
-      - 'lib/main_widget.dart'
+      - 'lib/**'
+      - 'windows/**'
+      - 'pubspec.yaml'
+      - 'pubspec.lock'
       - '.github/workflows/build-windows-widget.yml'
   workflow_dispatch:  # 수동 실행 가능
 
