@@ -11,18 +11,34 @@ class GoogleCalendarService {
   factory GoogleCalendarService() => _instance;
   GoogleCalendarService._internal();
 
+  /// 캘린더 접근에 필요한 스코프. 생성자와 requestScopes 가 같은 목록을
+  /// 봐야 하므로 상수로 둔다.
+  static const List<String> calendarScopes = [
+    'https://www.googleapis.com/auth/calendar', // 전체 캘린더 접근
+    'https://www.googleapis.com/auth/calendar.events', // 이벤트 접근
+  ];
+
   final GoogleSignIn _googleSignIn = GoogleSignIn(
-    scopes: [
-      'email',
-      'https://www.googleapis.com/auth/calendar',  // 전체 캘린더 접근
-      'https://www.googleapis.com/auth/calendar.events',  // 이벤트 접근
-    ],
+    scopes: ['email', ...calendarScopes],
   );
 
   gcal.CalendarApi? _calendarApi;
   bool _isConnected = false;
 
   bool get isConnected => _isConnected;
+
+  /// 오류가 "캘린더 권한이 없다" 는 뜻인지 판정한다.
+  ///
+  /// 순수 함수로 분리한 이유는 실제 Google 호출 없이 이 분기를 테스트하기
+  /// 위해서다. 권한 부족과 네트워크 장애를 뭉뚱그리면 사용자에게 틀린
+  /// 원인이 표시된다.
+  @visibleForTesting
+  static bool isInsufficientScope(Object error) {
+    if (error is gcal.DetailedApiRequestError) {
+      return error.status == 401 || error.status == 403;
+    }
+    return false;
+  }
 
   /// Google Calendar에 연결
   Future<bool> connect() async {
@@ -38,8 +54,20 @@ class GoogleCalendarService {
         return false;
       }
 
-      // Calendar scope 확인 (이미 초기화 시 요청했으므로 스킵 가능)
       debugPrint('📅 GoogleCalendar: 로그인 성공 - ${account.email}');
+
+      // 스코프 보충 시도. **반환값을 성공 판정에 쓰지 않는다.**
+      //
+      // 이 호출을 실패 판정에 쓰면 이미 승인한 사용자가 막힌다(DTA-3-8:
+      // 중복 요청에 false 가 돌아와 로그인 전체가 실패로 처리됐다).
+      // 반대로 호출을 아예 빼면 스코프 없는 기존 계정이 그대로 통과해
+      // 나중에 403 을 만난다(DTA-3-9). 그래서 부르되 결과는 무시하고,
+      // 아래에서 실제 응답으로 확인한다.
+      try {
+        await _googleSignIn.requestScopes(calendarScopes);
+      } catch (e) {
+        debugPrint('📅 GoogleCalendar: 스코프 요청 건너뜀 - $e');
+      }
 
       // API 클라이언트 생성
       final httpClient = await _googleSignIn.authenticatedClient();
@@ -48,7 +76,25 @@ class GoogleCalendarService {
         return false;
       }
 
-      _calendarApi = gcal.CalendarApi(httpClient);
+      final api = gcal.CalendarApi(httpClient);
+
+      // 권한이 실제로 있는지 가장 싼 호출로 확인한다.
+      //
+      // google_sign_in 의 canAccessScopes 는 쓸 수 없다 — 웹에만 구현되어
+      // 있고 Android/iOS 에서는 플랫폼 인터페이스 기본 구현이
+      // UnimplementedError 를 던진다. 불린을 믿는 대신 응답을 근거로 삼는다.
+      try {
+        await api.calendarList.list(maxResults: 1, $fields: 'items/id');
+      } catch (e) {
+        if (isInsufficientScope(e)) {
+          debugPrint('📅 GoogleCalendar: 캘린더 권한이 부여되지 않았습니다 - $e');
+          _isConnected = false;
+          return false;
+        }
+        rethrow; // 네트워크 등 다른 실패는 아래 catch 가 처리한다
+      }
+
+      _calendarApi = api;
       _isConnected = true;
       debugPrint('📅 GoogleCalendar: 연결 성공 - ${account.email}');
       return true;
