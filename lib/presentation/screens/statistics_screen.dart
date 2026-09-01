@@ -236,49 +236,82 @@ class StatisticsScreen extends ConsumerWidget {
   }
 
   Widget _buildStatisticsContent(_StatisticsData stats) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Overall Progress Card with Pie Chart (purple gradient)
-          _OverallProgressCard(stats: stats),
-          const SizedBox(height: 16),
+    final cards = <Widget>[
+      _OverallProgressCard(stats: stats),
+      _WeeklyBarChartCard(stats: stats),
+      _MonthlyLineChartCard(stats: stats),
+      _MonthlyAnalysisCard(stats: stats),
+      _WeeklyPatternCard(stats: stats),
+      _InsightsCard(stats: stats),
+      _TodayStatisticsCard(stats: stats),
+      _TimeBasedStatisticsCard(stats: stats),
+      if (stats.categoryStats.isNotEmpty) _CategoryAnalysisCard(stats: stats),
+    ];
 
-          // Weekly Bar Chart Card (with subtitle)
-          _WeeklyBarChartCard(stats: stats),
-          const SizedBox(height: 16),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // 한 단으로는 카드가 지나치게 늘어나는 폭인가.
+        //
+        // 태블릿(2560px)에서 카드가 전폭으로 늘어나 "전체 진행률" 은 범례가
+        // 왼쪽 끝, 도넛이 오른쪽 끝에 붙고 가운데가 통째로 비었다. 차트도
+        // 축만 화면 끝까지 늘어났다. 폰 기준 레이아웃을 그대로 늘린 결과다.
+        final useTwoColumns = constraints.maxWidth >= _twoColumnBreakpoint;
 
-          // Monthly Line Chart Card
-          _MonthlyLineChartCard(stats: stats),
-          const SizedBox(height: 16),
+        return SingleChildScrollView(
+          padding: const EdgeInsets.all(20),
+          child: Center(
+            // 아주 넓은 화면에서 두 단으로 나눠도 각 단이 계속 넓어진다.
+            // 카드가 읽기 좋은 폭을 넘지 않도록 전체를 묶어 가운데 둔다.
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: _maxContentWidth),
+              child: useTwoColumns
+                  ? _buildTwoColumnCards(cards)
+                  : _buildSingleColumnCards(cards),
+            ),
+          ),
+        );
+      },
+    );
+  }
 
-          // Monthly Analysis Card (simplified)
-          _MonthlyAnalysisCard(stats: stats),
-          const SizedBox(height: 16),
+  /// 두 단으로 나눌 최소 폭. 이보다 좁으면 한 단이 낫다.
+  static const double _twoColumnBreakpoint = 900;
 
-          // Weekly Pattern Card (circle icons)
-          _WeeklyPatternCard(stats: stats),
-          const SizedBox(height: 16),
+  /// 내용 전체의 최대 폭.
+  static const double _maxContentWidth = 1400;
 
-          // Insights Card (auto-generated insights)
-          _InsightsCard(stats: stats),
-          const SizedBox(height: 16),
+  static const double _cardGap = 16;
 
-          // Today's Statistics
-          _TodayStatisticsCard(stats: stats),
-          const SizedBox(height: 16),
-
-          // Time-based Statistics
-          _TimeBasedStatisticsCard(stats: stats),
-
-          // Category Analysis Card (moved to bottom, optional)
-          if (stats.categoryStats.isNotEmpty)
-            const SizedBox(height: 16),
-          if (stats.categoryStats.isNotEmpty)
-            _CategoryAnalysisCard(stats: stats),
+  Widget _buildSingleColumnCards(List<Widget> cards) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        for (var i = 0; i < cards.length; i++) ...[
+          if (i > 0) const SizedBox(height: _cardGap),
+          cards[i],
         ],
-      ),
+      ],
+    );
+  }
+
+  /// 카드를 두 단에 번갈아 넣는다.
+  ///
+  /// 카드마다 높이가 달라서 단순히 반으로 자르면 한쪽만 길어진다.
+  /// 번갈아 넣으면 길이가 대체로 맞는다.
+  Widget _buildTwoColumnCards(List<Widget> cards) {
+    final left = <Widget>[];
+    final right = <Widget>[];
+    for (var i = 0; i < cards.length; i++) {
+      (i.isEven ? left : right).add(cards[i]);
+    }
+
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(child: _buildSingleColumnCards(left)),
+        const SizedBox(width: _cardGap),
+        Expanded(child: _buildSingleColumnCards(right)),
+      ],
     );
   }
 
