@@ -159,6 +159,44 @@ class Todo {
 
   /// "인자를 주지 않았다" 와 "null 을 주었다" 를 구분하기 위한 표식.
   ///
+  /// 반복 시리즈에서 이 인스턴스를 떼어낸다.
+  ///
+  /// [recurrenceRule] 과 [parentRecurringTodoId] 만 null 로 만들고
+  /// **나머지 필드는 전부 보존한다.**
+  ///
+  /// 순수 함수로 여기 둔 이유: 원래는 호출부(todo_providers 의 thisOnly 경로)가
+  /// Todo 직접 생성자를 인자 20개로 부르고 있었다. 필드를 새로 추가할 때
+  /// 그 호출부에 넣는 것을 잊으면 오류도 경고도 없이 기본값이 되고,
+  /// 사용자가 입력한 값이 조용히 사라진다. 실제로 그렇게 한 번 뚫렸다.
+  ///
+  /// 필드 옆에 두면 필드를 추가하는 사람이 이 생성자도 보게 된다.
+  /// 그래도 놓칠 수 있으므로 테스트가 값 비교로 못박는다.
+  Todo detachFromSeries() {
+    return Todo(
+      id: id,
+      title: title,
+      description: description,
+      isCompleted: isCompleted,
+      categoryId: categoryId,
+      createdAt: createdAt,
+      completedAt: completedAt,
+      dueDate: dueDate,
+      startDate: startDate,
+      notificationTime: notificationTime,
+      recurrenceRule: null, // 시리즈에서 분리
+      parentRecurringTodoId: null, // 시리즈에서 분리
+      snoozeCount: snoozeCount,
+      lastSnoozeTime: lastSnoozeTime,
+      locationLatitude: locationLatitude,
+      locationLongitude: locationLongitude,
+      locationName: locationName,
+      locationRadius: locationRadius,
+      position: position,
+      priority: priority,
+      googleEventId: googleEventId,
+    );
+  }
+
   /// 일반적인 `x ?? this.x` 패턴으로는 필드를 null 로 되돌릴 수 없다.
   /// 범위 해제(기간 토글 끄기)가 바로 그 경우다.
   static const _unset = Object();

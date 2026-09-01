@@ -327,31 +327,7 @@ class TodoActions {
         case RecurringEditMode.thisOnly:
           // Edit this instance only - detach from series by removing parent link
           logger.d('   Detaching from series');
-          final detachedTodo = Todo(
-            id: todo.id,
-            title: todo.title,
-            description: todo.description,
-            isCompleted: todo.isCompleted,
-            categoryId: todo.categoryId,
-            createdAt: todo.createdAt,
-            completedAt: todo.completedAt,
-            dueDate: todo.dueDate,
-            notificationTime: todo.notificationTime,
-            recurrenceRule: null, // Remove recurrence rule
-            parentRecurringTodoId: null, // Detach from series
-            // 아래는 직접 생성자를 쓰기 때문에 명시하지 않으면 조용히 기본값이 된다.
-            // 가드가 미래에 다시 뚫려도 사용자가 입력한 값이 사라지지 않도록 넘긴다.
-            startDate: todo.startDate,
-            priority: todo.priority,
-            position: todo.position,
-            snoozeCount: todo.snoozeCount,
-            lastSnoozeTime: todo.lastSnoozeTime,
-            locationLatitude: todo.locationLatitude,
-            locationLongitude: todo.locationLongitude,
-            locationName: todo.locationName,
-            locationRadius: todo.locationRadius,
-            googleEventId: todo.googleEventId,
-          );
+          final detachedTodo = todo.detachFromSeries();
           final result = await repository.updateTodo(detachedTodo);
           await result.fold(
             (failure) async {

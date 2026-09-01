@@ -9,6 +9,7 @@
 /// 비교하면 **앞으로 추가되는 필드**도 같은 방식으로 누락될 때 깨진다.
 library;
 
+import 'package:flutter/foundation.dart' show mapEquals;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:todo_app/data/datasources/remote/supabase_datasource.dart';
 import 'package:todo_app/domain/entities/todo.dart';
@@ -20,6 +21,19 @@ Map<String, dynamic> asRow(Map<String, dynamic> payload, Todo todo) => {
       'id': todo.id,
       'created_at': todo.createdAt.toUtc().toIso8601String(),
     };
+
+/// 두 Todo 가 **값으로** 같은지 본다.
+///
+/// Todo 는 operator== 를 구현하지 않아 `a == b` 는 참조 비교다. 그걸로
+/// 비교하면 서로 다른 인스턴스는 언제나 다르다고 나와, 이 테스트가
+/// 결코 실패하지 않는 껍데기가 된다.
+///
+/// buildUpdatePayload 를 비교 기준으로 쓴다. 저장되는 모든 필드를 담고
+/// 있고, 필드가 추가되면 payload 에도 추가되므로 비교 범위가 함께 자란다.
+bool sameTodo(Todo a, Todo b) => mapEquals(
+      SupabaseTodoDataSource.buildUpdatePayload(a),
+      SupabaseTodoDataSource.buildUpdatePayload(b),
+    );
 
 void main() {
   group('SupabaseTodoDataSource 쓰기/읽기 왕복', () {
@@ -93,7 +107,7 @@ void main() {
       for (final key in payload.keys) {
         final without = asRow(payload, todo)..remove(key);
         try {
-          if (SupabaseTodoDataSource.todoFromJson(without) == reference) {
+          if (sameTodo(SupabaseTodoDataSource.todoFromJson(without), reference)) {
             ignored.add(key);
           }
         } catch (_) {
