@@ -3,12 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:todo_app/core/services/google_calendar_service.dart';
 import 'package:todo_app/domain/entities/todo.dart';
 import 'package:todo_app/presentation/providers/database_provider.dart';
+import 'package:todo_app/presentation/providers/google_calendar_service_provider.dart';
 import 'package:todo_app/presentation/providers/todo_providers.dart';
-
-/// Google Calendar 연결 상태
-final googleCalendarServiceProvider = Provider<GoogleCalendarService>((ref) {
-  return GoogleCalendarService();
-});
 
 /// Google Calendar 연결 상태 관리
 class GoogleCalendarState {

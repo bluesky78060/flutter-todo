@@ -26,6 +26,7 @@ import 'package:todo_app/presentation/widgets/recurring_edit_dialog.dart';
 import 'package:todo_app/presentation/widgets/recurring_delete_dialog.dart';
 import 'package:todo_app/presentation/providers/attachment_providers.dart';
 import 'package:todo_app/core/widget/widget_service.dart';
+import 'package:todo_app/presentation/providers/google_calendar_service_provider.dart';
 import 'package:todo_app/presentation/providers/widget_provider.dart';
 
 /// Todo filter options for displaying todos.
@@ -394,6 +395,15 @@ class TodoActions {
 
                       logger.d('   Deleting ${futureInstances.length} future instances');
                       for (final instance in futureInstances) {
+                        // 이 경로는 삭제 후 재생성이라 _deleteSingleTodo 를
+                        // 거치지 않는다. 캘린더 정리를 여기서 직접 해야 한다.
+                        //
+                        // 빠뜨리면 두 가지가 한꺼번에 일어난다(DTA-3-5):
+                        // 지워진 인스턴스의 이벤트는 참조할 ID 를 잃어 고아가
+                        // 되고, 재생성된 인스턴스는 googleEventId 가 없어
+                        // 다음 동기화에서 같은 일정을 새로 만든다.
+                        await _deleteCalendarEventFor(
+                            instance.id, instance.googleEventId);
                         await repository.deleteTodo(instance.id);
                       }
 
@@ -545,6 +555,44 @@ class TodoActions {
   }
 
   /// Helper method to delete a single todo with notification and attachment cleanup
+  /// 할 일에 연결된 Google Calendar 이벤트를 지운다.
+  ///
+  /// 이벤트 ID 를 알아야 해서 저장소에서 한 번 더 읽는다. 호출부마다
+  /// Todo 를 들고 있는 곳과 id 만 있는 곳이 섞여 있어, 여기서 읽는 편이
+  /// 모든 삭제 경로를 빠짐없이 덮는다.
+  Future<void> _deleteCalendarEvent(int id) async {
+    try {
+      final repository = ref.read(todoRepositoryProvider);
+      final todoResult = await repository.getTodoById(id);
+      final todo = todoResult.getRight().toNullable();
+      // 읽기에 실패하면 todo 가 null 이고, 아래에서 지울 것 없음으로 처리된다.
+      await _deleteCalendarEventFor(id, todo?.googleEventId);
+    } catch (e) {
+      logger.d('⚠️ TodoActions: 캘린더 정리 중 오류 (todo=$id) - $e');
+    }
+  }
+
+  /// 이벤트 ID 를 이미 알고 있을 때 쓰는 갈래. 저장소를 다시 읽지 않는다.
+  Future<void> _deleteCalendarEventFor(int todoId, String? eventId) async {
+    // 동기화한 적 없으면 지울 것도 없다.
+    if (eventId == null || eventId.isEmpty) return;
+
+    try {
+      final service = ref.read(googleCalendarServiceProvider);
+      final removed = await service.deleteEvent(eventId);
+      if (removed) {
+        logger.d('✅ TodoActions: 캘린더 이벤트 삭제됨 (todo=$todoId)');
+      } else {
+        // 미연결이거나 일시적 실패. 이벤트는 캘린더에 남고, 할 일 행이
+        // 지워지면서 ID 도 함께 사라지므로 다시 참조할 수 없다.
+        logger.d('⚠️ TodoActions: 캘린더 이벤트를 지우지 못함 '
+            '(todo=$todoId, event=$eventId)');
+      }
+    } catch (e) {
+      logger.d('⚠️ TodoActions: 캘린더 정리 중 오류 (todo=$todoId) - $e');
+    }
+  }
+
   Future<void> _deleteSingleTodo(
     int id,
     NotificationService notificationService,
@@ -577,6 +625,17 @@ class TodoActions {
       logger.d('⚠️ TodoActions: Error deleting attachments: $e');
       // Continue with todo deletion even if attachment deletion fails
     }
+
+    // 캘린더 이벤트 정리.
+    //
+    // 알림 취소/첨부 삭제와 같은 best-effort 다. 실패해도 할 일 삭제는
+    // 진행한다 — 사용자가 지우겠다고 한 것을 네트워크 사정으로 막을 수는
+    // 없다. 대신 이때 이벤트는 고아로 남으므로 로그를 남긴다.
+    //
+    // **완료 처리에서는 부르지 않는다.** 캘린더는 "무엇을 했는가" 의
+    // 기록이기도 해서, 완료한 일정이 사라지면 과거 기록이 비게 된다.
+    // 삭제할 때만 지운다.
+    await _deleteCalendarEvent(id);
 
     final result = await repository.deleteTodo(id);
     result.fold(

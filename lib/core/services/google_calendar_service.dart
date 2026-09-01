@@ -11,6 +11,17 @@ class GoogleCalendarService {
   factory GoogleCalendarService() => _instance;
   GoogleCalendarService._internal();
 
+  /// 테스트에서 하위 클래스를 만들기 위한 생성자.
+  ///
+  /// 생성자가 전부 private 이면 이 클래스를 대체할 수 없고, 그러면 삭제
+  /// 배선(할 일을 지울 때 캘린더 이벤트도 지우는가)을 검증할 방법이 없다.
+  /// 검증되지 않은 가드는 없는 것과 같으므로 이만큼만 열어 둔다.
+  ///
+  /// 인터페이스(abstract class CalendarService) 추출이 더 깔끔한 해법이지만
+  /// 범위가 커서 별도 작업으로 남긴다.
+  @visibleForTesting
+  GoogleCalendarService.forTesting();
+
   /// 캘린더 접근에 필요한 스코프. 생성자와 requestScopes 가 같은 목록을
   /// 봐야 하므로 상수로 둔다.
   static const List<String> calendarScopes = [
