@@ -258,6 +258,59 @@ class GoogleCalendarService {
     }
   }
 
+  /// 이벤트 삭제의 **판정 규칙만** 떼어낸 것. 실제 호출은 [delete] 콜백이 한다.
+  /// routeEventWrite 와 같은 이유로 분리했다 — 네트워크 없이 규칙을 검증한다.
+  ///
+  /// 반환값은 "이 이벤트가 캘린더에 없는 상태가 되었는가" 다.
+  ///
+  /// 이미 없는 이벤트(404/410)도 **성공**이다. 목적은 이벤트를 없애는 것이고
+  /// 이미 없으면 목적은 달성돼 있다. 이걸 실패로 처리하면 호출부가
+  /// googleEventId 를 계속 붙들고 매번 지우기를 다시 시도한다.
+  ///
+  /// 반대로 일시적 실패(429/500/네트워크)는 성공으로 쳐서는 안 된다.
+  /// 성공으로 치면 호출부가 ID 를 지워 버려서, 실제로는 남아 있는 이벤트를
+  /// 다시는 참조할 수 없는 고아로 만든다. routeEventWrite 의 폴백 판정과
+  /// 같은 이유다.
+  @visibleForTesting
+  static Future<bool> routeEventDelete({
+    required String? eventId,
+    required Future<void> Function(String eventId) delete,
+  }) async {
+    // 애초에 등록된 적이 없으면 지울 것도 없다.
+    if (eventId == null || eventId.isEmpty) return true;
+
+    try {
+      await delete(eventId);
+      return true;
+    } on gcal.DetailedApiRequestError catch (e) {
+      if (e.status == 404 || e.status == 410) {
+        debugPrint('📅 GoogleCalendar: 이벤트가 이미 없음(status=${e.status})');
+        return true;
+      }
+      debugPrint('📅 GoogleCalendar: 이벤트 삭제 실패(status=${e.status}) - $e');
+      return false;
+    } catch (e) {
+      debugPrint('📅 GoogleCalendar: 이벤트 삭제 실패(네트워크) - $e');
+      return false;
+    }
+  }
+
+  /// 캘린더에서 이벤트를 지운다.
+  ///
+  /// 반환값이 true 여야 호출부가 googleEventId 를 비워도 안전하다.
+  /// false 일 때 ID 를 비우면 남아 있는 이벤트가 고아가 된다.
+  Future<bool> deleteEvent(String? eventId) async {
+    if (!_isConnected || _calendarApi == null) {
+      debugPrint('📅 GoogleCalendar: 연결되지 않음');
+      return false;
+    }
+
+    return routeEventDelete(
+      eventId: eventId,
+      delete: (id) => _calendarApi!.events.delete('primary', id),
+    );
+  }
+
   /// Todo 를 캘린더에 등록하거나, 이미 등록돼 있으면 갱신한다.
   ///
   /// 반환값은 Google Calendar 이벤트 ID 다. 실패하면 `null`.
