@@ -27,7 +27,14 @@ import 'package:todo_app/presentation/widgets/todo_form_dialog.dart';
 
 /// Calendar view for displaying todos on a monthly calendar
 class CalendarViewScreen extends ConsumerStatefulWidget {
-  const CalendarViewScreen({super.key});
+  const CalendarViewScreen({super.key, this.onTodoSelected});
+
+  /// 할 일을 골랐을 때 호출된다. null 이면 새 화면을 민다.
+  ///
+  /// 태블릿 split view 는 오른쪽 패널에 상세를 그린다. 거기서도 라우트를
+  /// 밀면 2단 레이아웃 위에 전체 화면이 덮여 분할의 이점이 사라진다.
+  /// 폰에는 오른쪽 패널이 없으므로 기존대로 라우트를 민다.
+  final void Function(int todoId)? onTodoSelected;
 
   @override
   ConsumerState<CalendarViewScreen> createState() => _CalendarViewScreenState();
@@ -469,7 +476,14 @@ class _CalendarViewScreenState extends ConsumerState<CalendarViewScreen> {
     final completedSubtasks = subtaskData['completed'] ?? 0;
 
     return InkWell(
-      onTap: () => context.push('/todos/${todo.id}'),
+      onTap: () {
+        final onSelected = widget.onTodoSelected;
+        if (onSelected != null) {
+          onSelected(todo.id);
+        } else {
+          context.push('/todos/${todo.id}');
+        }
+      },
       borderRadius: BorderRadius.circular(12),
       child: Container(
         padding: const EdgeInsets.all(12),

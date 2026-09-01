@@ -231,7 +231,6 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> with WidgetsBin
     }
   }
 
-
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
@@ -259,10 +258,7 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> with WidgetsBin
 
       if (mode == null) return; // User cancelled
 
-      await ref.read(todoActionsProvider).deleteTodo(
-        todo.id,
-        recurringDeleteMode: mode,
-      );
+      await ref.read(todoActionsProvider).deleteTodo(todo.id, recurringDeleteMode: mode);
     } else {
       // Regular todo deletion
       await ref.read(todoActionsProvider).deleteTodo(todo.id);
@@ -272,10 +268,7 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> with WidgetsBin
   /// Handle clearing all completed todos
   Future<void> _handleClearCompleted() async {
     final isDark = ref.read(isDarkModeProvider);
-    final shouldClear = await showClearCompletedDialog(
-      context: context,
-      isDarkMode: isDark,
-    );
+    final shouldClear = await showClearCompletedDialog(context: context, isDarkMode: isDark);
 
     if (shouldClear != true) return;
 
@@ -303,7 +296,6 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> with WidgetsBin
       }
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -394,158 +386,150 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> with WidgetsBin
 
               // Todo List
               Expanded(
-              child: todosAsync.when(
-                data: (todos) {
-                  if (todos.isEmpty) {
-                    return Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            FluentIcons.task_list_square_ltr_24_regular,
-                            size: 64,
-                            color: AppColors.getTextSecondary(isDarkMode).withValues(alpha: 0.5),
-                          ),
-                          const SizedBox(height: 16),
-                          Text(
-                            currentFilter == TodoFilter.all
-                                ? 'no_todos'.tr()
-                                : currentFilter == TodoFilter.pending
-                                    ? 'no_pending_todos'.tr()
-                                    : 'no_completed_todos'.tr(),
-                            style: TextStyle(
-                              color: AppColors.getTextSecondary(isDarkMode),
-                              fontSize: AppColors.scaledFontSize(16),
+                child: todosAsync.when(
+                  data: (todos) {
+                    if (todos.isEmpty) {
+                      return Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              FluentIcons.task_list_square_ltr_24_regular,
+                              size: 64,
+                              color: AppColors.getTextSecondary(isDarkMode).withValues(alpha: 0.5),
                             ),
-                          ),
-                        ],
-                      ),
-                    );
-                  }
-
-                  // Group todos by recurring series
-                  final groupedTodos = groupTodosBySeries(todos);
-
-                  return ReorderableListView.builder(
-                    scrollController: _scrollController,
-                    padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
-                    itemCount: groupedTodos.length,
-                    onReorder: (oldIndex, newIndex) {
-                      _onReorder(oldIndex, newIndex, groupedTodos);
-                    },
-                    itemBuilder: (context, index) {
-                      final group = groupedTodos[index];
-
-                      // If it's a single todo or non-recurring, show normal item
-                      if (group.length == 1) {
-                        final todo = group.first;
-                        return CustomTodoItem(
-                          key: ValueKey(todo.id),
-                          todo: todo,
-                          onToggle: () => ref
-                              .read(todoActionsProvider)
-                              .toggleCompletion(todo.id),
-                          onDelete: () => _handleDelete(todo),
-                          onTap: () => context.go('/todos/${todo.id}'),
-                        );
-                      }
-
-                      // If it's a recurring series, show grouped item
-                      return RecurringTodoGroup(
-                        key: ValueKey('group_${group.first.parentRecurringTodoId}'),
-                        todos: group,
-                        onToggle: (todo) => ref
-                            .read(todoActionsProvider)
-                            .toggleCompletion(todo.id),
-                        onDelete: (todo) => _handleDelete(todo),
-                        onTap: (todo) => context.go('/todos/${todo.id}'),
-                      );
-                    },
-                  );
-                },
-                loading: () => Center(
-                  child: CircularProgressIndicator(
-                    color: AppColors.primary,
-                  ),
-                ),
-                error: (error, _) => Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(
-                        FluentIcons.error_circle_24_regular,
-                        size: 48,
-                        color: Colors.red,
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        '${'error'}: $error',
-                        style: const TextStyle(
-                          color: AppColors.textGray,
+                            const SizedBox(height: 16),
+                            Text(
+                              currentFilter == TodoFilter.all
+                                  ? 'no_todos'.tr()
+                                  : currentFilter == TodoFilter.pending
+                                  ? 'no_pending_todos'.tr()
+                                  : 'no_completed_todos'.tr(),
+                              style: TextStyle(
+                                color: AppColors.getTextSecondary(isDarkMode),
+                                fontSize: AppColors.scaledFontSize(16),
+                              ),
+                            ),
+                          ],
                         ),
-                      ),
-                    ],
+                      );
+                    }
+
+                    // Group todos by recurring series
+                    final groupedTodos = groupTodosBySeries(todos);
+
+                    return ReorderableListView.builder(
+                      scrollController: _scrollController,
+                      padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
+                      itemCount: groupedTodos.length,
+                      onReorder: (oldIndex, newIndex) {
+                        _onReorder(oldIndex, newIndex, groupedTodos);
+                      },
+                      itemBuilder: (context, index) {
+                        final group = groupedTodos[index];
+
+                        // If it's a single todo or non-recurring, show normal item
+                        if (group.length == 1) {
+                          final todo = group.first;
+                          return CustomTodoItem(
+                            key: ValueKey(todo.id),
+                            todo: todo,
+                            onToggle: () => ref.read(todoActionsProvider).toggleCompletion(todo.id),
+                            onDelete: () => _handleDelete(todo),
+                            onTap: () => context.go('/todos/${todo.id}'),
+                          );
+                        }
+
+                        // If it's a recurring series, show grouped item
+                        return RecurringTodoGroup(
+                          key: ValueKey('group_${group.first.parentRecurringTodoId}'),
+                          todos: group,
+                          onToggle: (todo) =>
+                              ref.read(todoActionsProvider).toggleCompletion(todo.id),
+                          onDelete: (todo) => _handleDelete(todo),
+                          onTap: (todo) => context.go('/todos/${todo.id}'),
+                        );
+                      },
+                    );
+                  },
+                  loading: () => Center(child: CircularProgressIndicator(color: AppColors.primary)),
+                  error: (error, _) => Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(
+                          FluentIcons.error_circle_24_regular,
+                          size: 48,
+                          color: Colors.red,
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          '${'error'}: $error',
+                          style: const TextStyle(color: AppColors.textGray),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
-            ),
             ], // end of else (list view)
 
-            // Bottom Navigation
-            Container(
-              decoration: BoxDecoration(
-                color: AppColors.getCard(isDarkMode),
-                border: Border(
-                  top: BorderSide(
-                    color: AppColors.getBorder(isDarkMode).withValues(alpha: 0.3),
-                    width: 1,
-                  ),
-                ),
+            _buildBottomNav(context, isDarkMode),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// 하단 내비게이션(할 일 / 통계 / 설정).
+  ///
+  /// 폰 뷰 안에 인라인으로 들어 있어서, 태블릿의 split view 에는 아예
+  /// 없었다. 태블릿에서는 설정과 통계로 들어갈 길이 하나도 없었다는 뜻이다.
+  /// 두 레이아웃이 같은 것을 쓰도록 메서드로 뺀다.
+  Widget _buildBottomNav(BuildContext context, bool isDarkMode) {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.getCard(isDarkMode),
+        border: Border(
+          top: BorderSide(color: AppColors.getBorder(isDarkMode).withValues(alpha: 0.3), width: 1),
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 4, 16, 4),
+        child: Row(
+          children: [
+            Expanded(
+              child: NavItem(
+                icon: FluentIcons.task_list_square_ltr_24_filled,
+                label: 'todos'.tr(),
+                isActive: true,
+                onTap: () {},
               ),
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 4, 16, 4),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: NavItem(
-                        icon: FluentIcons.task_list_square_ltr_24_filled,
-                        label: 'todos'.tr(),
-                        isActive: true,
-                        onTap: () {},
-                      ),
-                    ),
-                    Expanded(
-                      child: NavItem(
-                        icon: FluentIcons.data_histogram_24_regular,
-                        label: 'statistics'.tr(),
-                        isActive: false,
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const StatisticsScreen(),
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                    Expanded(
-                      child: NavItem(
-                        icon: FluentIcons.settings_24_regular,
-                        label: 'settings'.tr(),
-                        isActive: false,
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const SettingsScreen(),
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                  ],
-                ),
+            ),
+            Expanded(
+              child: NavItem(
+                icon: FluentIcons.data_histogram_24_regular,
+                label: 'statistics'.tr(),
+                isActive: false,
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const StatisticsScreen()),
+                  );
+                },
+              ),
+            ),
+            Expanded(
+              child: NavItem(
+                icon: FluentIcons.settings_24_regular,
+                label: 'settings'.tr(),
+                isActive: false,
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const SettingsScreen()),
+                  );
+                },
               ),
             ),
           ],
@@ -561,9 +545,14 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> with WidgetsBin
     AsyncValue<List<Todo>> todosAsync,
     TodoFilter currentFilter,
   ) {
+    final viewMode = ref.watch(viewModeProvider);
+
     return Scaffold(
       backgroundColor: AppColors.getBackground(isDarkMode),
       resizeToAvoidBottomInset: false, // 다이얼로그 키보드로 인한 백그라운드 오버플로우 방지
+      // 2단 본문 아래에 내비게이션을 가로로 깐다. Row 만 두었을 때는
+      // 태블릿에서 설정·통계로 들어갈 길이 아예 없었다.
+      bottomNavigationBar: _buildBottomNav(context, isDarkMode),
       body: Row(
         children: [
           // Master panel: Todo list
@@ -574,30 +563,43 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> with WidgetsBin
                 children: [
                   // Header with gradient
                   Container(
-                    decoration: BoxDecoration(
-                      gradient: AppColors.getHeaderGradient(isDarkMode),
-                    ),
+                    decoration: BoxDecoration(gradient: AppColors.getHeaderGradient(isDarkMode)),
                     padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Title
-                        Text(
-                          'todo_list'.tr(),
-                          style: TextStyle(
-                            color: AppColors.getText(isDarkMode),
-                            fontSize: AppColors.scaledFontSize(20),
-                            fontWeight: FontWeight.bold,
-                          ),
+                        // 제목 + 액션 버튼.
+                        // 버튼들이 buildHeaderSection 안에만 있어서 태블릿
+                        // 헤더에는 새로고침·완료삭제·달력·추가가 통째로
+                        // 없었다. 폰과 같은 함수를 쓴다.
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Flexible(
+                              child: Text(
+                                'todo_list'.tr(),
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  color: AppColors.getText(isDarkMode),
+                                  fontSize: AppColors.scaledFontSize(20),
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                            buildHeaderActions(
+                              isDarkMode: isDarkMode,
+                              context: context,
+                              ref: ref,
+                              handleClearCompleted: _handleClearCompleted,
+                            ),
+                          ],
                         ),
                         const SizedBox(height: 8),
                         // Filter Chips
                         todosAsync.when(
                           data: (allTodos) {
-                            final activeCount =
-                                allTodos.where((t) => !t.isCompleted).length;
-                            final completedCount =
-                                allTodos.where((t) => t.isCompleted).length;
+                            final activeCount = allTodos.where((t) => !t.isCompleted).length;
+                            final completedCount = allTodos.where((t) => t.isCompleted).length;
                             final totalCount = allTodos.length;
 
                             return Row(
@@ -644,192 +646,192 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> with WidgetsBin
                     ),
                   ),
 
-                  // Quick Add Input
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: AppColors.getInput(isDarkMode),
-                        borderRadius: BorderRadius.circular(12),
+                  // 뷰 모드 분기. split view 에는 이 분기가 없어서
+                  // 태블릿에서는 달력으로 갈 방법이 아예 없었다.
+                  // viewModeProvider 의 기본값이 calendar 인데도 항상
+                  // 목록만 나왔다.
+                  if (viewMode == ViewMode.calendar) ...[
+                    Expanded(
+                      child: CalendarViewScreen(
+                        // 새 화면을 밀지 않고 오른쪽 패널에 그린다.
+                        onTodoSelected: (id) =>
+                            setState(() => _selectedTodoId = id),
                       ),
-                      child: TextField(
-                        controller: _inputController,
-                        onSubmitted: (_) => _addTodoFromInput(),
-                        style: TextStyle(
-                          color: AppColors.getText(isDarkMode),
-                          fontSize: AppColors.scaledFontSize(14),
+                    ),
+                  ] else ...[
+                    // Quick Add Input
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: AppColors.getInput(isDarkMode),
+                          borderRadius: BorderRadius.circular(12),
                         ),
-                        decoration: InputDecoration(
-                          hintText: 'title_hint'.tr(),
-                          hintStyle: TextStyle(
-                            color: AppColors.getTextSecondary(isDarkMode),
+                        child: TextField(
+                          controller: _inputController,
+                          onSubmitted: (_) => _addTodoFromInput(),
+                          style: TextStyle(
+                            color: AppColors.getText(isDarkMode),
+                            fontSize: AppColors.scaledFontSize(14),
                           ),
-                          prefixIcon: Icon(
-                            FluentIcons.add_24_regular,
-                            color: AppColors.getTextSecondary(isDarkMode),
-                            size: 18,
-                          ),
-                          border: InputBorder.none,
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 12,
+                          decoration: InputDecoration(
+                            hintText: 'title_hint'.tr(),
+                            hintStyle: TextStyle(color: AppColors.getTextSecondary(isDarkMode)),
+                            prefixIcon: Icon(
+                              FluentIcons.add_24_regular,
+                              color: AppColors.getTextSecondary(isDarkMode),
+                              size: 18,
+                            ),
+                            border: InputBorder.none,
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 12,
+                            ),
                           ),
                         ),
                       ),
                     ),
-                  ),
 
-                  // Todo List
-                  Expanded(
-                    child: todosAsync.when(
-                      data: (todos) {
-                        if (todos.isEmpty) {
-                          return Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  FluentIcons.task_list_square_ltr_24_regular,
-                                  size: 48,
-                                  color: AppColors.getTextSecondary(isDarkMode).withValues(alpha: 0.5),
-                                ),
-                                const SizedBox(height: 12),
-                                Text(
-                                  currentFilter == TodoFilter.all
-                                      ? 'no_todos'.tr()
-                                      : currentFilter == TodoFilter.pending
-                                          ? 'no_pending_todos'.tr()
-                                          : 'no_completed_todos'.tr(),
-                                  style: TextStyle(
-                                    color: AppColors.getTextSecondary(isDarkMode),
-                                    fontSize: AppColors.scaledFontSize(14),
+                    // Todo List
+                    Expanded(
+                      child: todosAsync.when(
+                        data: (todos) {
+                          if (todos.isEmpty) {
+                            return Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    FluentIcons.task_list_square_ltr_24_regular,
+                                    size: 48,
+                                    color: AppColors.getTextSecondary(
+                                      isDarkMode,
+                                    ).withValues(alpha: 0.5),
                                   ),
-                                ),
-                              ],
-                            ),
-                          );
-                        }
-
-                        final groupedTodos = groupTodosBySeries(todos);
-
-                        return ListView.builder(
-                          controller: _scrollController,
-                          padding: const EdgeInsets.fromLTRB(12, 8, 12, 16),
-                          itemCount: groupedTodos.length,
-                          // PERFORMANCE: Disable automatic keep alives for memory efficiency
-                          // Items are simple and don't need to maintain state when scrolled off
-                          addAutomaticKeepAlives: false,
-                          // Pre-cache items for smoother scrolling
-                          cacheExtent: 300,
-                          itemBuilder: (context, index) {
-                            final group = groupedTodos[index];
-                            final isSelected = group.length == 1
-                                ? _selectedTodoId == group.first.id
-                                : _selectedTodoId != null &&
-                                    group.any((t) => t.id == _selectedTodoId);
-
-                            // If it's a single todo or non-recurring
-                            if (group.length == 1) {
-                              final todo = group.first;
-                              return Container(
-                                margin: const EdgeInsets.only(bottom: 6),
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(8),
-                                  border: Border.all(
-                                    color: isSelected
-                                        ? AppColors.primary
-                                        : Colors.transparent,
-                                    width: 2,
+                                  const SizedBox(height: 12),
+                                  Text(
+                                    currentFilter == TodoFilter.all
+                                        ? 'no_todos'.tr()
+                                        : currentFilter == TodoFilter.pending
+                                        ? 'no_pending_todos'.tr()
+                                        : 'no_completed_todos'.tr(),
+                                    style: TextStyle(
+                                      color: AppColors.getTextSecondary(isDarkMode),
+                                      fontSize: AppColors.scaledFontSize(14),
+                                    ),
                                   ),
-                                ),
-                                child: GestureDetector(
-                                  onTap: () {
-                                    setState(() {
-                                      _selectedTodoId = todo.id;
-                                    });
-                                  },
-                                  child: CustomTodoItem(
-                                    key: ValueKey(todo.id),
-                                    todo: todo,
-                                    onToggle: () => ref
-                                        .read(todoActionsProvider)
-                                        .toggleCompletion(todo.id),
-                                    onDelete: () => _handleDelete(todo),
+                                ],
+                              ),
+                            );
+                          }
+
+                          final groupedTodos = groupTodosBySeries(todos);
+
+                          return ListView.builder(
+                            controller: _scrollController,
+                            padding: const EdgeInsets.fromLTRB(12, 8, 12, 16),
+                            itemCount: groupedTodos.length,
+                            // PERFORMANCE: Disable automatic keep alives for memory efficiency
+                            // Items are simple and don't need to maintain state when scrolled off
+                            addAutomaticKeepAlives: false,
+                            // Pre-cache items for smoother scrolling
+                            cacheExtent: 300,
+                            itemBuilder: (context, index) {
+                              final group = groupedTodos[index];
+                              final isSelected = group.length == 1
+                                  ? _selectedTodoId == group.first.id
+                                  : _selectedTodoId != null &&
+                                        group.any((t) => t.id == _selectedTodoId);
+
+                              // If it's a single todo or non-recurring
+                              if (group.length == 1) {
+                                final todo = group.first;
+                                return Container(
+                                  margin: const EdgeInsets.only(bottom: 6),
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(8),
+                                    border: Border.all(
+                                      color: isSelected ? AppColors.primary : Colors.transparent,
+                                      width: 2,
+                                    ),
+                                  ),
+                                  child: GestureDetector(
                                     onTap: () {
                                       setState(() {
                                         _selectedTodoId = todo.id;
                                       });
                                     },
+                                    child: CustomTodoItem(
+                                      key: ValueKey(todo.id),
+                                      todo: todo,
+                                      onToggle: () =>
+                                          ref.read(todoActionsProvider).toggleCompletion(todo.id),
+                                      onDelete: () => _handleDelete(todo),
+                                      onTap: () {
+                                        setState(() {
+                                          _selectedTodoId = todo.id;
+                                        });
+                                      },
+                                    ),
+                                  ),
+                                );
+                              }
+
+                              // If it's a recurring series
+                              return Container(
+                                margin: const EdgeInsets.only(bottom: 6),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(
+                                    color: isSelected ? AppColors.primary : Colors.transparent,
+                                    width: 2,
                                   ),
                                 ),
-                              );
-                            }
-
-                            // If it's a recurring series
-                            return Container(
-                              margin: const EdgeInsets.only(bottom: 6),
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(8),
-                                border: Border.all(
-                                  color: isSelected
-                                      ? AppColors.primary
-                                      : Colors.transparent,
-                                  width: 2,
+                                child: RecurringTodoGroup(
+                                  key: ValueKey('group_${group.first.parentRecurringTodoId}'),
+                                  todos: group,
+                                  onToggle: (todo) =>
+                                      ref.read(todoActionsProvider).toggleCompletion(todo.id),
+                                  onDelete: (todo) => _handleDelete(todo),
+                                  onTap: (todo) {
+                                    setState(() {
+                                      _selectedTodoId = todo.id;
+                                    });
+                                  },
                                 ),
+                              );
+                            },
+                          );
+                        },
+                        loading: () =>
+                            Center(child: CircularProgressIndicator(color: AppColors.primary)),
+                        error: (error, _) => Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(
+                                FluentIcons.error_circle_24_regular,
+                                size: 40,
+                                color: Colors.red,
                               ),
-                              child: RecurringTodoGroup(
-                                key: ValueKey('group_${group.first.parentRecurringTodoId}'),
-                                todos: group,
-                                onToggle: (todo) => ref
-                                    .read(todoActionsProvider)
-                                    .toggleCompletion(todo.id),
-                                onDelete: (todo) => _handleDelete(todo),
-                                onTap: (todo) {
-                                  setState(() {
-                                    _selectedTodoId = todo.id;
-                                  });
-                                },
+                              const SizedBox(height: 12),
+                              Text(
+                                '${'error'}: $error',
+                                style: const TextStyle(color: AppColors.textGray),
                               ),
-                            );
-                          },
-                        );
-                      },
-                      loading: () => Center(
-                        child: CircularProgressIndicator(
-                          color: AppColors.primary,
-                        ),
-                      ),
-                      error: (error, _) => Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Icon(
-                              FluentIcons.error_circle_24_regular,
-                              size: 40,
-                              color: Colors.red,
-                            ),
-                            const SizedBox(height: 12),
-                            Text(
-                              '${'error'}: $error',
-                              style: const TextStyle(
-                                color: AppColors.textGray,
-                              ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
                     ),
-                  ),
+                  ],
                 ],
               ),
             ),
           ),
 
           // Divider
-          VerticalDivider(
-            width: 1,
-            color: AppColors.getBorder(isDarkMode).withValues(alpha: 0.3),
-          ),
+          VerticalDivider(width: 1, color: AppColors.getBorder(isDarkMode).withValues(alpha: 0.3)),
 
           // Detail panel: Todo details
           Flexible(
@@ -843,14 +845,9 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> with WidgetsBin
     );
   }
 
-
   /// Handle reordering of todos
   void _onReorder(int oldIndex, int newIndex, List<List<Todo>> groupedTodos) {
-    final result = reorderTodos(
-      groupedTodos: groupedTodos,
-      oldIndex: oldIndex,
-      newIndex: newIndex,
-    );
+    final result = reorderTodos(groupedTodos: groupedTodos, oldIndex: oldIndex, newIndex: newIndex);
 
     // Update positions in the repository
     print('💾 Calling updateTodoPositions with ${result.totalCount} todos');

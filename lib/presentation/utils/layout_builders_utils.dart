@@ -90,75 +90,95 @@ Widget buildHeaderSection({
               ),
             ),
             const SizedBox(width: 8),
-            Row(
-              children: [
-                // Refresh Button
-                _HeaderActionButton(
-                  isDarkMode: isDarkMode,
-                  icon: FluentIcons.arrow_clockwise_24_regular,
-                  onTap: () {
-                    ref.invalidate(todosProvider);
-                  },
-                ),
-                const SizedBox(width: 8),
-                // Clear Completed Button
-                _HeaderActionButton(
-                  isDarkMode: isDarkMode,
-                  icon: FluentIcons.delete_24_regular,
-                  onTap: handleClearCompleted,
-                ),
-                const SizedBox(width: 8),
-                // Calendar Button
-                _HeaderActionButton(
-                  isDarkMode: isDarkMode,
-                  icon: FluentIcons.calendar_24_regular,
-                  onTap: () {
-                    context.go('/calendar');
-                  },
-                ),
-                const SizedBox(width: 8),
-                // Add Button
-                Container(
-                  decoration: BoxDecoration(
-                    gradient: AppColors.primaryGradient,
-                    borderRadius: BorderRadius.circular(12),
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppColors.primary.withValues(alpha: 0.3),
-                        blurRadius: 12,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      onTap: () => showDialog(
-                        context: context,
-                        builder: (context) {
-                          return const TodoFormDialog();
-                        },
-                      ),
-                      borderRadius: BorderRadius.circular(12),
-                      child: const SizedBox(
-                        width: 48,
-                        height: 48,
-                        child: Icon(
-                          FluentIcons.add_24_filled,
-                          color: Colors.white,
-                          size: 24,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
+            buildHeaderActions(
+              isDarkMode: isDarkMode,
+              context: context,
+              ref: ref,
+              handleClearCompleted: handleClearCompleted,
             ),
           ],
         ),
         const SizedBox(height: 16),
       ],
     ),
+  );
+}
+
+
+/// 헤더 오른쪽의 액션 버튼들(새로고침 / 완료 삭제 / 달력 / 추가).
+///
+/// 공용 함수로 둔 이유: 폰은 buildHeaderSection 을 쓰고 태블릿 split view 는
+/// 헤더를 직접 만들어 쓴다. 이 버튼들이 buildHeaderSection 안에만 있어서
+/// 태블릿에는 통째로 없었다. 복사해 두면 한쪽만 고쳐진다.
+Widget buildHeaderActions({
+  required bool isDarkMode,
+  required BuildContext context,
+  required WidgetRef ref,
+  required VoidCallback handleClearCompleted,
+}) {
+  return   Row(
+    children: [
+      // Refresh Button
+      _HeaderActionButton(
+        isDarkMode: isDarkMode,
+        icon: FluentIcons.arrow_clockwise_24_regular,
+        onTap: () {
+          ref.invalidate(todosProvider);
+        },
+      ),
+      const SizedBox(width: 8),
+      // Clear Completed Button
+      _HeaderActionButton(
+        isDarkMode: isDarkMode,
+        icon: FluentIcons.delete_24_regular,
+        onTap: handleClearCompleted,
+      ),
+      const SizedBox(width: 8),
+      // Calendar Button
+      _HeaderActionButton(
+        isDarkMode: isDarkMode,
+        icon: FluentIcons.calendar_24_regular,
+        onTap: () {
+          context.go('/calendar');
+        },
+      ),
+      const SizedBox(width: 8),
+      // Add Button
+      Container(
+        decoration: BoxDecoration(
+          gradient: AppColors.primaryGradient,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.primary.withValues(alpha: 0.3),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: () => showDialog(
+              context: context,
+              builder: (context) {
+                return const TodoFormDialog();
+              },
+            ),
+            borderRadius: BorderRadius.circular(12),
+            child: const SizedBox(
+              width: 48,
+              height: 48,
+              child: Icon(
+                FluentIcons.add_24_filled,
+                color: Colors.white,
+                size: 24,
+              ),
+            ),
+          ),
+        ),
+      ),
+    ],
   );
 }
 
