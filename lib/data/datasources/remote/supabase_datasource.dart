@@ -47,7 +47,7 @@ class SupabaseTodoDataSource {
         logger.d('✅ getTodos succeeded, response count: ${(response as List).length}');
       }
 
-      return (response as List).map((json) => _todoFromJson(json)).toList();
+      return (response as List).map((json) => todoFromJson(json)).toList();
     } catch (e, stackTrace) {
       logger.e('❌ getTodos FAILED', error: e, stackTrace: stackTrace);
 
@@ -89,7 +89,7 @@ class SupabaseTodoDataSource {
         logger.d('✅ Supabase query succeeded, response count: ${(response as List).length}');
       }
 
-      final todos = (response as List).map((json) => _todoFromJson(json)).toList();
+      final todos = (response as List).map((json) => todoFromJson(json)).toList();
 
       // Filter out master recurring todos (those with recurrence_rule but no parent)
       // Master todos are templates used only for generating instances
@@ -124,7 +124,7 @@ class SupabaseTodoDataSource {
   // Get single todo by ID
   Future<Todo> getTodoById(int id) async {
     final response = await client.from('todos').select().eq('id', id).single();
-    return _todoFromJson(response);
+    return todoFromJson(response);
   }
 
   // Create new todo and return the created ID
@@ -426,7 +426,7 @@ class SupabaseTodoDataSource {
         .or('title.ilike.$searchPattern,description.ilike.$searchPattern')
         .order('created_at', ascending: false);
 
-    final todos = (response as List).map((json) => _todoFromJson(json)).toList();
+    final todos = (response as List).map((json) => todoFromJson(json)).toList();
 
     // Filter out master recurring todos (same logic as getFilteredTodos)
     return todos.where((todo) {
@@ -436,7 +436,7 @@ class SupabaseTodoDataSource {
 
   // Parse DateTime from Supabase as UTC and convert to local time
   // Supabase stores timestamps as UTC but returns them without timezone info
-  DateTime? _parseUtcDateTime(String? dateString) {
+  static DateTime? _parseUtcDateTime(String? dateString) {
     if (dateString == null) return null;
     // Parse as UTC, then convert to local time for display
     final parsed = DateTime.parse(dateString);
@@ -459,7 +459,15 @@ class SupabaseTodoDataSource {
   }
 
   // Convert JSON to Todo entity
-  Todo _todoFromJson(Map<String, dynamic> json) {
+  /// 행 하나를 Todo 로 옮긴다.
+  ///
+  /// buildCreatePayload / buildUpdatePayload 와 짝을 이루는 읽기 쪽이다.
+  /// 인라인으로 두었더니 쓰기에는 있고 읽기에는 없는 키가 생겨도 아무도
+  /// 알아채지 못했다 — priority 가 그렇게 누락되어, 값을 바꿔도 다시
+  /// 불러오면 항상 'medium' 으로 돌아왔다. 순수 함수로 빼서 왕복 테스트로
+  /// 못박는다.
+  @visibleForTesting
+  static Todo todoFromJson(Map<String, dynamic> json) {
     return Todo(
       id: json['id'] as int,
       title: json['title'] as String,
@@ -479,6 +487,8 @@ class SupabaseTodoDataSource {
       locationName: json['location_name'] as String?,
       locationRadius: (json['location_radius'] as num?)?.toDouble(),
       position: json['position'] as int? ?? 0,
+      // 기본값은 Todo 엔티티의 기본값과 같은 'medium' 이다.
+      priority: json['priority'] as String? ?? 'medium',
       // google_event_id 컬럼이 아직 없는 프로젝트에서는 키가 없어 null 이 된다.
       googleEventId: json['google_event_id'] as String?,
       // start_date 컬럼이 아직 없으면 키가 없어 null 이 된다.
