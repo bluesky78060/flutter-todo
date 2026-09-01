@@ -99,8 +99,23 @@ import workmanager_apple
   ) -> Bool {
     print("📱 AppDelegate: Received URL: \(url.absoluteString)")
 
-    // Send to Flutter for Supabase OAuth handling
-    deepLinkChannel?.invokeMethod("onDeepLink", arguments: url.absoluteString)
+    // Flutter 딥링크 채널로는 **앱 자신의 스킴만** 넘긴다.
+    //
+    // Info.plist 에는 두 스킴이 등록되어 있다:
+    //   kr.bluesky.dodo                        — Supabase OAuth 콜백
+    //   com.googleusercontent.apps.<client-id> — Google Sign-In 콜백
+    //
+    // Dart 쪽 DeepLinkService 는 URL 에 code 파라미터만 있으면 무조건
+    // Supabase 의 getSessionFromUrl 을 호출한다. Google 콜백도 code 를
+    // 달고 오므로, 거르지 않으면 Supabase 가 Google 의 인증 코드를
+    // 삼키려 들어 진행 중인 로그인이 틀어진다.
+    //
+    // Google 콜백은 Flutter 가 아니라 google_sign_in 플러그인이 처리한다.
+    // 아래 super 호출이 등록된 플러그인들에게 URL 을 전달하므로,
+    // 여기서 거르는 것이 그 경로를 막지 않는다.
+    if url.scheme == "kr.bluesky.dodo" {
+      deepLinkChannel?.invokeMethod("onDeepLink", arguments: url.absoluteString)
+    }
 
     return super.application(app, open: url, options: options)
   }

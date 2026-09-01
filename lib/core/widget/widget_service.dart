@@ -1,4 +1,5 @@
-import 'package:flutter/foundation.dart' show kIsWeb, kDebugMode;
+import 'package:flutter/foundation.dart'
+    show kIsWeb, kDebugMode, defaultTargetPlatform, TargetPlatform;
 import 'package:flutter/services.dart';
 import 'package:home_widget/home_widget.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -315,6 +316,21 @@ class WidgetService {
     }
   }
 
+  /// TodoComboWidget 갱신. **iOS 에서만 한다.**
+  ///
+  /// 이 위젯은 iOS 전용이다. android/app/src/main/kotlin/kr/bluesky/dodo/widgets/
+  /// 에는 List/Detail/Calendar 만 있고 Combo 는 없다. 그런데도
+  /// qualifiedAndroidName 으로 존재하지 않는 클래스 이름을 넘기고 있었다.
+  /// 근거 없는 호출이라 실패 지점만 늘린다.
+  ///
+  /// Android 용 Combo 를 만들게 되면 이 분기를 풀고, 함께
+  /// MainActivity.updateWidgets 와 WidgetActionReceiver.refreshWidgets
+  /// 두 경로에도 등록해야 한다. 지금 그 두 곳에도 Combo 는 없다.
+  Future<void> _updateComboWidget() async {
+    if (defaultTargetPlatform != TargetPlatform.iOS) return;
+    await HomeWidget.updateWidget(iOSName: 'TodoComboWidget');
+  }
+
   /// Send widget update broadcasts as fallback
   /// Ensures widgets refresh even if MethodChannel update failed
   Future<void> _sendWidgetUpdateBroadcasts() async {
@@ -332,10 +348,7 @@ class WidgetService {
         qualifiedAndroidName: 'kr.bluesky.dodo.widgets.TodoCalendarWidget',
         iOSName: 'TodoCalendarWidget',
       );
-      await HomeWidget.updateWidget(
-        qualifiedAndroidName: 'kr.bluesky.dodo.widgets.TodoComboWidget',
-        iOSName: 'TodoComboWidget',
-      );
+      await _updateComboWidget();
       logger.d('   Fallback widget update broadcasts sent');
     } catch (e) {
       logger.d('   Fallback widget update skipped: $e');
@@ -607,11 +620,9 @@ class WidgetService {
         qualifiedAndroidName: 'kr.bluesky.dodo.widgets.TodoDetailWidget',
         iOSName: 'TodoDetailWidget',
       );
-      await HomeWidget.updateWidget(
-        qualifiedAndroidName: 'kr.bluesky.dodo.widgets.TodoComboWidget',
-        iOSName: 'TodoComboWidget',
-      );
-      logger.d('✅ Todo list widgets updated (list + detail + combo)');
+      await _updateComboWidget();
+      logger.d('✅ Todo list widgets updated (list + detail'
+          '${defaultTargetPlatform == TargetPlatform.iOS ? " + combo" : ""})');
     } catch (e) {
       logger.e('❌ Error updating todo list widget: $e');
     }
