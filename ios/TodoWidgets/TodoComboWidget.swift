@@ -14,33 +14,33 @@ struct ComboProvider: TimelineProvider {
         ComboEntry(
             date: Date(),
             todos: [
-                TodoItem(id: "1", title: "회의 참석", description: nil, dueDate: Date(), reminderTime: nil, isCompleted: false, categoryId: nil, categoryName: nil, categoryColor: nil),
-                TodoItem(id: "2", title: "보고서 작성", description: nil, dueDate: Date(), reminderTime: nil, isCompleted: false, categoryId: nil, categoryName: nil, categoryColor: nil)
+                TodoItem(id: "1", title: "회의 참석", description: nil, dueDate: Date(), displayTime: nil, reminderTime: nil, isCompleted: false, categoryId: nil, categoryName: nil, categoryColor: nil),
+                TodoItem(id: "2", title: "보고서 작성", description: nil, dueDate: Date(), displayTime: nil, reminderTime: nil, isCompleted: false, categoryId: nil, categoryName: nil, categoryColor: nil)
             ],
             currentMonth: Date()
         )
     }
 
-    func getSnapshot(in context: Context, completion: @escaping (ComboEntry) -> Void) {
-        let todos = SharedDataManager.shared.getTodayTodos()
-        let entry = ComboEntry(
+    /// 목록은 Flutter 가 "다가오는 순서"로 정렬해 저장해 둔 미완료 할 일이다.
+    ///
+    /// 예전에는 getTodayTodos() 를 썼다. 그 필터는 표시용 문자열을 되파싱해
+    /// 날짜를 복원하는 방식이라 라벨 형식이 바뀌면 항목이 통째로 사라졌고,
+    /// 그래서 제거됐다(DTA-3-6). TodoListWidget 과 같은 출처를 쓴다.
+    private func makeEntry() -> ComboEntry {
+        ComboEntry(
             date: Date(),
-            todos: Array(todos.prefix(3)),
+            todos: Array(SharedDataManager.shared.getIncompleteTodos().prefix(3)),
             currentMonth: Date()
         )
-        completion(entry)
+    }
+
+    func getSnapshot(in context: Context, completion: @escaping (ComboEntry) -> Void) {
+        completion(makeEntry())
     }
 
     func getTimeline(in context: Context, completion: @escaping (Timeline<ComboEntry>) -> Void) {
-        let todos = SharedDataManager.shared.getTodayTodos()
-        let entry = ComboEntry(
-            date: Date(),
-            todos: Array(todos.prefix(3)),
-            currentMonth: Date()
-        )
-
         let nextUpdate = Calendar.current.date(byAdding: .minute, value: 5, to: Date())!
-        let timeline = Timeline(entries: [entry], policy: .after(nextUpdate))
+        let timeline = Timeline(entries: [makeEntry()], policy: .after(nextUpdate))
         completion(timeline)
     }
 }
@@ -283,8 +283,8 @@ struct TodoComboWidget_Previews: PreviewProvider {
         ComboWidgetView(entry: ComboEntry(
             date: Date(),
             todos: [
-                TodoItem(id: "1", title: "회의 참석", description: nil, dueDate: Date(), reminderTime: nil, isCompleted: false, categoryId: nil, categoryName: nil, categoryColor: "#7B61FF"),
-                TodoItem(id: "2", title: "보고서 작성", description: nil, dueDate: Date(), reminderTime: nil, isCompleted: false, categoryId: nil, categoryName: nil, categoryColor: "#42A5F5")
+                TodoItem(id: "1", title: "회의 참석", description: nil, dueDate: Date(), displayTime: nil, reminderTime: nil, isCompleted: false, categoryId: nil, categoryName: nil, categoryColor: "#7B61FF"),
+                TodoItem(id: "2", title: "보고서 작성", description: nil, dueDate: Date(), displayTime: nil, reminderTime: nil, isCompleted: false, categoryId: nil, categoryName: nil, categoryColor: "#42A5F5")
             ],
             currentMonth: Date()
         ))

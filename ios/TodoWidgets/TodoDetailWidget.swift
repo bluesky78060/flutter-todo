@@ -171,17 +171,12 @@ struct TodoDetailWidgetView: View {
             // Checkbox — 눌러서 바로 완료 처리한다 (앱을 열지 않는다)
             //
             // 탭 영역 44pt. 이유는 TodoListWidget 쪽 주석 참고.
-            Button(intent: CompleteTodoIntent(todoId: todo.id)) {
-                Image(systemName: todo.isCompleted ? "checkmark.circle.fill" : "circle")
-                    .font(.system(size: 16))
-                    .foregroundColor(todo.isCompleted ? .green : .gray)
-                    .frame(width: 44, height: 44)
-                    .contentShape(Rectangle())
-            }
-            .buttonStyle(.plain)
-            .padding(.vertical, -14)
-            .padding(.leading, -14)
-            .padding(.trailing, -14)
+            // iOS 17 가드는 CompletionCheckbox 안에 한 벌만 둔다.
+            // 여기에 따로 쓰면 한쪽만 고쳐지는 일이 생긴다.
+            CompletionCheckbox(todo: todo, glyphSize: 16)
+                .padding(.vertical, -14)
+                .padding(.leading, -14)
+                .padding(.trailing, -14)
 
             // Text content
             VStack(alignment: .leading, spacing: 2) {

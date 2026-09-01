@@ -54,6 +54,45 @@ struct TodoListProvider: TimelineProvider {
 }
 
 // MARK: - Widget View (Design B: Card with Color Bar)
+/// 목록 항목의 완료 체크박스.
+///
+/// 위젯 안에서 눌러 바로 완료 처리하는 버튼은 AppIntents 기반이라 iOS 17
+/// 부터다. CompleteTodoIntent 자체는 @available(iOS 17.0, *) 로 표시돼
+/// 있었는데 쓰는 쪽에 가드가 없어, 익스텐션 배포 타깃(15.6)에서는
+/// 컴파일되지 않았다.
+///
+/// 17 미만에서는 같은 모양의 표시용 체크박스만 두고, 탭은 위젯 전체의
+/// 앱 열기로 떨어지게 둔다. 기능이 줄 뿐 화면은 같다.
+struct CompletionCheckbox: View {
+    let todo: TodoItem
+
+    /// 글리프 크기. 목록 위젯은 18, 상세 위젯은 16 을 쓴다.
+    /// 탭 영역(44pt)은 크기와 무관하게 같다.
+    var glyphSize: CGFloat = 18
+
+    /// 탭 영역을 44pt 로 넓힌다. 글리프 크기(18pt)만으로는 HIG 최소치에
+    /// 한참 못 미쳐서, 살짝 빗나간 탭이 버튼을 지나쳐 **위젯 전체의
+    /// 앱 열기**로 떨어진다. 앱을 열지 않는 것이 이 기능의 목적이다.
+    private var glyph: some View {
+        Image(systemName: todo.isCompleted ? "checkmark.circle.fill" : "circle")
+            .font(.system(size: glyphSize))
+            .foregroundColor(todo.isCompleted ? .green : .gray)
+            .frame(width: 44, height: 44)
+            .contentShape(Rectangle())
+    }
+
+    var body: some View {
+        if #available(iOS 17.0, *) {
+            Button(intent: CompleteTodoIntent(todoId: todo.id)) {
+                glyph
+            }
+            .buttonStyle(.plain)
+        } else {
+            glyph
+        }
+    }
+}
+
 struct TodoListWidgetView: View {
     var entry: TodoListEntry
     @Environment(\.widgetFamily) var family
@@ -158,17 +197,10 @@ struct TodoListWidgetView: View {
                 // 한참 못 미쳐서, 살짝 빗나간 탭이 버튼을 지나쳐 **위젯 전체의
                 // 앱 열기**로 떨어진다. 앱을 열지 않는 것이 이 기능의 목적이다.
                 // 음수 여백으로 겉보기 배치는 그대로 둔다.
-                Button(intent: CompleteTodoIntent(todoId: todo.id)) {
-                    Image(systemName: todo.isCompleted ? "checkmark.circle.fill" : "circle")
-                        .font(.system(size: 18))
-                        .foregroundColor(todo.isCompleted ? .green : .gray)
-                        .frame(width: 44, height: 44)
-                        .contentShape(Rectangle())
-                }
-                .buttonStyle(.plain)
-                .padding(.vertical, -13)
-                .padding(.leading, -13)
-                .padding(.trailing, -13)
+                CompletionCheckbox(todo: todo)
+                    .padding(.vertical, -13)
+                    .padding(.leading, -13)
+                    .padding(.trailing, -13)
 
                 // Text
                 VStack(alignment: .leading, spacing: 2) {
