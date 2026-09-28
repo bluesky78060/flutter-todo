@@ -74,3 +74,16 @@ web/index.html
 node_modules/
 package-lock.json
 ios/build/
+
+# Gradle 빌드 산출물 — 위쪽 /build/ 는 저장소 루트만 덮는다
+# (android/.gradle 은 android/.gitignore 가 이미 잡는다)
+android/build/
+android/app/build/
+
+# 에이전트·도구 실행 상태. .omc/skills 만 커밋 대상이다.
+# 상위를 통째로 제외하면 하위를 negation 으로 되살릴 수 없어 .omc/* 로 쓴다.
+**/.omc/*
+!**/.omc/skills/
+**/graft/.cache/
+docs/.bkit-memory.json
+docs/.pdca-status.json
